@@ -40,9 +40,6 @@ class StopsMatcher:
         self.depart_col = self._column_or("depart", "departure")
         self.arrivee_col = self._column_or("arrivee", "arrival")
 
-        self._dep_norm = self.df[self.depart_col].map(_normalize)
-        self._arr_norm = self.df[self.arrivee_col].map(_normalize)
-
         # Index des lieux uniques, colonnes confondues : dans le CSV un terminus
         # n'existe souvent que d'un seul côté (« Guédiawaye » n'est qu'un depart),
         # alors que l'utilisateur peut vouloir y aller ou en revenir.
@@ -75,52 +72,93 @@ class StopsMatcher:
                 best_name = name
         return best_name, best_score
 
-    def _lines_covering(self, depart: str, arrivee: str) -> list[dict]:
-        """Lignes desservant le trajet, dans le sens direct ou le sens inverse.
+    def _candidats(self, requete: str) -> tuple[list[str], str, float, bool]:
+        """Lieux candidats pour une saisie, meilleure correspondance, score, validité.
 
-        Chaque enregistrement est rendu dans le sens demandé : pour un trajet
-        inverse, depart et arrivee sont échangés.
+        Si la saisie est un préfixe strict d'au moins un lieu du CSV, elle est
+        ambiguë : « Palais » peut vouloir dire « Palais 1 » comme « Palais 2 ».
+        On propose alors tous les lieux compatibles, correspondance exacte en tête,
+        et la saisie est jugée valide. Sinon on retombe sur la meilleure
+        correspondance floue, retenue seulement si son score dépasse MIN_SCORE.
         """
-        direct = self.df[(self._dep_norm == depart) & (self._arr_norm == arrivee)]
-        rows = [{**record, "sens": "direct"} for record in direct.to_dict(orient="records")]
+        best, score = self._best_match(requete)
+        prefixe = _normalize(requete)
+        if prefixe:
+            compatibles = [nom for norme, nom in self._stops.items() if norme.startswith(prefixe)]
+            if len(compatibles) > 1:
+                exactes = [nom for norme, nom in self._stops.items() if norme == prefixe]
+                autres = sorted(nom for nom in compatibles if nom not in exactes)
+                return [*exactes, *autres], best, score, True
+        return [best], best, score, score >= MIN_SCORE
 
-        if depart != arrivee:
-            inverse = self.df[(self._dep_norm == arrivee) & (self._arr_norm == depart)]
-            rows += [
-                {
-                    **record,
-                    self.depart_col: record[self.arrivee_col],
-                    self.arrivee_col: record[self.depart_col],
-                    "sens": "inverse",
-                }
-                for record in inverse.to_dict(orient="records")
-            ]
-        return rows
+    @staticmethod
+    def _cle(record: dict) -> tuple:
+        """Identité d'une ligne du CSV, indépendante du sens demandé."""
+        return tuple(sorted((str(cle), str(valeur)) for cle, valeur in record.items()))
+
+    def _lignes_pour(self, depart: str, arrivee: str) -> list[tuple[tuple, dict]]:
+        """Lignes reliant exactement ces deux lieux, sens direct ou inverse.
+
+        Renvoie des (clé, enregistrement) : la clé identifie la ligne du CSV, ce
+        qui permet de dédoublonner l'union quand deux candidats se recouvrent.
+        Pour un trajet inverse, depart et arrivee sont échangés.
+        """
+        trouvees: list[tuple[tuple, dict]] = []
+        for record in self.df.to_dict(orient="records"):
+            dep = _normalize(record[self.depart_col])
+            arr = _normalize(record[self.arrivee_col])
+            if dep == depart and arr == arrivee:
+                trouvees.append((self._cle(record), {**record, "sens": "direct"}))
+            elif dep == arrivee and arr == depart:
+                trouvees.append(
+                    (
+                        self._cle(record),
+                        {
+                            **record,
+                            self.depart_col: record[self.arrivee_col],
+                            self.arrivee_col: record[self.depart_col],
+                            "sens": "inverse",
+                        },
+                    )
+                )
+        return trouvees
 
     def find_line(self, depart: str, arrivee: str) -> dict:
         """Retourne les lignes couvrant le trajet demandé, quel que soit le sens.
 
         Un lieu introuvable (score < MIN_SCORE) invalide le résultat : mieux vaut
-        signaler le lieu inconnu que renvoyer un candidat hors sujet.
+        signaler le lieu inconnu que renvoyer un candidat hors sujet. Un lieu sans
+        numéro (« Palais ») est cherché dans tous les lieux du CSV qui le
+        contiennent, et les lignes trouvées sont réunies sans doublon.
         """
-        best_depart, depart_score = self._best_match(depart)
-        best_arrivee, arrivee_score = self._best_match(arrivee)
+        departs, best_depart, depart_score, depart_valide = self._candidats(depart)
+        arrivees, best_arrivee, arrivee_score, arrivee_valide = self._candidats(arrivee)
 
-        depart_valide = depart_score >= MIN_SCORE
-        arrivee_valide = arrivee_score >= MIN_SCORE
-
+        depart_matched, arrivee_matched = best_depart, best_arrivee
         lignes: list[dict] = []
+        vus: set[tuple] = set()
         if depart_valide and arrivee_valide:
-            lignes = self._lines_covering(_normalize(best_depart), _normalize(best_arrivee))
+            for nom_depart in departs:
+                for nom_arrivee in arrivees:
+                    trouvees = self._lignes_pour(_normalize(nom_depart), _normalize(nom_arrivee))
+                    if not trouvees:
+                        continue
+                    if not lignes:
+                        # Le premier couple qui aboutit est celui qu'on annonce.
+                        depart_matched, arrivee_matched = nom_depart, nom_arrivee
+                    for cle, record in trouvees:
+                        if cle not in vus:
+                            vus.add(cle)
+                            lignes.append(record)
 
         return {
             "found": bool(lignes),
             "depart": depart,
-            "depart_matched": best_depart,
+            "depart_matched": depart_matched,
             "depart_score": round(depart_score, 3),
             "depart_valide": depart_valide,
             "arrivee": arrivee,
-            "arrivee_matched": best_arrivee,
+            "arrivee_matched": arrivee_matched,
             "arrivee_score": round(arrivee_score, 3),
             "arrivee_valide": arrivee_valide,
             "lignes": lignes,

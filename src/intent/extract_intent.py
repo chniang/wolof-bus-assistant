@@ -6,6 +6,7 @@ Sortie  : {"depart": str, "arrivee": str, "erreur": str | None}
 
 from __future__ import annotations
 
+import csv
 import json
 import os
 import re
@@ -13,6 +14,8 @@ import time
 from pathlib import Path
 
 from dotenv import load_dotenv
+
+CSV_PATH = Path(__file__).resolve().parents[2] / "data" / "arrets_lignes_dakar.csv"
 
 NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
 MODEL_NAME = "moonshotai/kimi-k3"
@@ -25,17 +28,45 @@ INTENT_JSON_SCHEMA = {
     "required": ["depart", "arrivee"],
 }
 
-SYSTEM_PROMPT = (
-    "Tu reçois la transcription d'une commande vocale en wolof, produite par un "
-    "modèle ASR (whisper-small-wolof) imparfait : l'orthographe est phonétique, "
-    "bruitée et peut contenir des erreurs. Tu dois extraire exactement 2 champs JSON : "
-    "\"depart\" (le lieu de départ, d'où parle l'utilisateur) et \"arrivee\" (le lieu de "
-    "destination). Normalise chaque champ vers un nom de lieu plausible de Dakar "
-    "(arrêts de bus / quartiers) même si l'orthographe d'entrée est approximative, "
-    "par exemple \"gaspaar kamara\" -> \"Gaspar Camara\", \"liberté five\" -> \"Liberté 5\". "
-    "Renvoie une chaîne vide (\"\") pour un champ absent ou ambigu. "
-    "Réponds avec uniquement le JSON attendu."
-)
+def _charger_lieux() -> list[str]:
+    """Lieux uniques du CSV, triés : la seule référence de noms qu'on accepte du LLM."""
+    with open(CSV_PATH, newline="", encoding="utf-8") as fichier:
+        lieux = {
+            str(ligne[column]).strip()
+            for ligne in csv.DictReader(fichier)
+            for column in ("depart", "arrivee")
+            if ligne.get(column) and str(ligne[column]).strip()
+        }
+    return sorted(lieux)
+
+
+LIEUX = _charger_lieux()
+
+
+def _build_system_prompt() -> str:
+    """Prompt système contraint par LIEUX, pour que le LLM n'invente pas de quartiers."""
+    return (
+        "Tu reçois la transcription d'une commande vocale en wolof, produite par un "
+        "modèle ASR (whisper-small-wolof) imparfait : l'orthographe est phonétique, "
+        "bruitée et peut contenir des erreurs. Tu dois extraire exactement 2 champs JSON : "
+        "\"depart\" (le lieu de départ, d'où parle l'utilisateur) et \"arrivee\" (le lieu de "
+        "destination).\n\n"
+        "Voici la liste EXHAUSTIVE des lieux desservis par le réseau de bus :\n"
+        + "\n".join(f"- {lieu}" for lieu in LIEUX)
+        + "\n\n"
+        "Règles de normalisation :\n"
+        "- Si le lieu entendu ressemble phonétiquement à un lieu de la liste, renvoie "
+        "EXACTEMENT le nom de la liste. Exemples : 'wakaam' -> 'Ouakam', 'géejawaay' ou "
+        "'géej a waay' -> 'Guédiawaye', 'pale'/'palee'/'pali' -> 'Palais'.\n"
+        "- Si 'Palais' est dit sans numéro, renvoie 'Palais' (sans 1 ni 2).\n"
+        "- N'invente jamais un quartier qui n'est pas prononcé. Si aucun lieu de la liste "
+        "ne correspond, renvoie le nom entendu, normalisé.\n"
+        "- Renvoie une chaîne vide (\"\") pour un champ absent ou ambigu.\n"
+        "Réponds avec uniquement le JSON attendu."
+    )
+
+
+SYSTEM_PROMPT = _build_system_prompt()
 
 
 def _load_env() -> None:
