@@ -12,11 +12,12 @@ import sys
 import time
 from pathlib import Path
 
+import numpy as np
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from asr.transcribe import load_audio, load_model, transcrire
+from asr.transcribe import SAMPLE_RATE, load_audio, load_model, transcrire
 from intent.extract_intent import extract_intent, get_client
 from matching.stops_matcher import StopsMatcher
 
@@ -47,6 +48,17 @@ def get_llm_client():
 def get_asr_model():
     """Whisper wolof chargé une seule fois : le recharger à chaque question coûterait ~1 min."""
     return load_model()
+
+
+@st.cache_resource(show_spinner=False)
+def prechauffer_moteur_vocal() -> None:
+    """Charge Whisper au démarrage et le chauffe sur 1 s de silence.
+
+    Le chargement du modèle dure ~1 min et la première transcription est la plus
+    lente : on fait les deux ici pour que l'utilisateur n'attende pas au milieu de
+    sa phrase. Le cache_resource évite de refaire ce travail à chaque interaction.
+    """
+    transcrire(get_asr_model(), np.zeros(SAMPLE_RATE, dtype=np.float32))
 
 
 def afficher_phrase(phrase: str) -> None:
@@ -291,6 +303,17 @@ def main() -> None:
     st.set_page_config(page_title="GuindiMa AI", page_icon="🚌")
     st.title("GuindiMa AI")
     st.caption("Dites votre trajet en wolof, on trouve la ligne (Dakar Dem Dikk / Tata AFTU).")
+
+    # Le modèle vocal se charge dès le démarrage, avant le premier clic sur le micro :
+    # sinon le premier enregistrement attend le chargement en plein milieu de la phrase.
+    try:
+        with st.spinner("Préparation du modèle vocal…"):
+            prechauffer_moteur_vocal()
+    except Exception as exc:
+        st.warning(
+            f"Modèle vocal indisponible ({exc}). "
+            "L'onglet « Écrire » reste utilisable."
+        )
 
     matcher = get_matcher()
     onglet_voix, onglet_texte = st.tabs(["🎙️ Parler", "⌨️ Écrire"])
