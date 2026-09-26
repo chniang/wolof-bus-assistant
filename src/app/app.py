@@ -75,7 +75,7 @@ def prechauffer_voix_synthetisee() -> None:
     synthetiser(get_tts(), "Baal ma, gisuma bus bu dem fa.")
 
 
-def dire_la_reponse(lignes: list[dict]) -> None:
+def dire_la_reponse(lignes: list[dict], origine: str) -> None:
     """Fait lire le résultat, et le garde en mémoire pour ne pas le regénérer.
 
     Deux chemins : les audios déjà sur disque (le cas de la démo, aucun modèle à
@@ -90,6 +90,17 @@ def dire_la_reponse(lignes: list[dict]) -> None:
 
     phrase = phrase_reponse(lignes)
     deja_vus = st.session_state.setdefault("audio_par_phrase", {})
+
+    # st.audio n'accepte pas de key (Streamlit 1.64) et, quand autoplay=True,
+    # Streamlit dérive son identifiant du contenu audio : les deux onglets, rendus
+    # dans le même run, produiraient le même identifiant et lèveraient
+    # StreamlitDuplicateElementID. Deux lecteurs identiques qui se déclenchent
+    # aussi en même temps produiraient un son parasite, donc on n'en affiche qu'un
+    # par phrase et par run.
+    if phrase in st.session_state.setdefault("audio_deja_rendu_run", set()):
+        return
+    st.session_state["audio_deja_rendu_run"].add(phrase)
+
     if phrase in deja_vus:
         st.audio(deja_vus[phrase], format="audio/wav", autoplay=True)
         return
@@ -160,7 +171,7 @@ def afficher_extraction(phrase: str) -> dict | None:
     return intent
 
 
-def afficher_lignes(matcher: StopsMatcher, depart: str, arrivee: str) -> None:
+def afficher_lignes(matcher: StopsMatcher, depart: str, arrivee: str, origine: str) -> None:
     """Étape 3 : correspondance avec le CSV des lignes de bus."""
     with st.container(border=True):
         st.subheader("3 · Ligne(s)")
@@ -182,7 +193,7 @@ def afficher_lignes(matcher: StopsMatcher, depart: str, arrivee: str) -> None:
                     f"{match['depart']} → {match['arrivee']} "
                     f"({match.get('categorie', 'N/A')})"
                 )
-            dire_la_reponse(result["lignes"])
+            dire_la_reponse(result["lignes"], origine)
             return
 
         depart_valide, arrivee_valide = result["depart_valide"], result["arrivee_valide"]
@@ -212,15 +223,19 @@ def afficher_lignes(matcher: StopsMatcher, depart: str, arrivee: str) -> None:
                 f"{result['arrivee_matched']} dans le jeu de données."
             )
 
-        dire_la_reponse(result["lignes"])
+        dire_la_reponse(result["lignes"], origine)
 
 
-def lancer_pipeline(matcher: StopsMatcher, phrase: str) -> None:
-    """Phrase -> extraction -> lignes : commun aux modes voix et texte."""
+def lancer_pipeline(matcher: StopsMatcher, phrase: str, origine: str) -> None:
+    """Phrase -> extraction -> lignes : commun aux modes voix et texte.
+
+    `origine` identifie l'onglet qui a déclenché le pipeline : les onglets sont
+    rendus dans le même run, il faut donc pouvoir distinguer les deux rendus.
+    """
     afficher_phrase(phrase)
     intent = afficher_extraction(phrase)
     if intent is not None:
-        afficher_lignes(matcher, intent["depart"], intent["arrivee"])
+        afficher_lignes(matcher, intent["depart"], intent["arrivee"], origine)
 
 
 def _lister_audios_demo() -> list[Path]:
@@ -294,6 +309,8 @@ def mode_vocal(matcher: StopsMatcher) -> None:
 
     type_source, octets = source
     if type_source == "demo":
+        # Pas de key possible sur st.audio, mais sans autoplay Streamlit
+        # n'enregistre aucun identifiant : aucun risque de doublon ici.
         st.audio(octets)
 
     try:
@@ -319,7 +336,7 @@ def mode_vocal(matcher: StopsMatcher) -> None:
                 cible.write_bytes(octets)
                 st.success(f"Sauvegardé : data/demo_audio/{cible.name}")
 
-    lancer_pipeline(matcher, phrase)
+    lancer_pipeline(matcher, phrase, "voix")
 
 
 def mode_simple(matcher: StopsMatcher) -> None:
@@ -339,7 +356,7 @@ def mode_simple(matcher: StopsMatcher) -> None:
         if not phrase.strip():
             st.warning("Saisissez d'abord une phrase en wolof.")
             return
-        lancer_pipeline(matcher, phrase)
+        lancer_pipeline(matcher, phrase, "texte")
 
 
 def mode_avance(matcher: StopsMatcher) -> None:
@@ -361,11 +378,14 @@ def mode_avance(matcher: StopsMatcher) -> None:
             if not depart.strip() or not arrivee.strip():
                 st.warning("Renseignez le départ et l'arrivée.")
                 return
-            afficher_lignes(matcher, depart, arrivee)
+            afficher_lignes(matcher, depart, arrivee, "avance")
 
 
 def main() -> None:
     st.set_page_config(page_title="GuindiMa AI", page_icon="🚌")
+    # Le main() est rejoué à chaque run : on repart d'un registre vide, sinon le
+    # lecteur audio déjà affiché dans le run précédent bloquerait celui d'aujourd'hui.
+    st.session_state["audio_deja_rendu_run"] = set()
     st.title("GuindiMa AI")
     st.caption("Dites votre trajet en wolof, on trouve la ligne (Dakar Dem Dikk / Tata AFTU).")
 

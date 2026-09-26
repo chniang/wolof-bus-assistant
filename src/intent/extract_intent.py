@@ -1,4 +1,4 @@
-"""Extraction départ/destination via LLM NVIDIA Build (Nemotron 3.5 Lightning).
+"""Extraction départ/destination via LLM NVIDIA Build (GLM 5.3 Flash).
 
 Entrée : transcription vocale wolof (sortie d'un ASR imparfait).
 Sortie  : {"depart": str, "arrivee": str, "erreur": str | None}
@@ -18,8 +18,10 @@ from dotenv import load_dotenv
 CSV_PATH = Path(__file__).resolve().parents[2] / "data" / "arrets_lignes_dakar.csv"
 
 NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
-MODEL_NAME = "moonshotai/kimi-k3"
-MAX_TOKENS = 300
+MODEL_NAME = "z-ai/glm-5.3-flash"
+# La réponse tient en ~23 tokens : 120 laisse une marge large sans rien
+# laisser trainer côté génération.
+MAX_TOKENS = 120
 RETRY_DELAYS = (0, 4, 12)
 
 INTENT_JSON_SCHEMA = {
@@ -86,7 +88,8 @@ def get_client() -> "OpenAI":
         raise RuntimeError(
             "NVIDIA_API_KEY absente : copier .env.example vers .env et renseigner la clé."
         )
-    return OpenAI(base_url=NVIDIA_BASE_URL, api_key=api_key, timeout=180)
+    # 60s : assez pour le pic observed (37s) sans laisser l'app pendante 3 min.
+    return OpenAI(base_url=NVIDIA_BASE_URL, api_key=api_key, timeout=60)
 
 
 def _message_content(response) -> str:
@@ -116,11 +119,11 @@ def _is_usable(content: str) -> bool:
 def _call_llm(client, transcription: str) -> str:
     """Renvoie un contenu JSON exploitable, en réessaiant tant que la réponse est fausse.
 
-    kimi-k3 rejette `nvext` / `guided_json` (400 « unknown field ») et possède un mode
-    reasoning : on tente donc d'abord `json_object` avec le reasoning coupé via
-    `chat_template_kwargs.enable_thinking = False`, puis on retombe sur `guided_json`
-    (nvext puis plateau) si la première syntaxe est refusée. L'appel est rejoué sur
-    429, sur réponse sans choix et sur contenu vide ou corrompu.
+    On tente d'abord `json_object` avec le reasoning coupé via
+    `chat_template_kwargs.enable_thinking = False` (aucun raisonnement n'est mesuré
+    dans les réponses, mais le paramètre reste inoffensif), puis on retombe sur
+    `guided_json` (nvext puis plateau) si la première syntaxe est refusée. L'appel est
+    rejoué sur 429, sur réponse sans choix et sur contenu vide ou corrompu.
     """
     from openai import BadRequestError, RateLimitError
 
