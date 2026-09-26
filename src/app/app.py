@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from asr.transcribe import SAMPLE_RATE, load_audio, load_model, transcrire
 from intent.extract_intent import extract_intent, get_client
 from matching.stops_matcher import StopsMatcher
+from tts.speak import Tts, load_tts, phrase_reponse, synthetiser
 
 # Audios de secours pour la démo : si le micro ou la salle trahit, on rejoue un
 # enregistrement propre qui passe exactement par le même pipeline.
@@ -48,6 +49,55 @@ def get_llm_client():
 def get_asr_model():
     """Whisper wolof chargé une seule fois : le recharger à chaque question coûterait ~1 min."""
     return load_model()
+
+
+@st.cache_resource(show_spinner=False)
+def get_tts() -> Tts:
+    """SpeechT5 wolof chargé une seule fois : le recharger coûterait 578 Mo à chaque fois."""
+    return load_tts()
+
+
+@st.cache_resource(show_spinner=False)
+def prechauffer_voix_synthetisee() -> None:
+    """Charge le TTS et le teste sur une phrase courte.
+
+    Le test ne sert qu'à vérifier que toute la chaîne marche (tokenizer, modèle,
+    vociseur) : on le paie une fois au démarrage plutôt que de découvrir une
+    voix cassée après avoir répondu à l'utilisateur.
+    """
+    synthetiser(get_tts(), "Baal ma, gisuma bus bu dem fa.")
+
+
+def dire_la_reponse(lignes: list[dict]) -> None:
+    """Fait lire le résultat, et le garde en mémoire pour ne pas le regénérer.
+
+    La synthèse est lente (~3x le temps de la phrase) et Streamlit relit tout le
+    script à chaque clic : sans ce cache, on régénérerait le même audio en boucle.
+    Volontairement pas décorée de cache_resource : elle a un effet d'affichage,
+    elle doit donc être rejouée à chaque rendu.
+    """
+    if st.session_state.get("tts_ko"):
+        st.caption("Voix de synthèse indisponible, la réponse reste affichée en texte.")
+        return
+    try:
+        tts = get_tts()
+    except Exception as exc:
+        # On note l'échec : sans cela, chaque clic retenterait le chargement.
+        st.session_state["tts_ko"] = True
+        st.caption(f"Voix de synthèse indisponible ({exc}), la réponse reste affichée en texte.")
+        return
+
+    phrase = phrase_reponse(lignes)
+    deja_vus = st.session_state.setdefault("audio_par_phrase", {})
+    if phrase not in deja_vus:
+        try:
+            with st.spinner("Préparation de la voix…"):
+                deja_vus[phrase] = synthetiser(tts, phrase)
+        except Exception as exc:
+            st.session_state["tts_ko"] = True
+            st.caption(f"Voix de synthèse indisponible ({exc}), la réponse reste affichée en texte.")
+            return
+    st.audio(deja_vus[phrase], format="audio/wav", autoplay=True)
 
 
 @st.cache_resource(show_spinner=False)
@@ -120,6 +170,7 @@ def afficher_lignes(matcher: StopsMatcher, depart: str, arrivee: str) -> None:
                     f"{match['depart']} → {match['arrivee']} "
                     f"({match.get('categorie', 'N/A')})"
                 )
+            dire_la_reponse(result["lignes"])
             return
 
         depart_valide, arrivee_valide = result["depart_valide"], result["arrivee_valide"]
@@ -148,6 +199,8 @@ def afficher_lignes(matcher: StopsMatcher, depart: str, arrivee: str) -> None:
                 f"Aucune ligne ne relie {result['depart_matched']} à "
                 f"{result['arrivee_matched']} dans le jeu de données."
             )
+
+        dire_la_reponse(result["lignes"])
 
 
 def lancer_pipeline(matcher: StopsMatcher, phrase: str) -> None:
@@ -313,6 +366,14 @@ def main() -> None:
         st.warning(
             f"Modèle vocal indisponible ({exc}). "
             "L'onglet « Écrire » reste utilisable."
+        )
+
+    try:
+        with st.spinner("Préparation de la synthèse vocale…"):
+            prechauffer_voix_synthetisee()
+    except Exception as exc:
+        st.caption(
+            f"Synthèse vocale indisponible ({exc}), les réponses seront en texte seul."
         )
 
     matcher = get_matcher()
