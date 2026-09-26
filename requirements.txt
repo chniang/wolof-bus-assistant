@@ -1,0 +1,11 @@
+streamlit
+pandas
+requests
+python-dotenv
+soundfile
+transformers
+torch
+torchaudio
+datasets
+jiwer
+openai
