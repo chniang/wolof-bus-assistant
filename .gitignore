@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 body*.json
 model_checkpoints/
+test_*.wav

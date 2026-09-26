@@ -16,6 +16,8 @@ from __future__ import annotations
 import io
 import os
 import re
+import unicodedata
+from pathlib import Path
 from typing import NamedTuple
 
 MODEL_TTS = "bilalfaye/speecht5_tts-wolof"
@@ -53,6 +55,18 @@ CENT = "téeméer"
 # Au-delà, on n'a pas de formulation : on lit les chiffres tels quels.
 MAX_ECRIT = 199
 
+# Audios pré-générés pour la démo (voir pregenerer.py). La synthèse est trop
+# lente pour être faite devant un jury, alors on la prépare une fois pour toutes.
+CACHE_DIR = Path(__file__).resolve().parents[2] / "data" / "tts_cache"
+# pregenerer.py n'écrit ce marqueur que si tous les fichiers sont là : l'app s'en
+# sert pour savoir si elle peut se passer de charger le modèle.
+MARQUEUR = CACHE_DIR / "cache_complet.txt"
+AUCUNE_LIGNE = "aucune_ligne.wav"
+WALLA = "walla.wav"
+
+# Un silence entre deux morceaux, sinon « walla » se colle à la ligne d'avant.
+SILENCE_ENTRE = 0.3
+
 
 class Tts(NamedTuple):
     """Le trio chargé une seule fois : tokenizer, modèle et vociseur."""
@@ -81,25 +95,88 @@ def nombre_en_wolof(n: int) -> str:
     return f"{CENT} ak {nombre_en_wolof(n - 100)}"
 
 
-def phrase_reponse(lignes: list[dict]) -> str:
-    """La phrase à dire pour un résultat de correspondance.
+def numero_de(ligne: object) -> int | None:
+    """Le numéro d'une ligne du CSV (« Ligne 12 » -> 12), None s'il n'y en a pas."""
+    trouve = re.search(r"\d+", str(ligne))
+    return int(trouve.group()) if trouve else None
 
-    « ligne » vient du CSV sous forme de texte (« Ligne 12 ») : on en tire le
-    numéro pour l'écrire en wolof. Deux lignes au maximum, sinon la phrase
-    devient interminable à écouter.
+
+def lignes_annoncees(lignes: list[dict]) -> list[tuple[str, int]]:
+    """Les (compagnie, numéro) réellement dits à l'oral, deux au maximum.
+
+    Deux lignes et pas plus, sinon la phrase devient interminable à écouter.
     """
-    morceaux = []
+    annoncees = []
     for match in lignes[:2]:
-        numero = re.search(r"\d+", str(match.get("ligne", "")))
-        if not numero:
-            continue
-        morceaux.append(
-            f"Jëlal bus bu {match['compagnie']}, "
-            f"ligne {nombre_en_wolof(int(numero.group()))}."
-        )
+        numero = numero_de(match.get("ligne"))
+        if numero is not None:
+            annoncees.append((str(match.get("compagnie", "")).strip(), numero))
+    return annoncees
+
+
+def phrase_reponse(lignes: list[dict]) -> str:
+    """La phrase à dire pour un résultat de correspondance."""
+    morceaux = [
+        f"Jëlal bus bu {compagnie}, ligne {nombre_en_wolof(numero)}."
+        for compagnie, numero in lignes_annoncees(lignes)
+    ]
     if not morceaux:
         return "Baal ma, gisuma bus bu dem fa."
     return " walla ".join(morceaux)
+
+
+def nom_cache(compagnie: str, numero: int) -> str:
+    """Nom de fichier d'une ligne : Tata AFTU 25 devient tata_aftu_25.wav."""
+    sans_accent = unicodedata.normalize("NFKD", compagnie)
+    en_ascii = "".join(c for c in sans_accent if not unicodedata.combining(c))
+    return f"{re.sub(r'[^a-zA-Z0-9]+', '_', en_ascii).strip('_').lower()}_{numero}.wav"
+
+
+def cache_complet() -> bool:
+    """Le cache disque est-il prêt ? C'est pregenerer.py qui décide."""
+    return MARQUEUR.is_file()
+
+
+def assembler(fichiers: list[Path]) -> bytes:
+    """Colle des WAV bout à bout avec un silence entre chaque, et renvoie les octets.
+
+    Tout vient de synthetiser(), donc tous les fichiers partagent la même
+    fréquence : on reprend celle du premier.
+    """
+    import numpy as np
+    import soundfile as sf
+
+    morceaux = []
+    for chemin in fichiers:
+        audio, sr = sf.read(str(chemin), dtype="float32")
+        if audio.ndim > 1:
+            audio = audio.mean(axis=1)
+        morceaux.append(audio)
+        if chemin != fichiers[-1]:
+            morceaux.append(np.zeros(int(sr * SILENCE_ENTRE), dtype="float32"))
+    if not morceaux:
+        raise ValueError("aucun fichier à assembler")
+
+    tampon = io.BytesIO()
+    sf.write(tampon, np.concatenate(morceaux), sr, format="WAV", subtype="PCM_16")
+    return tampon.getvalue()
+
+
+def voix_depuis_cache(lignes: list[dict]) -> bytes | None:
+    """L'audio déjà tout prêt pour ce résultat, ou None s'il manque un morceau.
+
+    None veut dire « reviens à la synthèse en direct » : c'est le filet de
+    sécurité si le cache n'a pas été généré ou s'il est incomplet.
+    """
+    if not lignes:
+        fichiers = [CACHE_DIR / AUCUNE_LIGNE]
+    else:
+        fichiers = [CACHE_DIR / nom_cache(compagnie, numero) for compagnie, numero in lignes_annoncees(lignes)]
+        if len(fichiers) == 2:
+            fichiers.insert(1, CACHE_DIR / WALLA)
+    if not fichiers or not all(chemin.is_file() for chemin in fichiers):
+        return None
+    return assembler(fichiers)
 
 
 def load_tts() -> Tts:

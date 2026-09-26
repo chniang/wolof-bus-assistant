@@ -20,7 +20,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from asr.transcribe import SAMPLE_RATE, load_audio, load_model, transcrire
 from intent.extract_intent import extract_intent, get_client
 from matching.stops_matcher import StopsMatcher
-from tts.speak import Tts, load_tts, phrase_reponse, synthetiser
+from tts.speak import (
+    Tts,
+    cache_complet,
+    load_tts,
+    phrase_reponse,
+    synthetiser,
+    voix_depuis_cache,
+)
 
 # Audios de secours pour la démo : si le micro ou la salle trahit, on rejoue un
 # enregistrement propre qui passe exactement par le même pipeline.
@@ -71,33 +78,38 @@ def prechauffer_voix_synthetisee() -> None:
 def dire_la_reponse(lignes: list[dict]) -> None:
     """Fait lire le résultat, et le garde en mémoire pour ne pas le regénérer.
 
-    La synthèse est lente (~3x le temps de la phrase) et Streamlit relit tout le
-    script à chaque clic : sans ce cache, on régénérerait le même audio en boucle.
-    Volontairement pas décorée de cache_resource : elle a un effet d'affichage,
-    elle doit donc être rejouée à chaque rendu.
+    Deux chemins : les audios déjà sur disque (le cas de la démo, aucun modèle à
+    charger), sinon la synthèse en direct. Dans les deux cas le résultat est
+    mémorisé par phrase, car Streamlit relit tout le script à chaque clic et la
+    synthèse est lente. Volontairement pas décorée de cache_resource : elle a un
+    effet d'affichage, elle doit donc être rejouée à chaque rendu.
     """
     if st.session_state.get("tts_ko"):
         st.caption("Voix de synthèse indisponible, la réponse reste affichée en texte.")
         return
-    try:
-        tts = get_tts()
-    except Exception as exc:
-        # On note l'échec : sans cela, chaque clic retenterait le chargement.
-        st.session_state["tts_ko"] = True
-        st.caption(f"Voix de synthèse indisponible ({exc}), la réponse reste affichée en texte.")
-        return
 
     phrase = phrase_reponse(lignes)
     deja_vus = st.session_state.setdefault("audio_par_phrase", {})
-    if phrase not in deja_vus:
+    if phrase in deja_vus:
+        st.audio(deja_vus[phrase], format="audio/wav", autoplay=True)
+        return
+
+    # Démo : tout est déjà synthétisé, on colle les morceaux sans charger le modèle.
+    octets = voix_depuis_cache(lignes) if cache_complet() else None
+
+    if octets is None:
         try:
+            tts = get_tts()
             with st.spinner("Préparation de la voix…"):
-                deja_vus[phrase] = synthetiser(tts, phrase)
+                octets = synthetiser(tts, phrase)
         except Exception as exc:
+            # On note l'échec : sans cela, chaque clic retenterait le chargement.
             st.session_state["tts_ko"] = True
             st.caption(f"Voix de synthèse indisponible ({exc}), la réponse reste affichée en texte.")
             return
-    st.audio(deja_vus[phrase], format="audio/wav", autoplay=True)
+
+    deja_vus[phrase] = octets
+    st.audio(octets, format="audio/wav", autoplay=True)
 
 
 @st.cache_resource(show_spinner=False)
@@ -368,13 +380,16 @@ def main() -> None:
             "L'onglet « Écrire » reste utilisable."
         )
 
-    try:
-        with st.spinner("Préparation de la synthèse vocale…"):
-            prechauffer_voix_synthetisee()
-    except Exception as exc:
-        st.caption(
-            f"Synthèse vocale indisponible ({exc}), les réponses seront en texte seul."
-        )
+    # Si le cache audio est complet, inutile de charger 578 Mo de modèle au
+    # démarrage : l'app se contente de coller des fichiers déjà prêts.
+    if not cache_complet():
+        try:
+            with st.spinner("Préparation de la synthèse vocale…"):
+                prechauffer_voix_synthetisee()
+        except Exception as exc:
+            st.caption(
+                f"Synthèse vocale indisponible ({exc}), les réponses seront en texte seul."
+            )
 
     matcher = get_matcher()
     onglet_voix, onglet_texte = st.tabs(["🎙️ Parler", "⌨️ Écrire"])
