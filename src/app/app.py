@@ -8,6 +8,7 @@ Le mode texte saute simplement la première étape.
 from __future__ import annotations
 
 import hashlib
+import html
 import sys
 import time
 from pathlib import Path
@@ -24,6 +25,8 @@ from tts.speak import (
     Tts,
     cache_complet,
     load_tts,
+    nombre_en_wolof,
+    numero_de,
     phrase_reponse,
     synthetiser,
     voix_depuis_cache,
@@ -39,6 +42,148 @@ EXEMPLES = [
     "ma ngi ci Palais 1, bëgg naa dem Guédiawaye",
     "sant de sante Liberté 5, bëgg bi dem Palais 2",
 ]
+
+
+# --------------------------------------------------------------------------- #
+# Apparence. Aucun impact sur la logique : uniquement du CSS et de la mise en
+# page, injectés une fois par run.
+# --------------------------------------------------------------------------- #
+
+VERT = "#00853F"  # vert du Senegal
+
+CSS_APP = f"""
+<style>
+.gd-entete {{
+    border-left: 6px solid {VERT};
+    padding: 0.2rem 0 0.2rem 1rem;
+    margin-bottom: 1.4rem;
+}}
+.gd-entete .gd-titre {{
+    font-size: 2.6rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 0;
+}}
+.gd-entete .gd-wolof {{
+    color: {VERT};
+    font-size: 1.15rem;
+    font-weight: 600;
+    font-style: italic;
+    margin-top: 0.35rem;
+}}
+.gd-entete .gd-fr {{
+    color: #55625B;
+    font-size: 1.02rem;
+    margin-top: 0.1rem;
+}}
+
+.gd-carte {{
+    border: 1px solid #D6E6DC;
+    border-top: 6px solid {VERT};
+    border-radius: 0.7rem;
+    background: linear-gradient(180deg, #F6FBF8 0%, #FFFFFF 55%);
+    padding: 1rem 1.3rem 1.1rem 1.3rem;
+    margin: 0.2rem 0 0.6rem 0;
+}}
+.gd-carte .gd-compagnie {{
+    color: {VERT};
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin: 0;
+}}
+.gd-carte .gd-numero {{
+    color: {VERT};
+    font-size: 4.4rem;
+    font-weight: 800;
+    line-height: 1;
+    margin: 0.1rem 0 0.35rem 0;
+}}
+.gd-carte .gd-trajet {{
+    color: #17211C;
+    font-size: 1.28rem;
+    font-weight: 600;
+    margin: 0;
+}}
+.gd-carte .gd-categorie {{
+    color: #6B7A72;
+    font-size: 0.85rem;
+    margin-top: 0.3rem;
+}}
+
+.gd-pied {{
+    color: #8A968F;
+    font-size: 0.8rem;
+    text-align: center;
+    border-top: 1px solid #E3EAE6;
+    padding-top: 0.7rem;
+    margin-top: 2.2rem;
+}}
+</style>
+"""
+
+
+def afficher_css() -> None:
+    """Injecte la feuille de style (idempotent : meme CSS a chaque run)."""
+    st.markdown(CSS_APP, unsafe_allow_html=True)
+
+
+def afficher_entete() -> None:
+    """Titre, puis la promesse en wolof et en francais."""
+    st.markdown(
+        f"""
+        <div class="gd-entete">
+          <div class="gd-titre">🚌 GuindiMa AI</div>
+          <div class="gd-wolof">Wax ma fu nga jëm, ma won la bus bi</div>
+          <div class="gd-fr">Dis-moi où tu vas, je te montre le bus</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _texte(valeur) -> str:
+    """Échappe une valeur avant de l'injecter en HTML."""
+    return html.escape(str(valeur if valeur is not None else ""))
+
+
+def afficher_carte_ligne(match: dict) -> None:
+    """Grande carte : compagnie, numéro de ligne en très gros, trajet en dessous.
+
+    Le numéro affiché est aussi énoncé en wolof : c'est la version que le
+    locuteur pronunciera, ce qui évite de lire un chiffre à l'écran.
+    """
+    numero = numero_de(match.get("ligne"))
+    # numero_de() renvoie None si le CSV n'a pas de numero : nombre_en_wolof()
+    # fait int(n) et leverait TypeError sur None, donc on garde l'affichage nu.
+    if numero is None:
+        affiche, en_wolof = match.get("ligne", ""), ""
+    else:
+        affiche, en_wolof = numero, f"ligne {html.escape(nombre_en_wolof(numero))}"
+    details = " · ".join(part for part in (_texte(match.get("categorie")), en_wolof) if part)
+    st.markdown(
+        f"""
+        <div class="gd-carte">
+          <div class="gd-compagnie">{_texte(match.get('compagnie'))}</div>
+          <div class="gd-numero">{_texte(affiche)}</div>
+          <div class="gd-trajet">
+            {_texte(match.get('depart'))} → {_texte(match.get('arrivee'))}
+          </div>
+          <div class="gd-categorie">{details}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def afficher_pied() -> None:
+    """Pied de page discret : d'où viennent les données et les modèles."""
+    st.markdown(
+        '<div class="gd-pied">Données : Dakar Dem Dikk, Tata AFTU '
+        "· IA : Whisper wolof, NVIDIA Build</div>",
+        unsafe_allow_html=True,
+    )
 
 
 @st.cache_resource
@@ -186,13 +331,10 @@ def afficher_lignes(matcher: StopsMatcher, depart: str, arrivee: str, origine: s
         result = matcher.find_line(depart, arrivee)
 
         if result["found"]:
-            st.success(f"{len(result['lignes'])} ligne(s) trouvée(s) :")
+            st.caption(f"{len(result['lignes'])} ligne(s) trouvée(s) dans le jeu de données.")
             for match in result["lignes"]:
-                st.markdown(
-                    f"- **{match['compagnie']} — {match['ligne']}** : "
-                    f"{match['depart']} → {match['arrivee']} "
-                    f"({match.get('categorie', 'N/A')})"
-                )
+                afficher_carte_ligne(match)
+            # Le lecteur audio reste juste sous la carte.
             dire_la_reponse(result["lignes"], origine)
             return
 
@@ -232,8 +374,11 @@ def lancer_pipeline(matcher: StopsMatcher, phrase: str, origine: str) -> None:
     `origine` identifie l'onglet qui a déclenché le pipeline : les onglets sont
     rendus dans le même run, il faut donc pouvoir distinguer les deux rendus.
     """
-    afficher_phrase(phrase)
-    intent = afficher_extraction(phrase)
+    # Le detail technique (phrase recue, extraction) est replie : le jury voit
+    # surtout le resultat. Ouvert par defaut, ca reste demonstrable au besoin.
+    with st.expander("Voir le détail (IA)", expanded=True):
+        afficher_phrase(phrase)
+        intent = afficher_extraction(phrase)
     if intent is not None:
         afficher_lignes(matcher, intent["depart"], intent["arrivee"], origine)
 
@@ -386,8 +531,8 @@ def main() -> None:
     # Le main() est rejoué à chaque run : on repart d'un registre vide, sinon le
     # lecteur audio déjà affiché dans le run précédent bloquerait celui d'aujourd'hui.
     st.session_state["audio_deja_rendu_run"] = set()
-    st.title("GuindiMa AI")
-    st.caption("Dites votre trajet en wolof, on trouve la ligne (Dakar Dem Dikk / Tata AFTU).")
+    afficher_css()
+    afficher_entete()
 
     # Le modèle vocal se charge dès le démarrage, avant le premier clic sur le micro :
     # sinon le premier enregistrement attend le chargement en plein milieu de la phrase.
@@ -418,6 +563,7 @@ def main() -> None:
     with onglet_texte:
         mode_simple(matcher)
     mode_avance(matcher)
+    afficher_pied()
 
 
 if __name__ == "__main__":
