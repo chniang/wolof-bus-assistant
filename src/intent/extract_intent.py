@@ -242,18 +242,20 @@ def _parse_json_or_fallback(text: str) -> dict:
 # Extraction locale : le filet de sécurité quand l'API ne répond pas.
 # --------------------------------------------------------------------------- #
 
-# L'ASR écrit ce qu'il entend, et ces graphies reviennent à chaque démo. On les ramène
-# à la forme du CSV avant de chercher les lieux. « medina » et « grand mbao » sont
-# déjà dans leur forme canonique, ils n'ont besoin d'aucune règle de réécriture.
+# L'ASR écrit ce qu'il entend, et il colle les mots entre eux : « wakaam » arrive
+# souvent collé à ce qui le précède (« yewakaam ») et « pale » collé à « dem »
+# (« dempale »). Les règles ci-dessous sont donc ancrées à droite seulement : la
+# forme phonétique doit finir un mot, mais elle peut en commencer un autre.
+#
+# « medina » et « grand mbao » sont déjà dans leur forme canonique, ils n'ont besoin
+# d'aucune règle de réécriture.
 REPLACEMENTS_PHRASE = (
-    (r"\bgeej\s*a\s*waay\b", "guediawaye"),
-    (r"\bgeejawaay\b", "guediawaye"),
-    (r"\bwakaam\b", "ouakam"),
-    (r"\bwakam\b", "ouakam"),
-    (r"\bpalee\b", "palais"),
-    (r"\bpale\b", "palais"),
-    (r"\bpali\b", "palais"),
-    (r"\bmeddina\b", "medina"),
+    (r"(?:geej\s*a\s*waay|geejawaay)\b", " guediawaye "),
+    # (?<!ou) protège la graphie canonique : sans lui « ouakam » deviendrait
+    # « ou ouakam », la règle réécrivant son propre suffixe.
+    (r"(?<!ou)(?:wakaam|wakam)\b", " ouakam "),
+    (r"(?:palee|pale|pali)\b", " palais "),
+    (r"meddina\b", " medina "),
 )
 
 # En dessous de ce ratio, on préfère ne rien trouver plutôt qu'inventer un quartier.
@@ -285,11 +287,19 @@ _CIBLES = [(_sans_accents(lieu), lieu) for lieu in LIEUX] + [
 
 
 def _normaliser_phrase(phrase: str) -> str:
-    """Forme de travail : minuscules, sans accents, graphies phonétiques corrigées."""
+    """Forme de travail : minuscules, sans accents, graphies phonétiques corrigées.
+
+    Les espaces sont resserrés en fin de fonction : les remplacements ci-dessus en
+    injectent, et la ponctuation en transforme d'autres en espaces.
+    """
     texte = _sans_accents(phrase)
     for motif, remplacement in REPLACEMENTS_PHRASE:
         texte = re.sub(motif, remplacement, texte)
-    return re.sub(r"[^a-z0-9\s]", " ", texte)
+    # L'ASR colle la préposition au mot suivant (« dempale ») : on la rouvre pour que
+    # la répartition départ / arrivée reste possible grâce à la position de « dem ».
+    texte = re.sub(r"\bdem(?=[a-z])", "dem ", texte)
+    texte = re.sub(r"[^a-z0-9\s]", " ", texte)
+    return re.sub(r"\s+", " ", texte).strip()
 
 
 def _score(gramme: str, lieu: str) -> float:
