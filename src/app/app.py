@@ -287,18 +287,27 @@ def afficher_phrase(phrase: str) -> None:
 
 
 def afficher_extraction(phrase: str) -> dict | None:
-    """Étape 2 : extraction départ / arrivée. Retourne None si le LLM échoue."""
+    """Étape 2 : extraction départ / arrivée, par LLM ou en repli local."""
     with st.container(border=True):
-        st.subheader("2 · Extraction (LLM)")
+        # Titre neutre, affiché avant l'attente : on ne sait pas encore si la
+        # réponse viendra de l'API ou du filet local.
+        st.subheader("2 · Extraction")
         # Streamlit relance tout le script à chaque clic : on garde les réponses
-        # déjà obtenues pour ne pas rappeler le LLM (et griller le quota) pour rien.
+        # déjà obtenues pour ne pas rappeler l'API (et perdre jusqu'à une minute)
+        # pour rien, même quand la réponse vient du repli local.
         deja_vus = st.session_state.setdefault("intents_par_phrase", {})
         try:
             if phrase in deja_vus:
                 intent = deja_vus[phrase]
             else:
+                # Clé API absente ou client cassé : on ne bloque pas, extract_intent
+                # basculera tout seul sur l'extraction locale.
+                try:
+                    client = get_llm_client()
+                except Exception:
+                    client = None
                 with st.spinner("Analyse de la phrase en cours…"):
-                    intent = extract_intent(phrase, client=get_llm_client())
+                    intent = extract_intent(phrase, client=client)
                 if not intent.get("erreur"):
                     deja_vus[phrase] = intent
         except Exception as exc:
@@ -307,6 +316,11 @@ def afficher_extraction(phrase: str) -> dict | None:
         if intent.get("erreur"):
             st.error(f"Extraction impossible : {intent['erreur']}")
             return None
+
+        # Repli local : ce n'est pas une erreur, on le signale en discret pour ne pas
+        # inquiéter le jury pendant la démo.
+        if intent.get("source") == "local":
+            st.caption("Extraction de secours (sans LLM) — l'API était indisponible")
 
         st.session_state["dernier_depart"] = intent["depart"]
         st.session_state["dernier_arrivee"] = intent["arrivee"]
