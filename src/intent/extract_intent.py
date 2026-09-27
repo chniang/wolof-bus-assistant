@@ -24,19 +24,21 @@ NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
 # laisser trainer côté génération.
 MAX_TOKENS = 120
 
-# L'API NVIDIA est saturée pendant le hackathon. On borne l'attente plutôt que de
-# laisser l'utilisateur devant un écran vide pendant plusieurs minutes.
-TIMEOUT_APPEL = 20
-RETRY_DELAYS = (0, 2)  # un seul retry, donc deux tentatives au total
+# L'API NVIDIA est saturée pendant le hackathon. Devant le jury, mieux vaut une
+# extraction locale approximative en 15 s qu'une attente qui s'étire : un seul
+# appel, aucun retry, et le repli local prend le relais dès le timeout.
+TIMEOUT_APPEL = 15
+RETRY_DELAYS = (0,)  # pas de retry
 
-# Chaîne de repli : même prompt, même format JSON. Dès qu'un modèle ne répond pas
-# dans le délai, on passe au suivant.
-MODELES = ("z-ai/glm-5.3-flash", "meta/llama-3.1-8b-instruct")
+# Un seul modèle : meta/llama-3.1-8b-instruct est retiré car NVIDIA le renvoie
+# 410 Gone (fin de vie), ce qui ne le rendait de toute façon pas utilisable.
+# La chaîne reste écrite pour en accepter plusieurs le jour où un second modèle
+# redevient disponible.
+MODELES = ("z-ai/glm-5.3-flash",)
 
-# Plafond global sur toute la chaîne, tentatives confondues. Passé ce délai on coupe
-# l'API et l'extraction locale prend le relais. Le pire cas reste borné : ce plafond
-# plus un dernier appel, soit BUDGET_CHAINE + TIMEOUT_APPEL.
-BUDGET_CHAINE = 45
+# Plafond global sur la chaîne. Le budget est vérifié avant chaque appel, et il n'y
+# a qu'un appel : le pire cas est donc un seul TIMEOUT_APPEL, soit 15 s.
+BUDGET_CHAINE = 15
 
 INTENT_JSON_SCHEMA = {
     "type": "object",
@@ -189,9 +191,11 @@ def _call_modele(client, modele: str, transcription: str) -> str:
 def _call_llm(client, transcription: str) -> tuple[str, str]:
     """Parcourt la chaîne de modèles et renvoie (contenu, modèle ayant répondu).
 
-    Un seul retry par modèle. Le plafond global évite d'enchaîner les deux modèles
-    si le premier a déjà consommé le budget : mieux vaut une extraction locale
-    approximative qu'une minute d'attente.
+    Aujourd'hui un seul modèle et une seule tentative : l'attente est plafonnée par
+    TIMEOUT_APPEL, après quoi l'extraction locale prend le relais. Le budget global
+    protège le jour où un second modèle est réintroduit dans MODELES, pour ne pas
+    enchaîner les temps d'attente : mieux vaut une extraction locale approximative
+    qu'une minute devant un écran vide.
     """
     echecs: list[str] = []
     debut_chaine = time.monotonic()
