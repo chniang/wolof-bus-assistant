@@ -1,12 +1,18 @@
 streamlit
 pandas
-requests
-python-dotenv
-soundfile
+numpy
+openai
 transformers
 torch
 torchaudio
+soundfile
+python-dotenv
+
+# Requis au runtime par le tokenizer SpeechT5 (src/tts/speak.py) : sans lui,
+# transformers refuse de charger le modèle de synthèse vocale.
+sentencepiece
+
+# Benchmark des modèles ASR (src/asr/test_asr_models.py), non nécessaire pour
+# lancer l'application.
 datasets
 jiwer
-openai
-sentencepiece
