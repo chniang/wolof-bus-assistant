@@ -5,3 +5,5 @@ __pycache__/
 body*.json
 model_checkpoints/
 test_*.wav
+
+upload_space.py

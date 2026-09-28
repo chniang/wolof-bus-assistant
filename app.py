@@ -95,7 +95,7 @@ def _charger_whisper():
             "automatic-speech-recognition",
             model=MODEL_WHISPER,
             device=0,
-            torch_dtype=torch.float16,
+            dtype=torch.float16,
         )
     return load_model()
 
@@ -357,7 +357,7 @@ EXEMPLES_TEXTE = [
 
 
 def _construire():
-    with gr.Blocks(theme=_theme(), title="GuindiMa AI 🚌") as interface:
+    with gr.Blocks(title="GuindiMa AI 🚌") as interface:
         gr.Markdown("# GuindiMa AI 🚌\n### Wax ma fu nga jëm, ma won la bus bi")
         gr.Markdown(
             "Dis-moi où tu vas, je te montre le bus. "
@@ -422,7 +422,8 @@ def _construire():
             "</div>"
         )
 
-    bouton.click(trouver_le_bus, inputs=[audio_in, texte_in], outputs=sorties)
+        # Le branchement du bouton doit rester dans le bloc « with gr.Blocks ».
+        bouton.click(trouver_le_bus, inputs=[audio_in, texte_in], outputs=sorties)
     return interface
 
 
@@ -433,4 +434,5 @@ if __name__ == "__main__":
     # queue() est obligatoire pour ZeroGPU : la réservation du GPU ne fonctionne que
     # si les exécutions passent par la file. Sur un Space, Gradio règle tout seul
     # l'hôte et le port à lancer.
-    demo.queue().launch()
+    # Depuis Gradio 6, le thème se passe au lancement et non plus au constructeur.
+    demo.queue().launch(theme=_theme())
