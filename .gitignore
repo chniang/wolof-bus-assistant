@@ -7,3 +7,4 @@ model_checkpoints/
 test_*.wav
 
 upload_space.py
+test_modeles_nvidia.py
