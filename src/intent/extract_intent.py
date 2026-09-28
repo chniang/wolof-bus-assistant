@@ -27,7 +27,9 @@ MAX_TOKENS = 120
 # L'API NVIDIA est saturée pendant le hackathon. Devant le jury, mieux vaut une
 # extraction locale approximative en 15 s qu'une attente qui s'étire : un seul
 # appel, aucun retry, et le repli local prend le relais dès le timeout.
-TIMEOUT_APPEL = 15
+# En ligne (Hugging Face Space), on peut se permettre d'attendre plus longtemps :
+# la variable LLM_TIMEOUT, réglée dans les Settings du Space, remplace les 15 s.
+TIMEOUT_APPEL = int(os.getenv("LLM_TIMEOUT", "15"))
 RETRY_DELAYS = (0,)  # pas de retry
 
 # Un seul modèle : meta/llama-3.1-8b-instruct est retiré car NVIDIA le renvoie
@@ -38,7 +40,7 @@ MODELES = ("z-ai/glm-5.3-flash",)
 
 # Plafond global sur la chaîne. Le budget est vérifié avant chaque appel, et il n'y
 # a qu'un appel : le pire cas est donc un seul TIMEOUT_APPEL, soit 15 s.
-BUDGET_CHAINE = 15
+BUDGET_CHAINE = TIMEOUT_APPEL
 
 INTENT_JSON_SCHEMA = {
     "type": "object",
@@ -385,6 +387,9 @@ def extract_local(phrase: str) -> dict:
 
 def _repli_local(transcription: str, raison: str) -> dict:
     """Bascule sur l'extraction locale, et n'alerte que si un des deux lieux manque."""
+    # On garde une trace de la vraie cause dans les logs (ceux du Space en ligne) :
+    # sans elle, impossible de savoir si l'API a expiré, refusé la clé ou autre.
+    print(f"[repli local] {raison}", flush=True)
     resultat = extract_local(transcription)
     if resultat.get("depart") and resultat.get("arrivee"):
         return resultat
