@@ -2,6 +2,8 @@
 
 **Assistant vocal en wolof pour trouver sa ligne de bus à Dakar.**
 
+🚀 **Démo en ligne :** [huggingface.co/spaces/TIJAANI/guindima-ai](https://huggingface.co/spaces/TIJAANI/guindima-ai) (parlez ou écrivez votre trajet en wolof)
+
 On lui parle, il répond en wolof. GuindiMa AI écoute une demande de trajet
 parlée en wolof, la transcrit, en extrait le départ et l'arrivée, puis indique
 les lignes de bus (Dakar Dem Dikk / Tata AFTU) qui relient les deux points.
