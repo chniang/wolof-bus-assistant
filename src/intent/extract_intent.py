@@ -36,7 +36,10 @@ RETRY_DELAYS = (0,)  # pas de retry
 # 410 Gone (fin de vie), ce qui ne le rendait de toute façon pas utilisable.
 # La chaîne reste écrite pour en accepter plusieurs le jour où un second modèle
 # redevient disponible.
-MODELES = ("z-ai/glm-5.3-flash",)
+# Septembre 2026 : z-ai/glm-5.3-flash ne répond plus (timeout même à 30 s).
+# Banc d'essai sur la vraie extraction (test_modeles_nvidia.py) : Llama 3.2 11B
+# répond en ~1 s une fois chaud (~13 s au premier appel) et trouve les bons lieux.
+MODELES = ("meta/llama-3.2-11b-vision-instruct",)
 
 # Plafond global sur la chaîne. Le budget est vérifié avant chaque appel, et il n'y
 # a qu'un appel : le pire cas est donc un seul TIMEOUT_APPEL, soit 15 s.
