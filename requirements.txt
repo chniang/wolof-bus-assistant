@@ -12,6 +12,12 @@ python-dotenv
 # transformers refuse de charger le modèle de synthèse vocale.
 sentencepiece
 
+# Interface Gradio de app.py, celle qui tourne sur un Hugging Face Space. torch
+# n'est volontairement pas épinglé : sur Space, c'est l'image du Space qui fournit
+# la version CUDA, et un torch CPU ici casserait le ZeroGPU.
+gradio
+spaces
+
 # Benchmark des modèles ASR (src/asr/test_asr_models.py), non nécessaire pour
 # lancer l'application.
 datasets
