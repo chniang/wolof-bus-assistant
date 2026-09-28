@@ -9,7 +9,7 @@ exécution de Gradio est indépendante, ce qui simplifie la mise en cache.
           -> phrase_reponse() + voix_depuis_cache()
 
 Sur un Space, la seule partie qui demande le GPU est la transcription : le
-décorateur @spaces.GPU la réserve le temps du calcul puis la rend à l'onctuaire.
+décorateur @spaces.GPU la réserve le temps du calcul puis le libère pour les autres visiteurs.
 Le reste du pipeline (extraction, correspondance, voix) tient en CPU et n'a pas
 à payer la réservation.
 """
@@ -364,14 +364,14 @@ def _construire():
             "Parle ou écris ton trajet en wolof, à Dakar."
         )
 
-        # Les cinq sorties sont créées avant les onglets, parce que les exemples
-        # doivent pouvoir s'y brancher. Gradio affiche les composants dans l'ordre
-        # de création : on les redescend ensuite à leur place avec gr.render().
-        transcription_out = gr.Textbox(label="Transcription", interactive=False)
-        trajet_out = gr.Textbox(label="Départ → arrivée", interactive=False)
-        mention_out = gr.Markdown()
-        carte_out = gr.Markdown()
-        audio_out = gr.Audio(label="Réponse en wolof", autoplay=True)
+        # Les exemples ont besoin des sorties avant qu'elles soient affichées.
+        # On les crée donc « hors écran » (render=False), et on les place plus bas,
+        # sous le bouton, avec .render().
+        transcription_out = gr.Textbox(label="Transcription", interactive=False, render=False)
+        trajet_out = gr.Textbox(label="Départ → arrivée", interactive=False, render=False)
+        mention_out = gr.Markdown(render=False)
+        carte_out = gr.Markdown(render=False)
+        audio_out = gr.Audio(label="Réponse en wolof", autoplay=True, render=False)
         sorties = [transcription_out, trajet_out, carte_out, audio_out, mention_out]
 
         with gr.Tab("Parler"):
@@ -387,6 +387,7 @@ def _construire():
                     inputs=[audio_in],
                     fn=trouver_le_bus_vocal,
                     outputs=sorties,
+                    cache_examples=False,
                     label="Ou alors, rejoue un enregistrement déjà prêt",
                 )
 
@@ -401,16 +402,18 @@ def _construire():
                 inputs=[texte_in],
                 fn=trouver_le_bus_texte,
                 outputs=sorties,
+                cache_examples=False,
                 label="Quelques phrases qui marchent",
             )
 
         bouton = gr.Button("Trouver mon bus", variant="primary", size="lg")
 
         with gr.Accordion("Ce que l'IA a compris", open=True):
-            # Sur une version de Gradio sans gr.render(), les cinq sorties restent
-            # affichées plus haut : la démo fonctionne, l'ordre de lecture change.
-            if hasattr(gr, "render"):
-                gr.render()
+            carte_out.render()
+            audio_out.render()
+            mention_out.render()
+            transcription_out.render()
+            trajet_out.render()
 
         gr.Markdown(
             "<div style='text-align:center;color:#8A968F;font-size:12px;"
@@ -430,12 +433,4 @@ if __name__ == "__main__":
     # queue() est obligatoire pour ZeroGPU : la réservation du GPU ne fonctionne que
     # si les exécutions passent par la file. Sur un Space, Gradio règle tout seul
     # l'hôte et le port à lancer.
-    demo.queue().launch()
-
-
-
-if __name__ == "__main__":
-    # queue() est obligatoire pour ZeroGPU : la réservation ne fonctionne que si
-    # les exécutions passent par la file. Sur un Space, Gradio règle tout seul
-    # l'hôte et le port.
     demo.queue().launch()

@@ -18,7 +18,3 @@ sentencepiece
 gradio
 spaces
 
-# Benchmark des modèles ASR (src/asr/test_asr_models.py), non nécessaire pour
-# lancer l'application.
-datasets
-jiwer
