@@ -43,6 +43,7 @@ from intent.extract_intent import (  # noqa: E402
     NVIDIA_BASE_URL,
     TIMEOUT_APPEL,
     extract_intent,
+    extract_local,
 )
 from matching.stops_matcher import StopsMatcher  # noqa: E402
 from tts.speak import (  # noqa: E402
@@ -330,6 +331,18 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str) -> tuple:
         return (phrase, "", _carte({}, depart, arrivee), None, _mention(intent))
 
     resultat = MATCHER.find_line(depart, arrivee)
+
+    # Le LLM peut renvoyer un nom hors du réseau (« Marché Liberté », « Géejewaay »)
+    # alors que l'extraction locale, alignée sur le CSV, trouve le bon couple.
+    # Si elle mène à une ligne, on la garde.
+    if not resultat["found"] and intent.get("source") != "local":
+        local = extract_local(phrase)
+        if local.get("depart") and local.get("arrivee"):
+            essai = MATCHER.find_line(local["depart"], local["arrivee"])
+            if essai["found"]:
+                depart, arrivee, resultat = local["depart"], local["arrivee"], essai
+                intent = {**intent, "source": "llm+local"}
+
     return (
         phrase,
         f"{depart} → {arrivee}",

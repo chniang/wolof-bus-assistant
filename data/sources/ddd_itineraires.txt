@@ -1,0 +1,13 @@
+# Arrêts intermédiaires Dakar Dem Dikk, relevés le 07/10/2026 dans OpenStreetMap
+# (relations route=bus, © contributeurs OpenStreetMap, licence ODbL) et sur
+# demdikk.sn/info-voyageurs pour la ligne TAF TAF. Seuls les arrêts portant un nom
+# de lieu reconnaissable sont gardés (pas « Arret Bus Aftu », « DDD 4 », etc.).
+# Format : ligne | arrêts dans l'ordre terminus_a -> terminus_b
+Ligne 1|Parcelles Assainies - UCAD - Église Saint-Joseph - Médina - Marché Tilène - Place de l'Indépendance - Place Leclerc
+Ligne 4|Liberté 5 - Khar Yalla - Médina - Marché Tilène - Hôtel de Ville - Place de l'Indépendance - Port de Dakar - Place Leclerc
+Ligne 7|Ouakam - Mermoz - UCAD - Sahm - Médina - Marché Tilène - Hôpital Principal - Palais 2
+Ligne 9|Liberté 6 - JVC - Sacré-Cœur - Hôpital Principal - Palais 2
+Ligne 10|Liberté 5 - Khar Yalla - Hôpital Principal - Palais 2
+Ligne 23|Parcelles Assainies - École Dior - Diamalaye - Police Parcelles - Tally Bou Bess - Khar Yalla - UCAD - Sahm - Hôpital Principal - Palais 1
+Ligne 121|SCAT Urbam - Sacré-Cœur - Hôtel de Ville - Place de l'Indépendance - Place Leclerc
+TAF TAF|Ouakam - Mamelles - Almadies - Ngor - Yoff - Aéroport LSS - Foire - VDN - JVC - Liberté 6 - Grand Yoff - Patte d'Oie - Diamniadio - AIBD

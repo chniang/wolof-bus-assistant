@@ -1,164 +1,121 @@
-"""Correspondance floue entre noms de quartiers et lignes de bus (CSV)."""
+"""Trouve les lignes de bus qui relient deux lieux de Dakar, arrêt par arrêt.
+
+Données : data/lignes_dakar.csv (lignes et terminus officiels DDD et AFTU) et
+data/itineraires_dakar.csv (arrêts de chaque ligne, dans l'ordre), construits
+par data/sources/build_dataset.py.
+
+Une ligne convient si l'un de ses arrêts correspond au départ et un autre à
+l'arrivée : on n'exige plus que les deux lieux soient ses terminus. Le sens est
+déduit de l'ordre des arrêts.
+"""
 
 from __future__ import annotations
 
-import unicodedata
-from difflib import SequenceMatcher
+import csv
 from pathlib import Path
 
-import pandas as pd
+try:  # import à plat (app.py, Streamlit) ou en paquet (tests)
+    from matching.lieux import score
+except ImportError:  # pragma: no cover
+    from .lieux import score
 
-DEFAULT_CSV = Path(__file__).resolve().parents[2] / "data" / "arrets_lignes_dakar.csv"
+DATA = Path(__file__).resolve().parents[2] / "data"
+LIGNES_CSV = DATA / "lignes_dakar.csv"
+ITINERAIRES_CSV = DATA / "itineraires_dakar.csv"
 
-# En dessous de ce score de similarité, le lieu demandé n'est pas considéré comme
-# présent dans le CSV. Sans seuil, SequenceMatcher renvoie toujours un « meilleur »
-# candidat : « Rond-point Score » tombait sur « Aéroport LSS » à 0.50.
-MIN_SCORE = 0.55
-
-
-def _normalize(text: str) -> str:
-    """Minuscule, insensible aux accents et aux espaces superflus."""
-    if not text:
-        return ""
-    decomposed = unicodedata.normalize("NFD", str(text))
-    without_accents = "".join(c for c in decomposed if unicodedata.category(c) != "Mn")
-    return " ".join(without_accents.lower().split())
+# En dessous, l'arrêt n'est pas considéré comme le lieu demandé.
+MIN_SCORE = 0.6
+# Lignes gardées : celles dont la correspondance la plus faible (départ ou
+# arrivée) est à moins de cet écart de la meilleure. « Yoff » exact écarte ainsi
+# les lignes qui ne passent qu'à « Grand Yoff ».
+TOLERANCE = 0.15
+MAX_LIGNES = 4
 
 
 class StopsMatcher:
-    """Charge le CSV des lignes et trouve la meilleure correspondance."""
+    """Charge les lignes et leurs arrêts, puis cherche les lignes d'un trajet."""
 
-    def __init__(self, csv_path: str | Path = DEFAULT_CSV) -> None:
-        self.df = pd.read_csv(csv_path)
-        self.df.columns = [c.strip().lower() for c in self.df.columns]
+    def __init__(self, lignes_csv: str | Path = LIGNES_CSV, itineraires_csv: str | Path = ITINERAIRES_CSV) -> None:
+        with open(lignes_csv, newline="", encoding="utf-8") as f:
+            self.lignes = {(l["compagnie"], l["ligne"]): l for l in csv.DictReader(f)}
+        self.arrets: dict[tuple[str, str], list[str]] = {cle: [] for cle in self.lignes}
+        with open(itineraires_csv, newline="", encoding="utf-8") as f:
+            for rangee in sorted(csv.DictReader(f), key=lambda r: int(r["ordre"])):
+                self.arrets.setdefault((rangee["compagnie"], rangee["ligne"]), []).append(rangee["arret"])
+        self.tous_les_arrets = sorted({a for arrets in self.arrets.values() for a in arrets})
 
-        required = {"compagnie", "ligne"}
-        missing = required - set(self.df.columns)
-        if missing:
-            raise ValueError(f"Colonnes manquantes dans le CSV : {', '.join(sorted(missing))}.")
-
-        self.depart_col = self._column_or("depart", "departure")
-        self.arrivee_col = self._column_or("arrivee", "arrival")
-
-        # Index des lieux uniques, colonnes confondues : dans le CSV un terminus
-        # n'existe souvent que d'un seul côté (« Guédiawaye » n'est qu'un depart),
-        # alors que l'utilisateur peut vouloir y aller ou en revenir.
-        stops: dict[str, str] = {}
-        for column in (self.depart_col, self.arrivee_col):
-            for name, normalized in zip(self.df[column], self.df[column].map(_normalize)):
-                if normalized:
-                    stops.setdefault(normalized, str(name))
-        self._stops = stops
-
-    def _column_or(self, *names: str) -> str:
-        for name in names:
-            if name in self.df.columns:
-                return str(name)
-        raise ValueError(f"Aucune des colonnes {names} n'est présente.")
-
-    def _best_match(self, query: str) -> tuple[str, float]:
-        """Meilleure correspondance dans l'union des colonnes depart et arrivee.
-
-        Le score est à comparer à MIN_SCORE : en dessous, le candidat renvoyé
-        n'est pas un lieu du réseau.
-        """
-        normalized_query = _normalize(query)
-        best_name = ""
-        best_score = 0.0
-        for normalized_name, name in self._stops.items():
-            score = SequenceMatcher(None, normalized_query, normalized_name).ratio()
-            if score > best_score:
-                best_score = score
-                best_name = name
-        return best_name, best_score
-
-    def _candidats(self, requete: str) -> tuple[list[str], str, float, bool]:
-        """Lieux candidats pour une saisie, meilleure correspondance, score, validité.
-
-        Si la saisie est un préfixe strict d'au moins un lieu du CSV, elle est
-        ambiguë : « Palais » peut vouloir dire « Palais 1 » comme « Palais 2 ».
-        On propose alors tous les lieux compatibles, correspondance exacte en tête,
-        et la saisie est jugée valide. Sinon on retombe sur la meilleure
-        correspondance floue, retenue seulement si son score dépasse MIN_SCORE.
-        """
-        best, score = self._best_match(requete)
-        prefixe = _normalize(requete)
-        if prefixe:
-            compatibles = [nom for norme, nom in self._stops.items() if norme.startswith(prefixe)]
-            if len(compatibles) > 1:
-                exactes = [nom for norme, nom in self._stops.items() if norme == prefixe]
-                autres = sorted(nom for nom in compatibles if nom not in exactes)
-                return [*exactes, *autres], best, score, True
-        return [best], best, score, score >= MIN_SCORE
+    # ------------------------------------------------------------------ #
 
     @staticmethod
-    def _cle(record: dict) -> tuple:
-        """Identité d'une ligne du CSV, indépendante du sens demandé."""
-        return tuple(sorted((str(cle), str(valeur)) for cle, valeur in record.items()))
+    def _meilleur(lieu: str, arrets: list[str]) -> tuple[float, int]:
+        """Meilleur arrêt de la ligne pour ce lieu : (score, position)."""
+        meilleur = (0.0, -1)
+        for position, arret in enumerate(arrets):
+            valeur = score(lieu, arret)
+            if valeur > meilleur[0]:
+                meilleur = (valeur, position)
+        return meilleur
 
-    def _lignes_pour(self, depart: str, arrivee: str) -> list[tuple[tuple, dict]]:
-        """Lignes reliant exactement ces deux lieux, sens direct ou inverse.
-
-        Renvoie des (clé, enregistrement) : la clé identifie la ligne du CSV, ce
-        qui permet de dédoublonner l'union quand deux candidats se recouvrent.
-        Pour un trajet inverse, depart et arrivee sont échangés.
-        """
-        trouvees: list[tuple[tuple, dict]] = []
-        for record in self.df.to_dict(orient="records"):
-            dep = _normalize(record[self.depart_col])
-            arr = _normalize(record[self.arrivee_col])
-            if dep == depart and arr == arrivee:
-                trouvees.append((self._cle(record), {**record, "sens": "direct"}))
-            elif dep == arrivee and arr == depart:
-                trouvees.append(
-                    (
-                        self._cle(record),
-                        {
-                            **record,
-                            self.depart_col: record[self.arrivee_col],
-                            self.arrivee_col: record[self.depart_col],
-                            "sens": "inverse",
-                        },
-                    )
-                )
-        return trouvees
+    def _reconnu(self, lieu: str) -> tuple[str, float]:
+        """L'arrêt du réseau le plus proche du lieu demandé, et son score."""
+        meilleur = ("", 0.0)
+        for arret in self.tous_les_arrets:
+            valeur = score(lieu, arret)
+            if valeur > meilleur[1]:
+                meilleur = (arret, valeur)
+        return meilleur
 
     def find_line(self, depart: str, arrivee: str) -> dict:
-        """Retourne les lignes couvrant le trajet demandé, quel que soit le sens.
+        """Lignes reliant depart et arrivee, la meilleure en tête.
 
-        Un lieu introuvable (score < MIN_SCORE) invalide le résultat : mieux vaut
-        signaler le lieu inconnu que renvoyer un candidat hors sujet. Un lieu sans
-        numéro (« Palais ») est cherché dans tous les lieux du CSV qui le
-        contiennent, et les lignes trouvées sont réunies sans doublon.
+        Chaque ligne renvoyée porte : compagnie, ligne, categorie, depart et
+        arrivee (les terminus dans le sens du trajet), sens, monte_a et
+        descend_a (les arrêts où monter et descendre).
         """
-        departs, best_depart, depart_score, depart_valide = self._candidats(depart)
-        arrivees, best_arrivee, arrivee_score, arrivee_valide = self._candidats(arrivee)
+        depart_arret, depart_score = self._reconnu(depart or "")
+        arrivee_arret, arrivee_score = self._reconnu(arrivee or "")
+        depart_valide = depart_score >= MIN_SCORE
+        arrivee_valide = arrivee_score >= MIN_SCORE
 
-        depart_matched, arrivee_matched = best_depart, best_arrivee
-        lignes: list[dict] = []
-        vus: set[tuple] = set()
+        candidates = []
         if depart_valide and arrivee_valide:
-            for nom_depart in departs:
-                for nom_arrivee in arrivees:
-                    trouvees = self._lignes_pour(_normalize(nom_depart), _normalize(nom_arrivee))
-                    if not trouvees:
-                        continue
-                    if not lignes:
-                        # Le premier couple qui aboutit est celui qu'on annonce.
-                        depart_matched, arrivee_matched = nom_depart, nom_arrivee
-                    for cle, record in trouvees:
-                        if cle not in vus:
-                            vus.add(cle)
-                            lignes.append(record)
+            for cle, arrets in self.arrets.items():
+                s_dep, i_dep = self._meilleur(depart, arrets)
+                s_arr, i_arr = self._meilleur(arrivee, arrets)
+                if s_dep < MIN_SCORE or s_arr < MIN_SCORE or i_dep == i_arr:
+                    continue
+                candidates.append((min(s_dep, s_arr), s_dep + s_arr, abs(i_arr - i_dep), cle, i_dep, i_arr))
+
+        lignes = []
+        if candidates:
+            meilleur = max(c[0] for c in candidates)
+            gardees = [c for c in candidates if c[0] >= meilleur - TOLERANCE]
+            # Meilleure correspondance d'abord, puis le trajet le plus court en arrêts.
+            gardees.sort(key=lambda c: (-c[0], -c[1], c[2], c[3]))
+            for _, _, _, cle, i_dep, i_arr in gardees[:MAX_LIGNES]:
+                info, arrets = self.lignes[cle], self.arrets[cle]
+                direct = i_dep < i_arr
+                lignes.append(
+                    {
+                        "compagnie": info["compagnie"],
+                        "ligne": info["ligne"],
+                        "categorie": info.get("categorie", ""),
+                        "depart": info["terminus_a"] if direct else info["terminus_b"],
+                        "arrivee": info["terminus_b"] if direct else info["terminus_a"],
+                        "sens": "direct" if direct else "inverse",
+                        "monte_a": arrets[i_dep],
+                        "descend_a": arrets[i_arr],
+                    }
+                )
 
         return {
             "found": bool(lignes),
             "depart": depart,
-            "depart_matched": depart_matched,
+            "depart_matched": lignes[0]["monte_a"] if lignes else depart_arret,
             "depart_score": round(depart_score, 3),
             "depart_valide": depart_valide,
             "arrivee": arrivee,
-            "arrivee_matched": arrivee_matched,
+            "arrivee_matched": lignes[0]["descend_a"] if lignes else arrivee_arret,
             "arrivee_score": round(arrivee_score, 3),
             "arrivee_valide": arrivee_valide,
             "lignes": lignes,

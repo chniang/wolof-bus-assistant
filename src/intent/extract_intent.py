@@ -17,7 +17,15 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-CSV_PATH = Path(__file__).resolve().parents[2] / "data" / "arrets_lignes_dakar.csv"
+try:  # import à plat (app.py, Streamlit) ou depuis src/
+    from matching.lieux import lieux_reconnaissables
+except ImportError:  # pragma: no cover
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from matching.lieux import lieux_reconnaissables
+
+ITINERAIRES_CSV = Path(__file__).resolve().parents[2] / "data" / "itineraires_dakar.csv"
 
 NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
 # La réponse tient en ~23 tokens : 120 laisse une marge large sans rien
@@ -52,15 +60,14 @@ INTENT_JSON_SCHEMA = {
 }
 
 def _charger_lieux() -> list[str]:
-    """Lieux uniques du CSV, triés : la seule référence de noms qu'on accepte du LLM."""
-    with open(CSV_PATH, newline="", encoding="utf-8") as fichier:
-        lieux = {
-            str(ligne[column]).strip()
-            for ligne in csv.DictReader(fichier)
-            for column in ("depart", "arrivee")
-            if ligne.get(column) and str(ligne[column]).strip()
-        }
-    return sorted(lieux)
+    """Lieux du réseau, triés : la seule référence de noms qu'on accepte du LLM.
+
+    Construits à partir des arrêts de toutes les lignes DDD et AFTU
+    (data/itineraires_dakar.csv), sans les rues ni les routes.
+    """
+    with open(ITINERAIRES_CSV, newline="", encoding="utf-8") as fichier:
+        arrets = sorted({rangee["arret"] for rangee in csv.DictReader(fichier)})
+    return lieux_reconnaissables(arrets)
 
 
 LIEUX = _charger_lieux()
@@ -332,6 +339,17 @@ def _score(gramme: str, lieu: str) -> float:
     return SequenceMatcher(None, gramme, lieu).ratio()
 
 
+# Mots wolof (et formes de l'ASR) qui ne font jamais partie d'un nom de lieu : un
+# n-gramme qui en contient un est ignoré, ce qui évite que « bëgg naa » ou
+# « maa ngi » tombent par hasard sur un arrêt du réseau.
+MOTS_DE_LA_PHRASE = {
+    "dama", "begg", "begga", "beugg", "beugga", "naa", "maa", "ngi", "mangi", "maangi",
+    "dem", "laa", "la", "nekk", "nek", "ma", "ci", "ba", "fi", "fii", "man", "gui", "bu",
+    "fa", "wax", "nga", "ngay", "jem", "dafa", "def", "bus", "bi", "yi", "mu", "ak",
+    "de", "deu", "dee", "dawal", "jel", "jeel", "won", "ana", "fan", "fu",
+}
+
+
 def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
     """Lieux du CSV repérés dans la phrase, par n-grammes de 1 à 3 mots.
 
@@ -340,6 +358,8 @@ def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
     candidats: list[tuple[float, int, int, str]] = []
     for taille in range(1, TAILLE_NGRAMMES + 1):
         for debut in range(len(mots) - taille + 1):
+            if any(mot in MOTS_DE_LA_PHRASE for mot in mots[debut : debut + taille]):
+                continue
             gramme = " ".join(mots[debut : debut + taille])
             if len(gramme) < LONGUEUR_MIN:
                 continue
@@ -456,12 +476,24 @@ def extract_intent(transcription: str, client=None) -> dict:
     except Exception as exc:
         return _repli_local(transcription, f"réponse JSON illisible : {exc}")
 
-    return {
+    resultat = {
         "depart": str(data.get("depart", "")).strip(),
         "arrivee": str(data.get("arrivee", "")).strip(),
         "erreur": None,
         "source": "llm",
     }
+    if resultat["depart"] and resultat["arrivee"]:
+        return resultat
+
+    # Le LLM a répondu mais sans les deux lieux (vu avec « marché liberté cinq
+    # dama bëgg dem palais » : réponse vide). L'extraction locale complète ce
+    # qui manque au lieu de laisser l'utilisateur sans réponse.
+    local = extract_local(transcription)
+    for champ in ("depart", "arrivee"):
+        if not resultat[champ] and local.get(champ):
+            resultat[champ] = local[champ]
+            resultat["source"] = "llm+local"
+    return resultat
 
 
 if __name__ == "__main__":
