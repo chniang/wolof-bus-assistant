@@ -17,22 +17,26 @@ avec le numéro de ligne énoncé en wolof plutôt qu'en chiffres.
 | Étape | Modèle | Rôle |
 | ----- | ------ | ---- |
 | 1. Transcription | `AIHubSN/Kiriku-Wolof-ASR` (en ligne, GPU) · `M9and2M/whisper-small-wolof` (local, CPU) | Transcrit la demande vocale wolof. Kiriku (AI Hub Sénégal) reconnaît bien mieux les noms d'arrêts ; whisper-small, quantifié en int8, reste en local car Kiriku (taille Whisper large) ne tient pas sur un laptop. |
-| 2. Extraction | `z-ai/glm-5.3-flash` (NVIDIA Build) | Extrait `depart` et `arrivee` en JSON. Le prompt système contient la liste exhaustive des arrêts du réseau, le modèle ne peut donc pas inventer un quartier. |
-| 3. Correspondance | — | Matching flou sur le CSV : tolère l'orthographe phonétique de l'ASR et les formulations approximatives (« wakaam » → Ouakam, « pale » → Palais). Gère « Palais » sans numéro. |
+| 2. Extraction | `meta/llama-3.2-11b-vision-instruct` (NVIDIA Build) | Extrait `depart` et `arrivee` en JSON. Le prompt système contient la liste des lieux du réseau, le modèle ne peut donc pas inventer un quartier. Repli local automatique si l'API ne répond pas ou renvoie une réponse incomplète. |
+| 3. Correspondance | — | Recherche arrêt par arrêt sur 112 lignes : une ligne convient si elle passe par le départ puis par l'arrivée, pas seulement si ce sont ses terminus. Sans ligne directe, propose un trajet avec un changement. Tolère l'orthographe phonétique et les variantes (« wakaam » → Ouakam, « Liberté VI » → Liberté 6). |
 | 4. Réponse | — | Affiche le trajet en texte **et** le fait dire en wolof (`bilalfaye/speecht5_tts-wolof`). |
 
-La voix est pré-générée : les 31 réponses possibles du jeu de données sont
-synthétisées dans `data/tts_cache/`, ce qui supprime toute attente pendant la
-démonstration. Le TTS direct reste utilisé pour un trajet qui sort du cache.
+La voix des lignes historiques est pré-générée dans `data/tts_cache/` ; les
+autres réponses (nouvelles lignes, trajets avec changement) passent par le TTS
+direct. `python src/tts/pregenerer.py` régénère le cache pour toutes les lignes.
 
 ## Données
 
-- `data/arrets_lignes_dakar.csv` — 31 trajets réels, colonnes
-  `compagnie, ligne, depart, arrivee, categorie`. Chaque ligne décrit un couple
-  terminus → terminus. Catégories `Urbaine` et `Banlieue`.
-  Sources : [demdikk.sn](https://demdikk.sn) pour Dakar Dem Dikk, le réseau
-  AFTU pour Tata AFTU.
-- `data/tts_cache/` — les 33 audios de réponse (31 lignes + « aucune ligne »
+- `data/lignes_dakar.csv` — 112 lignes : 40 Dakar Dem Dikk (urbaines, banlieue,
+  dessertes du TER, TAF TAF) et 72 Tata AFTU, avec leurs terminus officiels.
+  Sources : [demdikk.sn/info-voyageurs](https://demdikk.sn/info-voyageurs/) et
+  [aftu-senegal.org](https://aftu-senegal.org/infos-pratiques/), relevées le 07/10/2026.
+- `data/itineraires_dakar.csv` — les arrêts de chaque ligne, dans l'ordre
+  (environ 1 150). Généré par `python data/sources/build_dataset.py` à partir de
+  `data/sources/` : itinéraires officiels AFTU, et arrêts DDD relevés dans
+  OpenStreetMap (© contributeurs OpenStreetMap, ODbL). Les lignes DDD sans
+  itinéraire publié ne sont connues que par leurs terminus.
+- `data/tts_cache/` — les 33 audios de réponse pré-générés (31 lignes + « aucune ligne »
   + « walla »), versionnés pour que la démo n'ait rien à télécharger.
 - `data/demo_audio/` — enregistrements de secours, pour quand le micro de la
   salle ne coopère pas.
@@ -113,10 +117,11 @@ quartier, et n'annonce jamais une ligne qui ne relie pas les deux points.
 - **Latence CPU** : environ 25 s par transcription sur CPU (le chargement du
   modèle se fait une fois, au démarrage). Sur GPU (voir ci-dessous), c'est quasi
   instantané.
-- **Couverture réduite** : 31 trajets, 2 compagnies. Un trajet qui n'est pas
-  dans le CSV ne peut pas être trouvé.
-- **Terminus uniquement** : la correspondance se fait sur les couples
-  terminus → terminus du CSV, pas sur les arrêts intermédiaires d'une ligne.
+- **Couverture partielle** : 112 lignes DDD et AFTU, mais les arrêts
+  intermédiaires ne sont connus que pour les lignes AFTU et 7 lignes DDD ; les
+  autres lignes DDD ne sont trouvées que d'un terminus à l'autre. Les lieux
+  absents des itinéraires publiés (Sandaga, par exemple) ne sont pas reconnus.
+- **Un seul changement** : au-delà d'une correspondance, aucun trajet n'est proposé.
 - **L'ASR se trompe** : la reconnaissance wolof est imparfaite, d'où le matching
   flou et la normalisation phonétique.
 - **Wolof uniquement** : ni le français, ni le multilingue ne sont pris en charge,

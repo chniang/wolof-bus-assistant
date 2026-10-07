@@ -17,6 +17,7 @@ Le reste du pipeline (extraction, correspondance, voix) tient en CPU et n'a pas
 from __future__ import annotations
 
 import itertools
+import re
 import os
 import subprocess
 import sys
@@ -216,18 +217,30 @@ def transcrire_wolof(chemin_audio: str) -> str:
     return transcrire(MODELE_WHISPER, audio)
 
 
-def _voix_wolof(lignes: list[dict]) -> str | None:
+def _phrase_correspondance(trajet: dict) -> str:
+    """La réponse à dire pour un trajet en deux bus."""
+    morceaux = []
+    for etape in (trajet["etape_1"], trajet["etape_2"]):
+        numero = numero_de(etape["ligne"])
+        dit = f"ligne {nombre_en_wolof(numero)}" if numero is not None else etape["ligne"]
+        morceaux.append(f"bus bu {etape['compagnie']}, {dit}")
+    return f"Jëlal {morceaux[0]}, ba {trajet['changement']}. Ci ginnaaw, jëlal {morceaux[1]}."
+
+
+def _voix_wolof(lignes: list[dict], correspondances: list[dict] | None = None) -> str | None:
     """La réponse lue en wolof, sous forme de chemin de fichier.
 
     Cache disque d'abord : à la démo, tout est déjà synthétisé et aucun modèle n'a
-    besoin d'être chargé. Synthèse directe seulement s'il manque un morceau.
+    besoin d'être chargé. Synthèse directe seulement s'il manque un morceau, et
+    toujours pour un trajet avec correspondance (phrase propre à chaque trajet).
     """
-    if not lignes:
+    if not lignes and not correspondances:
         return None
-    octets = voix_depuis_cache(lignes) if cache_complet() else None
+    octets = voix_depuis_cache(lignes) if lignes and cache_complet() else None
     if octets is None:
+        phrase = phrase_reponse(lignes) if lignes else _phrase_correspondance(correspondances[0])
         try:
-            octets = synthetiser(_tts(), phrase_reponse(lignes))
+            octets = synthetiser(_tts(), phrase)
         except Exception as exc:
             print(f"Voix de synthèse indisponible ({exc}), la réponse reste en texte.")
             return None
@@ -241,6 +254,34 @@ def _voix_wolof(lignes: list[dict]) -> str | None:
 # --------------------------------------------------------------------------- #
 
 
+def _une_carte(match: dict, etape: str = "") -> str:
+    """Une ligne : compagnie, numéro, sens, et où monter / descendre."""
+    numero = numero_de(match["ligne"])
+    affiche = re.sub(r"^Ligne\s*", "", str(match["ligne"]))
+    rappel = nombre_en_wolof(numero) if numero is not None else ""
+    entete = f"{etape} · {match['compagnie']}" if etape else match["compagnie"]
+    trajet = ""
+    if match.get("monte_a") and match.get("descend_a"):
+        trajet = (
+            f"<div style='color:#17211C;font-size:15px;margin-top:6px;'>"
+            f"Monte à <b>{match['monte_a']}</b> · descends à <b>{match['descend_a']}</b></div>"
+        )
+    return f"""
+<div style="border:1px solid #D6E6DC;border-top:6px solid {VERT};
+            border-radius:12px;padding:16px 20px;margin:8px 0;background:#F6FBF8;">
+  <div style="color:{VERT};font-size:12px;font-weight:700;letter-spacing:.14em;
+              text-transform:uppercase;">{entete}</div>
+  <div style="color:{VERT};font-size:56px;font-weight:800;line-height:1.05;
+              margin:4px 0 6px 0;">{affiche}</div>
+  <div style="color:#17211C;font-size:20px;font-weight:600;">
+    {match['depart']} → {match['arrivee']}</div>
+  {trajet}
+  <div style="color:#6B7A72;font-size:13px;margin-top:6px;">
+    {" · ".join(x for x in (rappel, match.get("categorie", "")) if x)}</div>
+</div>
+"""
+
+
 def _carte(resultat: dict, depart: str, arrivee: str) -> str:
     """La réponse en Markdown : compagnie et numéro de ligne mis en avant."""
     if not depart or not arrivee:
@@ -250,40 +291,39 @@ def _carte(resultat: dict, depart: str, arrivee: str) -> str:
             "Reformule, ou parle plus près du micro."
         )
 
-    if not resultat["found"]:
-        hors_reseau = []
-        if not resultat["depart_valide"]:
-            hors_reseau.append(f"le départ **« {depart} »**")
-        if not resultat["arrivee_valide"]:
-            hors_reseau.append(f"l'arrivée **« {arrivee} »**")
-        detail = " et ".join(hors_reseau) or "ce trajet"
+    if resultat["found"]:
+        return "".join(_une_carte(match) for match in resultat["lignes"])
+
+    correspondances = resultat.get("correspondances") or []
+    if correspondances:
+        blocs = ["### 🔁 Pas de bus direct : un changement suffit\n"]
+        for numero, trajet in enumerate(correspondances, start=1):
+            if numero > 1:
+                blocs.append(f"\n**Autre possibilité {numero}**\n")
+            blocs.append(_une_carte(trajet["etape_1"], "1er bus"))
+            blocs.append(
+                f"<div style='text-align:center;color:#6B7A72;margin:2px 0;'>"
+                f"🔁 Change à <b>{trajet['changement']}</b></div>"
+            )
+            blocs.append(_une_carte(trajet["etape_2"], "2e bus"))
+        return "".join(blocs)
+
+    inconnus = [
+        f"**« {lieu} »**"
+        for lieu, valide in ((depart, resultat["depart_valide"]), (arrivee, resultat["arrivee_valide"]))
+        if not valide
+    ]
+    if inconnus:
         return (
             "### 🗺 Lieu hors réseau\n\n"
-            f"{detail} n'est pas desservi par les lignes du jeu de données. "
-            f"Essaie un quartier voisin, par exemple Guédiawaye, Ouakam ou Palais."
+            f"Je ne trouve {' ni '.join(inconnus)} sur aucune ligne du jeu de données. "
+            "Essaie un quartier ou un arrêt voisin."
         )
-
-    cartes = []
-    for match in resultat["lignes"]:
-        numero = numero_de(match["ligne"])
-        affiche = numero if numero is not None else match["ligne"]
-        rappel = nombre_en_wolof(numero) if numero is not None else ""
-        cartes.append(
-            f"""
-<div style="border:1px solid #D6E6DC;border-top:6px solid {VERT};
-            border-radius:12px;padding:16px 20px;margin:8px 0;background:#F6FBF8;">
-  <div style="color:{VERT};font-size:12px;font-weight:700;letter-spacing:.14em;
-              text-transform:uppercase;">{match['compagnie']}</div>
-  <div style="color:{VERT};font-size:56px;font-weight:800;line-height:1.05;
-              margin:4px 0 6px 0;">{affiche}</div>
-  <div style="color:#17211C;font-size:20px;font-weight:600;">
-    {match['depart']} → {match['arrivee']}</div>
-  <div style="color:#6B7A72;font-size:13px;margin-top:6px;">
-    {rappel} · {match.get('categorie', '')}</div>
-</div>
-"""
-        )
-    return "".join(cartes)
+    return (
+        "### 🗺 Pas de trajet trouvé\n\n"
+        f"Je connais **{depart}** et **{arrivee}**, mais aucune ligne ni aucun trajet "
+        "avec un seul changement ne les relie dans le jeu de données."
+    )
 
 
 def _mention(intent: dict) -> str:
@@ -333,13 +373,13 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str) -> tuple:
     resultat = MATCHER.find_line(depart, arrivee)
 
     # Le LLM peut renvoyer un nom hors du réseau (« Marché Liberté », « Géejewaay »)
-    # alors que l'extraction locale, alignée sur le CSV, trouve le bon couple.
+    # alors que l'extraction locale, alignée sur les arrêts, trouve le bon couple.
     # Si elle mène à une ligne, on la garde.
     if not resultat["found"] and intent.get("source") != "local":
         local = extract_local(phrase)
         if local.get("depart") and local.get("arrivee"):
             essai = MATCHER.find_line(local["depart"], local["arrivee"])
-            if essai["found"]:
+            if essai["found"] or (essai["correspondances"] and not resultat["correspondances"]):
                 depart, arrivee, resultat = local["depart"], local["arrivee"], essai
                 intent = {**intent, "source": "llm+local"}
 
@@ -347,7 +387,7 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str) -> tuple:
         phrase,
         f"{depart} → {arrivee}",
         _carte(resultat, depart, arrivee),
-        _voix_wolof(resultat["lignes"]),
+        _voix_wolof(resultat["lignes"], resultat.get("correspondances")),
         _mention(intent),
     )
 

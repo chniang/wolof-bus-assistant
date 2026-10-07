@@ -20,7 +20,7 @@ import time
 from pathlib import Path
 
 RACINE = Path(__file__).resolve().parents[2]
-CSV_LIGNES = RACINE / "data" / "arrets_lignes_dakar.csv"
+CSV_LIGNES = RACINE / "data" / "lignes_dakar.csv"
 
 sys.path.insert(0, str(RACINE / "src"))
 
@@ -46,10 +46,12 @@ PHRASES_SERVICE = [
 
 def couples_du_csv() -> list[tuple[str, int]]:
     """Tous les couples (compagnie, numéro) du jeu de données, sans doublon."""
-    import pandas as pd
+    import csv
 
     couples = set()
-    for record in pd.read_csv(CSV_LIGNES).to_dict("records"):
+    with open(CSV_LIGNES, newline="", encoding="utf-8") as fichier:
+        records = list(csv.DictReader(fichier))
+    for record in records:
         numero = numero_de(record.get("ligne"))
         if numero is not None:
             couples.add((str(record.get("compagnie", "")).strip(), numero))

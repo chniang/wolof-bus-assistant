@@ -17,7 +17,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-try:  # import à plat (app.py, Streamlit) ou depuis src/
+try:  # import à plat (app.py, Streamlit) ou lancé depuis src/intent/
     from matching.lieux import lieux_reconnaissables
 except ImportError:  # pragma: no cover
     import sys
@@ -269,6 +269,8 @@ REPLACEMENTS_PHRASE = (
     # « ou ouakam », la règle réécrivant son propre suffixe.
     (r"(?<!ou)(?:wakaam|wakam)\b", " ouakam "),
     (r"(?:palee|paale|pale|pali)\b", " palais "),
+    # « pala dee » : Palais entendu en deux morceaux.
+    (r"\bpala(?:\s+d?ee?)?\b", " palais "),
     (r"meddina\b", " medina "),
     # whisper-small entend « liberation » pour « Liberté ».
     (r"\bliberation\b", " liberte "),
@@ -305,8 +307,13 @@ def _sans_accents(texte: str) -> str:
 
 # Construit après _sans_accents : une liste comprehendue au niveau du module est
 # évaluée immédiatement, elle a besoin de la fonction déjà définie.
-_CIBLES = [(_sans_accents(lieu), lieu) for lieu in LIEUX] + [
-    (_sans_accents(lieu), lieu) for lieu in LIEUX_SUPPLEMENTAIRES
+def _cible(lieu: str) -> str:
+    """Forme de comparaison d'un lieu : comme la phrase, sans accents ni tirets."""
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9\s]", " ", _sans_accents(lieu))).strip()
+
+
+_CIBLES = [(_cible(lieu), lieu) for lieu in LIEUX] + [
+    (_cible(lieu), lieu) for lieu in LIEUX_SUPPLEMENTAIRES
 ]
 
 
@@ -348,6 +355,13 @@ MOTS_DE_LA_PHRASE = {
     "fa", "wax", "nga", "ngay", "jem", "dafa", "def", "bus", "bi", "yi", "mu", "ak",
     "de", "deu", "dee", "dawal", "jel", "jeel", "won", "ana", "fan", "fu",
 }
+# Premiers mots de nombreux arrêts : seuls, ils ne désignent aucun lieu
+# (« marché liberté cinq » ne doit pas devenir « Marché aux Poissons »).
+MOTS_TROP_VAGUES = {
+    "marche", "cite", "lycee", "hopital", "police", "poste", "ecole", "stade", "gare",
+    "rond", "point", "station", "grand", "route", "place", "croisement", "terminus",
+    "pont", "eglise", "college", "arret", "village", "quartier", "camp", "keur",
+}
 
 
 def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
@@ -358,9 +372,12 @@ def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
     candidats: list[tuple[float, int, int, str]] = []
     for taille in range(1, TAILLE_NGRAMMES + 1):
         for debut in range(len(mots) - taille + 1):
-            if any(mot in MOTS_DE_LA_PHRASE for mot in mots[debut : debut + taille]):
+            morceau = mots[debut : debut + taille]
+            if any(mot in MOTS_DE_LA_PHRASE for mot in morceau):
                 continue
-            gramme = " ".join(mots[debut : debut + taille])
+            if taille == 1 and morceau[0] in MOTS_TROP_VAGUES:
+                continue
+            gramme = " ".join(morceau)
             if len(gramme) < LONGUEUR_MIN:
                 continue
             for lieu_normalise, lieu_exact in _CIBLES:

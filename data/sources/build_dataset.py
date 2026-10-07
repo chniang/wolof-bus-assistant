@@ -8,8 +8,8 @@ Entrées (dans data/) :
 - sources/ddd_itineraires.txt : arrêts DDD relevés dans OpenStreetMap.
 
 Sortie : data/itineraires_dakar.csv (compagnie, ligne, ordre, arret), une ligne
-par arrêt, terminus compris. Une ligne sans itinéraire connu n'a que ses deux
-terminus : on peut toujours la trouver d'un bout à l'autre.
+par arrêt, dans le sens terminus_a -> terminus_b. Une ligne sans itinéraire
+connu n'a que ses deux terminus : on la trouve toujours d'un bout à l'autre.
 """
 
 from __future__ import annotations
@@ -25,8 +25,8 @@ sys.path.insert(0, str(DATA.parent / "src"))
 from matching.lieux import joli, score  # noqa: E402
 
 # Les tirets séparent les arrêts, sauf dans les noms composés (« YOFF-VILLAGE »,
-# « ROND-POINT ») : un tiret ne coupe que s'il est entouré d'au moins une espace,
-# le tiret long (–) coupe toujours.
+# « ROND-POINT ») : un tiret ne coupe que s'il touche au moins une espace ; le
+# tiret long (–) coupe toujours.
 SEPARATEUR = re.compile(r"\s*–+\s*|\s+-+\s*|\s*-+\s+")
 # Morceaux coupés à tort dans la source (« LAT - DIOR », « CASE - BA »).
 A_RECOLLER = {("lat", "dior"), ("case", "ba"), ("rond", "point"), ("grand", "yoff")}
@@ -37,11 +37,12 @@ def decouper(itineraire: str) -> list[str]:
     morceaux = [m for m in morceaux if m and not re.fullmatch(r"[\d\s:]+", m)]
     sortie: list[str] = []
     for morceau in morceaux:
-        if sortie:
-            precedent = sortie[-1].lower().split()[-1] if sortie[-1].split() else ""
+        if sortie and sortie[-1].split():
+            precedent = sortie[-1].lower().split()[-1]
             premier = morceau.lower().split()[0]
             if (precedent, premier) in A_RECOLLER and len(sortie[-1].split()) <= 2:
-                sortie[-1] = f"{sortie[-1]}-{morceau}" if precedent == "rond" else f"{sortie[-1]} {morceau}"
+                lien = "-" if precedent == "rond" else " "
+                sortie[-1] = f"{sortie[-1]}{lien}{morceau}"
                 continue
         sortie.append(morceau)
     return [joli(m) for m in sortie]
@@ -89,14 +90,18 @@ def main() -> None:
                 arrets.reverse()
         # Quand le terminus officiel est déjà en tête de liste, on garde la forme
         # la plus complète : « Gadaye (Guédiawaye) » plutôt que « Gadaye ».
-        if arrets and proche(arrets[0], a):
-            arrets[0] = max(arrets[0], a, key=len)
+        # Une ligne sans itinéraire publié se résume à ses deux terminus. Quand
+        # l'itinéraire existe, il fait foi : un terminus de la liste qu'il ne
+        # cite pas (ligne 26 : « Post Thiaroye ») n'est pas ajouté, pour ne pas
+        # inventer un tronçon.
+        if not arrets:
+            arrets = [a, b]
         else:
-            arrets.insert(0, a)
-        if proche(arrets[-1], b):
-            arrets[-1] = max(arrets[-1], b, key=len)
-        else:
-            arrets.append(b)
+            if proche(arrets[0], a):
+                arrets[0] = max(arrets[0], a, key=len)
+            if proche(arrets[-1], b):
+                arrets[-1] = max(arrets[-1], b, key=len)
+
         for ordre, arret in enumerate(arrets, start=1):
             lignes_sortie.append(
                 {"compagnie": ligne["compagnie"], "ligne": ligne["ligne"], "ordre": ordre, "arret": arret}

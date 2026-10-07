@@ -23,44 +23,41 @@ MOTS_GENERIQUES = {
 
 ABREVIATIONS = {
     "gd": "grand", "rte": "route", "av": "avenue", "bld": "boulevard", "bd": "boulevard",
-    "rd": "rond", "pt": "point", "st": "saint", "ste": "sainte", "g": "grand",
+    "rd": "rond", "pt": "point", "st": "saint", "ste": "sainte",
 }
 
 CHIFFRES_ROMAINS = {"i": "1", "ii": "2", "iii": "3", "iv": "4", "v": "5", "vi": "6"}
 # Le chiffre romain n'est converti qu'après ces mots : « V » seul ne veut rien dire.
 AVANT_NUMERO = {"liberte", "hamo", "unite", "unites", "jaxaay", "gorom", "palais"}
 
-# Surnoms et formes courantes qui ne se déduisent pas de l'orthographe.
+# Surnoms et formes courantes qui ne se déduisent pas de l'orthographe. Les deux
+# côtés de la comparaison passent par cette table.
 ALIAS = {
     "leclerc": "place leclerc",
     "ucad": "universite cheikh anta diop",
     "universite": "universite cheikh anta diop",
     "stade lss": "stade leopold sedar senghor",
+    "stade l s s": "stade leopold sedar senghor",
     "aeroport lss": "aeroport",
     "aeroport l s senghor": "aeroport",
     "aeroport leopold sedar senghor": "aeroport",
     "kharyalla": "khar yalla",
-    "khar yalla": "khar yalla",
-    "petersen": "petersen",
-    "pikine": "pikine",
+    "sacree coeur": "sacre coeur",
+    "pattesd oie": "patte d oie",
+    "lat dior": "lat dior",
+}
+
+# Premiers mots d'une voie : « Route de Rufisque » n'est pas Rufisque.
+VOIES = {
+    "rue", "rues", "avenue", "boulevard", "route", "autoroute", "rocade", "allees",
+    "echangeur", "branche", "voie", "voies", "canal", "piste", "ancienne", "prolongement",
+    "retour", "sortie", "peage", "virage", "passage",
 }
 
 
 def sans_accents(texte: str) -> str:
     texte = unicodedata.normalize("NFD", str(texte).lower().replace("œ", "oe"))
     return "".join(c for c in texte if unicodedata.category(c) != "Mn")
-
-
-@lru_cache(maxsize=8192)
-def _jetons(texte: str) -> tuple[str, ...]:
-    return tuple(_calcul_jetons(texte))
-
-
-def jetons(texte: str) -> list[str]:
-    """Mots significatifs d'un nom de lieu, dans l'ordre (alias résolus)."""
-    base = _jetons(str(texte))
-    alias = ALIAS.get(" ".join(base))
-    return list(_jetons(alias)) if alias else list(base)
 
 
 def _calcul_jetons(texte: str) -> list[str]:
@@ -72,6 +69,18 @@ def _calcul_jetons(texte: str) -> list[str]:
             mot = CHIFFRES_ROMAINS[mot]
         sortie.append(mot)
     return [m for m in sortie if m not in MOTS_GENERIQUES]
+
+
+@lru_cache(maxsize=16384)
+def _jetons(texte: str) -> tuple[str, ...]:
+    return tuple(_calcul_jetons(texte))
+
+
+def jetons(texte: str) -> list[str]:
+    """Mots significatifs d'un nom de lieu, dans l'ordre (alias résolus)."""
+    base = _jetons(str(texte))
+    alias = ALIAS.get(" ".join(base))
+    return list(_jetons(alias)) if alias else list(base)
 
 
 def forme(texte: str) -> str:
@@ -88,38 +97,8 @@ def _proches(a: str, b: str) -> bool:
     return SequenceMatcher(None, a, b).ratio() >= 0.85
 
 
-def score(requete: str, arret: str) -> float:
-    """Ressemblance entre un lieu demandé et un arrêt, entre 0 et 1.
-
-    1.0 : même lieu. Entre 0 et 1 : tous les mots demandés sont dans l'arrêt
-    (« Liberté 6 » dans « Giratoire Liberté VI »), d'autant mieux noté que
-    l'arrêt a peu de mots en plus. 0 : rien de commun.
-    """
-    q = jetons(requete)
-    s = jetons(arret)
-    if not q or not s:
-        return 0.0
-    # Une rue ou une route qui porte le nom d'un quartier (« Route de Rufisque »)
-    # n'est pas ce quartier : on la note moins bien qu'un vrai arrêt.
-    brut = _score_brut_t(tuple(q), tuple(s))
-    if s[0] in VOIES and q[0] not in VOIES:
-        return 0.7 * brut
-    return brut
-
-
-VOIES = {
-    "rue", "rues", "avenue", "boulevard", "route", "autoroute", "rocade", "allees",
-    "echangeur", "branche", "voie", "voies", "canal", "piste", "ancienne", "prolongement",
-    "retour", "sortie", "peage", "virage", "passage",
-}
-
-
-@lru_cache(maxsize=65536)
-def _score_brut_t(q: tuple[str, ...], s: tuple[str, ...]) -> float:
-    return _score_brut(list(q), list(s))
-
-
-def _score_brut(q: list[str], s: list[str]) -> float:
+@lru_cache(maxsize=131072)
+def _score_brut(q: tuple[str, ...], s: tuple[str, ...]) -> float:
     if q == s:
         return 1.0
     if all(mot in s for mot in q):
@@ -131,6 +110,25 @@ def _score_brut(q: list[str], s: list[str]) -> float:
     if len(colle_q) >= 5 and colle_q in colle_s:
         return 0.45 + 0.45 * len(colle_q) / len(colle_s)
     return 0.0
+
+
+def score(requete: str, arret: str) -> float:
+    """Ressemblance entre un lieu demandé et un arrêt, entre 0 et 1.
+
+    1.0 : même lieu. Entre 0 et 1 : tous les mots demandés sont dans l'arrêt
+    (« Liberté 6 » dans « Giratoire Liberté VI »), d'autant mieux noté que
+    l'arrêt a peu de mots en plus. 0 : rien de commun.
+    """
+    q = jetons(requete)
+    s = jetons(arret)
+    if not q or not s:
+        return 0.0
+    brut = _score_brut(tuple(q), tuple(s))
+    # Une rue ou une route qui porte le nom d'un quartier (« Route de Rufisque »)
+    # n'est pas ce quartier : on la note moins bien qu'un vrai arrêt.
+    if s[0] in VOIES and q[0] not in VOIES:
+        return 0.7 * brut
+    return brut
 
 
 # --------------------------------------------------------------------------- #
@@ -148,11 +146,11 @@ ACCENTS = {
     "sebikhotane": "Sébikotane", "sebikotane": "Sébikotane", "mbedou": "Mbédou",
     "allees": "Allées", "peage": "Péage", "securite": "Sécurité", "entree": "Entrée",
     "maraichers": "Maraîchers", "cimetiere": "Cimetière", "etage": "Étage",
-    "penitence": "Pénitence", "imprimerie": "Imprimerie", "sacree": "Sacré", "sacre": "Sacré",
-    "coeur": "Cœur", "hotel": "Hôtel", "ferroviaire": "ferroviaire", "routiere": "routière",
-    "mole": "Môle", "prolongee": "Prolongée", "tapee": "Tapée", "unites": "Unités",
-    "unite": "Unité", "general": "Général", "degagement": "Dégagement", "beaux": "Beaux",
-    "thierno": "Thierno", "dieuppeul": "Dieuppeul", "etats": "États",
+    "penitence": "Pénitence", "sacree": "Sacré", "sacre": "Sacré", "coeur": "Cœur",
+    "hotel": "Hôtel", "routiere": "routière", "mole": "Môle", "prolongee": "Prolongée",
+    "tapee": "Tapée", "unites": "Unités", "unite": "Unité", "general": "Général",
+    "degagement": "Dégagement", "tilene": "Tilène", "cinema": "Cinéma",
+    "aere": "Aéré", "hygiene": "Hygiène", "obelisque": "Obélisque", "siege": "Siège",
 }
 MAJUSCULES = {
     "hlm", "ucad", "lss", "sips", "sde", "mtoa", "apix", "scoa", "seras", "capa", "rts",
@@ -170,22 +168,21 @@ def joli(nom: str) -> str:
     mots = []
     for i, mot in enumerate(texte.split()):
         bas = mot.lower()
-        cle = sans_accents(bas).strip("()'.,")
-        if bas.startswith("d'") or bas.startswith("l'"):
-            reste = bas[2:]
-            mots.append(bas[:2] + ACCENTS.get(sans_accents(reste), reste.capitalize()))
+        prefixe = "(" if bas.startswith("(") else ""
+        suffixe = ")" if bas.endswith(")") else ""
+        corps = bas.strip("()")
+        cle = sans_accents(corps).strip("'.,")
+        if corps.startswith(("d'", "l'")):
+            reste = corps[2:]
+            mots.append(prefixe + corps[:2] + ACCENTS.get(sans_accents(reste), reste.capitalize()) + suffixe)
         elif cle in MAJUSCULES:
             mots.append(mot.upper())
         elif i > 0 and cle in MINUSCULES:
             mots.append(bas)
         elif cle in ACCENTS:
-            prefixe = "(" if bas.startswith("(") else ""
-            suffixe = ")" if bas.endswith(")") else ""
             mots.append(prefixe + ACCENTS[cle] + suffixe)
         else:
-            prefixe = "(" if bas.startswith("(") else ""
-            corps = bas[len(prefixe):]
-            mots.append(prefixe + "-".join(p[:1].upper() + p[1:] for p in corps.split("-")))
+            mots.append(prefixe + "-".join(p[:1].upper() + p[1:] for p in corps.split("-")) + suffixe)
     return " ".join(mots)
 
 
@@ -199,12 +196,11 @@ PREFIXES_RETIRABLES = re.compile(
     re.I,
 )
 
-
 # Morceaux d'itinéraire qui ne sont pas des lieux qu'on demande.
 BRUIT = {
     "par bassin retention", "face autoroute", "marche", "eglise", "auto route", "r802",
-    "ue 02", "par station titan", "dakar", "port", "corniche", "g dakar", "derriere hopital dalal diam",
-    "pharmicie abdourahmane", "toure",
+    "ue 02", "par station titan", "dakar", "port", "corniche", "g dakar",
+    "derriere hopital dalal diam", "pharmicie abdourahmane", "toure",
 }
 
 

@@ -144,26 +144,24 @@ Tata AFTU,Ligne 1,17,2 Voies de Liberté VI
 Tata AFTU,Ligne 1,18,VDN
 Tata AFTU,Ligne 1,19,Rte Corniche de HLM Gd Médine
 Tata AFTU,Ligne 1,20,Espace HLM Gd Médine (Face Autoroute)
-Tata AFTU,Ligne 1,21,HLM Grand Yoff
-Tata AFTU,Ligne 2,1,Parcelles Assainies
-Tata AFTU,Ligne 2,2,Route Principale des Parcelles Assainies
-Tata AFTU,Ligne 2,3,Croisement Dior
-Tata AFTU,Ligne 2,4,Route HLM Grand Médine
-Tata AFTU,Ligne 2,5,Route du Marché des Parcelles Assainies
-Tata AFTU,Ligne 2,6,Route des Niayes
-Tata AFTU,Ligne 2,7,Pont de l'Émergence
-Tata AFTU,Ligne 2,8,Avenue Cardinal Hyacinthe Thiandoum
-Tata AFTU,Ligne 2,9,Giratoire Liberté VI
-Tata AFTU,Ligne 2,10,Route du Front de Terre
-Tata AFTU,Ligne 2,11,Rue P
-Tata AFTU,Ligne 2,12,Avenue Cheikh Amadou Bamba (Rue 13 des HLM)
-Tata AFTU,Ligne 2,13,Boulevard du Général de Gaulle
-Tata AFTU,Ligne 2,14,Rue 39 (Retour Par Rue 17)
-Tata AFTU,Ligne 2,15,Rue 22
-Tata AFTU,Ligne 2,16,Rue 25 (Retour Par Rue 37)
-Tata AFTU,Ligne 2,17,Av Blaise Diagne
-Tata AFTU,Ligne 2,18,Av Emile Badiane
-Tata AFTU,Ligne 2,19,Gare Petersen
+Tata AFTU,Ligne 2,1,Route Principale des Parcelles Assainies
+Tata AFTU,Ligne 2,2,Croisement Dior
+Tata AFTU,Ligne 2,3,Route HLM Grand Médine
+Tata AFTU,Ligne 2,4,Route du Marché des Parcelles Assainies
+Tata AFTU,Ligne 2,5,Route des Niayes
+Tata AFTU,Ligne 2,6,Pont de l'Émergence
+Tata AFTU,Ligne 2,7,Avenue Cardinal Hyacinthe Thiandoum
+Tata AFTU,Ligne 2,8,Giratoire Liberté VI
+Tata AFTU,Ligne 2,9,Route du Front de Terre
+Tata AFTU,Ligne 2,10,Rue P
+Tata AFTU,Ligne 2,11,Avenue Cheikh Amadou Bamba (Rue 13 des HLM)
+Tata AFTU,Ligne 2,12,Boulevard du Général de Gaulle
+Tata AFTU,Ligne 2,13,Rue 39 (Retour Par Rue 17)
+Tata AFTU,Ligne 2,14,Rue 22
+Tata AFTU,Ligne 2,15,Rue 25 (Retour Par Rue 37)
+Tata AFTU,Ligne 2,16,Av Blaise Diagne
+Tata AFTU,Ligne 2,17,Av Emile Badiane
+Tata AFTU,Ligne 2,18,Gare Petersen
 Tata AFTU,Ligne 3,1,Yoff-Village
 Tata AFTU,Ligne 3,2,Autoroute Seydinalimamoulaye
 Tata AFTU,Ligne 3,3,Aéroport L S Senghor
@@ -243,7 +241,6 @@ Tata AFTU,Ligne 26,5,Unités 5
 Tata AFTU,Ligne 26,6,Route des Niayes (Guédiawaye)
 Tata AFTU,Ligne 26,7,Croisement Bethio
 Tata AFTU,Ligne 26,8,Guédiawaye
-Tata AFTU,Ligne 26,9,Poste Thiaroye
 Tata AFTU,Ligne 27,1,Marché Boubess
 Tata AFTU,Ligne 27,2,Stade Amadou Barry
 Tata AFTU,Ligne 27,3,Djiddah Thiaroye Kao
@@ -282,7 +279,7 @@ Tata AFTU,Ligne 28,15,Autoroute
 Tata AFTU,Ligne 28,16,Gare Petersen
 Tata AFTU,Ligne 29,1,Cité Nations Unies (Cambérène)
 Tata AFTU,Ligne 29,2,Golf
-Tata AFTU,Ligne 29,3,Cinema Parcelles
+Tata AFTU,Ligne 29,3,Cinéma Parcelles
 Tata AFTU,Ligne 29,4,Rte des Niayes (Police Parcelles)
 Tata AFTU,Ligne 29,5,Rond-Point de Cambérène (Casebi)
 Tata AFTU,Ligne 29,6,Rte des Niayes Prolongée (Police Parcelles)
@@ -389,13 +386,13 @@ Tata AFTU,Ligne 36,5,Dial Mbaye
 Tata AFTU,Ligne 36,6,Cité Enseignants
 Tata AFTU,Ligne 36,7,Croisement Bethio
 Tata AFTU,Ligne 36,8,Pharmacie Golf
-Tata AFTU,Ligne 36,9,Unité 3 Cinema
+Tata AFTU,Ligne 36,9,Unité 3 Cinéma
 Tata AFTU,Ligne 36,10,Case Ba
 Tata AFTU,Ligne 36,11,Parcelles Assainies
 Tata AFTU,Ligne 36,12,Église
 Tata AFTU,Ligne 36,13,Caserne Sapeurs Pompiers
 Tata AFTU,Ligne 36,14,École Dior
-Tata AFTU,Ligne 36,15,Centre Aere de la BCEAO
+Tata AFTU,Ligne 36,15,Centre Aéré de la BCEAO
 Tata AFTU,Ligne 36,16,Yoff Village
 Tata AFTU,Ligne 36,17,Aéroport
 Tata AFTU,Ligne 36,18,Ngor
@@ -508,7 +505,7 @@ Tata AFTU,Ligne 42,12,Route Principale de Ouakam (Marché)
 Tata AFTU,Ligne 42,13,Boutikou Diallo
 Tata AFTU,Ligne 42,14,Ouakam Baye
 Tata AFTU,Ligne 43,1,Ouakam
-Tata AFTU,Ligne 43,2,Siege Expresso Ouakam
+Tata AFTU,Ligne 43,2,Siège Expresso Ouakam
 Tata AFTU,Ligne 43,3,École Normale
 Tata AFTU,Ligne 43,4,Bourguiba
 Tata AFTU,Ligne 43,5,Rue 10
@@ -569,7 +566,6 @@ Tata AFTU,Ligne 45,31,Croisement 22
 Tata AFTU,Ligne 45,32,Caserne Sapeurs Pompiers Parcelles
 Tata AFTU,Ligne 45,33,Parcelles Église
 Tata AFTU,Ligne 45,34,63
-Tata AFTU,Ligne 45,35,Parcelles Église
 Tata AFTU,Ligne 46,1,SDE Serigne Assane
 Tata AFTU,Ligne 46,2,Guédiawaye
 Tata AFTU,Ligne 46,3,Lycée Limamou Laye
@@ -591,7 +587,7 @@ Tata AFTU,Ligne 46,18,Avenue Cheikh Antadiop
 Tata AFTU,Ligne 46,19,Avenue Blaise Diagne
 Tata AFTU,Ligne 46,20,Lat Dior
 Tata AFTU,Ligne 47,1,Gare Lat-Dior
-Tata AFTU,Ligne 47,2,Service d'Hygiene
+Tata AFTU,Ligne 47,2,Service d'Hygiène
 Tata AFTU,Ligne 47,3,Av Blaise Diagne
 Tata AFTU,Ligne 47,4,Av Cheikh Anta Diop
 Tata AFTU,Ligne 47,5,Av Bourguiba
@@ -659,7 +655,6 @@ Tata AFTU,Ligne 50,17,Route de Yeumbeul
 Tata AFTU,Ligne 50,18,Bene Baraque
 Tata AFTU,Ligne 50,19,Malika Cimetière
 Tata AFTU,Ligne 50,20,Malika Plage
-Tata AFTU,Ligne 50,21,Malika Cimetière
 Tata AFTU,Ligne 51,1,Jaxaay
 Tata AFTU,Ligne 51,2,Station Keurmassar
 Tata AFTU,Ligne 51,3,Hôpital Keur Massar
@@ -670,21 +665,19 @@ Tata AFTU,Ligne 51,7,Route des Niayes
 Tata AFTU,Ligne 51,8,Tallyicotaf
 Tata AFTU,Ligne 51,9,Bountou Pikine
 Tata AFTU,Ligne 51,10,Gare des Baux Maraîchers
-Tata AFTU,Ligne 52,1,Bountou Pikine
-Tata AFTU,Ligne 52,2,Beaux Maraîchers
-Tata AFTU,Ligne 52,3,Bountou Pikine
-Tata AFTU,Ligne 52,4,Marché Chavanel
-Tata AFTU,Ligne 52,5,Tally Boumack
-Tata AFTU,Ligne 52,6,Route des Niayes
-Tata AFTU,Ligne 52,7,Police Thiaroye
-Tata AFTU,Ligne 52,8,Tally Diallo
-Tata AFTU,Ligne 52,9,Yeumbeul
-Tata AFTU,Ligne 52,10,Bene Baraque
-Tata AFTU,Ligne 52,11,Malika
-Tata AFTU,Ligne 52,12,Hôpital Keur Massar
-Tata AFTU,Ligne 52,13,Station Keur Massar
-Tata AFTU,Ligne 52,14,Jaxaay
-Tata AFTU,Ligne 52,15,Keur Massar
+Tata AFTU,Ligne 52,1,Beaux Maraîchers
+Tata AFTU,Ligne 52,2,Bountou Pikine
+Tata AFTU,Ligne 52,3,Marché Chavanel
+Tata AFTU,Ligne 52,4,Tally Boumack
+Tata AFTU,Ligne 52,5,Route des Niayes
+Tata AFTU,Ligne 52,6,Police Thiaroye
+Tata AFTU,Ligne 52,7,Tally Diallo
+Tata AFTU,Ligne 52,8,Yeumbeul
+Tata AFTU,Ligne 52,9,Bene Baraque
+Tata AFTU,Ligne 52,10,Malika
+Tata AFTU,Ligne 52,11,Hôpital Keur Massar
+Tata AFTU,Ligne 52,12,Station Keur Massar
+Tata AFTU,Ligne 52,13,Jaxaay
 Tata AFTU,Ligne 53,1,Keur Massar (Marché)
 Tata AFTU,Ligne 53,2,P11
 Tata AFTU,Ligne 53,3,Croisement Tivaouane Peulh
@@ -728,19 +721,18 @@ Tata AFTU,Ligne 55,10,Autoroute
 Tata AFTU,Ligne 55,11,Av Malick Sy
 Tata AFTU,Ligne 55,12,Allées Papa Gueye Fall
 Tata AFTU,Ligne 55,13,Petersen
-Tata AFTU,Ligne 56,1,Jaxaay 2
-Tata AFTU,Ligne 56,2,Jaxaay 1
-Tata AFTU,Ligne 56,3,Cité Mame Dior
-Tata AFTU,Ligne 56,4,Rond-Point Shell Keur Massar
-Tata AFTU,Ligne 56,5,Croisement Keur Massar
-Tata AFTU,Ligne 56,6,Poste Thiaroye
-Tata AFTU,Ligne 56,7,Bountou Pikine
-Tata AFTU,Ligne 56,8,Croisement Cambérène
-Tata AFTU,Ligne 56,9,Echangeur Patte d'Oie
-Tata AFTU,Ligne 56,10,Autoroute
-Tata AFTU,Ligne 56,11,Av Malick Sy
-Tata AFTU,Ligne 56,12,Allées Papa Gueye Fall
-Tata AFTU,Ligne 56,13,Petersen
+Tata AFTU,Ligne 56,1,Jaxaay 1
+Tata AFTU,Ligne 56,2,Cité Mame Dior
+Tata AFTU,Ligne 56,3,Rond-Point Shell Keur Massar
+Tata AFTU,Ligne 56,4,Croisement Keur Massar
+Tata AFTU,Ligne 56,5,Poste Thiaroye
+Tata AFTU,Ligne 56,6,Bountou Pikine
+Tata AFTU,Ligne 56,7,Croisement Cambérène
+Tata AFTU,Ligne 56,8,Echangeur Patte d'Oie
+Tata AFTU,Ligne 56,9,Autoroute
+Tata AFTU,Ligne 56,10,Av Malick Sy
+Tata AFTU,Ligne 56,11,Allées Papa Gueye Fall
+Tata AFTU,Ligne 56,12,Petersen
 Tata AFTU,Ligne 57,1,Rond-Point Liberté 6
 Tata AFTU,Ligne 57,2,Av Hyacinthe Thiandoum
 Tata AFTU,Ligne 57,3,Grand Yoff
@@ -755,20 +747,18 @@ Tata AFTU,Ligne 57,11,Bd Maurice Gueye
 Tata AFTU,Ligne 57,12,Poste Courant
 Tata AFTU,Ligne 57,13,Marché Colobane Rufisque
 Tata AFTU,Ligne 57,14,Rufisque Gouye Mouride
-Tata AFTU,Ligne 58,1,Sahm
-Tata AFTU,Ligne 58,2,Fass Mbao (Rail-Ba)
-Tata AFTU,Ligne 58,3,Route Nationale 1
-Tata AFTU,Ligne 58,4,Fass Mbao
-Tata AFTU,Ligne 58,5,SICAP Mbao
-Tata AFTU,Ligne 58,6,Diamaguène
-Tata AFTU,Ligne 58,7,Poste Thiaroye
-Tata AFTU,Ligne 58,8,Péage
-Tata AFTU,Ligne 58,9,Echangeur Hann
-Tata AFTU,Ligne 58,10,Avenue Bourguiba
-Tata AFTU,Ligne 58,11,École Normale
-Tata AFTU,Ligne 58,12,UCAD
-Tata AFTU,Ligne 58,13,SHAM
-Tata AFTU,Ligne 58,14,Comico
+Tata AFTU,Ligne 58,1,Fass Mbao (Rail-Ba)
+Tata AFTU,Ligne 58,2,Route Nationale 1
+Tata AFTU,Ligne 58,3,Fass Mbao
+Tata AFTU,Ligne 58,4,SICAP Mbao
+Tata AFTU,Ligne 58,5,Diamaguène
+Tata AFTU,Ligne 58,6,Poste Thiaroye
+Tata AFTU,Ligne 58,7,Péage
+Tata AFTU,Ligne 58,8,Echangeur Hann
+Tata AFTU,Ligne 58,9,Avenue Bourguiba
+Tata AFTU,Ligne 58,10,École Normale
+Tata AFTU,Ligne 58,11,UCAD
+Tata AFTU,Ligne 58,12,SHAM
 Tata AFTU,Ligne 59,1,Diamalaye
 Tata AFTU,Ligne 59,2,Stade L.s.s
 Tata AFTU,Ligne 59,3,Police Parcelles
@@ -841,25 +831,22 @@ Tata AFTU,Ligne 63,15,Rond-Point Cambérène (Case Bi)
 Tata AFTU,Ligne 63,16,Police des Parcelles Assainies
 Tata AFTU,Ligne 63,17,Route du Stade (Taliboubess)
 Tata AFTU,Ligne 63,18,Parcelles Dior
-Tata AFTU,Ligne 63,19,Stade LSS
-Tata AFTU,Ligne 64,1,Guédiawaye
-Tata AFTU,Ligne 64,2,Diamniadio
-Tata AFTU,Ligne 64,3,Bargny
-Tata AFTU,Ligne 64,4,Thiawlène
-Tata AFTU,Ligne 64,5,Boulevard Maurice Gueye
-Tata AFTU,Ligne 64,6,Rond-Point Dioutyba
-Tata AFTU,Ligne 64,7,Keur Mbaye Fall
-Tata AFTU,Ligne 64,8,Croisement Keur Massar
-Tata AFTU,Ligne 64,9,Poste Thiaroye
-Tata AFTU,Ligne 64,10,Bountou Pikine
-Tata AFTU,Ligne 64,11,Tally Boumack
-Tata AFTU,Ligne 64,12,Route des Niayes
-Tata AFTU,Ligne 64,13,Tribunal de Pikine
-Tata AFTU,Ligne 64,14,Croisement PAI
-Tata AFTU,Ligne 64,15,72
-Tata AFTU,Ligne 64,16,Dial Mbaay
-Tata AFTU,Ligne 64,17,Notaire
-Tata AFTU,Ligne 64,18,Rufisque
+Tata AFTU,Ligne 64,1,Diamniadio
+Tata AFTU,Ligne 64,2,Bargny
+Tata AFTU,Ligne 64,3,Thiawlène
+Tata AFTU,Ligne 64,4,Boulevard Maurice Gueye
+Tata AFTU,Ligne 64,5,Rond-Point Dioutyba
+Tata AFTU,Ligne 64,6,Keur Mbaye Fall
+Tata AFTU,Ligne 64,7,Croisement Keur Massar
+Tata AFTU,Ligne 64,8,Poste Thiaroye
+Tata AFTU,Ligne 64,9,Bountou Pikine
+Tata AFTU,Ligne 64,10,Tally Boumack
+Tata AFTU,Ligne 64,11,Route des Niayes
+Tata AFTU,Ligne 64,12,Tribunal de Pikine
+Tata AFTU,Ligne 64,13,Croisement PAI
+Tata AFTU,Ligne 64,14,72
+Tata AFTU,Ligne 64,15,Dial Mbaay
+Tata AFTU,Ligne 64,16,Notaire
 Tata AFTU,Ligne 65,1,Gare routière de Colobane
 Tata AFTU,Ligne 65,2,Rocade Fann Bel-Air
 Tata AFTU,Ligne 65,3,Place Bakou
@@ -941,7 +928,6 @@ Tata AFTU,Ligne 69,12,Rond-Point Station Shell Keur Massar
 Tata AFTU,Ligne 69,13,P11 Keur Massar
 Tata AFTU,Ligne 69,14,Tivaouane Peulh
 Tata AFTU,Ligne 69,15,Namora
-Tata AFTU,Ligne 69,16,Tivaouane Peulh
 Tata AFTU,Ligne 70,1,Daroukhane Keur Serigne Assane
 Tata AFTU,Ligne 70,2,SDE Guédiawaye
 Tata AFTU,Ligne 70,3,Marché Boubess
@@ -1006,7 +992,7 @@ Tata AFTU,Ligne 73,7,MTOA
 Tata AFTU,Ligne 73,8,Boune
 Tata AFTU,Ligne 73,9,Yeumbeul
 Tata AFTU,Ligne 73,10,Poste Thiaroye
-Tata AFTU,Ligne 74,1,Bargny (Gare ferroviaire)
+Tata AFTU,Ligne 74,1,Bargny (Gare Ferroviaire)
 Tata AFTU,Ligne 74,2,Colobane Rufisque
 Tata AFTU,Ligne 74,3,Poste Courant
 Tata AFTU,Ligne 74,4,Route Nationale N°1
@@ -1020,7 +1006,6 @@ Tata AFTU,Ligne 74,11,Keurmassar
 Tata AFTU,Ligne 74,12,Tivaouane Peul
 Tata AFTU,Ligne 74,13,Cité SOCABEG
 Tata AFTU,Ligne 74,14,Cité COCEHAS
-Tata AFTU,Ligne 74,15,Tivaouane Peulh
 Tata AFTU,Ligne 75,1,Malika (Cité Sonatel)
 Tata AFTU,Ligne 75,2,Yeumbeul
 Tata AFTU,Ligne 75,3,Tally Diallo
@@ -1122,14 +1107,13 @@ Tata AFTU,Ligne 81,13,Croisement Tivaouane Peulh
 Tata AFTU,Ligne 81,14,Tivaouane Peulh
 Tata AFTU,Ligne 81,15,Cité SOCABEG
 Tata AFTU,Ligne 81,16,Tawfeex
-Tata AFTU,Ligne 81,17,Tivaouane Peulh
 Tata AFTU,Ligne 82,1,Lat Dior
-Tata AFTU,Ligne 82,2,Service d'Hygiene
+Tata AFTU,Ligne 82,2,Service d'Hygiène
 Tata AFTU,Ligne 82,3,Avenue Blaise Diagne
-Tata AFTU,Ligne 82,4,Marché Tilene
+Tata AFTU,Ligne 82,4,Marché Tilène
 Tata AFTU,Ligne 82,5,Rue 22
 Tata AFTU,Ligne 82,6,Rue 37
-Tata AFTU,Ligne 82,7,Place de l'Obelisque
+Tata AFTU,Ligne 82,7,Place de l'Obélisque
 Tata AFTU,Ligne 82,8,Lycée Kennedy
 Tata AFTU,Ligne 82,9,Colobane
 Tata AFTU,Ligne 82,10,Autoroute A Péage
