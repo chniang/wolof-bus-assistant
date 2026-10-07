@@ -111,19 +111,21 @@ def transcrire(model, audio_16k: np.ndarray) -> str:
         "max_new_tokens": MAX_NEW_TOKENS,
         "num_beams": 1,
     }
-    with torch.inference_mode():
-        try:
+    try:
+        with torch.inference_mode():
             prediction = model(
                 {"array": audio_16k, "sampling_rate": SAMPLE_RATE},
                 generate_kwargs=reglages,
             )
-        except ValueError:
-            # Certains fine-tunes (Kiriku compris, selon sa generation_config)
-            # refusent « task » : on relance avec les seuls réglages validés au banc d'essai.
-            reglages.pop("task")
+    except Exception as premiere:
+        # Kiriku n'accepte pas forcément « task » ni l'inference_mode : on relance
+        # exactement comme au banc d'essai Colab (seul max_new_tokens, sans
+        # inference_mode), qui a fonctionné.
+        print(f"[ASR] 1er essai échoué ({type(premiere).__name__}: {premiere}), nouvel essai", flush=True)
+        with torch.no_grad():
             prediction = model(
-                {"array": audio_16k, "sampling_rate": SAMPLE_RATE},
-                generate_kwargs=reglages,
+                {"raw": audio_16k, "sampling_rate": SAMPLE_RATE},
+                generate_kwargs={"max_new_tokens": MAX_NEW_TOKENS},
             )
     texte = prediction.get("text", "") if isinstance(prediction, dict) else str(prediction)
     return re.sub(r"\s+", " ", texte).strip()

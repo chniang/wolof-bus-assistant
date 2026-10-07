@@ -187,6 +187,9 @@ DOSSIER_VOIX = Path(tempfile.mkdtemp(prefix="guindima_voix_"))
 _COMPTEUR = itertools.count()
 
 
+ERREUR_ASR = "\x00ERREUR_ASR "
+
+
 @spaces.GPU(duration=30)
 def transcrire_wolof(chemin_audio: str) -> str:
     """Transcrit un enregistrement de micro ou un fichier envoyé.
@@ -214,7 +217,15 @@ def transcrire_wolof(chemin_audio: str) -> str:
                 capture_output=True,
             )
             audio = load_audio(converti.read_bytes())
-    return transcrire(MODELE_WHISPER, audio)
+    try:
+        return transcrire(MODELE_WHISPER, audio)
+    except Exception as exc:
+        # ZeroGPU ne renvoie que le nom de l'erreur (« RuntimeError ») : on garde le
+        # détail en texte pour l'afficher et le voir dans les logs.
+        import traceback
+
+        traceback.print_exc()
+        return f"{ERREUR_ASR}{type(exc).__name__} : {str(exc)[:300]}"
 
 
 def _phrase_correspondance(trajet: dict) -> str:
@@ -356,6 +367,9 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str) -> tuple:
             phrase = transcrire_wolof(audio)
         except Exception as exc:
             return ("", "", f"### 🎤 Audio illisible\n\n{_court(exc)}", None, "")
+        if phrase.startswith(ERREUR_ASR):
+            detail = phrase[len(ERREUR_ASR):]
+            return ("", "", f"### 🎤 Transcription impossible\n\n`{detail}`", None, "")
     else:
         phrase = (phrase_ecrite or "").strip()
 
