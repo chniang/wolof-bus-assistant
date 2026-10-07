@@ -19,6 +19,14 @@ import numpy as np
 
 MODEL_WHISPER = "M9and2M/whisper-small-wolof"
 
+# Sur GPU (Hugging Face Space), on utilise Kiriku-Wolof-ASR de l'AI Hub Sénégal :
+# au banc d'essai du 07/10/2026 il a reconnu ~9 noms d'arrêts sur 10 au micro,
+# contre 1 sur 10 pour whisper-small-wolof, à vitesse égale (~1,5 s sur GPU).
+# Taille Whisper large (6 Go en float32) : trop lourd pour le CPU du laptop, qui
+# garde whisper-small. Modèle protégé : il faut le secret HF_TOKEN d'un compte
+# ayant accepté ses conditions. Surchargeable par la variable ASR_MODEL_GPU.
+MODEL_ASR_GPU = os.getenv("ASR_MODEL_GPU", "AIHubSN/Kiriku-Wolof-ASR")
+
 # torch sur un portable : 4 cœurs au maximum, sans surcharger la machine.
 NB_THREADS = min(4, os.cpu_count() or 1)
 
@@ -95,18 +103,28 @@ def transcrire(model, audio_16k: np.ndarray) -> str:
 
     # inference_mode : aucun graphe d'autograd n'est construit, c'est plus rapide
     # que no_grad. Indispensable ici, le modèle est déjà quantifié.
+    # task passe par generate_kwargs : en argument direct du pipeline,
+    # transformers émet un avertissement « generation_config ».
+    # Pas de language : Whisper ne connaît pas le wolof, « wo » le fait planter.
+    reglages = {
+        "task": "transcribe",
+        "max_new_tokens": MAX_NEW_TOKENS,
+        "num_beams": 1,
+    }
     with torch.inference_mode():
-        prediction = model(
-            {"array": audio_16k, "sampling_rate": SAMPLE_RATE},
-            # task passe par generate_kwargs : en argument direct du pipeline,
-            # transformers émet un avertissement « generation_config ».
-            # Pas de language : Whisper ne connaît pas le wolof, « wo » le fait planter.
-            generate_kwargs={
-                "task": "transcribe",
-                "max_new_tokens": MAX_NEW_TOKENS,
-                "num_beams": 1,
-            },
-        )
+        try:
+            prediction = model(
+                {"array": audio_16k, "sampling_rate": SAMPLE_RATE},
+                generate_kwargs=reglages,
+            )
+        except ValueError:
+            # Certains fine-tunes (Kiriku compris, selon sa generation_config)
+            # refusent « task » : on relance avec les seuls réglages validés au banc d'essai.
+            reglages.pop("task")
+            prediction = model(
+                {"array": audio_16k, "sampling_rate": SAMPLE_RATE},
+                generate_kwargs=reglages,
+            )
     texte = prediction.get("text", "") if isinstance(prediction, dict) else str(prediction)
     return re.sub(r"\s+", " ", texte).strip()
 

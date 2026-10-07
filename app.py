@@ -32,6 +32,7 @@ RACINE = Path(__file__).resolve().parent
 sys.path.insert(0, str(RACINE / "src"))
 
 from asr.transcribe import (  # noqa: E402
+    MODEL_ASR_GPU,
     MODEL_WHISPER,
     SAMPLE_RATE,
     load_audio,
@@ -81,26 +82,49 @@ except ImportError:
 
 
 def _charger_whisper():
-    """Charge Whisper une seule fois, au chargement du module.
+    """Charge le modèle de transcription une seule fois, au chargement du module.
 
-    Sur GPU, le pipeline part en float16 sur « cuda » : c'est de loin le plus
-    rapide, et la quantification int8 n'a de sens que pour le CPU. Sur CPU on délègue
-    à load_model(), qui applique la quantification int8 validée sur le laptop.
+    Sur GPU (le Space) : Kiriku-Wolof-ASR en float16, bien meilleur sur les noms
+    d'arrêts. S'il ne se charge pas (secret HF_TOKEN absent, conditions non
+    acceptées, réseau), on retombe sur whisper-small-wolof : la démo reste en ligne.
+    Sur CPU on délègue à load_model(), qui applique la quantification int8 validée
+    sur le laptop.
+
+    Renvoie (pipeline, nom du modèle chargé).
     """
     import torch
     from transformers import pipeline
 
     if torch.cuda.is_available():
-        return pipeline(
-            "automatic-speech-recognition",
-            model=MODEL_WHISPER,
-            device=0,
-            dtype=torch.float16,
+        try:
+            modele = pipeline(
+                "automatic-speech-recognition",
+                model=MODEL_ASR_GPU,
+                device=0,
+                dtype=torch.float16,
+                token=os.getenv("HF_TOKEN"),
+            )
+            print(f"[ASR] {MODEL_ASR_GPU} chargé sur GPU", flush=True)
+            return modele, MODEL_ASR_GPU
+        except Exception as exc:
+            print(f"[ASR] {MODEL_ASR_GPU} indisponible ({exc}), repli sur {MODEL_WHISPER}", flush=True)
+        return (
+            pipeline(
+                "automatic-speech-recognition",
+                model=MODEL_WHISPER,
+                device=0,
+                dtype=torch.float16,
+            ),
+            MODEL_WHISPER,
         )
-    return load_model()
+    return load_model(), MODEL_WHISPER
 
 
-MODELE_WHISPER = _charger_whisper()
+MODELE_WHISPER, NOM_MODELE_ASR = _charger_whisper()
+# Crédit affiché en pied de page : le modèle réellement chargé.
+LIBELLE_ASR = (
+    "Kiriku-Wolof-ASR (AI Hub Sénégal)" if "Kiriku" in NOM_MODELE_ASR else "Whisper wolof"
+)
 
 # Le TTS ne sert qu'en secours, quand le cache disque n'a pas l'audio du résultat.
 # Le charger à la volée évite de téléchargement 578 Mo pour rien sur un Space.
@@ -418,7 +442,7 @@ def _construire():
         gr.Markdown(
             "<div style='text-align:center;color:#8A968F;font-size:12px;"
             "border-top:1px solid #E3EAE6;padding-top:10px;margin-top:18px'>"
-            "Données : Dakar Dem Dikk, Tata AFTU · IA : Whisper wolof, NVIDIA Build"
+            f"Données : Dakar Dem Dikk, Tata AFTU · IA : {LIBELLE_ASR}, NVIDIA Build"
             "</div>"
         )
 

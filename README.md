@@ -16,7 +16,7 @@ avec le numéro de ligne énoncé en wolof plutôt qu'en chiffres.
 
 | Étape | Modèle | Rôle |
 | ----- | ------ | ---- |
-| 1. Transcription | `M9and2M/whisper-small-wolof` | Transcrit la demande vocale wolof. Quantifié en int8 pour tenir sur CPU. |
+| 1. Transcription | `AIHubSN/Kiriku-Wolof-ASR` (en ligne, GPU) · `M9and2M/whisper-small-wolof` (local, CPU) | Transcrit la demande vocale wolof. Kiriku (AI Hub Sénégal) reconnaît bien mieux les noms d'arrêts ; whisper-small, quantifié en int8, reste en local car Kiriku (taille Whisper large) ne tient pas sur un laptop. |
 | 2. Extraction | `z-ai/glm-5.3-flash` (NVIDIA Build) | Extrait `depart` et `arrivee` en JSON. Le prompt système contient la liste exhaustive des arrêts du réseau, le modèle ne peut donc pas inventer un quartier. |
 | 3. Correspondance | — | Matching flou sur le CSV : tolère l'orthographe phonétique de l'ASR et les formulations approximatives (« wakaam » → Ouakam, « pale » → Palais). Gère « Palais » sans numéro. |
 | 4. Réponse | — | Affiche le trajet en texte **et** le fait dire en wolof (`bilalfaye/speecht5_tts-wolof`). |

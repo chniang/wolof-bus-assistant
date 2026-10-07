@@ -1,0 +1,8 @@
+transformers
+torch
+torchaudio
+soundfile
+accelerate
+jiwer
+gradio
+spaces

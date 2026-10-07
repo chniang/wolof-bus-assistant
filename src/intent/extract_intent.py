@@ -79,8 +79,9 @@ def _build_system_prompt() -> str:
         + "\n\n"
         "Règles de normalisation :\n"
         "- Si le lieu entendu ressemble phonétiquement à un lieu de la liste, renvoie "
-        "EXACTEMENT le nom de la liste. Exemples : 'wakaam' -> 'Ouakam', 'géejawaay' ou "
-        "'géej a waay' -> 'Guédiawaye', 'pale'/'palee'/'pali' -> 'Palais'.\n"
+        "EXACTEMENT le nom de la liste. Exemples : 'wakaam' -> 'Ouakam', 'géejawaay', "
+        "'géejewaay' ou 'géej a waay' -> 'Guédiawaye', 'pale'/'palee'/'pali' -> 'Palais', "
+        "'liberté cinq' -> 'Liberté 5'.\n"
         "- Si 'Palais' est dit sans numéro, renvoie 'Palais' (sans 1 ni 2).\n"
         "- N'invente jamais un quartier qui n'est pas prononcé. Si aucun lieu de la liste "
         "ne correspond, renvoie le nom entendu, normalisé.\n"
@@ -255,12 +256,23 @@ def _parse_json_or_fallback(text: str) -> dict:
 # « medina » et « grand mbao » sont déjà dans leur forme canonique, ils n'ont besoin
 # d'aucune règle de réécriture.
 REPLACEMENTS_PHRASE = (
-    (r"(?:geej\s*a\s*waay|geejawaay)\b", " guediawaye "),
+    # géejawaay (whisper-small), géejewaay (Kiriku), gëjjewaay : même lieu.
+    (r"(?:geej\s*a\s*waay|ge{1,2}j{1,2}[ae]\s*waa?y)\b", " guediawaye "),
     # (?<!ou) protège la graphie canonique : sans lui « ouakam » deviendrait
     # « ou ouakam », la règle réécrivant son propre suffixe.
     (r"(?<!ou)(?:wakaam|wakam)\b", " ouakam "),
-    (r"(?:palee|pale|pali)\b", " palais "),
+    (r"(?:palee|paale|pale|pali)\b", " palais "),
     (r"meddina\b", " medina "),
+    # whisper-small entend « liberation » pour « Liberté ».
+    (r"\bliberation\b", " liberte "),
+    # Kiriku écrit les numéros en toutes lettres (« liberté cinq ») et
+    # whisper-small en wolof phonétique (« sënk ») : on remet le chiffre du CSV.
+    (r"\b(liberte|palais)\s+(?:un|benn)\b", r" \1 1 "),
+    (r"\b(liberte|palais)\s+(?:deux|naar|ñaar)\b", r" \1 2 "),
+    (r"\b(liberte)\s+(?:trois|nett)\b", r" \1 3 "),
+    (r"\b(liberte)\s+(?:quatre|nient|ñeent)\b", r" \1 4 "),
+    (r"\b(liberte)\s+(?:cinq|senk|juroom)\b", r" \1 5 "),
+    (r"\b(liberte)\s+(?:six)\b", r" \1 6 "),
 )
 
 # En dessous de ce ratio, on préfère ne rien trouver plutôt qu'inventer un quartier.
@@ -351,6 +363,23 @@ def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
     return retenus
 
 
+# « maa ngi Ouakam » / « man gui Ouakam » (je suis à) et « Ouakam laa nekk » (c'est à
+# Ouakam que je suis) désignent le départ, quelle que soit sa place par rapport à
+# « dem ». Kiriku transcrit souvent « dama bëgg dem Palais, maa ngi Ouakam ».
+MARQUEURS_ICI_AVANT = {"ngi", "gui", "mangi", "maangi", "mangui"}
+MARQUEURS_ICI_APRES = {"laa", "la"}
+
+
+def _depart_marque(mots: list[str], trouves: list[tuple[int, int, str]]) -> str | None:
+    """Le lieu explicitement annoncé comme position actuelle, s'il y en a un."""
+    for debut, fin, lieu in trouves:
+        if MARQUEURS_ICI_AVANT & set(mots[max(0, debut - 2):debut]):
+            return lieu
+        if fin < len(mots) and mots[fin] in MARQUEURS_ICI_APRES:
+            return lieu
+    return None
+
+
 def extract_local(phrase: str) -> dict:
     """Extrait départ et arrivée sans LLM, par correspondance floue sur le CSV.
 
@@ -364,6 +393,12 @@ def extract_local(phrase: str) -> dict:
     trouves = _chercher_lieux(mots)
     if not trouves:
         return {"depart": "", "arrivee": "", "erreur": None, "source": "local"}
+
+    if len(trouves) >= 2:
+        depart = _depart_marque(mots, trouves)
+        if depart:
+            arrivee = next(lieu for _, _, lieu in trouves if lieu != depart)
+            return {"depart": depart, "arrivee": arrivee, "erreur": None, "source": "local"}
 
     # « bëgg naa dem Palais 2 » : ce qui précède « dem » est le départ, ce qui suit
     # est l'arrivée. Sans « dem », ou sans répartition propre, on garde l'ordre
