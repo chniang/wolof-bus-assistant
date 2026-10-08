@@ -16,9 +16,9 @@ avec le numéro de ligne énoncé en wolof plutôt qu'en chiffres.
 
 | Étape | Modèle | Rôle |
 | ----- | ------ | ---- |
-| 1. Transcription | `AIHubSN/Kiriku-Wolof-ASR` (en ligne, GPU) · `M9and2M/whisper-small-wolof` (local, CPU) | Transcrit la demande vocale wolof. Kiriku (AI Hub Sénégal) reconnaît bien mieux les noms d'arrêts ; whisper-small, quantifié en int8, reste en local car Kiriku (taille Whisper large) ne tient pas sur un laptop. |
-| 2. Extraction | `meta/llama-3.2-11b-vision-instruct` (NVIDIA Build) | Extrait `depart` et `arrivee` en JSON. Le prompt système contient la liste des lieux du réseau, le modèle ne peut donc pas inventer un quartier. Repli local automatique si l'API ne répond pas ou renvoie une réponse incomplète. |
-| 3. Correspondance | — | Recherche arrêt par arrêt sur 112 lignes : une ligne convient si elle passe par le départ puis par l'arrivée, pas seulement si ce sont ses terminus. Sans ligne directe, propose un trajet avec un changement. Tolère l'orthographe phonétique et les variantes (« wakaam » → Ouakam, « Liberté VI » → Liberté 6). |
+| 1. Transcription | `AIHubSN/Kiriku-Wolof-ASR` (en ligne, GPU) · `M9and2M/whisper-small-wolof` (secours et local, CPU) | Transcrit la demande vocale wolof. Kiriku (AI Hub Sénégal) reconnaît bien mieux les noms d'arrêts (~9 sur 10 contre 1 sur 10 au banc d'essai micro, voir `kiriku_test/`). Quand le GPU gratuit de Hugging Face n'est pas attribué, l'app bascule seule sur whisper-small quantifié en int8 sur CPU, qui sert aussi en local (Kiriku, taille Whisper large, ne tient pas sur un laptop). |
+| 2. Extraction | extraction locale, puis `meta/llama-3.2-11b-vision-instruct` (NVIDIA Build) | Repère `depart` et `arrivee`. D'abord en local, par correspondance floue sur les lieux du réseau, en tenant compte des écritures phonétiques de l'ASR (« wakaam », « liberti sënk », « pale ») et des numéros dits en lettres ou en wolof. Le LLM n'intervient que si ce repérage ne donne pas de trajet complet ; son prompt contient la liste des lieux du réseau. |
+| 3. Correspondance | — | Recherche arrêt par arrêt sur 112 lignes : une ligne convient si elle passe par le départ puis par l'arrivée, pas seulement si ce sont ses terminus. Sans ligne directe, propose un trajet avec un changement. Tolère l'orthographe phonétique et les variantes (« wakaam » → Ouakam, « Liberté VI » → Liberté 6) ; Palais 1 et Palais 2 valent tous deux « Palais ». |
 | 4. Réponse | — | Affiche le trajet en texte **et** le fait dire en wolof (`bilalfaye/speecht5_tts-wolof`). |
 
 La voix des lignes historiques est pré-générée dans `data/tts_cache/` ; les
@@ -65,25 +65,39 @@ cp .env.example .env
 
 ## Lancer l'application
 
+Version en ligne (Gradio, celle du Space Hugging Face) :
+
+```bash
+python app.py
+```
+
+Version locale historique (Streamlit) :
+
 ```bash
 streamlit run src/app/app.py
 ```
 
-Puis ouvrir l'URL affichée (http://localhost:8501) et, dans l'onglet
-« 🎙️ Parler », dire son trajet en wolof.
+Puis ouvrir l'URL affichée et dire son trajet en wolof, ou l'écrire.
 
 Le premier lancement télécharge les modèles (Whisper, SpeechT5) et peut prendre
 quelques minutes. Les suivants démarrent immédiatement.
 
 ## Tests
 
+`tests/test_trajets.py` vérifie 10 trajets de référence (dont des phrases écrites
+comme l'ASR les transcrit : « liberti sënk… pale dë », « wakaam ») et les 2
+audios de démo :
+
 ```bash
-python -X utf8 src/app/check_examples.py
+# Local, quelques secondes : extraction des lieux + recherche de ligne
+python tests/test_trajets.py
+
+# App publiée, comme un visiteur : 10 phrases + 2 audios envoyés au Space
+python tests/test_trajets.py --en-ligne
 ```
 
-Le script fait passer les quatre phrases d'exemple de `EXEMPLES` dans
-l'extraction LLM puis dans la correspondance, et vérifie que chacune trouve bien
-sa ligne.
+Le mode local se lance après chaque modification du code ou des données, le mode
+en ligne après chaque déploiement. Code de sortie 0 si tout passe.
 
 ## IA responsable
 
@@ -91,19 +105,20 @@ sa ligne.
 
 | Modèle | Licence |
 | ------ | ------- |
-| `M9and2M/whisper-small-wolof` (transcription) | MIT |
+| `AIHubSN/Kiriku-Wolof-ASR` (transcription en ligne) | modèle protégé de l'AI Hub Sénégal : accès après acceptation de ses conditions |
+| `M9and2M/whisper-small-wolof` (transcription de secours et locale) | MIT |
 | `bilalfaye/speecht5_tts-wolof` (synthèse vocale) | MIT |
 | `microsoft/speecht5_hifigan` (vocodeur) | MIT |
-| `z-ai/glm-5.3-flash` (extraction) | servi par NVIDIA Build ; les poids GLM de z-ai sont en MIT, le point de service applique ses propres conditions d'utilisation |
+| `meta/llama-3.2-11b-vision-instruct` (extraction, en dernier recours) | Llama 3.2 Community License, servi par NVIDIA Build selon ses conditions d'utilisation |
 
-L'extraction passe par l'API NVIDIA Build : la phrase transcrite est envoyée à
-ce service pour en extraire le départ et l'arrivée. Les modèles de transcription
-et de synthèse tournent en local, sur la machine.
+La transcription et la synthèse vocale tournent sur la machine qui héberge l'app
+(le Space Hugging Face en ligne, ou le PC en local). La phrase transcrite n'est
+envoyée à l'API NVIDIA Build que si l'extraction locale ne trouve pas le trajet.
 
 ### Données collectées
 
 Aucune. Rien n'est enregistré, ni stocké, ni transmis à un service tiers, hormis
-la phrase envoyée à l'API NVIDIA pour l'extraction. Pas de compte utilisateur, pas
+la phrase envoyée à l'API NVIDIA quand l'extraction locale ne suffit pas. Pas de compte utilisateur, pas
 de cookie, pas de journalisation des requêtes.
 
 ### Plutôt qu'inventer
@@ -114,9 +129,11 @@ quartier, et n'annonce jamais une ligne qui ne relie pas les deux points.
 
 ### Limites connues
 
-- **Latence CPU** : environ 25 s par transcription sur CPU (le chargement du
-  modèle se fait une fois, au démarrage). Sur GPU (voir ci-dessous), c'est quasi
-  instantané.
+- **GPU partagé** : en ligne, le GPU gratuit de Hugging Face (ZeroGPU) est
+  rarement attribué aux visiteurs non connectés à un compte Hugging Face. Ils
+  passent alors par whisper-small sur CPU : réponse en ~5 à 25 s, transcription
+  moins précise que Kiriku, mais trajets toujours retrouvés grâce à la
+  normalisation phonétique.
 - **Couverture partielle** : 112 lignes DDD et AFTU, mais les arrêts
   intermédiaires ne sont connus que pour les lignes AFTU et 7 lignes DDD ; les
   autres lignes DDD ne sont trouvées que d'un terminus à l'autre. Les lieux
