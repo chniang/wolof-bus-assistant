@@ -274,14 +274,17 @@ REPLACEMENTS_PHRASE = (
     (r"meddina\b", " medina "),
     # whisper-small entend « liberation » pour « Liberté ».
     (r"\bliberation\b", " liberte "),
+    (r"\blibert[iy]\b", " liberte "),
     # Kiriku écrit les numéros en toutes lettres (« liberté cinq ») et
     # whisper-small en wolof phonétique (« sënk ») : on remet le chiffre du CSV.
-    (r"\b(liberte|palais)\s+(?:un|benn)\b", r" \1 1 "),
-    (r"\b(liberte|palais)\s+(?:deux|naar|ñaar)\b", r" \1 2 "),
-    (r"\b(liberte)\s+(?:trois|nett)\b", r" \1 3 "),
-    (r"\b(liberte)\s+(?:quatre|nient|ñeent)\b", r" \1 4 "),
-    (r"\b(liberte)\s+(?:cinq|senk|juroom)\b", r" \1 5 "),
-    (r"\b(liberte)\s+(?:six)\b", r" \1 6 "),
+    # « juroom benn » (6) avant « juroom » (5) et « benn » (1).
+    (r"\b(liberte)\s+juroom\s+benn\b", r" \1 6 "),
+    (r"\b(liberte|palais)\s+(?:un|une|benn|ben)\b", r" \1 1 "),
+    (r"\b(liberte|palais)\s+(?:deux|deu|doe|naar|ñaar|nyaar)\b", r" \1 2 "),
+    (r"\b(liberte)\s+(?:trois|troi|nett|net)\b", r" \1 3 "),
+    (r"\b(liberte)\s+(?:quatre|katr|nient|ñeent|nyent)\b", r" \1 4 "),
+    (r"\b(liberte)\s+(?:cinq|senk|sank|sink|sinq|juroom|jurom|five)\b", r" \1 5 "),
+    (r"\b(liberte)\s+(?:six|sis|siss|sise|sees)\b", r" \1 6 "),
 )
 
 # En dessous de ce ratio, on préfère ne rien trouver plutôt qu'inventer un quartier.

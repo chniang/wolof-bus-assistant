@@ -26,7 +26,12 @@ ABREVIATIONS = {
     "rd": "rond", "pt": "point", "st": "saint", "ste": "sainte",
 }
 
-CHIFFRES_ROMAINS = {"i": "1", "ii": "2", "iii": "3", "iv": "4", "v": "5", "vi": "6"}
+CHIFFRES_ROMAINS = {
+    "i": "1", "ii": "2", "iii": "3", "iv": "4", "v": "5", "vi": "6",
+    # Le LLM ou l'ASR écrit aussi les numéros en lettres : « Liberté six ».
+    "un": "1", "deux": "2", "trois": "3", "quatre": "4", "cinq": "5", "six": "6",
+    "senk": "5", "sis": "6", "siss": "6",
+}
 # Le chiffre romain n'est converti qu'après ces mots : « V » seul ne veut rien dire.
 AVANT_NUMERO = {"liberte", "hamo", "unite", "unites", "jaxaay", "gorom", "palais"}
 
@@ -45,6 +50,10 @@ ALIAS = {
     "sacree coeur": "sacre coeur",
     "pattesd oie": "patte d oie",
     "lat dior": "lat dior",
+    # Palais 1 et Palais 2 sont deux terminus voisins du même quartier : pour qui
+    # dit « Palais », une ligne vers l'un ou l'autre convient.
+    "palais 1": "palais",
+    "palais 2": "palais",
 }
 
 # Premiers mots d'une voie : « Route de Rufisque » n'est pas Rufisque.

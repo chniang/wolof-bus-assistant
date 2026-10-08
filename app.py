@@ -357,16 +357,19 @@ def _carte(resultat: dict, depart: str, arrivee: str) -> str:
     )
 
 
-def _mention(intent: dict) -> str:
-    """Rappelle que la détection est tombée sur le filet local, sans LLM."""
+def _mention(intent: dict, modele_asr: str = "") -> str:
+    """Notes sous la réponse : modèle de transcription utilisé, extraction de secours."""
+    notes = []
+    if modele_asr:
+        notes.append(f"_Transcription : {modele_asr}_")
     if intent.get("source") == "local":
-        return (
+        notes.append(
             "> ⚠️ **Extraction de secours (sans LLM)** — l'API NVIDIA était "
             "indisponible, la détection a été faite sur place."
         )
-    if intent.get("erreur"):
-        return f"> ⚠️ {intent['erreur']}"
-    return ""
+    elif intent.get("erreur"):
+        notes.append(f"> ⚠️ {intent['erreur']}")
+    return "\n\n".join(notes)
 
 
 # --------------------------------------------------------------------------- #
@@ -381,12 +384,14 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str) -> tuple:
     transcrit. Les cinq retours correspondent aux cinq sorties de l'interface.
     """
     vide = ("", "", _carte({}, "", ""), None, "")
+    modele_asr = ""
 
     if audio:
         try:
             son = _decoder_audio(audio)
         except Exception as exc:
             return ("", "", f"### 🎤 Audio illisible\n\n{_court(exc)}", None, "")
+        modele_asr = "Kiriku-Wolof-ASR (GPU)"
         try:
             phrase = transcrire_wolof(son)
         except Exception as exc:
@@ -395,6 +400,7 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str) -> tuple:
             print(f"[ASR] ZeroGPU en échec ({_court(exc)}), secours CPU", flush=True)
             phrase = ERREUR_ASR
         if phrase.startswith(ERREUR_ASR):
+            modele_asr = "whisper-small (secours sans GPU)"
             try:
                 phrase = _transcrire_cpu(son)
             except Exception as exc:
@@ -407,11 +413,21 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str) -> tuple:
 
     # L'extraction gère elle-même son repli local : si l'API est saturée, elle
     # rend quand même un départ et une arrivée tant que la phrase les porte.
-    intent = extract_intent(phrase, client=_client_llm())
+    # L'extraction locale d'abord : elle ne connaît que les arrêts du réseau et
+    # ne se trompe pas de numéro (le LLM a déjà rendu « liberti sënk » en
+    # Liberté 6). Le LLM ne sert que si elle ne trouve pas un trajet complet.
+    local = extract_local(phrase)
+    intent = None
+    if local.get("depart") and local.get("arrivee"):
+        essai = MATCHER.find_line(local["depart"], local["arrivee"])
+        if essai["found"] or essai["correspondances"]:
+            intent = {**local, "source": "reseau", "erreur": None}
+    if intent is None:
+        intent = extract_intent(phrase, client=_client_llm())
     depart, arrivee = intent.get("depart") or "", intent.get("arrivee") or ""
 
     if not depart or not arrivee:
-        return (phrase, "", _carte({}, depart, arrivee), None, _mention(intent))
+        return (phrase, "", _carte({}, depart, arrivee), None, _mention(intent, modele_asr))
 
     resultat = MATCHER.find_line(depart, arrivee)
 
@@ -431,7 +447,7 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str) -> tuple:
         f"{depart} → {arrivee}",
         _carte(resultat, depart, arrivee),
         _voix_wolof(resultat["lignes"], resultat.get("correspondances")),
-        _mention(intent),
+        _mention(intent, modele_asr),
     )
 
 

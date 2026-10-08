@@ -16,9 +16,9 @@ import csv
 from pathlib import Path
 
 try:  # import à plat (app.py, Streamlit) ou en paquet
-    from matching.lieux import VOIES, forme, jetons, score
+    from matching.lieux import VOIES, _jetons, jetons, score
 except ImportError:  # pragma: no cover
-    from .lieux import VOIES, forme, jetons, score
+    from .lieux import VOIES, _jetons, jetons, score
 
 DATA = Path(__file__).resolve().parents[2] / "data"
 LIGNES_CSV = DATA / "lignes_dakar.csv"
@@ -30,8 +30,8 @@ MIN_SCORE = 0.6
 # arrivée) est à moins de cet écart de la meilleure. « Yoff » exact écarte ainsi
 # les lignes qui ne passent qu'à « Grand Yoff ».
 TOLERANCE = 0.15
-MAX_LIGNES = 4
-MAX_CORRESPONDANCES = 3
+MAX_LIGNES = 3
+MAX_CORRESPONDANCES = 2
 
 
 class StopsMatcher:
@@ -47,8 +47,10 @@ class StopsMatcher:
         self.tous_les_arrets = sorted({a for arrets in self.arrets.values() for a in arrets})
         # Pour les correspondances : la forme de chaque arrêt, sans les voies
         # (on ne change pas de bus « sur l'autoroute »).
+        # Sans les alias : on ne change pas de bus entre Palais 1 et Palais 2,
+        # même si, pour un départ ou une arrivée, l'un vaut l'autre.
         self.formes: dict[tuple[str, str], list[str]] = {
-            cle: [forme(a) if (jetons(a) and jetons(a)[0] not in VOIES) else "" for a in arrets]
+            cle: [" ".join(_jetons(a)) if (jetons(a) and jetons(a)[0] not in VOIES) else "" for a in arrets]
             for cle, arrets in self.arrets.items()
         }
 
