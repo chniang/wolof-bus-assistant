@@ -190,16 +190,14 @@ _COMPTEUR = itertools.count()
 ERREUR_ASR = "\x00ERREUR_ASR "
 
 
-@spaces.GPU(duration=30)
-def transcrire_wolof(chemin_audio: str) -> str:
-    """Transcrit un enregistrement de micro ou un fichier envoyé.
+def _decoder_audio(chemin_audio: str) -> np.ndarray:
+    """Lit l'enregistrement (micro ou fichier) en 16 kHz mono, sur CPU.
 
-    Seul endroit de l'app qui réserve le GPU. Le modèle est déjà en mémoire, la
-    réservation ne couvre donc que le calcul.
+    Fait hors de la réservation GPU : décoder un fichier n'a pas besoin du GPU.
     """
     octets = Path(chemin_audio).read_bytes()
     try:
-        audio = load_audio(octets)
+        return load_audio(octets)
     except Exception:
         # Le navigateur enregistre en WebM/Opus, que soundfile ne sait pas lire.
         # ffmpeg, déclaré dans packages.txt, ramène ça en WAV avant de réessayer.
@@ -216,7 +214,16 @@ def transcrire_wolof(chemin_audio: str) -> str:
                 check=True,
                 capture_output=True,
             )
-            audio = load_audio(converti.read_bytes())
+            return load_audio(converti.read_bytes())
+
+
+@spaces.GPU(duration=30)
+def transcrire_wolof(audio: np.ndarray) -> str:
+    """Transcrit l'audio avec Kiriku sur GPU.
+
+    Seul endroit de l'app qui réserve le GPU. Le modèle est déjà en mémoire, la
+    réservation ne couvre donc que le calcul.
+    """
     try:
         return transcrire(MODELE_WHISPER, audio)
     except Exception as exc:
@@ -226,6 +233,19 @@ def transcrire_wolof(chemin_audio: str) -> str:
 
         traceback.print_exc()
         return f"{ERREUR_ASR}{type(exc).__name__} : {str(exc)[:300]}"
+
+
+# Secours quand ZeroGPU ne fournit pas de GPU (« No CUDA GPUs are available ») :
+# whisper-small quantifié sur CPU, chargé seulement le jour où on en a besoin.
+_MODELE_CPU = None
+
+
+def _transcrire_cpu(audio: np.ndarray) -> str:
+    global _MODELE_CPU
+    if _MODELE_CPU is None:
+        print("[ASR] GPU indisponible : chargement de whisper-small sur CPU", flush=True)
+        _MODELE_CPU = load_model()
+    return transcrire(_MODELE_CPU, audio)
 
 
 def _phrase_correspondance(trajet: dict) -> str:
@@ -364,12 +384,21 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str) -> tuple:
 
     if audio:
         try:
-            phrase = transcrire_wolof(audio)
+            son = _decoder_audio(audio)
         except Exception as exc:
             return ("", "", f"### 🎤 Audio illisible\n\n{_court(exc)}", None, "")
+        try:
+            phrase = transcrire_wolof(son)
+        except Exception as exc:
+            # Panne côté Hugging Face (GPU non attribué, quota) : on ne laisse pas
+            # l'utilisateur sans réponse, on transcrit sur CPU, plus lentement.
+            print(f"[ASR] ZeroGPU en échec ({_court(exc)}), secours CPU", flush=True)
+            phrase = ERREUR_ASR
         if phrase.startswith(ERREUR_ASR):
-            detail = phrase[len(ERREUR_ASR):]
-            return ("", "", f"### 🎤 Transcription impossible\n\n`{detail}`", None, "")
+            try:
+                phrase = _transcrire_cpu(son)
+            except Exception as exc:
+                return ("", "", f"### 🎤 Transcription impossible\n\n`{_court(exc)}`", None, "")
     else:
         phrase = (phrase_ecrite or "").strip()
 
