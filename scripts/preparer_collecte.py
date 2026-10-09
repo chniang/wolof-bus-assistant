@@ -2,11 +2,14 @@ r"""Prépare les voix collectées par WhatsApp pour le fine-tuning de Whisper wo
 
 Utilisation :
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip"
+    .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip" --depuis 09/10/2026
 
 On part d'un export de discussion WhatsApp (« Exporter la discussion » +
 « Inclure les médias »). Pour chaque note vocale, on récupère le premier texte
 utile qui la suit, on convertit l'audio en wav 16 kHz mono et on remplit
-data/collecte/metadata.csv.
+data/collecte/metadata.csv. Le texte d'origine y est gardé dans
+transcription_brute, et transcription porte la version uniformisée
+(NORMALISATION). --depuis ignore les messages antérieurs à la date de la collecte.
 
 Vie privée : les noms réels et les numéros ne sortent jamais. Chaque personne
 devient locuteur_01, locuteur_02... dans un dossier qui porte ce pseudo-nom.
@@ -22,6 +25,7 @@ import subprocess
 import sys
 import unicodedata
 import zipfile
+from datetime import date
 from pathlib import Path, PurePosixPath
 
 EXT_AUDIO = {".opus", ".ogg", ".m4a", ".mp3"}
@@ -33,6 +37,26 @@ FILLER = {
     "salaam", "salut", "bonjour", "bonsoir", "coucou", "cc", "oui", "non",
     "ouais", "waaw", "déedéet", "yep", "yes", "no", "reçu", "bien reçu",
 }
+
+# Uniformisation de l'orthographe des transcriptions. Les règles portent sur des
+# mots entiers, insensibles à la casse ; un nom de lieu ne doit jamais y figurer.
+# Clés en minuscules : facile à compléter. Le texte d'origine reste conservé dans
+# la colonne transcription_brute de metadata.csv.
+NORMALISATION = {
+    "magui": "maa ngi",
+    "maguii": "maa ngi",
+    "mangi": "maa ngi",
+    "maa ngui": "maa ngi",
+    "man gui": "maa ngi",
+    "beugg": "bëgg",
+    "beug": "bëgg",
+    "bueg": "bëgg",
+    "begg": "bëgg",
+    "dm": "dem",
+}
+
+# Colonnes de metadata.csv (transcription_brute ajoutée après coup).
+CHAMPS_METADATA = ["file_name", "transcription", "transcription_brute", "locuteur", "duree_s", "statut"]
 
 TAILLE_MAX_TEXTE = 200   # au-delà, ce n'est probablement pas la phrase du vocal
 DUREE_MIN = 1.0          # secondes
@@ -65,6 +89,38 @@ def _texte_propre(contenu: str) -> str:
     """Texte affichable : invisibles retirés, espaces et retours normalisés."""
     texte = _sans_invisibles(contenu).replace("’", "'")
     return re.sub(r"\s+", " ", texte).strip()
+
+
+def _uniformiser(texte: str) -> str:
+    """Applique NORMALISATION aux mots entiers (casse ignorée), sans toucher au reste.
+
+    Les clés peuvent contenir des espaces (« maa ngui ») : on les essaie par
+    longueur décroissante pour que les locutions passent avant les mots seuls.
+    """
+    if not texte or not NORMALISATION:
+        return texte
+    alternatives = "|".join(re.escape(m) for m in sorted(NORMALISATION, key=len, reverse=True))
+    motif = re.compile(r"(?<!\w)(?:" + alternatives + r")(?!\w)", re.IGNORECASE)
+    return motif.sub(lambda m: NORMALISATION[m.group(0).lower()], texte)
+
+
+def _parse_date(brut: str | None):
+    """« 09/10/2026 » (ou 09.10.2026) -> date(2026, 10, 9). None si illisible."""
+    if not brut:
+        return None
+    morceaux = re.split(r"[/.]", brut)
+    if len(morceaux) != 3:
+        return None
+    try:
+        jour, mois, annee = (int(m) for m in morceaux)
+    except ValueError:
+        return None
+    if annee < 100:
+        annee += 2000
+    try:
+        return date(annee, mois, jour)
+    except ValueError:
+        return None
 
 
 def _est_ignorable(contenu: str) -> bool:
@@ -147,7 +203,7 @@ def _lire_messages(txt_path: Path) -> list[dict]:
                     expediteur, contenu = entete.group(1).strip(), entete.group(2)
                 else:
                     expediteur, contenu = None, reste  # message système
-                courant = {"expediteur": expediteur, "contenu": contenu}
+                courant = {"expediteur": expediteur, "contenu": contenu, "date": _parse_date(debut.group("date"))}
                 messages.append(courant)
             elif courant is not None:
                 # Suite d'un message sur plusieurs lignes.
@@ -271,6 +327,30 @@ def _noms_deja_presents(collecte_dir: Path) -> set[str]:
     return noms
 
 
+def _migrer_metadata(meta: Path) -> None:
+    """Ajoute transcription_brute à un metadata.csv écrit avant cette colonne.
+
+    Les anciennes lignes n'ont que transcription : on la garde telle quelle dans
+    transcription_brute et on met la version uniformisée dans transcription.
+    """
+    if not meta.exists():
+        return
+    with open(meta, "r", encoding="utf-8", newline="") as fichier:
+        lecteur = csv.DictReader(fichier)
+        champs = lecteur.fieldnames or []
+        lignes = list(lecteur)
+    if "transcription_brute" in champs:
+        return
+    for ligne in lignes:
+        brute = ligne.get("transcription") or ""
+        ligne["transcription_brute"] = brute
+        ligne["transcription"] = _uniformiser(brute)
+    with open(meta, "w", encoding="utf-8", newline="") as fichier:
+        redacteur = csv.DictWriter(fichier, fieldnames=CHAMPS_METADATA, extrasaction="ignore")
+        redacteur.writeheader()
+        redacteur.writerows(lignes)
+
+
 def _nom_fichier_sur(nom: str) -> str:
     """Nom de fichier wav sûr à partir du nom d'origine."""
     base = PurePosixPath(nom.replace("\\", "/")).stem
@@ -283,6 +363,7 @@ def traiter_zip(
     brut_dir: str | Path | None = None,
     collecte_dir: str | Path | None = None,
     installer_si_besoin: bool = True,
+    depuis: date | None = None,
 ) -> dict:
     """Traite un export WhatsApp et renvoie un rapport. Ne rien afficher ici."""
     racine = Path(__file__).resolve().parents[1]
@@ -304,6 +385,19 @@ def traiter_zip(
     messages: list[dict] = []
     for txt in textes_export:
         messages.extend(_lire_messages(txt))
+
+    # --depuis : on jette tout ce qui est antérieur à la date de collecte
+    # (vocaux ET textes), puisqu'un export WhatsApp contient tout l'historique.
+    ignores_date = 0
+    if depuis is not None:
+        gardes: list[dict] = []
+        for message in messages:
+            quand = message.get("date")
+            if quand is not None and quand < depuis:
+                ignores_date += 1
+                continue
+            gardes.append(message)
+        messages = gardes
 
     # Repère les notes vocales, les messages système et les médias omis.
     infos = []
@@ -383,7 +477,8 @@ def traiter_zip(
         lignes.append(
             {
                 "file_name": relatif,
-                "transcription": transcription,
+                "transcription": _uniformiser(transcription),
+                "transcription_brute": transcription,
                 "locuteur": pseudo,
                 "duree_s": f"{duree:.2f}",
                 "statut": statut,
@@ -400,12 +495,12 @@ def traiter_zip(
             textes_sans_vocal += 1
 
     meta = Path(collecte_dir) / "metadata.csv"
+    _migrer_metadata(meta)
     if lignes:
         Path(collecte_dir).mkdir(parents=True, exist_ok=True)
         nouveau = not meta.exists()
         with open(meta, "a", encoding="utf-8", newline="") as fichier:
-            champs = ["file_name", "transcription", "locuteur", "duree_s", "statut"]
-            redacteur = csv.DictWriter(fichier, fieldnames=champs)
+            redacteur = csv.DictWriter(fichier, fieldnames=CHAMPS_METADATA)
             if nouveau:
                 redacteur.writeheader()
             redacteur.writerows(lignes)
@@ -415,6 +510,7 @@ def traiter_zip(
         "trouves": len(positions_vocaux),
         "associes": len(associations),
         "sans_texte": len(positions_vocaux) - len(associations),
+        "ignores_date": ignores_date,
         "textes_sans_vocal": textes_sans_vocal,
         "rejets": rejets,
         "ecrits": len(lignes),
@@ -424,28 +520,45 @@ def traiter_zip(
 
 def main(argv: list[str]) -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    if len(argv) < 2:
-        print('Utilisation : python scripts\\preparer_collecte.py "chemin\\fichier.zip"')
+    import argparse
+
+    analyseur = argparse.ArgumentParser(
+        description="Prépare les voix collectées par WhatsApp pour le fine-tuning."
+    )
+    analyseur.add_argument("zip", help="export WhatsApp (.zip)")
+    analyseur.add_argument(
+        "--depuis",
+        metavar="JJ/MM/AAAA",
+        help="ignore les messages antérieurs à cette date (vocaux ET textes).",
+    )
+    args = analyseur.parse_args(argv[1:])
+
+    depuis = _parse_date(args.depuis) if args.depuis else None
+    if args.depuis and depuis is None:
+        print(f"Date invalide pour --depuis : {args.depuis!r} (attendu JJ/MM/AAAA)")
         return 2
+
     try:
-        rapport = traiter_zip(argv[1])
+        rapport = traiter_zip(args.zip, depuis=depuis)
     except FileExistsError as erreur:
         # Erreur attendue (zip déjà traité) : message clair, pas de traceback.
         print(f"\n{erreur}")
         return 1
 
     print(f"\n=== Rapport - {Path(rapport['zip']).name} ===\n")
-    print(f"Vocaux trouvés        : {rapport['trouves']}")
-    print(f"Associés à un texte   : {rapport['associes']}")
-    print(f"Vocaux sans texte     : {rapport['sans_texte']}")
-    print(f"Textes sans vocal     : {rapport['textes_sans_vocal']}")
+    print(f"Vocaux trouvés          : {rapport['trouves']}")
+    print(f"Associés à un texte     : {rapport['associes']}")
+    print(f"Vocaux sans texte       : {rapport['sans_texte']}")
+    print(f"Textes sans vocal       : {rapport['textes_sans_vocal']}")
+    if depuis is not None:
+        print(f"Messages ignorés (date) : {rapport['ignores_date']}")
     total_rejets = sum(rapport["rejets"].values())
-    print(f"Rejetés               : {total_rejets}")
+    print(f"Rejetés                 : {total_rejets}")
     for raison, nombre in sorted(rapport["rejets"].items()):
         print(f"   - {raison} : {nombre}")
-    print(f"Lignes ajoutées       : {rapport['ecrits']}")
+    print(f"Lignes ajoutées         : {rapport['ecrits']}")
     if rapport["locuteurs"]:
-        print(f"Locuteurs anonymisés   : {', '.join(rapport['locuteurs'])}")
+        print(f"Locuteurs anonymisés     : {', '.join(rapport['locuteurs'])}")
     return 0
 
 
