@@ -6,5 +6,9 @@ body*.json
 model_checkpoints/
 test_*.wav
 
+# Voix de vraies personnes : jamais sur GitHub.
+data/collecte/
+data/collecte_brut/
+
 upload_space.py
 test_modeles_nvidia.py
