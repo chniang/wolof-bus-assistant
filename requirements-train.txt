@@ -1,0 +1,16 @@
+# Dépendances pour l'entraînement sur Brev (GPU NVIDIA, facturé à l'heure).
+# L'inférence locale de l'app reste régie par requirements.txt : on n'y touche pas.
+#
+# Versions alignées sur celles testées dans le projet : transformers 5.17 et
+# torch 2.14. On n'impose pas d'index CPU pour torch : sur Brev, l'image fournit
+# un torch CUDA, et forcer un build CPU casserait le GPU.
+torch==2.14.0
+transformers==5.17.0
+datasets==5.1.0
+accelerate==1.15.0
+evaluate==0.4.6
+jiwer==4.0.0
+soundfile==0.14.0
+
+# Lecture du token `hf auth login` pour --pousser-hub (déjà tiré par transformers).
+huggingface_hub==1.32.0

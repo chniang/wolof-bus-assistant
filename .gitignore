@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 body*.json
 model_checkpoints/
+models/
 test_*.wav
 
 # Voix de vraies personnes : jamais sur GitHub.
