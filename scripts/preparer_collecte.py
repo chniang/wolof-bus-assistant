@@ -4,6 +4,7 @@ Utilisation :
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip"
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip" --depuis 09/10/2026
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip" --collecteur TIJAANI
+    .\.venv\Scripts\python.exe scripts\preparer_collecte.py --reverifier
 
 On part d'un export de discussion WhatsApp (« Exporter la discussion » +
 « Inclure les médias »). Pour chaque note vocale, on récupère le premier texte
@@ -11,12 +12,15 @@ utile qui la suit, on convertit l'audio en wav 16 kHz mono et on remplit
 data/collecte/metadata.csv. Le texte d'origine y est gardé dans
 transcription_brute, et transcription porte la version uniformisée
 (NORMALISATION). Jamais pris comme transcription : médias omis, pièces jointes
-non audio (.jpg, .mp4...), messages supprimés. Sans lieu reconnu (lieux.py),
-statut = sans_lieu.
+non audio (.jpg, .mp4...), messages supprimés. Sans lieu reconnu, statut =
+sans_lieu : le contrôle passe par les formes de lieux.py (rue et réseau) et,
+en complément, par l'extraction LOCALE de l'app (extract_local, jamais de LLM).
 
 --depuis ignore les messages antérieurs à la date de la collecte.
 --collecteur : c'est vous ; vos vocaux sont ignorés (et ne coupent pas
 l'association), vos textes restent candidats.
+--reverifier : sans zip, relit metadata.csv, réapplique NORMALISATION et le
+contrôle « lieu » ; le statut ne change qu'entre « ok » et « sans_lieu ».
 
 Vie privée : les noms réels et les numéros ne sortent jamais. Chaque personne
 devient locuteur_01, locuteur_02... dans un dossier qui porte ce pseudo-nom.
@@ -58,8 +62,13 @@ NORMALISATION = {
     "beugg": "bëgg",
     "beug": "bëgg",
     "bueg": "bëgg",
+    "beugue": "bëgg",
+    "beuge": "bëgg",
     "begg": "bëgg",
     "dm": "dem",
+    "deme": "dem",
+    "déme": "dem",
+    "démé": "dem",
 }
 
 # Colonnes de metadata.csv (transcription_brute ajoutée après coup).
@@ -225,6 +234,31 @@ def _contient_lieu(texte: str, formes: set[str]) -> bool:
 
     phrase = forme(texte)
     return any(re.search(r"(?:^| )" + re.escape(f) + r"(?: |$)", phrase) for f in formes)
+
+
+def _extraction_locale(texte: str) -> bool:
+    """Vrai si l'extraction LOCALE de l'app trouve un départ OU une arrivée.
+
+    Seule la partie locale de src/intent/extract_intent.py (extract_local) est
+    appelée : jamais de LLM, jamais de réseau.
+    """
+    if not texte or not texte.strip():
+        return False
+    racine = Path(__file__).resolve().parents[1]
+    sys.path.insert(0, str(racine / "src"))
+    from intent.extract_intent import extract_local
+
+    resultat = extract_local(texte)
+    return bool(resultat.get("depart") or resultat.get("arrivee"))
+
+
+def _a_un_lieu(texte: str, formes: set[str]) -> bool:
+    """Vrai si la phrase porte au moins un lieu de départ ou d'arrivée.
+
+    L'ancien contrôle (formes de lieux.py) reste en complément de l'extraction
+    LOCALE de l'app : la phrase est « ok » si l'une ou l'autre trouve un lieu.
+    """
+    return _contient_lieu(texte, formes) or _extraction_locale(texte)
 
 
 def _extraire_zip(zip_path: Path, destination: Path) -> list[str]:
@@ -567,7 +601,7 @@ def traiter_zip(
             continue
 
         statut = _statut_qualite(duree, dbfs)
-        if statut == "ok" and not _contient_lieu(_uniformiser(transcription), formes):
+        if statut == "ok" and not _a_un_lieu(_uniformiser(transcription), formes):
             statut = "sans_lieu"
         if statut == "sans_lieu":
             compte_sans_lieu += 1
@@ -619,6 +653,64 @@ def traiter_zip(
     }
 
 
+def reverifier(meta: Path | None = None) -> int:
+    """Relit metadata.csv, réapplique NORMALISATION et refait le contrôle « lieu ».
+
+    Le statut ne change qu'entre « ok » et « sans_lieu » ; trop_court, trop_long
+    et volume_faible restent intacts. Aucun fichier audio n'est touché. Le
+    fichier est réécrit en UTF-8 sans BOM, avec les mêmes colonnes. Affiche les
+    lignes dont la transcription ou le statut change.
+    """
+    racine = Path(__file__).resolve().parents[1]
+    meta = Path(meta) if meta else racine / "data" / "collecte" / "metadata.csv"
+    if not meta.exists():
+        print(f"metadata.csv introuvable : {meta}")
+        return 1
+
+    with open(meta, "r", encoding="utf-8", newline="") as fichier:
+        lecteur = csv.DictReader(fichier)
+        champs = lecteur.fieldnames or []
+        lignes = list(lecteur)
+    if "transcription_brute" not in champs:
+        _migrer_metadata(meta)
+        with open(meta, "r", encoding="utf-8", newline="") as fichier:
+            lecteur = csv.DictReader(fichier)
+            champs = lecteur.fieldnames or []
+            lignes = list(lecteur)
+
+    formes = _formes_lieux()
+    modifiees = 0
+    for ligne in lignes:
+        brute = (ligne.get("transcription_brute") or ligne.get("transcription") or "").strip()
+        nouveau_texte = _uniformiser(brute)
+        ancien_texte = ligne.get("transcription")
+        ancien_statut = ligne.get("statut")
+        nouveau_statut = ancien_statut
+
+        if ancien_statut in ("ok", "sans_lieu"):
+            nouveau_statut = "ok" if _a_un_lieu(nouveau_texte, formes) else "sans_lieu"
+
+        if nouveau_texte != ancien_texte or nouveau_statut != ancien_statut:
+            modifiees += 1
+            nom = ligne.get("file_name") or "?"
+            if nouveau_statut != ancien_statut:
+                print(f"  {nom} : statut {ancien_statut} -> {nouveau_statut}")
+            if nouveau_texte != ancien_texte:
+                print(f"  {nom} : transcription {ancien_texte!r} -> {nouveau_texte!r}")
+
+        ligne["transcription"] = nouveau_texte
+        ligne["statut"] = nouveau_statut
+
+    champs_sortie = champs if champs else CHAMPS_METADATA
+    with open(meta, "w", encoding="utf-8", newline="") as fichier:
+        redacteur = csv.DictWriter(fichier, fieldnames=champs_sortie, extrasaction="ignore")
+        redacteur.writeheader()
+        redacteur.writerows(lignes)
+
+    print(f"\n{modifiees} ligne(s) modifiée(s) sur {len(lignes)}.")
+    return 0
+
+
 def main(argv: list[str]) -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     import argparse
@@ -626,7 +718,7 @@ def main(argv: list[str]) -> int:
     analyseur = argparse.ArgumentParser(
         description="Prépare les voix collectées par WhatsApp pour le fine-tuning."
     )
-    analyseur.add_argument("zip", help="export WhatsApp (.zip)")
+    analyseur.add_argument("zip", nargs="?", help="export WhatsApp (.zip)")
     analyseur.add_argument(
         "--depuis",
         metavar="JJ/MM/AAAA",
@@ -637,7 +729,24 @@ def main(argv: list[str]) -> int:
         metavar="NOM",
         help="votre nom dans la discussion : vos vocaux sont ignorés, vos textes restent.",
     )
+    analyseur.add_argument(
+        "--reverifier",
+        action="store_true",
+        help="relit data/collecte/metadata.csv : réapplique NORMALISATION et le "
+             "contrôle « lieu », sans toucher aux fichiers audio.",
+    )
     args = analyseur.parse_args(argv[1:])
+
+    if args.reverifier:
+        if args.zip:
+            print("--reverifier ne prend pas de chemin de zip.")
+            return 2
+        return reverifier()
+
+    if not args.zip:
+        print(analyseur.format_usage().strip())
+        print("preparer_collecte.py : erreur : chemin du zip manquant (ou utilisez --reverifier)")
+        return 2
 
     depuis = _parse_date(args.depuis) if args.depuis else None
     if args.depuis and depuis is None:

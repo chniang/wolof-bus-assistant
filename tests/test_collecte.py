@@ -36,6 +36,13 @@ PHRASE_3_UNIFORMIsee = "maa ngi parcelle dama bëgg dem petersen"
 PHRASE_SANS_LIEU = "Les écritures 🥺"
 PHRASE_TAPEE = "Maa ngi Liberté 6, bëgg naa dem Ouakam"
 
+# Contrôle « lieu » élargi : l'extraction locale de l'app (extract_local) trouve
+# un départ ou une arrivée même quand aucun lieu réseau exact n'apparaît.
+PHRASE_KEUR = "magui parcelle assainie dama beugg dem cité keur gor gui"
+PHRASE_KEUR_UNIFORMISEE = "maa ngi parcelle assainie dama bëgg dem cité keur gor gui"
+PHRASE_POINT_E = "maa ngi point E dama bëgg dem Almadie"
+PHRASE_GAWAL = "Gawal ndayam"
+
 NOMS_A = [
     "PTT-20261009-WA0001",
     "PTT-20261009-WA0002",
@@ -149,6 +156,51 @@ def _migration_ok(module, travail: Path) -> bool:
     )
 
 
+def _reverifier_ok(module, travail: Path) -> list[tuple[str, bool]]:
+    """--reverifier relit metadata.csv, réuniformise et refait le contrôle lieu.
+
+    Le statut ne bouge qu'entre « ok » et « sans_lieu », le fichier reste en
+    UTF-8 sans BOM avec les mêmes colonnes.
+    """
+    dossier = travail / "reverifier"
+    dossier.mkdir(parents=True, exist_ok=True)
+    meta = dossier / "metadata.csv"
+    entete = ["file_name", "transcription", "transcription_brute", "locuteur", "duree_s", "statut"]
+    contenu_csv = [
+        ["locuteur_01/keurgorgui.wav", PHRASE_KEUR, PHRASE_KEUR, "locuteur_01", "2.50", "sans_lieu"],
+        ["locuteur_01/ecritures.wav", PHRASE_SANS_LIEU, PHRASE_SANS_LIEU, "locuteur_01", "2.00", "ok"],
+        ["locuteur_01/volume.wav", "dama beugue dem démé", "dama beugue dem démé", "locuteur_01", "2.00", "volume_faible"],
+        ["locuteur_01/gawal.wav", PHRASE_GAWAL, PHRASE_GAWAL, "locuteur_01", "2.00", "ok"],
+        ["locuteur_01/ouakam.wav", "Maa ngi Ouakam, dama bëgg dem Palais",
+         "Maa ngi Ouakam, dama bëgg dem Palais", "locuteur_01", "2.00", "ok"],
+    ]
+    with open(meta, "w", newline="", encoding="utf-8") as fichier:
+        redacteur = csv.writer(fichier)
+        redacteur.writerow(entete)
+        redacteur.writerows(contenu_csv)
+    code = module.reverifier(meta)
+    lignes = {l["file_name"]: l for l in _lire_metadata(dossier)}
+    l_keur = lignes["locuteur_01/keurgorgui.wav"]
+    l_ecrit = lignes["locuteur_01/ecritures.wav"]
+    l_vol = lignes["locuteur_01/volume.wav"]
+    l_gawal = lignes["locuteur_01/gawal.wav"]
+    l_ouakam = lignes["locuteur_01/ouakam.wav"]
+    contenu = meta.read_text(encoding="utf-8")
+    return [
+        ("R: reverifier renvoie 0", code == 0),
+        ("R: sans_lieu -> ok (keur gor gui)", l_keur["statut"] == "ok"),
+        ("R: transcription réuniformisée depuis la brute", l_keur["transcription"] == PHRASE_KEUR_UNIFORMISEE),
+        ("R: ok -> sans_lieu (Les écritures 🥺)", l_ecrit["statut"] == "sans_lieu"),
+        ("R: volume_faible intact", l_vol["statut"] == "volume_faible"),
+        ("R: volume_faible réuniformisé", l_vol["transcription"] == "dama bëgg dem dem"),
+        ("R: ok -> sans_lieu (Gawal ndayam)", l_gawal["statut"] == "sans_lieu"),
+        ("R: ligne ok inchangée", l_ouakam["statut"] == "ok"
+            and l_ouakam["transcription"] == "Maa ngi Ouakam, dama bëgg dem Palais"),
+        ("R: UTF-8 sans BOM", not contenu.startswith("\ufeff")),
+        ("R: mêmes colonnes", contenu.splitlines()[0] == ",".join(entete)),
+    ]
+
+
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     module = _charger_module()
@@ -222,6 +274,33 @@ def main() -> int:
 
         # --- Migration d'anciens metadata.csv.
         verifications.append(("M: migration d'un ancien metadata.csv", _migration_ok(module, travail)))
+
+        # --- NORMALISATION élargie : beugue/beuge -> bëgg, déme/démé/deme -> dem.
+        verifications += [
+            ("U: beugue -> bëgg", module._uniformiser("dama beugue dem déme") == "dama bëgg dem dem"),
+            ("U: beuge -> bëgg", module._uniformiser("dama beuge dem démé") == "dama bëgg dem dem"),
+            ("U: déme/démé/deme -> dem", module._uniformiser("déme démé deme dem") == "dem dem dem dem"),
+        ]
+
+        # --- Contrôle « lieu » élargi : extraction locale de l'app en complément.
+        formes = module._formes_lieux()
+        verifications += [
+            ("L: keur gor gui -> ok (extraction locale)", module._extraction_locale(PHRASE_KEUR_UNIFORMISEE) is True),
+            ("L: point E Almadie -> ok (extraction locale)", module._extraction_locale(PHRASE_POINT_E) is True),
+            ("L: Gawal ndayam sans lieu", module._extraction_locale(PHRASE_GAWAL) is False),
+            ("L: Les écritures sans lieu", module._extraction_locale(PHRASE_SANS_LIEU) is False),
+            ("L: _a_un_lieu ok (keur gor gui)", module._a_un_lieu(PHRASE_KEUR_UNIFORMISEE, formes) is True),
+            ("L: _a_un_lieu ok (point E)", module._a_un_lieu(PHRASE_POINT_E, formes) is True),
+            ("L: _a_un_lieu sans lieu (Gawal)", module._a_un_lieu(PHRASE_GAWAL, formes) is False),
+            ("L: _a_un_lieu sans lieu (écritures)", module._a_un_lieu(PHRASE_SANS_LIEU, formes) is False),
+        ]
+
+        # --- CLI --reverifier : refuse un zip, sans avoir besoin d'un metadata.
+        verifications += [
+            ("R: --reverifier refuse un zip",
+             module.main(["preparer_collecte.py", "--reverifier", "collecte.zip"]) == 2),
+        ]
+        verifications += _reverifier_ok(module, travail)
 
         echecs = 0
         for titre, bon in verifications:
