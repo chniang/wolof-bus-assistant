@@ -3,13 +3,20 @@ r"""Prépare les voix collectées par WhatsApp pour le fine-tuning de Whisper wo
 Utilisation :
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip"
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip" --depuis 09/10/2026
+    .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip" --collecteur TIJAANI
 
 On part d'un export de discussion WhatsApp (« Exporter la discussion » +
 « Inclure les médias »). Pour chaque note vocale, on récupère le premier texte
 utile qui la suit, on convertit l'audio en wav 16 kHz mono et on remplit
 data/collecte/metadata.csv. Le texte d'origine y est gardé dans
 transcription_brute, et transcription porte la version uniformisée
-(NORMALISATION). --depuis ignore les messages antérieurs à la date de la collecte.
+(NORMALISATION). Jamais pris comme transcription : médias omis, pièces jointes
+non audio (.jpg, .mp4...), messages supprimés. Sans lieu reconnu (lieux.py),
+statut = sans_lieu.
+
+--depuis ignore les messages antérieurs à la date de la collecte.
+--collecteur : c'est vous ; vos vocaux sont ignorés (et ne coupent pas
+l'association), vos textes restent candidats.
 
 Vie privée : les noms réels et les numéros ne sortent jamais. Chaque personne
 devient locuteur_01, locuteur_02... dans un dossier qui porte ce pseudo-nom.
@@ -76,6 +83,12 @@ LIGNE_IOS = re.compile(
 MEDIA_OMIS = re.compile(r"^<?\s*(?:médias?|medias?)\s+omis\s*>?$|^<?\s*media omitted\s*>?$", re.I)
 FICHIER_JOINT = re.compile(r"\((?:fichier joint|file attached|pièce jointe)", re.I)
 NOM_AUDIO = re.compile(r"([^\s/\\()]+\.(?:opus|ogg|m4a|mp3))", re.I)
+# Messages supprimés : jamais pris comme transcription.
+MESSAGE_SUPPRIME = re.compile(
+    r"ce message a été supprimé|vous avez supprimé ce message|"
+    r"this message was deleted|you deleted this message",
+    re.I,
+)
 
 _FFMPEG: str | None = None
 
@@ -151,6 +164,67 @@ def _nom_audio(contenu: str) -> str | None:
     if re.fullmatch(r"[^\s/\\()]+\.(?:opus|ogg|m4a|mp3)", texte, re.I):
         return correspondance.group(1)
     return None
+
+
+def _message_supprime(contenu: str) -> bool:
+    """Vrai si le message a été supprimé (à sauter, comme un média omis)."""
+    return bool(MESSAGE_SUPPRIME.search(_texte_propre(contenu)))
+
+
+def _piece_jointe_non_audio(contenu: str) -> bool:
+    """Vrai si c'est une pièce jointe qui n'est pas un audio (.jpg, .mp4, .pdf...).
+
+    Un tel message ne doit jamais servir de transcription.
+    """
+    texte = _texte_propre(contenu)
+    return bool(FICHIER_JOINT.search(texte)) and _nom_audio(texte) is None
+
+
+def _est_collecteur(expediteur: str | None, collecteur: str | None) -> bool:
+    """Vrai si l'expéditeur est celui qui collecte (--collecteur)."""
+    if not collecteur:
+        return False
+    return (expediteur or "").strip().casefold() == collecteur.strip().casefold()
+
+
+_FORMES_LIEUX: set[str] | None = None
+
+
+def _formes_lieux() -> set[str]:
+    """Formes normalisées des lieux du réseau, comme dans scripts/finetune_whisper.py."""
+    global _FORMES_LIEUX
+    if _FORMES_LIEUX is not None:
+        return _FORMES_LIEUX
+    racine = Path(__file__).resolve().parents[1]
+    sys.path.insert(0, str(racine / "src"))
+    from matching.lieux import forme, lieux_reconnaissables
+
+    arrets: set[str] = set()
+    csv_itineraires = racine / "data" / "itineraires_dakar.csv"
+    if csv_itineraires.exists():
+        with open(csv_itineraires, newline="", encoding="utf-8") as fichier:
+            for rangee in csv.DictReader(fichier):
+                if rangee.get("arret"):
+                    arrets.add(rangee["arret"])
+    formes = {forme(lieu) for lieu in lieux_reconnaissables(sorted(arrets))}
+    formes.add(forme("Palais"))  # terminologie employée par les voyageurs
+    _FORMES_LIEUX = {f for f in formes if f}
+    return _FORMES_LIEUX
+
+
+def _contient_lieu(texte: str, formes: set[str]) -> bool:
+    """Vrai si le texte mentionne au moins un lieu du réseau (mots entiers).
+
+    formes vide (données absentes) : on ne déclare pas tout « sans lieu », donc True.
+    """
+    if not formes:
+        return True
+    racine = Path(__file__).resolve().parents[1]
+    sys.path.insert(0, str(racine / "src"))
+    from matching.lieux import forme
+
+    phrase = forme(texte)
+    return any(re.search(r"(?:^| )" + re.escape(f) + r"(?: |$)", phrase) for f in formes)
 
 
 def _extraire_zip(zip_path: Path, destination: Path) -> list[str]:
@@ -364,6 +438,7 @@ def traiter_zip(
     collecte_dir: str | Path | None = None,
     installer_si_besoin: bool = True,
     depuis: date | None = None,
+    collecteur: str | None = None,
 ) -> dict:
     """Traite un export WhatsApp et renvoie un rapport. Ne rien afficher ici."""
     racine = Path(__file__).resolve().parents[1]
@@ -399,17 +474,35 @@ def traiter_zip(
             gardes.append(message)
         messages = gardes
 
-    # Repère les notes vocales, les messages système et les médias omis.
+    # Repère les notes vocales, les messages système et tout ce qu'on ne prend
+    # jamais comme transcription : médias omis, pièces jointes non audio, messages
+    # supprimés, et les vocaux du collecteur (--collecteur).
     infos = []
     for message in messages:
         systeme = message.get("expediteur") is None
         nom = _nom_audio(message["contenu"]) if not systeme else None
-        media = bool(MEDIA_OMIS.match(_texte_propre(message["contenu"])))
-        infos.append({"nom_audio": nom, "systeme": systeme, "media": media})
+        texte = _texte_propre(message["contenu"])
+        media = bool(
+            MEDIA_OMIS.match(texte)
+            or _message_supprime(texte)
+            or _piece_jointe_non_audio(message["contenu"])
+        )
+        infos.append(
+            {
+                "nom_audio": nom,
+                "systeme": systeme,
+                "media": media,
+                "vocal_collecteur": bool(nom) and _est_collecteur(message.get("expediteur"), collecteur),
+            }
+        )
 
     index_audio = _indexer_audios(dossier_brut)
 
-    positions_vocaux = [i for i, info in enumerate(infos) if info["nom_audio"]]
+    # Les vocaux du collecteur ne comptent pas et ne coupent pas l'association :
+    # le vocal d'un participant peut être associé au texte qui suit, même si le
+    # collecteur a envoyé un vocal entre les deux.
+    positions_vocaux = [i for i, info in enumerate(infos) if info["nom_audio"] and not info["vocal_collecteur"]]
+    collecteur_vocaux = sum(1 for info in infos if info["vocal_collecteur"])
     associations: dict[int, int] = {}
 
     for position in positions_vocaux:
@@ -440,6 +533,8 @@ def traiter_zip(
     deja_presents = _noms_deja_presents(Path(collecte_dir))
     lignes: list[dict] = []
     rejets: dict[str, int] = {}
+    compte_sans_lieu = 0
+    formes = _formes_lieux()
 
     def _rejet(raison: str) -> None:
         rejets[raison] = rejets.get(raison, 0) + 1
@@ -472,7 +567,11 @@ def traiter_zip(
             continue
 
         statut = _statut_qualite(duree, dbfs)
-        if statut != "ok":
+        if statut == "ok" and not _contient_lieu(_uniformiser(transcription), formes):
+            statut = "sans_lieu"
+        if statut == "sans_lieu":
+            compte_sans_lieu += 1
+        elif statut != "ok":
             _rejet(statut.replace("_", " "))
         lignes.append(
             {
@@ -511,6 +610,8 @@ def traiter_zip(
         "associes": len(associations),
         "sans_texte": len(positions_vocaux) - len(associations),
         "ignores_date": ignores_date,
+        "sans_lieu": compte_sans_lieu,
+        "collecteur_vocaux_ignores": collecteur_vocaux,
         "textes_sans_vocal": textes_sans_vocal,
         "rejets": rejets,
         "ecrits": len(lignes),
@@ -531,6 +632,11 @@ def main(argv: list[str]) -> int:
         metavar="JJ/MM/AAAA",
         help="ignore les messages antérieurs à cette date (vocaux ET textes).",
     )
+    analyseur.add_argument(
+        "--collecteur",
+        metavar="NOM",
+        help="votre nom dans la discussion : vos vocaux sont ignorés, vos textes restent.",
+    )
     args = analyseur.parse_args(argv[1:])
 
     depuis = _parse_date(args.depuis) if args.depuis else None
@@ -539,7 +645,7 @@ def main(argv: list[str]) -> int:
         return 2
 
     try:
-        rapport = traiter_zip(args.zip, depuis=depuis)
+        rapport = traiter_zip(args.zip, depuis=depuis, collecteur=args.collecteur)
     except FileExistsError as erreur:
         # Erreur attendue (zip déjà traité) : message clair, pas de traceback.
         print(f"\n{erreur}")
@@ -552,6 +658,9 @@ def main(argv: list[str]) -> int:
     print(f"Textes sans vocal       : {rapport['textes_sans_vocal']}")
     if depuis is not None:
         print(f"Messages ignorés (date) : {rapport['ignores_date']}")
+    print(f"Sans lieu reconnu        : {rapport['sans_lieu']}")
+    if args.collecteur:
+        print(f"Vocaux du collecteur    : {rapport['collecteur_vocaux_ignores']} (ignorés)")
     total_rejets = sum(rapport["rejets"].values())
     print(f"Rejetés                 : {total_rejets}")
     for raison, nombre in sorted(rapport["rejets"].items()):

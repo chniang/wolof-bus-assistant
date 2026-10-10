@@ -2,10 +2,16 @@ r"""Teste scripts/preparer_collecte.py sur une fausse discussion WhatsApp.
 
     .\.venv\Scripts\python.exe tests\test_collecte.py
 
-On fabrique un zip avec des notes vocales de bip (2 s), leurs textes, un
-« d'accord » à ignorer, un vocal resté sans texte, un vieux vocal daté d'avant
---depuis (ignoré par la date) et une phrase à uniformiser. Le script doit
-associer/vérifier tout ça et anonymiser le locuteur. Code de sortie : 0 si tout passe.
+Deux faux exports :
+- collecte_awa.zip : un vieux vocal daté d'avant --depuis (ignoré), une photo
+  .jpg et un message supprimé juste après un vocal (sautés comme les médias
+  omis), une phrase « magui parcelle dama beugg dm petersen » (uniformisée),
+  un vocal suivi de « Les écritures 🥺 » (statut sans_lieu) ;
+- collecte_collecteur.zip : vocal de Awa, vocal de Moi, texte de Awa, lancé
+  avec collecteur="Moi" -> le vocal de Awa reçoit le texte, le vocal de Moi
+  est ignoré.
+
+Code de sortie : 0 si tout passe.
 """
 
 from __future__ import annotations
@@ -27,13 +33,18 @@ PHRASE_1 = "Maa ngi Guédiawaye, dama bëgg dem Palais"
 PHRASE_2 = "Maa ngi Thiaroye, bëgg naa dem Ouakam"
 PHRASE_3 = "magui parcelle dama beugg dm petersen"
 PHRASE_3_UNIFORMIsee = "maa ngi parcelle dama bëgg dem petersen"
-NOMS = [
+PHRASE_SANS_LIEU = "Les écritures 🥺"
+PHRASE_TAPEE = "Maa ngi Liberté 6, bëgg naa dem Ouakam"
+
+NOMS_A = [
     "PTT-20261009-WA0001",
     "PTT-20261009-WA0002",
     "PTT-20261009-WA0003",
     "PTT-20261009-WA0004",
-    "PTT-20261008-WA0005",  # vocal daté d'avant --depuis : doit être ignoré
+    "PTT-20261009-WA0005",
+    "PTT-20261008-WA0006",  # vocal daté d'avant --depuis : doit être ignoré
 ]
+NOMS_B = ["PTT-20261009-WA0010", "PTT-20261009-WA0011"]
 
 
 def _charger_module():
@@ -43,13 +54,13 @@ def _charger_module():
     return module
 
 
-def _fabriquer_bip(dossier: Path, ffmpeg: str) -> list[Path]:
+def _fabriquer_bip(dossier: Path, noms: list[str], ffmpeg: str) -> list[Path]:
     """Crée les petits bips .m4a et renvoie leurs chemins."""
     import numpy as np
     import soundfile as sf
 
     chemins = []
-    for i, nom in enumerate(NOMS):
+    for i, nom in enumerate(noms):
         wav = dossier / f"{nom}.wav"
         frequence = 440 * (i + 1)
         t = np.linspace(0, 2.0, int(16000 * 2.0), endpoint=False)
@@ -67,7 +78,19 @@ def _fabriquer_bip(dossier: Path, ffmpeg: str) -> list[Path]:
     return chemins
 
 
-def _fabriquer_zip(dossier: Path) -> Path:
+def _ecrire_zip(dossier: Path, lignes: list[str], noms: list[str]) -> Path:
+    txt = dossier / "WhatsApp Chat with Awa.txt"
+    txt.write_text("\n".join(lignes) + "\n", encoding="utf-8")
+
+    archive_path = dossier / "collecte.zip"
+    with zipfile.ZipFile(archive_path, "w") as archive:
+        archive.write(txt, arcname=txt.name)
+        for nom in noms:
+            archive.write(dossier / f"{nom}.m4a", arcname=f"{nom}.m4a")
+    return archive_path
+
+
+def _fabriquer_zip_a(dossier: Path) -> Path:
     lignes = [
         "09/10/2026 19:20 - Awa: PTT-20261009-WA0001.m4a (fichier joint)",
         f"\u200e09/10/2026 19:20 - Awa: {PHRASE_1}",
@@ -75,23 +98,37 @@ def _fabriquer_zip(dossier: Path) -> Path:
         "\u200e09/10/2026 19:21 - Moi: d'accord",
         "\u200e09/10/2026 19:21 - Awa: Maa ngi Thiaroye,",
         "bëgg naa dem Ouakam",
-        "\u200e09/10/2026 19:22 - Awa: PTT-20261009-WA0003.m4a (file attached)",
-        # Phrase à uniformiser, liée à un vocal.
+        "\u200e09/10/2026 19:22 - Awa: PTT-20261009-WA0003.m4a (fichier joint)",
+        # Photo juste après le vocal : jamais prise comme transcription.
+        "\u200e09/10/2026 19:22 - Awa: IMG-20261009-WA0001.jpg (fichier joint)",
+        # Message supprimé : jamais pris comme transcription.
+        "\u200e09/10/2026 19:22 - Moi: Ce message a été supprimé",
+        f"\u200e09/10/2026 19:22 - Awa: {PHRASE_3}",
         "\u200e09/10/2026 19:23 - Awa: PTT-20261009-WA0004.m4a (fichier joint)",
-        f"\u200e09/10/2026 19:23 - Awa: {PHRASE_3}",
+        f"\u200e09/10/2026 19:23 - Moi: {PHRASE_SANS_LIEU}",
+        "\u200e09/10/2026 19:24 - Awa: PTT-20261009-WA0005.m4a (fichier joint)",
         # Vieux vocal daté d'avant --depuis : vocal ET texte doivent être ignorés.
-        "\u200e08/10/2026 10:00 - Awa: PTT-20261008-WA0005.m4a (fichier joint)",
+        "\u200e08/10/2026 10:00 - Awa: PTT-20261008-WA0006.m4a (fichier joint)",
         "\u200e08/10/2026 10:00 - Awa: Maa ngi Cambérène, dama bëgg dem Ouakam",
     ]
-    txt = dossier / "WhatsApp Chat with Awa.txt"
-    txt.write_text("\n".join(lignes) + "\n", encoding="utf-8")
+    return _ecrire_zip(dossier, lignes, NOMS_A)
 
-    archive_path = dossier / "collecte_awa.zip"
-    with zipfile.ZipFile(archive_path, "w") as archive:
-        archive.write(txt, arcname=txt.name)
-        for nom in NOMS:
-            archive.write(dossier / f"{nom}.m4a", arcname=f"{nom}.m4a")
-    return archive_path
+
+def _fabriquer_zip_b(dossier: Path) -> Path:
+    lignes = [
+        "09/10/2026 20:00 - Awa: PTT-20261009-WA0010.m4a (fichier joint)",
+        "\u200e09/10/2026 20:01 - Moi: PTT-20261009-WA0011.m4a (fichier joint)",
+        f"\u200e09/10/2026 20:01 - Moi: {PHRASE_TAPEE}",
+    ]
+    return _ecrire_zip(dossier, lignes, NOMS_B)
+
+
+def _lire_metadata(collecte: Path) -> list[dict]:
+    meta = collecte / "metadata.csv"
+    if not meta.exists():
+        return []
+    with open(meta, encoding="utf-8") as fichier:
+        return list(csv.DictReader(fichier))
 
 
 def _migration_ok(module, travail: Path) -> bool:
@@ -104,7 +141,7 @@ def _migration_ok(module, travail: Path) -> bool:
         encoding="utf-8",
     )
     module._migrer_metadata(ancien)
-    lignes = list(csv.DictReader(open(ancien, encoding="utf-8")))
+    lignes = _lire_metadata(ancien.parent)
     ligne = lignes[0]
     return (
         ligne["transcription_brute"] == "magui parcelle"
@@ -119,48 +156,72 @@ def main() -> int:
 
     travail = Path(tempfile.mkdtemp(prefix="test_collecte_"))
     try:
-        _fabriquer_bip(travail, ffmpeg)
-        archive = _fabriquer_zip(travail)
+        verifications: list[tuple[str, bool]] = []
 
-        rapport = module.traiter_zip(
-            archive,
-            brut_dir=travail / "brut",
-            collecte_dir=travail / "collecte",
+        # --- Scénario A : date, photo, message supprimé, uniformisation, sans_lieu.
+        dossier_a = travail / "scenario_a"
+        dossier_a.mkdir(exist_ok=True)
+        _fabriquer_bip(dossier_a, NOMS_A, ffmpeg)
+        archive_a = _fabriquer_zip_a(dossier_a)
+        rapport_a = module.traiter_zip(
+            archive_a,
+            brut_dir=dossier_a / "brut",
+            collecte_dir=dossier_a / "collecte",
             installer_si_besoin=False,
             depuis=date(2026, 10, 9),
         )
+        lignes_a = _lire_metadata(dossier_a / "collecte")
+        transcriptions_a = {l.lower() for l in (l["transcription"] for l in lignes_a)}
+        brutes_a = {l["transcription_brute"] for l in lignes_a}
 
-        meta = travail / "collecte" / "metadata.csv"
-        lignes = list(csv.DictReader(open(meta, encoding="utf-8"))) if meta.exists() else []
-        transcriptions = {ligne["transcription"] for ligne in lignes}
-        brutes = {ligne["transcription_brute"] for ligne in lignes}
-
-        verifications = [
-            ("2 messages ignorés (--depuis)", rapport["ignores_date"] == 2),
-            ("4 vocaux retenus", rapport["trouves"] == 4),
-            ("3 vocaux associés", rapport["associes"] == 3),
-            ("1 vocal sans texte", rapport["sans_texte"] == 1),
-            ("3 lignes dans metadata.csv", len(lignes) == 3),
-            ("colonne transcription_brute présente", all(
-                "transcription_brute" in ligne for ligne in lignes
+        verifications += [
+            ("A: 2 messages ignorés (--depuis)", rapport_a["ignores_date"] == 2),
+            ("A: 5 vocaux retenus", rapport_a["trouves"] == 5),
+            ("A: 4 vocaux associés", rapport_a["associes"] == 4),
+            ("A: 1 vocal sans texte", rapport_a["sans_texte"] == 1),
+            ("A: 4 lignes dans metadata.csv", len(lignes_a) == 4),
+            ("A: photo ignorée", not any("img-" in t for t in transcriptions_a)),
+            ("A: message supprimé ignoré", not any("supprimé" in t for t in transcriptions_a)),
+            ("A: transcriptions uniformisées", PHRASE_3_UNIFORMIsee.lower() in transcriptions_a),
+            ("A: texte d'origine conservé", PHRASE_3 in brutes_a),
+            ("A: 1 statut sans_lieu", sum(l["statut"] == "sans_lieu" for l in lignes_a) == 1),
+            ("A: 3 statuts ok", sum(l["statut"] == "ok" for l in lignes_a) == 3),
+            ("A: rapport sans_lieu", rapport_a["sans_lieu"] == 1),
+            ("A: vieux vocal ignoré", not any("WA0006" in l["file_name"] for l in lignes_a)),
+            ("A: pseudo-anonymisation", all(l["locuteur"].startswith("locuteur_") for l in lignes_a)),
+            ("A: vrai nom absent des sorties", "Awa" not in (dossier_a / "collecte" / "metadata.csv").read_text(encoding="utf-8")),
+            ("A: wav 16 kHz mono", all(
+                (dossier_a / "collecte" / l["file_name"]).exists()
+                and _est_wav_16k_mono(dossier_a / "collecte" / l["file_name"])
+                for l in lignes_a
             )),
-            ("transcriptions uniformisées", transcriptions == {
-                PHRASE_1, PHRASE_2, PHRASE_3_UNIFORMIsee
-            }),
-            ("texte d'origine conservé", PHRASE_3 in brutes),
-            ("vieux vocal ignoré", not any("WA0005" in ligne["file_name"] for ligne in lignes)),
-            ("« d'accord » ignoré", not any("d'accord" in t.lower() for t in transcriptions)),
-            ("pseudo-anonymisation", all(
-                ligne["locuteur"].startswith("locuteur_") for ligne in lignes
-            )),
-            ("vrai nom absent des sorties", "Awa" not in meta.read_text(encoding="utf-8")),
-            ("wav 16 kHz mono", all(
-                (travail / "collecte" / ligne["file_name"]).exists()
-                and _est_wav_16k_mono(travail / "collecte" / ligne["file_name"])
-                for ligne in lignes
-            )),
-            ("migration d'un ancien metadata.csv", _migration_ok(module, travail)),
         ]
+
+        # --- Scénario B : collecteur "Moi".
+        dossier_b = travail / "scenario_b"
+        dossier_b.mkdir(exist_ok=True)
+        _fabriquer_bip(dossier_b, NOMS_B, ffmpeg)
+        archive_b = _fabriquer_zip_b(dossier_b)
+        rapport_b = module.traiter_zip(
+            archive_b,
+            brut_dir=dossier_b / "brut",
+            collecte_dir=dossier_b / "collecte",
+            installer_si_besoin=False,
+            collecteur="Moi",
+        )
+        lignes_b = _lire_metadata(dossier_b / "collecte")
+        transcriptions_b = {l["transcription"] for l in lignes_b}
+
+        verifications += [
+            ("B: 1 vocal retenu (Awa)", rapport_b["trouves"] == 1),
+            ("B: 1 vocal associé", rapport_b["associes"] == 1),
+            ("B: 1 vocal du collecteur ignoré", rapport_b["collecteur_vocaux_ignores"] == 1),
+            ("B: vocal de Awa reçoit le texte", transcriptions_b == {PHRASE_TAPEE}),
+            ("B: fichier de Awa (pas celui de Moi)", all("WA0010" in l["file_name"] for l in lignes_b)),
+        ]
+
+        # --- Migration d'anciens metadata.csv.
+        verifications.append(("M: migration d'un ancien metadata.csv", _migration_ok(module, travail)))
 
         echecs = 0
         for titre, bon in verifications:
