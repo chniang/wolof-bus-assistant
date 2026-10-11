@@ -39,7 +39,14 @@ TRAJETS = [
     ("Maa ngi Pikine, dama bëgg dem Colobane", {"Ligne 48", "Ligne 50", "Ligne 75"}),
     ("Maa ngi Keur Massar, dama bëgg dem UCAD", {"Ligne 54", "Ligne 71"}),
     ("Maa ngi Liberté 5, dama bëgg dem Guédiawaye", {"corr:Ligne 77", "corr:Ligne 78"}),
+    ("Maa ngi Pikine, bëgg naa dem Guédiawaye", {"Ligne 41", "Ligne 46"}),
 ]
+
+# Lignes qui ne doivent surtout PAS sortir pour une phrase : « Garage Guédiawaye »
+# (ligne 71) est à Dakar, pas dans le quartier Guédiawaye.
+TRAJETS_EXCLUS = {
+    "Maa ngi Pikine, bëgg naa dem Guédiawaye": {"Ligne 71"},
+}
 
 AUDIOS = [
     ("data/demo_audio/trajet ouakam_palais.wav", {"Ligne 7"}),
@@ -47,8 +54,8 @@ AUDIOS = [
 ]
 
 
-def _ok(trouvees: set[str], attendues: set[str]) -> bool:
-    return bool(trouvees & attendues)
+def _ok(trouvees: set[str], attendues: set[str], exclues: set[str] = frozenset()) -> bool:
+    return bool(trouvees & attendues) and not (trouvees & exclues)
 
 
 def test_local() -> int:
@@ -62,7 +69,7 @@ def test_local() -> int:
         resultat = matcher.find_line(lieux.get("depart") or "", lieux.get("arrivee") or "")
         trouvees = {l["ligne"] for l in resultat["lignes"]}
         trouvees |= {"corr:" + c["etape_1"]["ligne"] for c in resultat["correspondances"]}
-        bon = _ok(trouvees, attendues)
+        bon = _ok(trouvees, attendues, TRAJETS_EXCLUS.get(phrase, frozenset()))
         echecs += not bon
         print(f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n      {lieux.get('depart')} -> {lieux.get('arrivee')} | {sorted(trouvees) or 'rien'}")
     return echecs
@@ -126,7 +133,7 @@ def test_en_ligne() -> int:
                 print(f"ÉCHEC | {nom} : {exc}")
                 continue
             trouvees = _lignes_dans(str(carte))
-            bon = _ok(trouvees, attendues)
+            bon = _ok(trouvees, attendues, TRAJETS_EXCLUS.get(phrase or "", frozenset()))
             echecs += not bon
             print(f"{'OK ' if bon else 'ÉCHEC'} | {nom}  ({time.perf_counter() - debut:.0f} s)")
             print(f"      entendu : {transcription!r} | {trajet} | {sorted(trouvees) or 'rien'}")

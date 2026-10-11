@@ -285,18 +285,31 @@ def _voix_wolof(lignes: list[dict], correspondances: list[dict] | None = None) -
 # --------------------------------------------------------------------------- #
 
 
-def _une_carte(match: dict, etape: str = "") -> str:
-    """Une ligne : compagnie, numéro, sens, et où monter / descendre."""
+def _une_carte(match: dict, etape: str = "", depart: str = "", arrivee: str = "") -> str:
+    """Une ligne : compagnie, numéro, trajet de l'utilisateur, terminus de la ligne.
+    
+    Les noms d'arrêts portent leur couleur en propre (mode clair ET mode sombre) :
+    le CSS de la page ne doit jamais les rendre illisibles sur la carte claire.
+    """
     numero = numero_de(match["ligne"])
     affiche = re.sub(r"^Ligne\s*", "", str(match["ligne"]))
     rappel = nombre_en_wolof(numero) if numero is not None else ""
     entete = f"{etape} · {match['compagnie']}" if etape else match["compagnie"]
     trajet = ""
     if match.get("monte_a") and match.get("descend_a"):
+        # Le trajet de l'utilisateur, en gros, juste sous le numéro de ligne.
+        depart_texte = depart if depart else match['monte_a']
+        arrivee_texte = arrivee if arrivee else match['descend_a']
         trajet = (
-            f"<div style='color:#17211C;font-size:15px;margin-top:6px;'>"
-            f"Monte à <b>{match['monte_a']}</b> · descends à <b>{match['descend_a']}</b></div>"
+            f"<div style='color:#11301C;font-size:24px;font-weight:800;margin-top:8px;'>"
+            f"Monte à <b style='color:#081F11;'>{depart_texte}</b> (arrêt <b style='color:#081F11;'>{match['monte_a']}</b>)"
+            f" → descends à <b style='color:#081F11;'>{arrivee_texte}</b> (arrêt <b style='color:#081F11;'>{match['descend_a']}</b>)</div>"
         )
+    # Les terminus de la ligne, en petit : le parcours réel du bus.
+    ligne = (
+        f"<div style='color:#6B7A72;font-size:13px;margin-top:6px;'>"
+        f"Ligne : {match['depart']} → {match['arrivee']}</div>"
+    )
     return f"""
 <div style="border:1px solid #D6E6DC;border-top:6px solid {VERT};
             border-radius:12px;padding:16px 20px;margin:8px 0;background:#F6FBF8;">
@@ -304,9 +317,8 @@ def _une_carte(match: dict, etape: str = "") -> str:
               text-transform:uppercase;">{entete}</div>
   <div style="color:{VERT};font-size:56px;font-weight:800;line-height:1.05;
               margin:4px 0 6px 0;">{affiche}</div>
-  <div style="color:#17211C;font-size:20px;font-weight:600;">
-    {match['depart']} → {match['arrivee']}</div>
   {trajet}
+  {ligne}
   <div style="color:#6B7A72;font-size:13px;margin-top:6px;">
     {" · ".join(x for x in (rappel, match.get("categorie", "")) if x)}</div>
 </div>
@@ -323,7 +335,7 @@ def _carte(resultat: dict, depart: str, arrivee: str) -> str:
         )
 
     if resultat["found"]:
-        return "".join(_une_carte(match) for match in resultat["lignes"])
+        return "".join(_une_carte(match, depart=depart, arrivee=arrivee) for match in resultat["lignes"])
 
     correspondances = resultat.get("correspondances") or []
     if correspondances:
@@ -331,12 +343,12 @@ def _carte(resultat: dict, depart: str, arrivee: str) -> str:
         for numero, trajet in enumerate(correspondances, start=1):
             if numero > 1:
                 blocs.append(f"\n**Autre possibilité {numero}**\n")
-            blocs.append(_une_carte(trajet["etape_1"], "1er bus"))
+            blocs.append(_une_carte(trajet["etape_1"], "1er bus", depart=depart))
             blocs.append(
                 f"<div style='text-align:center;color:#6B7A72;margin:2px 0;'>"
                 f"🔁 Change à <b>{trajet['changement']}</b></div>"
             )
-            blocs.append(_une_carte(trajet["etape_2"], "2e bus"))
+            blocs.append(_une_carte(trajet["etape_2"], "2e bus", arrivee=arrivee))
         return "".join(blocs)
 
     inconnus = [

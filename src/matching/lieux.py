@@ -63,6 +63,17 @@ VOIES = {
     "retour", "sortie", "peage", "virage", "passage",
 }
 
+# Arrêts « faux amis » : le nom porte celui d'un quartier, mais l'arrêt n'y est
+# pas — un garage ou une sortie d'autoroute nommés d'après leur destination. Ils
+# ne doivent JAMAIS servir à reconnaître ce quartier. Ligne 71, « Garage
+# Guédiawaye » est à Dakar, entre HLM et Bène Tally ; lignes 24 et 31, « Sortie
+# Pikine » est sur l'autoroute. On ne garde que le mot d'équipement : une
+# demande explicite « Garage Guédiawaye » retrouve quand même l'arrêt.
+FAUX_AMIS = {
+    "garage guediawaye": ["garage"],
+    "sortie pikine": ["sortie"],
+}
+
 
 def sans_accents(texte: str) -> str:
     texte = unicodedata.normalize("NFD", str(texte).lower().replace("œ", "oe"))
@@ -71,6 +82,9 @@ def sans_accents(texte: str) -> str:
 
 def _calcul_jetons(texte: str) -> list[str]:
     brut = re.sub(r"[^a-z0-9]+", " ", sans_accents(texte)).split()
+    # Un faux ami perd le nom du quartier : sinon « Garage Guédiawaye » vaudrait
+    # « Guédiawaye ».
+    brut = FAUX_AMIS.get(" ".join(brut), brut)
     sortie: list[str] = []
     for mot in brut:
         mot = ABREVIATIONS.get(mot, mot)
@@ -173,6 +187,10 @@ MINUSCULES = {"de", "des", "du", "la", "le", "les", "et", "aux", "au", "à"}
 def joli(nom: str) -> str:
     """« TERMINUS GARE DE COLOBANE » -> « Gare de Colobane » (sans le mot terminus)."""
     texte = re.sub(r"^\s*(terminus|terminnus|termnus|arret)\s+", "", nom.strip(), flags=re.I)
+    # Un numéro collé au mot (« RUE10 PIKINE », « Rue9bis ») reste lisible :
+    # on sépare le numéro. Les codes d'une seule lettre (« P11 », « R802 ») sont
+    # laissés tels quels.
+    texte = re.sub(r"([^\W\d_]{2,})(\d)", r"\1 \2", texte)
     texte = texte.replace("’", "'").strip(" .-–")
     mots = []
     for i, mot in enumerate(texte.split()):

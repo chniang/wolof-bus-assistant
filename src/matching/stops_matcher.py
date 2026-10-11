@@ -16,9 +16,9 @@ import csv
 from pathlib import Path
 
 try:  # import à plat (app.py, Streamlit) ou en paquet
-    from matching.lieux import VOIES, _jetons, jetons, score
+    from matching.lieux import VOIES, _jetons, jetons, joli, score
 except ImportError:  # pragma: no cover
-    from .lieux import VOIES, _jetons, jetons, score
+    from .lieux import VOIES, _jetons, jetons, joli, score
 
 DATA = Path(__file__).resolve().parents[2] / "data"
 LIGNES_CSV = DATA / "lignes_dakar.csv"
@@ -86,8 +86,8 @@ class StopsMatcher:
             "depart": info["terminus_a"] if direct else info["terminus_b"],
             "arrivee": info["terminus_b"] if direct else info["terminus_a"],
             "sens": "direct" if direct else "inverse",
-            "monte_a": arrets[i_dep],
-            "descend_a": arrets[i_arr],
+            "monte_a": joli(arrets[i_dep]),
+            "descend_a": joli(arrets[i_arr]),
         }
 
     def _correspondances(self, depart: str, arrivee: str) -> list[dict]:
@@ -130,7 +130,7 @@ class StopsMatcher:
                         (-(s_dep + s_arr), cout, cle_a, cle_b, {
                             "etape_1": self._troncon(cle_a, i_dep, x),
                             "etape_2": self._troncon(cle_b, y, i_arr),
-                            "changement": self.arrets[cle_a][x],
+                            "changement": joli(self.arrets[cle_a][x]),
                         })
                     )
         trajets.sort(key=lambda t: t[:4])
