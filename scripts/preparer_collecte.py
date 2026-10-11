@@ -4,6 +4,7 @@ Utilisation :
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip"
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip" --depuis 09/10/2026
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip" --collecteur TIJAANI
+    .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip" --locuteur locuteur_04
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py --reverifier
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py --exclure "Wa bahna"
 
@@ -20,6 +21,9 @@ en complément, par l'extraction LOCALE de l'app (extract_local, jamais de LLM).
 --depuis ignore les messages antérieurs à la date de la collecte.
 --collecteur : c'est vous ; vos vocaux sont ignorés (et ne coupent pas
 l'association), vos textes restent candidats.
+--locuteur locuteur_04 : tous les vocaux du zip sont rangés sous ce locuteur
+(dossier et colonne locuteur) au lieu d'un nouveau numéro. Un audio déjà
+présent dans metadata.csv (même nom) est sauté, jamais doublé.
 --reverifier : sans zip, relit metadata.csv, réapplique NORMALISATION et le
 contrôle « lieu » ; le statut ne change qu'entre « ok » et « sans_lieu ».
 --exclure TEXTE : sans zip, met statut = « exclu » aux lignes de metadata.csv
@@ -471,6 +475,16 @@ def _nom_fichier_sur(nom: str) -> str:
     return base or "vocal"
 
 
+def _valider_locuteur(nom: str) -> str:
+    """Normalise --locuteur (locuteur_04) ; erreur claire sinon."""
+    propre = (nom or "").strip()
+    if not re.fullmatch(r"locuteur_\d+", propre, re.IGNORECASE):
+        raise ValueError(
+            f"--locuteur invalide : {nom!r} (forme attendue « locuteur_04 »)."
+        )
+    return propre.lower()
+
+
 def traiter_zip(
     zip_path: str | Path,
     brut_dir: str | Path | None = None,
@@ -478,8 +492,10 @@ def traiter_zip(
     installer_si_besoin: bool = True,
     depuis: date | None = None,
     collecteur: str | None = None,
+    locuteur: str | None = None,
 ) -> dict:
     """Traite un export WhatsApp et renvoie un rapport. Ne rien afficher ici."""
+    pseudo_fixe = _valider_locuteur(locuteur) if locuteur else None
     racine = Path(__file__).resolve().parents[1]
     brut_dir = Path(brut_dir) if brut_dir else racine / "data" / "collecte_brut"
     collecte_dir = Path(collecte_dir) if collecte_dir else racine / "data" / "collecte"
@@ -558,21 +574,30 @@ def traiter_zip(
 
     consommes = set(associations.values())
 
-    # Numérotation anonyme, à la suite de ce qui existe déjà.
-    base_numero = _locuteurs_existants(Path(collecte_dir))
-    suivant = base_numero + 1
+    # Numérotation anonyme, à la suite de ce qui existe déjà. Avec --locuteur,
+    # tous les vocaux du zip sont rangés sous ce pseudo-là, rien d'autre.
     pseudos: dict[str, str] = {}
-    for position in positions_vocaux:
-        exp = messages[position].get("expediteur") or "inconnu"
-        if exp not in pseudos:
-            pseudos[exp] = f"locuteur_{suivant:02d}"
-            suivant += 1
+    if pseudo_fixe:
+        for position in positions_vocaux:
+            pseudos[messages[position].get("expediteur") or "inconnu"] = pseudo_fixe
+    else:
+        base_numero = _locuteurs_existants(Path(collecte_dir))
+        suivant = base_numero + 1
+        for position in positions_vocaux:
+            exp = messages[position].get("expediteur") or "inconnu"
+            if exp not in pseudos:
+                pseudos[exp] = f"locuteur_{suivant:02d}"
+                suivant += 1
 
     ffmpeg = _ffmpeg(installer_si_besoin) if associations else None
     deja_presents = _noms_deja_presents(Path(collecte_dir))
+    # Un même audio (même nom de wav) ne doit jamais être réécrit, même rangé
+    # sous un autre locuteur (--locuteur) : on compare le basename.
+    deja_basenoms = {PurePosixPath(nom).name for nom in deja_presents}
     lignes: list[dict] = []
     rejets: dict[str, int] = {}
     compte_sans_lieu = 0
+    sautes = 0
     formes = _formes_lieux()
 
     def _rejet(raison: str) -> None:
@@ -595,7 +620,8 @@ def traiter_zip(
         relatif = f"{pseudo}/{nom_wav}"
         destination = Path(collecte_dir) / pseudo / nom_wav
 
-        if relatif in deja_presents:
+        if relatif in deja_presents or nom_wav in deja_basenoms:
+            sautes += 1
             continue
 
         try:
@@ -654,6 +680,7 @@ def traiter_zip(
         "textes_sans_vocal": textes_sans_vocal,
         "rejets": rejets,
         "ecrits": len(lignes),
+        "sautes": sautes,
         "locuteurs": sorted(set(pseudos.values())),
     }
 
@@ -802,6 +829,12 @@ def main(argv: list[str]) -> int:
         help="met statut = « exclu » aux lignes de metadata.csv dont la "
              "transcription (ou sa brute) est égale à TEXTE, sans zip.",
     )
+    analyseur.add_argument(
+        "--locuteur",
+        metavar="NOM",
+        help="range tous les vocaux du zip sous ce locuteur (locuteur_04) au "
+             "lieu d'un nouveau numéro.",
+    )
     args = analyseur.parse_args(argv[1:])
 
     if args.reverifier and args.exclure:
@@ -832,11 +865,20 @@ def main(argv: list[str]) -> int:
         return 2
 
     try:
-        rapport = traiter_zip(args.zip, depuis=depuis, collecteur=args.collecteur)
+        rapport = traiter_zip(
+            args.zip,
+            depuis=depuis,
+            collecteur=args.collecteur,
+            locuteur=args.locuteur,
+        )
     except FileExistsError as erreur:
         # Erreur attendue (zip déjà traité) : message clair, pas de traceback.
         print(f"\n{erreur}")
         return 1
+    except ValueError as erreur:
+        # --locuteur mal formé : message clair, pas de traceback.
+        print(f"\n{erreur}")
+        return 2
 
     print(f"\n=== Rapport - {Path(rapport['zip']).name} ===\n")
     print(f"Vocaux trouvés          : {rapport['trouves']}")
@@ -853,6 +895,7 @@ def main(argv: list[str]) -> int:
     for raison, nombre in sorted(rapport["rejets"].items()):
         print(f"   - {raison} : {nombre}")
     print(f"Lignes ajoutées         : {rapport['ecrits']}")
+    print(f"Déjà présents (sautés)  : {rapport['sautes']}")
     if rapport["locuteurs"]:
         print(f"Locuteurs anonymisés     : {', '.join(rapport['locuteurs'])}")
     return 0

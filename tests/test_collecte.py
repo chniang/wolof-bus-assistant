@@ -52,6 +52,7 @@ NOMS_A = [
     "PTT-20261008-WA0006",  # vocal daté d'avant --depuis : doit être ignoré
 ]
 NOMS_B = ["PTT-20261009-WA0010", "PTT-20261009-WA0011"]
+NOMS_L4 = ["PTT-20261009-WA0020", "PTT-20261009-WA0021"]
 
 
 def _charger_module():
@@ -248,6 +249,69 @@ def _exclure_ok(module, travail: Path) -> list[tuple[str, bool]]:
     ]
 
 
+def _locuteur_ok(module, travail: Path, ffmpeg: str) -> list[tuple[str, bool]]:
+    """--locuteur : même zip traité deux fois sous deux noms, aucun doublon."""
+    dossier = travail / "scenario_locuteur"
+    dossier.mkdir(exist_ok=True)
+    _fabriquer_bip(dossier, NOMS_L4, ffmpeg)
+    archive = _ecrire_zip(
+        dossier,
+        [
+            "09/10/2026 20:00 - Awa: PTT-20261009-WA0020.m4a (fichier joint)",
+            "\u200e09/10/2026 20:01 - Awa: Maa ngi Ouakam, dama bëgg dem Palais",
+            "\u200e09/10/2026 20:02 - Moi: PTT-20261009-WA0021.m4a (fichier joint)",
+            "\u200e09/10/2026 20:03 - Moi: Maa ngi Thiaroye, bëgg naa dem Ouakam",
+        ],
+        NOMS_L4,
+    )
+
+    rapport_1 = module.traiter_zip(
+        archive,
+        brut_dir=dossier / "brut1",
+        collecte_dir=dossier / "collecte",
+        installer_si_besoin=False,
+        locuteur="locuteur_04",
+    )
+    lignes_1 = _lire_metadata(dossier / "collecte")
+    rapport_2 = module.traiter_zip(
+        archive,
+        brut_dir=dossier / "brut2",
+        collecte_dir=dossier / "collecte",
+        installer_si_besoin=False,
+        locuteur="LOCUTEUR_05",  # forme acceptée, normalisée en minuscules
+    )
+    lignes_fin = _lire_metadata(dossier / "collecte")
+    collecte = dossier / "collecte"
+    wavs = [p for p in collecte.rglob("*.wav")]
+
+    try:
+        module._valider_locuteur("Awa sans numéro")
+        invalide_accepte = False
+    except ValueError:
+        invalide_accepte = True
+
+    return [
+        ("L4: run1 rangé sous locuteur_04", len(lignes_1) == 2
+            and all(l["file_name"].startswith("locuteur_04/") for l in lignes_1)),
+        ("L4: sautes = 0 au premier passage", rapport_1["sautes"] == 0),
+        ("L4: rapport locuteurs", rapport_1["locuteurs"] == ["locuteur_04"]),
+        ("L4: second passage saute les 2", rapport_2["sautes"] == 2),
+        ("L4: rien ajouté au second passage", rapport_2["ecrits"] == 0),
+        ("L4: aucun doublon", len(lignes_fin) == 2
+            and len({l["file_name"] for l in lignes_fin}) == 2),
+        ("L4: un seul dossier d'audio", len(wavs) == 2
+            and all("locuteur_04" in str(p) for p in wavs)
+            and not (collecte / "locuteur_05").exists()),
+        ("L4: basenames attendus", {Path(l["file_name"]).name for l in lignes_fin}
+            == {"PTT-20261009-WA0020.wav", "PTT-20261009-WA0021.wav"}),
+        ("L4: forme invalide rejetée", invalide_accepte),
+        ("L4: --locuteur normalisé en minuscules",
+         module._valider_locuteur("LOCUTEUR_05") == "locuteur_05"),
+        ("L4: CLI erreur claire sur forme invalide",
+         module.main(["preparer_collecte.py", "x.zip", "--locuteur", "4"]) == 2),
+    ]
+
+
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     module = _charger_module()
@@ -358,6 +422,9 @@ def main() -> int:
              module.main(["preparer_collecte.py", "--reverifier", "--exclure", "x"]) == 2),
         ]
         verifications += _exclure_ok(module, travail)
+
+        # --- --locuteur : rangement sous un pseudo fixe, sans doublon.
+        verifications += _locuteur_ok(module, travail, ffmpeg)
 
         echecs = 0
         for titre, bon in verifications:
