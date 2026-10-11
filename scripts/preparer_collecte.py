@@ -5,6 +5,7 @@ Utilisation :
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip" --depuis 09/10/2026
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip" --collecteur TIJAANI
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py --reverifier
+    .\.venv\Scripts\python.exe scripts\preparer_collecte.py --exclure "Wa bahna"
 
 On part d'un export de discussion WhatsApp (« Exporter la discussion » +
 « Inclure les médias »). Pour chaque note vocale, on récupère le premier texte
@@ -21,6 +22,9 @@ en complément, par l'extraction LOCALE de l'app (extract_local, jamais de LLM).
 l'association), vos textes restent candidats.
 --reverifier : sans zip, relit metadata.csv, réapplique NORMALISATION et le
 contrôle « lieu » ; le statut ne change qu'entre « ok » et « sans_lieu ».
+--exclure TEXTE : sans zip, met statut = « exclu » aux lignes de metadata.csv
+dont la transcription (ou sa brute) est égale à TEXTE, casse et espaces
+ignorés. --reverifier ne repasse jamais une ligne « exclu » en « ok ».
 
 Vie privée : les noms réels et les numéros ne sortent jamais. Chaque personne
 devient locuteur_01, locuteur_02... dans un dossier qui porte ce pseudo-nom.
@@ -57,6 +61,7 @@ NORMALISATION = {
     "magui": "maa ngi",
     "maguii": "maa ngi",
     "mangi": "maa ngi",
+    "mangui": "maa ngi",
     "maa ngui": "maa ngi",
     "man gui": "maa ngi",
     "beugg": "bëgg",
@@ -711,6 +716,62 @@ def reverifier(meta: Path | None = None) -> int:
     return 0
 
 
+def _normaliser_comparaison(texte: str) -> str:
+    """Casse et espaces ignorés : forme de comparaison pour --exclure."""
+    return re.sub(r"\s+", " ", (texte or "").strip()).casefold()
+
+
+def exclure(meta: Path | None = None, texte: str = "") -> int:
+    """Met statut = « exclu » aux lignes dont transcription ou brute est égale à texte.
+
+    Casse et espaces ignorés. Affiche les lignes modifiées, ou « aucune ligne
+    trouvée ». Ne touche pas aux fichiers audio ; fichier réécrit en UTF-8 sans
+    BOM, mêmes colonnes. Une ligne déjà « exclu » est laissée telle quelle.
+    """
+    racine = Path(__file__).resolve().parents[1]
+    meta = Path(meta) if meta else racine / "data" / "collecte" / "metadata.csv"
+    if not meta.exists():
+        print(f"metadata.csv introuvable : {meta}")
+        return 1
+    cible = _normaliser_comparaison(texte)
+    if not cible:
+        print("Texte vide pour --exclure.")
+        return 2
+
+    with open(meta, "r", encoding="utf-8", newline="") as fichier:
+        lecteur = csv.DictReader(fichier)
+        champs = lecteur.fieldnames or []
+        lignes = list(lecteur)
+
+    trouves = 0
+    modifiees = 0
+    for ligne in lignes:
+        brute = (ligne.get("transcription_brute") or ligne.get("transcription") or "").strip()
+        candidats = (ligne.get("transcription") or "", brute)
+        if not any(_normaliser_comparaison(c) == cible for c in candidats):
+            continue
+        trouves += 1
+        if ligne.get("statut") == "exclu":
+            continue
+        ligne["statut"] = "exclu"
+        modifiees += 1
+        print(f"  {ligne.get('file_name') or '?'} : statut -> exclu")
+
+    champs_sortie = champs if champs else CHAMPS_METADATA
+    with open(meta, "w", encoding="utf-8", newline="") as fichier:
+        redacteur = csv.DictWriter(fichier, fieldnames=champs_sortie, extrasaction="ignore")
+        redacteur.writeheader()
+        redacteur.writerows(lignes)
+
+    if trouves == 0:
+        print("Aucune ligne trouvée.")
+    elif modifiees:
+        print(f"\n{modifiees} ligne(s) exclue(s).")
+    else:
+        print("Ligne(s) déjà exclue(s).")
+    return 0
+
+
 def main(argv: list[str]) -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     import argparse
@@ -735,7 +796,17 @@ def main(argv: list[str]) -> int:
         help="relit data/collecte/metadata.csv : réapplique NORMALISATION et le "
              "contrôle « lieu », sans toucher aux fichiers audio.",
     )
+    analyseur.add_argument(
+        "--exclure",
+        metavar="TEXTE",
+        help="met statut = « exclu » aux lignes de metadata.csv dont la "
+             "transcription (ou sa brute) est égale à TEXTE, sans zip.",
+    )
     args = analyseur.parse_args(argv[1:])
+
+    if args.reverifier and args.exclure:
+        print("--reverifier et --exclure sont exclusifs.")
+        return 2
 
     if args.reverifier:
         if args.zip:
@@ -743,9 +814,16 @@ def main(argv: list[str]) -> int:
             return 2
         return reverifier()
 
+    if args.exclure:
+        if args.zip:
+            print("--exclure ne prend pas de chemin de zip.")
+            return 2
+        return exclure(texte=args.exclure)
+
     if not args.zip:
         print(analyseur.format_usage().strip())
-        print("preparer_collecte.py : erreur : chemin du zip manquant (ou utilisez --reverifier)")
+        print("preparer_collecte.py : erreur : chemin du zip manquant "
+              "(ou utilisez --reverifier / --exclure)")
         return 2
 
     depuis = _parse_date(args.depuis) if args.depuis else None

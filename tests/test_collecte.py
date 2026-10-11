@@ -201,6 +201,53 @@ def _reverifier_ok(module, travail: Path) -> list[tuple[str, bool]]:
     ]
 
 
+def _exclure_ok(module, travail: Path) -> list[tuple[str, bool]]:
+    """--exclure met statut = « exclu », casse et espaces ignorés.
+
+    La ligne donnée ne doit jamais repasser en « ok » à la relance de
+    --reverifier.
+    """
+    dossier = travail / "exclure"
+    dossier.mkdir(parents=True, exist_ok=True)
+    meta = dossier / "metadata.csv"
+    entete = ["file_name", "transcription", "transcription_brute", "locuteur", "duree_s", "statut"]
+    contenu_csv = [
+        ["locuteur_01/gawal.wav", "Gawal ndayam", "Gawal ndayam", "locuteur_01", "2.00", "ok"],
+        ["locuteur_01/volume.wav", "dama bëgg dem dem", "dama beugue dem démé",
+         "locuteur_01", "2.00", "volume_faible"],
+        ["locuteur_01/ouakam.wav", "Maa ngi Ouakam, dama bëgg dem Palais",
+         "Maa ngi Ouakam, dama bëgg dem Palais", "locuteur_01", "2.00", "ok"],
+    ]
+    with open(meta, "w", newline="", encoding="utf-8") as fichier:
+        redacteur = csv.writer(fichier)
+        redacteur.writerow(entete)
+        redacteur.writerows(contenu_csv)
+
+    code_aucune = module.exclure(meta, "Wa bahna")          # aucune correspondance
+    code_casse = module.exclure(meta, "  gawal ndayam ")    # casse + espaces ignorés
+    code_brute = module.exclure(meta, "dama bëgg dem dem")  # match sur transcription (brute différente)
+    lignes = {l["file_name"]: l for l in _lire_metadata(dossier)}
+    l_gawal = lignes["locuteur_01/gawal.wav"]
+    l_vol = lignes["locuteur_01/volume.wav"]
+    l_ouakam = lignes["locuteur_01/ouakam.wav"]
+
+    code_rev = module.reverifier(meta)
+    apres = {l["file_name"]: l for l in _lire_metadata(dossier)}
+    contenu = meta.read_text(encoding="utf-8")
+
+    return [
+        ("X: aucune correspondance -> 0", code_aucune == 0),
+        ("X: casse et espaces ignorés", l_gawal["statut"] == "exclu"),
+        ("X: match sur la transcription (brute différente)", l_vol["statut"] == "exclu"),
+        ("X: autres lignes intactes", l_ouakam["statut"] == "ok"),
+        ("X: reverifier ne repasse pas exclu en ok",
+         apres["locuteur_01/gawal.wav"]["statut"] == "exclu"
+         and apres["locuteur_01/volume.wav"]["statut"] == "exclu"),
+        ("X: UTF-8 sans BOM", not contenu.startswith("\ufeff")),
+        ("X: mêmes colonnes", contenu.splitlines()[0] == ",".join(entete)),
+    ]
+
+
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     module = _charger_module()
@@ -280,6 +327,7 @@ def main() -> int:
             ("U: beugue -> bëgg", module._uniformiser("dama beugue dem déme") == "dama bëgg dem dem"),
             ("U: beuge -> bëgg", module._uniformiser("dama beuge dem démé") == "dama bëgg dem dem"),
             ("U: déme/démé/deme -> dem", module._uniformiser("déme démé deme dem") == "dem dem dem dem"),
+            ("U: mangui -> maa ngi", module._uniformiser("mangui x") == "maa ngi x"),
         ]
 
         # --- Contrôle « lieu » élargi : extraction locale de l'app en complément.
@@ -301,6 +349,15 @@ def main() -> int:
              module.main(["preparer_collecte.py", "--reverifier", "collecte.zip"]) == 2),
         ]
         verifications += _reverifier_ok(module, travail)
+
+        # --- CLI --exclure : exclusion manuelle d'une ligne de bavardage.
+        verifications += [
+            ("X: --exclure refuse un zip",
+             module.main(["preparer_collecte.py", "--exclure", "x", "collecte.zip"]) == 2),
+            ("X: --reverifier et --exclure exclusifs",
+             module.main(["preparer_collecte.py", "--reverifier", "--exclure", "x"]) == 2),
+        ]
+        verifications += _exclure_ok(module, travail)
 
         echecs = 0
         for titre, bon in verifications:
