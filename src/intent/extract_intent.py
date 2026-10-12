@@ -298,7 +298,9 @@ LONGUEUR_MIN = 4
 # « Palais » seul doit rester acceptable, exactement comme le fait le LLM.
 # « Plateau » et « Dakar Plateau » sont des quartiers du centre de Dakar que les
 # arrêts ne nomment pas tels quels : on les accepte quand même comme lieux.
-LIEUX_SUPPLEMENTAIRES = ("Palais", "Plateau", "Dakar Plateau")
+# « Sandaga » est l'arrêt central du Plateau : on l'accepte comme lieu pour que
+# « Maa ngi Sandaga, dama bëgg dem … » trouve une ligne (position via lieux_geo).
+LIEUX_SUPPLEMENTAIRES = ("Palais", "Plateau", "Dakar Plateau", "Sandaga")
 
 
 def _sans_accents(texte: str) -> str:

@@ -18,3 +18,7 @@ sentencepiece
 gradio
 spaces
 
+# Géocodage Nominatim (src/matching/geo.py) : le repli en ligne pour un lieu absent
+# de data/lieux_geo.csv. Sans lui, seuls les lieux précalculés sont localisés.
+requests
+

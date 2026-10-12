@@ -16,8 +16,10 @@ import csv
 from pathlib import Path
 
 try:  # import à plat (app.py, Streamlit) ou en paquet
+    from matching.geo import LieuxGeo, distance_metres
     from matching.lieux import VOIES, _jetons, jetons, joli, score
 except ImportError:  # pragma: no cover
+    from .geo import LieuxGeo, distance_metres
     from .lieux import VOIES, _jetons, jetons, joli, score
 
 DATA = Path(__file__).resolve().parents[2] / "data"
@@ -53,24 +55,54 @@ class StopsMatcher:
             cle: [" ".join(_jetons(a)) if (jetons(a) and jetons(a)[0] not in VOIES) else "" for a in arrets]
             for cle, arrets in self.arrets.items()
         }
+        # Un lieu dit (Médina, Sandaga, Plateau…) peut désigner un quartier où se
+        # trouvent des arrêts dont le nom ne le dit pas : on s'appuie sur leurs
+        # positions (data/arrets_geo.csv et data/lieux_geo.csv).
+        self.geo = LieuxGeo()
 
     # ------------------------------------------------------------------ #
 
-    @staticmethod
-    def _meilleur(lieu: str, arrets: list[str]) -> tuple[float, int]:
-        """Meilleur arrêt de la ligne pour ce lieu : (score, position)."""
+    def _distance_arret(self, arret: str, point: tuple[float, float]) -> float:
+        """Distance du point au lieu dit, ou l'infini si l'arrêt n'a pas de position."""
+        ici = self.geo.point_arret(arret)
+        return distance_metres(point, ici) if ici else float("inf")
+
+    def _meilleur(
+        self,
+        lieu: str,
+        arrets: list[str],
+        geo_scores: dict[str, float] | None = None,
+        point: tuple[float, float] | None = None,
+    ) -> tuple[float, int]:
+        """Meilleur arrêt de la ligne pour ce lieu : (score, position).
+
+        Le score d'un arrêt est le meilleur de deux : correspondance de nom, ou
+        note géographique (l'arrêt est dans le quartier du lieu dit, ou proche de
+        son point). À note égale, on conseille l'arrêt le plus proche du point.
+        """
+        geo_scores = geo_scores or {}
         meilleur = (0.0, -1)
         for position, arret in enumerate(arrets):
-            valeur = score(lieu, arret)
+            geo = geo_scores.get(arret, 0.0)
+            valeur = max(score(lieu, arret), geo)
             if valeur > meilleur[0]:
+                meilleur = (valeur, position)
+            elif (
+                valeur > 0
+                and valeur == meilleur[0]
+                and point is not None
+                and geo == valeur
+                and self._distance_arret(arret, point) < self._distance_arret(arrets[meilleur[1]], point)
+            ):
                 meilleur = (valeur, position)
         return meilleur
 
-    def _reconnu(self, lieu: str) -> tuple[str, float]:
+    def _reconnu(self, lieu: str, geo_scores: dict[str, float] | None = None) -> tuple[str, float]:
         """L'arrêt du réseau le plus proche du lieu demandé, et son score."""
+        geo_scores = geo_scores or {}
         meilleur = ("", 0.0)
         for arret in self.tous_les_arrets:
-            valeur = score(lieu, arret)
+            valeur = max(score(lieu, arret), geo_scores.get(arret, 0.0))
             if valeur > meilleur[1]:
                 meilleur = (arret, valeur)
         return meilleur
@@ -98,7 +130,14 @@ class StopsMatcher:
         }
 
     def _correspondances(
-        self, depart: str, arrivee: str, cles: list[tuple[str, str]]
+        self,
+        depart: str,
+        arrivee: str,
+        cles: list[tuple[str, str]],
+        dep_geo: dict[str, float],
+        arr_geo: dict[str, float],
+        dep_point: tuple[float, float] | None,
+        arr_point: tuple[float, float] | None,
     ) -> list[dict]:
         """Trajets en deux bus quand aucune ligne ne relie directement les deux lieux.
 
@@ -108,10 +147,10 @@ class StopsMatcher:
         cotes_dep, cotes_arr = [], []
         for cle in cles:
             arrets = self.arrets[cle]
-            s, i = self._meilleur(depart, arrets)
+            s, i = self._meilleur(depart, arrets, dep_geo, dep_point)
             if s >= MIN_SCORE:
                 cotes_dep.append((s, cle, i))
-            s, i = self._meilleur(arrivee, arrets)
+            s, i = self._meilleur(arrivee, arrets, arr_geo, arr_point)
             if s >= MIN_SCORE:
                 cotes_arr.append((s, cle, i))
         if not cotes_dep or not cotes_arr:
@@ -176,8 +215,18 @@ class StopsMatcher:
         """
         depart, arrivee = depart or "", arrivee or ""
         cles = [cle for cle in self.arrets if compagnies is None or cle[0] in compagnies]
-        depart_arret, depart_score = self._reconnu(depart)
-        arrivee_arret, arrivee_score = self._reconnu(arrivee)
+        # Le nom passe avant la position : si un arrêt porte déjà le nom du lieu,
+        # on ne lui ajoute pas les arrêts seulement proches (« Liberté 5 » ne doit
+        # pas ramener « Liberté 6 »). La correspondance de quartier/commune, elle,
+        # reste utile (Médina → Avenue Blaise Diagne).
+        _, dep_nom = self._reconnu(depart)
+        _, arr_nom = self._reconnu(arrivee)
+        dep_geo = self.geo.scores_lieu(depart, proximite=dep_nom < MIN_SCORE)
+        arr_geo = self.geo.scores_lieu(arrivee, proximite=arr_nom < MIN_SCORE)
+        dep_point = self.geo.point(depart)
+        arr_point = self.geo.point(arrivee)
+        depart_arret, depart_score = self._reconnu(depart, dep_geo)
+        arrivee_arret, arrivee_score = self._reconnu(arrivee, arr_geo)
         depart_valide = depart_score >= MIN_SCORE
         arrivee_valide = arrivee_score >= MIN_SCORE
 
@@ -185,23 +234,31 @@ class StopsMatcher:
         if depart_valide and arrivee_valide:
             for cle in cles:
                 arrets = self.arrets[cle]
-                s_dep, i_dep = self._meilleur(depart, arrets)
-                s_arr, i_arr = self._meilleur(arrivee, arrets)
+                s_dep, i_dep = self._meilleur(depart, arrets, dep_geo, dep_point)
+                s_arr, i_arr = self._meilleur(arrivee, arrets, arr_geo, arr_point)
                 if s_dep < MIN_SCORE or s_arr < MIN_SCORE or i_dep == i_arr:
                     continue
-                candidates.append((min(s_dep, s_arr), s_dep + s_arr, abs(i_arr - i_dep), cle, i_dep, i_arr))
+                # Combien des deux arrêts conseillés portent vraiment le nom du
+                # lieu : une ligne trouvée par le nom passe avant une ligne
+                # trouvée seulement par la position (règle 1).
+                par_nom = int(score(depart, arrets[i_dep]) >= MIN_SCORE) + int(
+                    score(arrivee, arrets[i_arr]) >= MIN_SCORE
+                )
+                candidates.append((min(s_dep, s_arr), par_nom, s_dep + s_arr, abs(i_arr - i_dep), cle, i_dep, i_arr))
 
         lignes = []
         if candidates:
             meilleur = max(c[0] for c in candidates)
             gardees = [c for c in candidates if c[0] >= meilleur - TOLERANCE]
-            # Meilleure correspondance d'abord, puis le trajet le plus court en arrêts.
-            gardees.sort(key=lambda c: (-c[0], -c[1], c[2], c[3]))
+            # Meilleure correspondance d'abord, puis les lignes trouvées par le
+            # nom du lieu avant celles trouvées seulement par la position, puis
+            # la ligne, enfin le trajet le plus court en arrêts.
+            gardees.sort(key=lambda c: (-c[0], -c[1], -c[2], c[4], c[3]))
             lignes = [self._troncon(cle, i_dep, i_arr) for *_, cle, i_dep, i_arr in gardees[:MAX_LIGNES]]
 
         correspondances = []
         if not lignes and depart_valide and arrivee_valide:
-            correspondances = self._correspondances(depart, arrivee, cles)
+            correspondances = self._correspondances(depart, arrivee, cles, dep_geo, arr_geo, dep_point, arr_point)
 
         return {
             "found": bool(lignes),

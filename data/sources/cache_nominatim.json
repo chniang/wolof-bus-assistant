@@ -1367,6 +1367,9 @@
  "fwd|Gare Lat Dior, Dakar, Sénégal": {
   "trouve": false
  },
+ "fwd|Gare Lat Dior, Sénégal": {
+  "trouve": false
+ },
  "fwd|Gare Lat-Dior, Dakar, Sénégal": {
   "trouve": false
  },
@@ -1426,6 +1429,9 @@
   "pays": "sn",
   "quartier": "Commune de Cambérène",
   "trouve": true
+ },
+ "fwd|Gare routière Lat Dior, Dakar": {
+  "trouve": false
  },
  "fwd|Gare routière de Colobane, Dakar, Sénégal": {
   "commune": "Arrondissement de Dakar-Plateau",
@@ -1838,6 +1844,15 @@
  "fwd|Kounoune Ngalam, Dakar, Sénégal": {
   "trouve": false
  },
+ "fwd|Kounoune, Dakar, Sénégal": {
+  "commune": "Arrondissement de Sangalkam",
+  "display_name": "Kounoune, Commune de Sangalkam, Arrondissement de Sangalkam, Département de Rufisque, Région de Dakar, Sénégal",
+  "lat": 14.7530803,
+  "lon": -17.2541088,
+  "pays": "sn",
+  "quartier": "",
+  "trouve": true
+ },
  "fwd|Lac Rose, Dakar, Sénégal": {
   "commune": "",
   "display_name": "Lac Retba, Route du Lac rose, Niaga, Commune de Tivaouane Peulh-Niaga, Arrondissement de Bambylor, Département de Rufisque, Région de Dakar, Sénégal",
@@ -1849,6 +1864,15 @@
  },
  "fwd|Lat Dior, Dakar, Sénégal": {
   "trouve": false
+ },
+ "fwd|Lat Dior, Sénégal": {
+  "commune": "Thiès",
+  "display_name": "Stade Lat Dior, Route Thies-Sindia, Thiès, Commune de Thiès Ouest, Communauté rurale de Fandène, Arrondissement de Thiès Sud, Département de Thiès, Région de Thiès, 21000, Sénégal",
+  "lat": 14.7698439,
+  "lon": -16.9444561,
+  "pays": "sn",
+  "quartier": "Commune de Thiès Ouest",
+  "trouve": true
  },
  "fwd|Lat-Dior, Dakar, Sénégal": {
   "trouve": false
@@ -3194,6 +3218,9 @@
  "fwd|Rue Sandiniery, Dakar, Sénégal": {
   "trouve": false
  },
+ "fwd|Rue Sandiniery, Sénégal": {
+  "trouve": false
+ },
  "fwd|Rue de Reims Prolongée, Dakar, Sénégal": {
   "trouve": false
  },
@@ -3495,6 +3522,9 @@
   "trouve": false
  },
  "fwd|Stade L.s.s, Dakar, Sénégal": {
+  "trouve": false
+ },
+ "fwd|Stade LSS, Dakar, Sénégal": {
   "trouve": false
  },
  "fwd|Stade de Rufisque, Dakar, Sénégal": {

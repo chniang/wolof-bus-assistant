@@ -76,7 +76,7 @@ Rond-Point Jet d'Eau,14.713239,-17.454705,Commune de Grand-Dakar,Arrondissement 
 Giratoire de Liberté VI,14.729218,-17.459404,Liberté 6 Extension,commune d'arrondissement des Parcelles Assainies,bonne
 2 Voies de Liberté VI,14.756710,-17.426543,Golf Sud(Cité Aliou SOW),Département de Guédiawaye,estimee
 Rte Corniche de HLM Gd Médine,,,,,introuvable
-Espace HLM Gd Médine (Face Autoroute),,,,,introuvable
+Espace HLM Gd Médine (Face Autoroute),14.741372,-17.455863,Hlm Grand Yoff,commune d'arrondissement des Parcelles Assainies,estimee
 Route Principale des Parcelles Assainies,14.759883,-17.438452,unite 17,commune d'arrondissement des Parcelles Assainies,estimee
 Croisement Dior,14.702743,-17.448595,Commune de Biscuiterie,Arrondissement de Grand Dakar,douteuse
 Route HLM Grand Médine,14.743932,-17.448134,Hlm Grand Yoff,commune d'arrondissement des Parcelles Assainies,bonne
@@ -197,7 +197,7 @@ Rue El Hadj Amadou Malick Gaye (Bopp),14.715707,-17.453211,Commune de Dieuppeul-
 Av. Cheikh Ahmadou Bamba (Cité Port),14.702196,-17.447018,Commune de HLM,Arrondissement de Grand Dakar,bonne
 Rocade Fann / Bel Air,14.697990,-17.443116,Colobane,Arrondissement de Dakar-Plateau,bonne
 Gare de Colobane,14.697979,-17.442821,Colobane,Arrondissement de Dakar-Plateau,bonne
-Tally Icotaf X Rte des Niayes (Pikine),,,,,introuvable
+Tally Icotaf X Rte des Niayes (Pikine),14.755344,-17.390401,,Commune de Pikine Est,estimee
 Tally Icotaf,14.755384,-17.390460,,Commune de Pikine Est,bonne
 Khourounar,14.747898,-17.428429,Commune de Patte d'Oie,commune d'arrondissement des Parcelles Assainies,estimee
 Cité Lobattfall,14.729516,-17.424818,Commune de Hann Bel-Air,Arrondissement de Grand Dakar,douteuse
@@ -385,9 +385,9 @@ Route de Boune,14.768274,-17.347369,,,bonne
 Yeumbeul,14.775771,-17.357087,,,bonne
 Tallyicotaf,14.749378,-17.417666,Commune de Pikine Ouest,Pikine,estimee
 Gare des Baux Maraîchers,14.741110,-17.401629,Commune de Pikine Ouest,Pikine,bonne
-Beaux Maraîchers,,,,,introuvable
+Beaux Maraîchers,14.745654,-17.400933,Commune de Pikine Ouest,Arrondissement de Pikine-Dagoudane,estimee
 Marché Chavanel,14.749378,-17.417666,Commune de Pikine Ouest,Pikine,estimee
-Keur Massar (Marché),,,,,introuvable
+Keur Massar (Marché),14.782257,-17.311199,Camille Basse,Commune de Keur Massar Sud,estimee
 P11,14.785557,-17.308912,Camille Basse,Commune de Keur Massar Sud,bonne
 SAFCO,14.791353,-17.280366,,,estimee
 Niacourab,14.783846,-17.273726,,,bonne
@@ -408,7 +408,7 @@ Rond-Point Seven Up,14.721145,-17.417250,,,estimee
 Bld Centenaire de la Commune de Dakar,14.724661,-17.415877,,,estimee
 Place Bakou,14.721145,-17.417250,,,estimee
 Canal 4,14.703281,-17.453467,Commune de Grand-Dakar,Arrondissement de Grand Dakar,bonne
-Rufisque SONADIS,,,,,introuvable
+Rufisque SONADIS,14.728386,-17.280888,,Rufisque,estimee
 Boulevard Maurice Gueye,14.725308,-17.286165,,Rufisque,estimee
 Keurmbaye Fall,,,,,introuvable
 Croisement Keurmassar,,,,,introuvable
@@ -421,8 +421,8 @@ Keur Mbaye Fall,14.745044,-17.315549,,Arrondissement de Thiaroye,bonne
 Route Nationale N°1,14.746820,-17.329458,,Arrondissement de Thiaroye,douteuse
 Bd Maurice Gueye,,,,,introuvable
 Marché Colobane Rufisque,,,,,introuvable
-Rufisque Gouye Mouride,,,,,introuvable
-Fass Mbao (Rail-Ba),,,,,introuvable
+Rufisque Gouye Mouride,14.716417,-17.273844,,Rufisque,estimee
+Fass Mbao (Rail-Ba),14.685638,-17.454299,Commune de Gueule Tapée-Fass-Colobane,Arrondissement de Dakar-Plateau,estimee
 Péage,14.745302,-17.281850,,Rufisque,douteuse
 Stade L.s.s,14.756083,-17.447036,Unite 20,commune d'arrondissement des Parcelles Assainies,estimee
 HLM Guédiawaye,14.770807,-17.401096,,Département de Guédiawaye,bonne
@@ -469,7 +469,7 @@ Camp Marchand,14.720100,-17.262812,,Rufisque,bonne
 Bambilor,14.803912,-17.184041,,Commune de Bambylor,bonne
 Gorom 2,14.812152,-17.170437,,Commune de Bambylor,bonne
 Gorom 1,14.821067,-17.152487,,Commune de Bambylor,bonne
-Boutique Diallo (Ouakam),,,,,introuvable
+Boutique Diallo (Ouakam),14.724737,-17.485066,Arrondissement des Almadies,Dakar,estimee
 Cité Avion,14.722227,-17.480689,Arrondissement des Almadies,Dakar,bonne
 Entrée Ouakam,14.714836,-17.477543,Arrondissement des Almadies,Dakar,estimee
 Score Liberté,14.701041,-17.464770,Amitié 2,Arrondissement de Dakar-Plateau,estimee
@@ -482,8 +482,8 @@ Route de Malika,14.791381,-17.340629,,Arrondissement de Malika,bonne
 Sapeurs-Pompiers Parcelles,14.760502,-17.437204,unite 17,commune d'arrondissement des Parcelles Assainies,bonne
 P11 Keur Massar,14.785557,-17.308912,Camille Basse,Commune de Keur Massar Sud,bonne
 Tivaouane Peulh,14.802122,-17.283128,,,bonne
-Namora,,,,,introuvable
-Daroukhane Keur Serigne Assane,,,,,introuvable
+Namora,14.802122,-17.283128,,,estimee
+Daroukhane Keur Serigne Assane,14.784935,-17.375404,,Arrondissement de Wakhinane Nimzatt,estimee
 SDE Guédiawaye,,,,,introuvable
 Bld des Martyrs,14.766388,-17.400310,,Commune de Pikine Est,estimee
 Poste de Guédiawaye,14.756488,-17.426795,Golf Sud(Cité Aliou SOW),Département de Guédiawaye,douteuse
@@ -499,7 +499,7 @@ Grand Dakar,14.705464,-17.454109,Commune de Grand-Dakar,Arrondissement de Grand 
 Poste Fann,14.696057,-17.466189,Amitié 2,Arrondissement de Dakar-Plateau,bonne
 Université,14.687249,-17.464446,Amitié 2,Arrondissement de Dakar-Plateau,bonne
 Claudel,14.681378,-17.462626,Commune de Fann-Point E-Amitié,Arrondissement de Dakar-Plateau,bonne
-Guédiawaye Cité des Enseignants,,,,,introuvable
+Guédiawaye Cité des Enseignants,14.777121,-17.390071,,Département de Guédiawaye,estimee
 Av Oumar Foutiyou Tall (Golf Nord),,,,,introuvable
 Croisement ZAC Mbao,14.730413,-17.302145,Cité Sidak,Rufisque,bonne
 ZAC Mbao,14.730413,-17.302145,Cité Sidak,Rufisque,bonne
@@ -512,7 +512,7 @@ Route de Sangalkam,14.786998,-17.211825,,Arrondissement de Sangalkam,douteuse
 Keur Daouda Sarr,14.742745,-17.248107,,Arrondissement de Sangalkam,bonne
 Cité SAGEF,,,,,introuvable
 Cité Baba Guisse,,,,,introuvable
-Kounoune (Cité Cardinal Thiandoum),,,,,introuvable
+Kounoune (Cité Cardinal Thiandoum),14.753080,-17.254109,,Arrondissement de Sangalkam,estimee
 Lac Rose,14.844733,-17.216659,,,bonne
 Darou Thioub,14.794911,-17.257208,,,estimee
 Niakourab,14.813495,-17.263929,Quartier Marième Faye Sall,,estimee
@@ -523,13 +523,13 @@ Echangeur Rufisque-Ouest,14.728417,-17.262358,,Rufisque,estimee
 Keurmassar,14.789434,-17.298885,Camille Basse,Commune de Keur Massar Sud,estimee
 Tivaouane Peul,14.805352,-17.280994,,,bonne
 Cité SOCABEG,14.816792,-17.264944,,,bonne
-Cité COCEHAS,,,,,introuvable
+Cité COCEHAS,14.802122,-17.283128,,,estimee
 Malika (Cité Sonatel),,,,,introuvable
 Av Cheikh Ahmadou Bamba (Rue 13 des HLM),14.709590,-17.447719,Commune de Biscuiterie,Arrondissement de Grand Dakar,estimee
 Rond-Point Caisse de Sécurité Sociale,14.698038,-17.447915,Commune de Gueule Tapée-Fass-Colobane,Arrondissement de Dakar-Plateau,bonne
 Sipres,14.693807,-17.469473,Amitié 2,Arrondissement de Dakar-Plateau,bonne
 Cité Assurance,,,,,introuvable
-Rufisque Cité Tacco,,,,,introuvable
+Rufisque Cité Tacco,14.716417,-17.273844,,Rufisque,estimee
 Pont Dangou,,,,,introuvable
 Croisement Tally Diallo,14.764193,-17.370388,,Commune de Thiaroye-sur-Mer,bonne
 Poste de Police Thiaroye,14.767541,-17.390027,,Commune de Tivaouane Diacksao,estimee

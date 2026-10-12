@@ -38,15 +38,26 @@ TRAJETS = [
     ("Maa ngi Thiaroye, bëgg naa dem Ouakam", {"Ligne 217"}),
     ("Maa ngi Pikine, dama bëgg dem Colobane", {"Ligne 48", "Ligne 50", "Ligne 75"}),
     ("Maa ngi Keur Massar, dama bëgg dem UCAD", {"Ligne 54", "Ligne 71"}),
+    # « Liberté 5 » comme « Guédiawaye » sont des lieux : la montée doit être un
+    # arrêt « Liberté 5 » et non l'arrêt simplement proche « Liberté 6 ».
     ("Maa ngi Liberté 5, dama bëgg dem Guédiawaye", {"corr:Ligne 77", "corr:Ligne 78"}),
-    ("Maa ngi Pikine, bëgg naa dem Guédiawaye", {"Ligne 41", "Ligne 46"}),
+    ("Maa ngi Pikine, bëgg naa dem Guédiawaye", {"Ligne 37", "Ligne 41", "Ligne 46"}),
 ]
 
 # Lignes qui ne doivent surtout PAS sortir pour une phrase : « Garage Guédiawaye »
-# (ligne 71) est à Dakar, pas dans le quartier Guédiawaye.
+# (ligne 71) est à Dakar, pas dans le quartier Guédiawaye ; les lignes 30 et 49 ne
+# montent pas dans Pikine (elles y arrivent par un arrêt hors quartier).
 TRAJETS_EXCLUS = {
-    "Maa ngi Pikine, bëgg naa dem Guédiawaye": {"Ligne 71"},
+    "Maa ngi Pikine, bëgg naa dem Guédiawaye": {"Ligne 71", "Ligne 30", "Ligne 49"},
 }
+
+# Phrases qui nomment un quartier que les noms d'arrêts ne portent pas (Médina,
+# Sandaga) : la position des arrêts (arrets_geo.csv) doit faire trouver une ligne.
+# (phrase, lignes attendues — au moins une —, lignes interdites).
+TRAJETS_GEO = [
+    ("Maa ngi Liberté 6, dama bëgg dem Médina ak Tata", {"Ligne 1"}, frozenset()),
+    ("Maa ngi Sandaga, dama bëgg dem Pikine", {"Ligne 27", "Ligne 55", "Ligne 56"}, frozenset()),
+]
 
 # Phrases qui nomment une compagnie : (phrase, compagnie attendue, lignes de
 # cette compagnie attendues, compagnies interdites dans le résultat).
@@ -181,6 +192,19 @@ def test_local() -> int:
             f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
             f"      {lieux.get('depart')} -> {lieux.get('arrivee')} | {sorted(trouvees) or 'rien'}"
         )
+    # Un quartier dit tel quel (Médina, Sandaga) doit trouver une ligne grâce aux
+    # positions des arrêts (data/arrets_geo.csv), pas seulement à leur nom.
+    for phrase, attendues, exclues in TRAJETS_GEO:
+        lieux = extract_local(phrase)
+        resultat = matcher.find_line(lieux.get("depart") or "", lieux.get("arrivee") or "")
+        trouvees = {l["ligne"] for l in resultat["lignes"]}
+        trouvees |= {"corr:" + c["etape_1"]["ligne"] for c in resultat["correspondances"]}
+        bon = _ok(trouvees, attendues, exclues)
+        echecs += not bon
+        print(
+            f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
+            f"      {lieux.get('depart')} -> {lieux.get('arrivee')} | {sorted(trouvees) or 'rien'}"
+        )
     return echecs
 
 
@@ -265,6 +289,13 @@ if __name__ == "__main__":
     else:
         echecs = test_local()
         # +1 pour « tata » jamais un lieu, +1 pour le cas compagnie réelle.
-        total = len(TRAJETS) + len(TRAJETS_COMPAGNIE) + len(TRAJETS_LIEUX) + len(TRAJETS_QUARTIER) + 2
+        total = (
+            len(TRAJETS)
+            + len(TRAJETS_COMPAGNIE)
+            + len(TRAJETS_LIEUX)
+            + len(TRAJETS_QUARTIER)
+            + len(TRAJETS_GEO)
+            + 2
+        )
     print(f"\n{total - echecs}/{total} réussis")
     sys.exit(1 if echecs else 0)
