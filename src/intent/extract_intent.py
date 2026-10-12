@@ -296,7 +296,9 @@ LONGUEUR_MIN = 4
 
 # Le CSV distingue « Palais 1 » et « Palais 2 » : quand le numéro n'est pas prononcé,
 # « Palais » seul doit rester acceptable, exactement comme le fait le LLM.
-LIEUX_SUPPLEMENTAIRES = ("Palais",)
+# « Plateau » et « Dakar Plateau » sont des quartiers du centre de Dakar que les
+# arrêts ne nomment pas tels quels : on les accepte quand même comme lieux.
+LIEUX_SUPPLEMENTAIRES = ("Palais", "Plateau", "Dakar Plateau")
 
 
 def _sans_accents(texte: str) -> str:
@@ -366,6 +368,43 @@ MOTS_TROP_VAGUES = {
     "pont", "eglise", "college", "arret", "village", "quartier", "camp", "keur",
 }
 
+# Compagnies que l'utilisateur peut nommer. Les formes sont celles de l'ASR :
+# phonétiques (« taata »), abrégées (« ddd ») ou collées (« demdikk »). L'ordre
+# fixe la priorité si plusieurs sont reconnues dans la même phrase.
+COMPAGNIES = (
+    ("Tata AFTU", re.compile(r"\b(?:tata|taata|aftu)\b")),
+    ("Dakar Dem Dikk", re.compile(r"\b(?:ddd|dakar\s+dem\s+dik+|dem\s*dik+)\b")),
+)
+
+# Même noms, mais pour les RETIRER de la phrase avant la recherche de lieux : un
+# nom de compagnie n'est jamais un arrêt. « dakar dem dik(k) » part en entier,
+# mais « dakar » seul reste : « Dakar Plateau » et « Grand Dakar » sont des
+# lieux. « dem » reste par ailleurs un mot de phrase (« dama bëgg dem »).
+MOTIF_COMPAGNIE = re.compile(
+    r"\b(?:tata|taata|aftu|ddd|dakar\s+dem\s+dik+|dem\s*dik+)\b"
+)
+
+
+def _detecter_compagnie(phrase: str) -> str:
+    """Compagnie nommée dans la phrase, ou "" si l'utilisateur n'en précise pas.
+
+    La casse et les accents sont ignorés (« Dem Dikk », « demdikk », « AFTU »).
+    """
+    texte = _sans_accents(phrase or "")
+    for compagnie, motif in COMPAGNIES:
+        if motif.search(texte):
+            return compagnie
+    return ""
+
+
+def _sans_compagnie(phrase: str) -> str:
+    """Phrase normalisée, débarrassée des noms de compagnie.
+
+    Sert à la recherche de lieux : « Maa ngi Pikine ... ak Tata » ne doit pas
+    laisser « tata » se faire passer pour un arrêt.
+    """
+    return MOTIF_COMPAGNIE.sub(" ", _normaliser_phrase(phrase))
+
 
 def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
     """Lieux du CSV repérés dans la phrase, par n-grammes de 1 à 3 mots.
@@ -427,18 +466,31 @@ def extract_local(phrase: str) -> dict:
     n'a pas à savoir par quel étage la réponse est passée.
     """
     if not phrase or not phrase.strip():
-        return {"depart": None, "arrivee": None, "erreur": "transcription vide", "source": "local"}
+        return {
+            "depart": None,
+            "arrivee": None,
+            "compagnie": "",
+            "erreur": "transcription vide",
+            "source": "local",
+        }
 
-    mots = _normaliser_phrase(phrase).split()
+    compagnie = _detecter_compagnie(phrase)
+    mots = _sans_compagnie(phrase).split()
     trouves = _chercher_lieux(mots)
     if not trouves:
-        return {"depart": "", "arrivee": "", "erreur": None, "source": "local"}
+        return {"depart": "", "arrivee": "", "compagnie": compagnie, "erreur": None, "source": "local"}
 
     if len(trouves) >= 2:
         depart = _depart_marque(mots, trouves)
         if depart:
             arrivee = next(lieu for _, _, lieu in trouves if lieu != depart)
-            return {"depart": depart, "arrivee": arrivee, "erreur": None, "source": "local"}
+            return {
+                "depart": depart,
+                "arrivee": arrivee,
+                "compagnie": compagnie,
+                "erreur": None,
+                "source": "local",
+            }
 
     # « bëgg naa dem Palais 2 » : ce qui précède « dem » est le départ, ce qui suit
     # est l'arrivée. Sans « dem », ou sans répartition propre, on garde l'ordre
@@ -451,6 +503,7 @@ def extract_local(phrase: str) -> dict:
             return {
                 "depart": avant[0][2],
                 "arrivee": apres[0][2],
+                "compagnie": compagnie,
                 "erreur": None,
                 "source": "local",
             }
@@ -458,6 +511,7 @@ def extract_local(phrase: str) -> dict:
     return {
         "depart": trouves[0][2],
         "arrivee": trouves[1][2] if len(trouves) > 1 else "",
+        "compagnie": compagnie,
         "erreur": None,
         "source": "local",
     }
@@ -483,7 +537,13 @@ def extract_intent(transcription: str, client=None) -> dict:
     répond à moitié vaut mieux qu'un écran d'erreur.
     """
     if not transcription or not transcription.strip():
-        return {"depart": None, "arrivee": None, "erreur": "transcription vide", "source": "local"}
+        return {
+            "depart": None,
+            "arrivee": None,
+            "compagnie": "",
+            "erreur": "transcription vide",
+            "source": "local",
+        }
 
     try:
         llm_client = client if client is not None else get_client()
@@ -499,6 +559,7 @@ def extract_intent(transcription: str, client=None) -> dict:
     resultat = {
         "depart": str(data.get("depart", "")).strip(),
         "arrivee": str(data.get("arrivee", "")).strip(),
+        "compagnie": _detecter_compagnie(transcription),
         "erreur": None,
         "source": "llm",
     }

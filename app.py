@@ -348,7 +348,6 @@ def _une_carte(match: dict, etape: str = "", depart: str = "", arrivee: str = ""
     rappel = nombre_en_wolof(numero) if numero is not None else ""
     entete = f"{etape} · {match['compagnie']}" if etape else match["compagnie"]
     trajet = ""
-    astuce = ""
     if match.get("monte_a") and match.get("descend_a"):
         # Le lieu dit par l'utilisateur, avec l'arrêt conseillé le plus proche.
         depart_texte = depart if depart else match["monte_a"]
@@ -363,7 +362,6 @@ def _une_carte(match: dict, etape: str = "", depart: str = "", arrivee: str = ""
             f"Descends à <b style='color:#081F11;'>{arrivee_texte}</b> — arrêt conseillé : "
             f"<b style='color:#081F11;'>{match['descend_a']}</b></div>"
         )
-        astuce = _astuce_quartier(depart_texte, arrivee_texte)
     arrets = _bloc_arrets(match)
     # Les terminus de la ligne, en petit : le parcours réel du bus.
     ligne = (
@@ -378,7 +376,6 @@ def _une_carte(match: dict, etape: str = "", depart: str = "", arrivee: str = ""
   <div style="color:{VERT};font-size:56px;font-weight:800;line-height:1.05;
               margin:4px 0 6px 0;">{affiche}</div>
   {trajet}
-  {astuce}
   <div style="color:#6B7A72;font-size:13px;margin-top:6px;">
     {" · ".join(x for x in (rappel, match.get("categorie", "")) if x)}</div>
   {ligne}
@@ -387,8 +384,12 @@ def _une_carte(match: dict, etape: str = "", depart: str = "", arrivee: str = ""
 """
 
 
-def _carte(resultat: dict, depart: str, arrivee: str) -> str:
-    """La réponse en Markdown : compagnie et numéro de ligne mis en avant."""
+def _carte(resultat: dict, depart: str, arrivee: str, avertissement: str = "") -> str:
+    """La réponse en Markdown : compagnie et numéro de ligne mis en avant.
+
+    L'astuce « précise ton lieu » ne figure qu'une fois, au-dessus des cartes,
+    et jamais dans chaque carte.
+    """
     if not depart or not arrivee:
         return (
             "### 🤷 Lieu non détecté\n\n"
@@ -396,12 +397,15 @@ def _carte(resultat: dict, depart: str, arrivee: str) -> str:
             "Reformule, ou parle plus près du micro."
         )
 
+    astuce = _astuce_quartier(depart, arrivee)
     if resultat["found"]:
-        return "".join(_une_carte(match, depart=depart, arrivee=arrivee) for match in resultat["lignes"])
+        return avertissement + astuce + "".join(
+            _une_carte(match, depart=depart, arrivee=arrivee) for match in resultat["lignes"]
+        )
 
     correspondances = resultat.get("correspondances") or []
     if correspondances:
-        blocs = ["### 🔁 Pas de bus direct : un changement suffit\n"]
+        blocs = [avertissement, astuce, "### 🔁 Pas de bus direct : un changement suffit\n"]
         for numero, trajet in enumerate(correspondances, start=1):
             if numero > 1:
                 blocs.append(f"\n**Autre possibilité {numero}**\n")
@@ -447,15 +451,60 @@ def _mention(intent: dict, modele_asr: str = "") -> str:
 
 
 # --------------------------------------------------------------------------- #
+# Compagnie
+# --------------------------------------------------------------------------- #
+
+# Étiquettes courtes affichées à l'utilisateur ; le CSV et le bouton portent le
+# nom complet (« Tata AFTU », « Dakar Dem Dikk »).
+LIBELLES_COMPAGNIES = {"Tata AFTU": "Tata", "Dakar Dem Dikk": "Dem Dikk"}
+
+
+def _libelle_compagnie(compagnie: str) -> str:
+    return LIBELLES_COMPAGNIES.get(compagnie, compagnie)
+
+
+def _filtrer_compagnie(resultat: dict, compagnie: str) -> tuple[dict, bool]:
+    """Restreint un résultat de StopsMatcher à une compagnie.
+
+    Renvoie (résultat filtré, la compagnie dessert-elle au moins une solution ?).
+    """
+    lignes = [ligne for ligne in resultat["lignes"] if ligne["compagnie"] == compagnie]
+    correspondances = [
+        trajet
+        for trajet in resultat.get("correspondances") or []
+        if trajet["etape_1"]["compagnie"] == compagnie
+        or trajet["etape_2"]["compagnie"] == compagnie
+    ]
+    presente = bool(lignes or correspondances)
+    return {
+        **resultat,
+        "found": bool(lignes),
+        "lignes": lignes,
+        "correspondances": correspondances,
+    }, presente
+
+
+def _message_autre_compagnie(compagnie: str) -> str:
+    """Avertissement quand la compagnie demandée ne dessert pas le trajet."""
+    return (
+        "<div style='color:#7A5A00;background:#FFF7E0;border:1px solid #F0DFA8;"
+        "border-radius:8px;padding:8px 12px;margin:10px 0;font-size:14px;font-weight:600;'>"
+        f"Pas de ligne {_libelle_compagnie(compagnie)} pour ce trajet. "
+        "Voici les autres lignes :</div>\n\n"
+    )
+
+
+# --------------------------------------------------------------------------- #
 # Pipeline
 # --------------------------------------------------------------------------- #
 
 
-def trouver_le_bus(audio: str | None, phrase_ecrite: str) -> tuple:
+def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str = "") -> tuple:
     """Le pipeline complet, dans l'ordre de src/app/app.py.
 
     Le micro l'emporte sur le texte : si un enregistrement arrive, on le
-    transcrit. Les cinq retours correspondent aux cinq sorties de l'interface.
+    transcrit. La compagnie dite à la voix l'emporte sur le bouton. Les cinq
+    retours correspondent aux cinq sorties de l'interface.
     """
     vide = ("", "", _carte({}, "", ""), None, "")
     modele_asr = ""
@@ -516,10 +565,22 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str) -> tuple:
                 depart, arrivee, resultat = local["depart"], local["arrivee"], essai
                 intent = {**intent, "source": "llm+local"}
 
+    # Compagnie : ce que l'utilisateur a dit à la voix prime sur le bouton.
+    compagnie = intent.get("compagnie") or compagnie_choix or ""
+    avertissement = ""
+    if compagnie:
+        filtre, presente = _filtrer_compagnie(resultat, compagnie)
+        if presente:
+            resultat = filtre
+        elif resultat["found"] or resultat.get("correspondances"):
+            # La compagnie demandée ne dessert pas ce trajet : on le dit, puis on
+            # montre quand même les lignes des autres compagnies.
+            avertissement = _message_autre_compagnie(compagnie)
+
     return (
         phrase,
         f"{depart} → {arrivee}",
-        _carte(resultat, depart, arrivee),
+        _carte(resultat, depart, arrivee, avertissement),
         _voix_wolof(resultat["lignes"], resultat.get("correspondances")),
         _mention(intent, modele_asr),
     )
@@ -532,12 +593,12 @@ def _court(exc: Exception, longueur: int = 160) -> str:
 
 def trouver_le_bus_vocal(audio: str | None) -> tuple:
     """Raccourci pour les exemples audio : on part du micro, le texte est vide."""
-    return trouver_le_bus(audio, "")
+    return trouver_le_bus(audio, "", "")
 
 
 def trouver_le_bus_texte(phrase: str) -> tuple:
     """Raccourci pour les exemples texte : le micro est vide."""
-    return trouver_le_bus(None, phrase)
+    return trouver_le_bus(None, phrase, "")
 
 
 # --------------------------------------------------------------------------- #
@@ -616,6 +677,13 @@ def _construire():
                 label="Quelques phrases qui marchent",
             )
 
+        compagnie_in = gr.Radio(
+            choices=[("Tous", ""), ("Tata", "Tata AFTU"), ("Dem Dikk", "Dakar Dem Dikk")],
+            value="",
+            label="Compagnie",
+            info="À la voix, ta préférence l'emporte sur ce choix.",
+        )
+
         bouton = gr.Button("Trouver mon bus", variant="primary", size="lg")
 
         with gr.Accordion("Ce que l'IA a compris", open=True):
@@ -633,7 +701,7 @@ def _construire():
         )
 
         # Le branchement du bouton doit rester dans le bloc « with gr.Blocks ».
-        bouton.click(trouver_le_bus, inputs=[audio_in, texte_in], outputs=sorties)
+        bouton.click(trouver_le_bus, inputs=[audio_in, texte_in, compagnie_in], outputs=sorties)
     return interface
 
 

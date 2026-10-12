@@ -48,6 +48,20 @@ TRAJETS_EXCLUS = {
     "Maa ngi Pikine, bëgg naa dem Guédiawaye": {"Ligne 71"},
 }
 
+# Phrases qui nomment une compagnie : (phrase, compagnie attendue, lignes de
+# cette compagnie attendues, compagnies interdites dans le résultat).
+TRAJETS_COMPAGNIE = [
+    ("Maa ngi Pikine, dama bëgg dem Colobane ak Tata", "Tata AFTU", {"Ligne 48", "Ligne 50", "Ligne 75"}, {"Dakar Dem Dikk"}),
+    ("Maa ngi Liberté 6, bëgg naa dem Palais ci Dem Dikk", "Dakar Dem Dikk", {"Ligne 9"}, {"Tata AFTU"}),
+]
+
+# Phrases dont un lieu contient « dakar » : le nom de compagnie ne doit pas
+# l'éclipser. (phrase, départs acceptés, arrivées acceptées)
+TRAJETS_LIEUX = [
+    ("Maa ngi Dakar Plateau, dama bëgg dem Nord Foire", {"Dakar Plateau", "Plateau"}, {"Nord Foire"}),
+    ("Maa ngi Grand Dakar, dama bëgg dem Parcelles", {"Grand Dakar"}, {"Parcelles"}),
+]
+
 AUDIOS = [
     ("data/demo_audio/trajet ouakam_palais.wav", {"Ligne 7"}),
     ("data/demo_audio/trajet liberte5_palais2.wav", {"Ligne 10", "Ligne 13"}),
@@ -72,6 +86,42 @@ def test_local() -> int:
         bon = _ok(trouvees, attendues, TRAJETS_EXCLUS.get(phrase, frozenset()))
         echecs += not bon
         print(f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n      {lieux.get('depart')} -> {lieux.get('arrivee')} | {sorted(trouvees) or 'rien'}")
+    for phrase, compagnie, attendues, interdites in TRAJETS_COMPAGNIE:
+        lieux = extract_local(phrase)
+        resultat = matcher.find_line(lieux.get("depart") or "", lieux.get("arrivee") or "")
+        trouvees = {l["ligne"] for l in resultat["lignes"] if l["compagnie"] == compagnie}
+        exclues = {l["ligne"] for l in resultat["lignes"] if l["compagnie"] in interdites}
+        bon = lieux.get("compagnie") == compagnie and _ok(trouvees, attendues, exclues)
+        echecs += not bon
+        print(
+            f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
+            f"      compagnie={lieux.get('compagnie')!r} | {lieux.get('depart')} -> {lieux.get('arrivee')} | {sorted(trouvees) or 'rien'}"
+        )
+    # « tata » ne doit jamais être pris pour un lieu.
+    lieux = extract_local("tata")
+    bon = (
+        not lieux.get("depart")
+        and not lieux.get("arrivee")
+        and lieux.get("compagnie") == "Tata AFTU"
+    )
+    echecs += not bon
+    print(
+        f"{'OK ' if bon else 'ÉCHEC'} | « tata » n'est jamais un lieu "
+        f"({lieux.get('depart')!r} -> {lieux.get('arrivee')!r}, compagnie={lieux.get('compagnie')!r})"
+    )
+    # Un lieu contenant « dakar » survit à la détection de compagnie.
+    for phrase, departs, arrivees in TRAJETS_LIEUX:
+        lieux = extract_local(phrase)
+        bon = (
+            lieux.get("depart") in departs
+            and lieux.get("arrivee") in arrivees
+            and not lieux.get("compagnie")
+        )
+        echecs += not bon
+        print(
+            f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
+            f"      {lieux.get('depart')!r} -> {lieux.get('arrivee')!r}"
+        )
     return echecs
 
 
@@ -104,8 +154,11 @@ def _appel(client, phrase: str, audio: Path | None) -> list:
             envoi = client.post(f"{URL_APP}/gradio_api/upload", files={"files": (audio.name, f, "audio/wav")})
         envoi.raise_for_status()
         fichier = {"path": envoi.json()[0], "meta": {"_type": "gradio.FileData"}}
+    # 3e entrée = bouton Compagnie : vide pour « Tous ». Sans elle, l'app Gradio
+    # reçoit moins d'entrées que de paramètres et l'appel échoue.
     reponse = client.post(
-        f"{URL_APP}/gradio_api/call/trouver_le_bus", json={"data": [fichier, phrase or ""]}
+        f"{URL_APP}/gradio_api/call/trouver_le_bus",
+        json={"data": [fichier, phrase or "", ""]},
     )
     reponse.raise_for_status()
     flux = client.get(f"{URL_APP}/gradio_api/call/trouver_le_bus/{reponse.json()['event_id']}").text
@@ -147,7 +200,11 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     en_ligne = "--en-ligne" in sys.argv
     print(f"=== Test {'de l app en ligne (' + SPACE + ')' if en_ligne else 'local'} ===\n")
-    echecs = test_en_ligne() if en_ligne else test_local()
-    total = len(TRAJETS) + (len(AUDIOS) if en_ligne else 0)
+    if en_ligne:
+        echecs = test_en_ligne()
+        total = len(TRAJETS) + len(AUDIOS)
+    else:
+        echecs = test_local()
+        total = len(TRAJETS) + len(TRAJETS_COMPAGNIE) + len(TRAJETS_LIEUX) + 1
     print(f"\n{total - echecs}/{total} réussis")
     sys.exit(1 if echecs else 0)
