@@ -79,6 +79,12 @@ class StopsMatcher:
         """Une ligne parcourue de l'arrêt i_dep à l'arrêt i_arr."""
         info, arrets = self.lignes[cle], self.arrets[cle]
         direct = i_dep < i_arr
+        # Tous les arrêts réellement parcourus, de la montée à la descente, dans
+        # le sens du trajet : le voyageur peut monter à n'importe lequel d'entre
+        # eux. On garde monte_a / descend_a tels quels (l'arrêt conseillé), mais
+        # on ne laisse pas croire que c'est le seul possible.
+        positions = range(i_dep, i_arr + 1) if direct else range(i_dep, i_arr - 1, -1)
+        arrets_trajet = [joli(arrets[i]) for i in positions]
         return {
             "compagnie": info["compagnie"],
             "ligne": info["ligne"],
@@ -88,6 +94,7 @@ class StopsMatcher:
             "sens": "direct" if direct else "inverse",
             "monte_a": joli(arrets[i_dep]),
             "descend_a": joli(arrets[i_arr]),
+            "arrets_trajet": arrets_trajet,
         }
 
     def _correspondances(self, depart: str, arrivee: str) -> list[dict]:
@@ -150,8 +157,9 @@ class StopsMatcher:
 
         Chaque ligne renvoyée porte : compagnie, ligne, categorie, depart et
         arrivee (les terminus dans le sens du trajet), sens, monte_a et
-        descend_a (les arrêts où monter et descendre). Sans ligne directe,
-        « correspondances » propose des trajets en deux bus.
+        descend_a (les arrêts conseillés pour monter et descendre) et
+        arrets_trajet (tous les arrêts parcourus, de la montée à la descente).
+        Sans ligne directe, « correspondances » propose des trajets en deux bus.
         """
         depart, arrivee = depart or "", arrivee or ""
         depart_arret, depart_score = self._reconnu(depart)

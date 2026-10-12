@@ -46,6 +46,7 @@ from intent.extract_intent import (  # noqa: E402
     extract_intent,
     extract_local,
 )
+from matching.lieux import sans_accents  # noqa: E402
 from matching.stops_matcher import StopsMatcher  # noqa: E402
 from tts.speak import (  # noqa: E402
     cache_complet,
@@ -285,26 +286,85 @@ def _voix_wolof(lignes: list[dict], correspondances: list[dict] | None = None) -
 # --------------------------------------------------------------------------- #
 
 
+# Grands quartiers : leur nom dit ne désigne pas un point précis, le même dit
+# peut être à plusieurs kilomètres de l'arrêt conseillé. On invite alors à affiner.
+QUARTIERS_VAGUES = {
+    "pikine", "guediawaye", "parcelle", "parcelles", "parcelles assainies",
+    "keur massar", "rufisque", "yeumbeul", "thiaroye", "grand yoff", "medina",
+}
+
+
+def _astuce_quartier(*lieux: str) -> str:
+    """Un rappel quand l'utilisateur n'a nommé qu'un grand quartier.
+
+    Le fond reste clair et le texte sombre en propre : le bloc se lit pareil en
+    mode clair et en mode sombre.
+    """
+    normalises = {sans_accents(lieu).strip() for lieu in lieux if lieu}
+    if not (normalises & QUARTIERS_VAGUES):
+        return ""
+    return (
+        "<div style='color:#7A5A00;background:#FFF7E0;border:1px solid #F0DFA8;"
+        "border-radius:8px;padding:8px 12px;margin-top:10px;font-size:13px;'>"
+        "💡 Astuce : précise ton lieu (ex. Pikine Rue 10, Tally Boumack) "
+        "pour un arrêt plus juste.</div>"
+    )
+
+
+def _bloc_arrets(match: dict) -> str:
+    """Le détail repliable des arrêts parcourus, montée et descente en gras."""
+    arrets = match.get("arrets_trajet") or []
+    if not arrets:
+        return ""
+    dernier = len(arrets) - 1
+    elements = []
+    for i, arret in enumerate(arrets):
+        if i in (0, dernier):
+            elements.append(
+                f"<li style='margin:2px 0;'><b style='color:#081F11;'>{arret}</b></li>"
+            )
+        else:
+            elements.append(f"<li style='margin:2px 0;color:#2C4636;'>{arret}</li>")
+    return (
+        "<details style='margin-top:10px;'>"
+        "<summary style='color:#0B6B37;font-size:14px;font-weight:700;"
+        "cursor:pointer;outline:none;'>Voir les arrêts du trajet</summary>"
+        "<ol style='color:#2C4636;font-size:14px;margin:8px 0 0 20px;padding:0;'>"
+        f"{''.join(elements)}</ol></details>"
+    )
+
+
 def _une_carte(match: dict, etape: str = "", depart: str = "", arrivee: str = "") -> str:
-    """Une ligne : compagnie, numéro, trajet de l'utilisateur, terminus de la ligne.
-    
-    Les noms d'arrêts portent leur couleur en propre (mode clair ET mode sombre) :
-    le CSS de la page ne doit jamais les rendre illisibles sur la carte claire.
+    """Une ligne : compagnie, numéro, trajet conseillé, arrêts parcourus.
+
+    On ne prétend pas connaître l'arrêt exact de l'utilisateur : on conseille
+    l'arrêt le plus proche du lieu qu'il a dit, et on rappelle que tout arrêt de
+    la ligne parcouru convient. Les couleurs sont portées en propre par chaque
+    bloc (fond clair fixe + texte sombre) : la carte reste lisible en mode clair
+    comme en mode sombre, quel que soit le thème Gradio.
     """
     numero = numero_de(match["ligne"])
     affiche = re.sub(r"^Ligne\s*", "", str(match["ligne"]))
     rappel = nombre_en_wolof(numero) if numero is not None else ""
     entete = f"{etape} · {match['compagnie']}" if etape else match["compagnie"]
     trajet = ""
+    astuce = ""
     if match.get("monte_a") and match.get("descend_a"):
-        # Le trajet de l'utilisateur, en gros, juste sous le numéro de ligne.
-        depart_texte = depart if depart else match['monte_a']
-        arrivee_texte = arrivee if arrivee else match['descend_a']
+        # Le lieu dit par l'utilisateur, avec l'arrêt conseillé le plus proche.
+        depart_texte = depart if depart else match["monte_a"]
+        arrivee_texte = arrivee if arrivee else match["descend_a"]
         trajet = (
-            f"<div style='color:#11301C;font-size:24px;font-weight:800;margin-top:8px;'>"
-            f"Monte à <b style='color:#081F11;'>{depart_texte}</b> (arrêt <b style='color:#081F11;'>{match['monte_a']}</b>)"
-            f" → descends à <b style='color:#081F11;'>{arrivee_texte}</b> (arrêt <b style='color:#081F11;'>{match['descend_a']}</b>)</div>"
+            f"<div style='color:#11301C;font-size:22px;font-weight:800;"
+            f"line-height:1.35;margin-top:8px;'>"
+            f"Monte à <b style='color:#081F11;'>{depart_texte}</b> — arrêt conseillé : "
+            f"<b style='color:#081F11;'>{match['monte_a']}</b> "
+            f"<span style='font-weight:600;font-size:15px;color:#3D5A48;'>"
+            f"(ou tout arrêt de la ligne {affiche} près de toi)</span><br>"
+            f"Descends à <b style='color:#081F11;'>{arrivee_texte}</b> — arrêt conseillé : "
+            f"<b style='color:#081F11;'>{match['descend_a']}</b></div>"
         )
+        astuce = _astuce_quartier(depart_texte, arrivee_texte)
+    arrets = _bloc_arrets(match)
     # Les terminus de la ligne, en petit : le parcours réel du bus.
     ligne = (
         f"<div style='color:#6B7A72;font-size:13px;margin-top:6px;'>"
@@ -318,9 +378,11 @@ def _une_carte(match: dict, etape: str = "", depart: str = "", arrivee: str = ""
   <div style="color:{VERT};font-size:56px;font-weight:800;line-height:1.05;
               margin:4px 0 6px 0;">{affiche}</div>
   {trajet}
-  {ligne}
+  {astuce}
   <div style="color:#6B7A72;font-size:13px;margin-top:6px;">
     {" · ".join(x for x in (rappel, match.get("categorie", "")) if x)}</div>
+  {ligne}
+  {arrets}
 </div>
 """
 
