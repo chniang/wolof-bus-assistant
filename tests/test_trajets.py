@@ -62,6 +62,12 @@ TRAJETS_LIEUX = [
     ("Maa ngi Grand Dakar, dama bëgg dem Parcelles", {"Grand Dakar"}, {"Parcelles"}),
 ]
 
+# Grands quartiers qu'aucun arrêt ne nomme : nommer le quartier doit tout de même
+# proposer au moins une ligne, directe ou avec changement.
+TRAJETS_QUARTIER = [
+    "Maa ngi Dakar Plateau, dama bëgg dem Nord Foire",
+]
+
 AUDIOS = [
     ("data/demo_audio/trajet ouakam_palais.wav", {"Ligne 7"}),
     ("data/demo_audio/trajet liberte5_palais2.wav", {"Ligne 10", "Ligne 13"}),
@@ -121,6 +127,18 @@ def test_local() -> int:
         print(
             f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
             f"      {lieux.get('depart')!r} -> {lieux.get('arrivee')!r}"
+        )
+    # Un grand quartier (Plateau) doit trouver au moins une ligne.
+    for phrase in TRAJETS_QUARTIER:
+        lieux = extract_local(phrase)
+        resultat = matcher.find_line(lieux.get("depart") or "", lieux.get("arrivee") or "")
+        trouvees = {l["ligne"] for l in resultat["lignes"]}
+        trouvees |= {"corr:" + c["etape_1"]["ligne"] for c in resultat["correspondances"]}
+        bon = bool(trouvees)
+        echecs += not bon
+        print(
+            f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
+            f"      {lieux.get('depart')} -> {lieux.get('arrivee')} | {sorted(trouvees) or 'rien'}"
         )
     return echecs
 
@@ -205,6 +223,6 @@ if __name__ == "__main__":
         total = len(TRAJETS) + len(AUDIOS)
     else:
         echecs = test_local()
-        total = len(TRAJETS) + len(TRAJETS_COMPAGNIE) + len(TRAJETS_LIEUX) + 1
+        total = len(TRAJETS) + len(TRAJETS_COMPAGNIE) + len(TRAJETS_LIEUX) + len(TRAJETS_QUARTIER) + 1
     print(f"\n{total - echecs}/{total} réussis")
     sys.exit(1 if echecs else 0)
