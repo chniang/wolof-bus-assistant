@@ -46,6 +46,7 @@ from intent.extract_intent import (  # noqa: E402
     extract_intent,
     extract_local,
 )
+from matching.compagnie import message_autre_compagnie  # noqa: E402
 from matching.lieux import sans_accents  # noqa: E402
 from matching.stops_matcher import StopsMatcher  # noqa: E402
 from tts.speak import (  # noqa: E402
@@ -454,43 +455,18 @@ def _mention(intent: dict, modele_asr: str = "") -> str:
 # Compagnie
 # --------------------------------------------------------------------------- #
 
-# Étiquettes courtes affichées à l'utilisateur ; le CSV et le bouton portent le
-# nom complet (« Tata AFTU », « Dakar Dem Dikk »).
-LIBELLES_COMPAGNIES = {"Tata AFTU": "Tata", "Dakar Dem Dikk": "Dem Dikk"}
 
+def _bandeau_autre_compagnie(compagnie: str, resultat: dict) -> str:
+    """Le bandeau « aucune ligne <compagnie> » posé au-dessus du résultat de secours.
 
-def _libelle_compagnie(compagnie: str) -> str:
-    return LIBELLES_COMPAGNIES.get(compagnie, compagnie)
-
-
-def _filtrer_compagnie(resultat: dict, compagnie: str) -> tuple[dict, bool]:
-    """Restreint un résultat de StopsMatcher à une compagnie.
-
-    Renvoie (résultat filtré, la compagnie dessert-elle au moins une solution ?).
+    Le texte lui-même est partagé avec les tests (matching.compagnie) ; ici on
+    l'habille du fond jaune qui distingue un avertissement d'une réponse normale.
     """
-    lignes = [ligne for ligne in resultat["lignes"] if ligne["compagnie"] == compagnie]
-    correspondances = [
-        trajet
-        for trajet in resultat.get("correspondances") or []
-        if trajet["etape_1"]["compagnie"] == compagnie
-        or trajet["etape_2"]["compagnie"] == compagnie
-    ]
-    presente = bool(lignes or correspondances)
-    return {
-        **resultat,
-        "found": bool(lignes),
-        "lignes": lignes,
-        "correspondances": correspondances,
-    }, presente
-
-
-def _message_autre_compagnie(compagnie: str) -> str:
-    """Avertissement quand la compagnie demandée ne dessert pas le trajet."""
     return (
         "<div style='color:#7A5A00;background:#FFF7E0;border:1px solid #F0DFA8;"
         "border-radius:8px;padding:8px 12px;margin:10px 0;font-size:14px;font-weight:600;'>"
-        f"Pas de ligne {_libelle_compagnie(compagnie)} pour ce trajet. "
-        "Voici les autres lignes :</div>\n\n"
+        + message_autre_compagnie(compagnie, resultat)
+        + "</div>\n\n"
     )
 
 
@@ -569,13 +545,12 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
     compagnie = intent.get("compagnie") or compagnie_choix or ""
     avertissement = ""
     if compagnie:
-        filtre, presente = _filtrer_compagnie(resultat, compagnie)
-        if presente:
-            resultat = filtre
-        elif resultat["found"] or resultat.get("correspondances"):
-            # La compagnie demandée ne dessert pas ce trajet : on le dit, puis on
-            # montre quand même les lignes des autres compagnies.
-            avertissement = _message_autre_compagnie(compagnie)
+        # On cherche d'abord dans la compagnie (directe, puis correspondance avec
+        # ses deux bus). Sans solution propre, find_line_compagnie retombe sur le
+        # réseau entier et `exacte` vaut False : on affiche alors le bandeau.
+        resultat, exacte = MATCHER.find_line_compagnie(depart, arrivee, compagnie)
+        if not exacte and (resultat["found"] or resultat.get("correspondances")):
+            avertissement = _bandeau_autre_compagnie(compagnie, resultat)
 
     return (
         phrase,

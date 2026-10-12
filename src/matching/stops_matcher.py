@@ -97,10 +97,17 @@ class StopsMatcher:
             "arrets_trajet": arrets_trajet,
         }
 
-    def _correspondances(self, depart: str, arrivee: str) -> list[dict]:
-        """Trajets en deux bus quand aucune ligne ne relie directement les deux lieux."""
+    def _correspondances(
+        self, depart: str, arrivee: str, cles: list[tuple[str, str]]
+    ) -> list[dict]:
+        """Trajets en deux bus quand aucune ligne ne relie directement les deux lieux.
+
+        On ne parcourt que `cles` : restreindre la recherche à une compagnie se
+        fait donc à la source, pas en filtrant un résultat déjà calculé.
+        """
         cotes_dep, cotes_arr = [], []
-        for cle, arrets in self.arrets.items():
+        for cle in cles:
+            arrets = self.arrets[cle]
             s, i = self._meilleur(depart, arrets)
             if s >= MIN_SCORE:
                 cotes_dep.append((s, cle, i))
@@ -152,7 +159,9 @@ class StopsMatcher:
                 break
         return sortie
 
-    def find_line(self, depart: str, arrivee: str) -> dict:
+    def find_line(
+        self, depart: str, arrivee: str, compagnies: set[str] | None = None
+    ) -> dict:
         """Lignes reliant depart et arrivee, la meilleure en tête.
 
         Chaque ligne renvoyée porte : compagnie, ligne, categorie, depart et
@@ -160,8 +169,13 @@ class StopsMatcher:
         descend_a (les arrêts conseillés pour monter et descendre) et
         arrets_trajet (tous les arrêts parcourus, de la montée à la descente).
         Sans ligne directe, « correspondances » propose des trajets en deux bus.
+
+        `compagnies` restreint la recherche à ces compagnies, dès la sélection
+        des lignes candidates : une correspondance trouvée ainsi a forcément ses
+        deux bus dans l'ensemble autorisé. None cherche dans tout le réseau.
         """
         depart, arrivee = depart or "", arrivee or ""
+        cles = [cle for cle in self.arrets if compagnies is None or cle[0] in compagnies]
         depart_arret, depart_score = self._reconnu(depart)
         arrivee_arret, arrivee_score = self._reconnu(arrivee)
         depart_valide = depart_score >= MIN_SCORE
@@ -169,7 +183,8 @@ class StopsMatcher:
 
         candidates = []
         if depart_valide and arrivee_valide:
-            for cle, arrets in self.arrets.items():
+            for cle in cles:
+                arrets = self.arrets[cle]
                 s_dep, i_dep = self._meilleur(depart, arrets)
                 s_arr, i_arr = self._meilleur(arrivee, arrets)
                 if s_dep < MIN_SCORE or s_arr < MIN_SCORE or i_dep == i_arr:
@@ -186,7 +201,7 @@ class StopsMatcher:
 
         correspondances = []
         if not lignes and depart_valide and arrivee_valide:
-            correspondances = self._correspondances(depart, arrivee)
+            correspondances = self._correspondances(depart, arrivee, cles)
 
         return {
             "found": bool(lignes),
@@ -201,3 +216,20 @@ class StopsMatcher:
             "lignes": lignes,
             "correspondances": correspondances,
         }
+
+    def find_line_compagnie(
+        self, depart: str, arrivee: str, compagnie: str
+    ) -> tuple[dict, bool]:
+        """Trajet réservé à une compagnie, avec repli sur tout le réseau.
+
+        Dans l'ordre : les lignes directes de la compagnie, puis les
+        correspondances dont LES DEUX bus sont de cette compagnie (calculées sur
+        ses seules lignes), et seulement si rien de tout cela n'existe, la
+        recherche complète. Renvoie (résultat, exacte) : `exacte` vaut True quand
+        la compagnie dessert le trajet par elle-même, False quand on est retombé
+        sur les autres compagnies.
+        """
+        restreint = self.find_line(depart, arrivee, compagnies={compagnie})
+        if restreint["found"] or restreint["correspondances"]:
+            return restreint, True
+        return self.find_line(depart, arrivee), False

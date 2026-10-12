@@ -55,6 +55,11 @@ TRAJETS_COMPAGNIE = [
     ("Maa ngi Liberté 6, bëgg naa dem Palais ci Dem Dikk", "Dakar Dem Dikk", {"Ligne 9"}, {"Tata AFTU"}),
 ]
 
+# Cas réel : « Liberté 5 -> Médina » avec Tata. Tata n'a pas de ligne directe ;
+# l'app doit proposer un trajet entièrement Tata s'il existe, sinon afficher le
+# bandeau « aucune ligne Tata, même avec un changement » et les lignes Dem Dikk.
+TRAJET_COMPAGNIE_REEL = "Maa ngi Liberté 5, dama bëgg dem Médina ak Tata"
+
 # Phrases dont un lieu contient « dakar » : le nom de compagnie ne doit pas
 # l'éclipser. (phrase, départs acceptés, arrivées acceptées)
 TRAJETS_LIEUX = [
@@ -80,6 +85,7 @@ def _ok(trouvees: set[str], attendues: set[str], exclues: set[str] = frozenset()
 
 def test_local() -> int:
     from intent.extract_intent import extract_local
+    from matching.compagnie import message_autre_compagnie
     from matching.stops_matcher import StopsMatcher
 
     matcher = StopsMatcher()
@@ -103,6 +109,41 @@ def test_local() -> int:
             f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
             f"      compagnie={lieux.get('compagnie')!r} | {lieux.get('depart')} -> {lieux.get('arrivee')} | {sorted(trouvees) or 'rien'}"
         )
+    # Cas réel : la compagnie demandée n'a pas forcément de ligne directe. On
+    # reproduit le choix de l'app : trajet 100 % Tata s'il existe, sinon bandeau
+    # « aucune ligne Tata » suivi des lignes des autres compagnies (Dem Dikk).
+    lieux = extract_local(TRAJET_COMPAGNIE_REEL)
+    resultat, exacte = matcher.find_line_compagnie(
+        lieux.get("depart") or "", lieux.get("arrivee") or "", "Tata AFTU"
+    )
+    if exacte:
+        compagnies = {ligne["compagnie"] for ligne in resultat["lignes"]}
+        for trajet in resultat["correspondances"]:
+            compagnies.add(trajet["etape_1"]["compagnie"])
+            compagnies.add(trajet["etape_2"]["compagnie"])
+        bon = bool(resultat["found"] or resultat["correspondances"]) and compagnies == {"Tata AFTU"}
+        reponse = "Tata : " + (
+            ", ".join(ligne["ligne"] for ligne in resultat["lignes"])
+            or " ; ".join(
+                f"{c['etape_1']['ligne']} puis {c['etape_2']['ligne']}"
+                for c in resultat["correspondances"]
+            )
+        )
+    else:
+        trouvees = {ligne["ligne"] for ligne in resultat["lignes"]}
+        trouvees |= {"corr:" + c["etape_1"]["ligne"] for c in resultat["correspondances"]}
+        message = message_autre_compagnie("Tata AFTU", resultat)
+        bon = (
+            bool(trouvees)
+            and "pas trouvé de ligne Tata" in message
+            and "Dem Dikk" in message
+        )
+        reponse = f"{message} {sorted(trouvees)}"
+    echecs += not bon
+    print(
+        f"{'OK ' if bon else 'ÉCHEC'} | {TRAJET_COMPAGNIE_REEL}\n"
+        f"      compagnie=Tata AFTU | exacte={exacte} | {reponse}"
+    )
     # « tata » ne doit jamais être pris pour un lieu.
     lieux = extract_local("tata")
     bon = (
@@ -223,6 +264,7 @@ if __name__ == "__main__":
         total = len(TRAJETS) + len(AUDIOS)
     else:
         echecs = test_local()
-        total = len(TRAJETS) + len(TRAJETS_COMPAGNIE) + len(TRAJETS_LIEUX) + len(TRAJETS_QUARTIER) + 1
+        # +1 pour « tata » jamais un lieu, +1 pour le cas compagnie réelle.
+        total = len(TRAJETS) + len(TRAJETS_COMPAGNIE) + len(TRAJETS_LIEUX) + len(TRAJETS_QUARTIER) + 2
     print(f"\n{total - echecs}/{total} réussis")
     sys.exit(1 if echecs else 0)
