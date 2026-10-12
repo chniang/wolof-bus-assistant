@@ -63,6 +63,26 @@ VOIES = {
     "retour", "sortie", "peage", "virage", "passage",
 }
 
+# Grands quartiers qu'aucun arrêt ne nomme tel quel, mais que plusieurs arrêts
+# couvrent. Nommer le quartier revient à accepter n'importe lequel de ces arrêts :
+# la comparaison garde le meilleur, ligne par ligne.
+QUARTIERS = {
+    # Le Plateau est le centre-ville de Dakar. Aucun arrêt ne porte ce nom, mais
+    # le quartier en regroupe plusieurs. « Sandaga », cité comme repère, n'existe
+    # pas dans le réseau.
+    "plateau": (
+        "Place de l'Indépendance",
+        "Petersen",
+        "Lat Dior",
+        "Palais",
+        "Place Leclerc",
+        "Marché Tilène",
+        "Centre-Ville",
+        "Hôtel de Ville",
+    ),
+}
+
+
 # Arrêts « faux amis » : le nom porte celui d'un quartier, mais l'arrêt n'y est
 # pas — un garage ou une sortie d'autoroute nommés d'après leur destination. Ils
 # ne doivent JAMAIS servir à reconnaître ce quartier. Ligne 71, « Garage
@@ -135,13 +155,30 @@ def _score_brut(q: tuple[str, ...], s: tuple[str, ...]) -> float:
     return 0.0
 
 
+def _variantes_quartier(requete: str) -> tuple[str, ...] | None:
+    """Les arrêts qui représentent le quartier demandé, ou None.
+
+    « Plateau » et « Dakar Plateau » désignent le même quartier : dès qu'un mot
+    de la requête est un quartier connu, on renvoie ses arrêts.
+    """
+    for mot in jetons(requete):
+        if mot in QUARTIERS:
+            return QUARTIERS[mot]
+    return None
+
+
 def score(requete: str, arret: str) -> float:
     """Ressemblance entre un lieu demandé et un arrêt, entre 0 et 1.
 
     1.0 : même lieu. Entre 0 et 1 : tous les mots demandés sont dans l'arrêt
     (« Liberté 6 » dans « Giratoire Liberté VI »), d'autant mieux noté que
-    l'arrêt a peu de mots en plus. 0 : rien de commun.
+    l'arrêt a peu de mots en plus. 0 : rien de commun. Un grand quartier
+    (« Plateau ») vaut le meilleur de ses arrêts.
     """
+    variantes = _variantes_quartier(requete)
+    if variantes is not None:
+        return max(score(variante, arret) for variante in variantes)
+
     q = jetons(requete)
     s = jetons(arret)
     if not q or not s:
