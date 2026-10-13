@@ -271,10 +271,19 @@ REPLACEMENTS_PHRASE = (
     (r"(?:palee|paale|pale|pali)\b", " palais "),
     # « pala dee » : Palais entendu en deux morceaux.
     (r"\bpala(?:\s+d?ee?)?\b", " palais "),
+    # « Grand Médine » (HLM, à Grand Yoff) n'est pas la Médina : sans cette
+    # réécriture, le mot « medine » se rapproche trop de « medina » (0,83) et le
+    # lieu deviendrait Médina. On le ramène au nom reconnu « HLM Grand Médine ».
+    (r"(?<!hlm )\bgrand\s+medines?\b", " hlm grand medine "),
     # Médina : l'ASR écrit « madiina », « madina », « mediina » ou « medina ».
     # « medine » (Grand Médine, HLM Grand Médine) est un autre lieu : on n'y touche
     # pas, sinon « Grand Médine » deviendrait « Médina ».
     (r"\b(?:madiina|meddina|madina|mediina|medina)\b", " medina "),
+    # Marqueur explicite de DÉPART : « diougué », « jóge », « jogé » (partir de
+    # X). « Ban bus moy diougué Keur Mbaye Fall pour dém Rufisque » : ce qui suit
+    # le marqueur est le départ, ce qui suit « dém » est l'arrivée. On le ramène à
+    # un jeton unique pour que la répartition ne dépende pas de « dem ».
+    (r"\b(?:diougu[eé]?|diog[ué]+e?|j[oó]g[eé]?)\b", " diougue "),
     # whisper-small entend « liberation » pour « Liberté ».
     (r"\bliberation\b", " liberte "),
     (r"\blibert[iy]\b", " liberte "),
@@ -306,7 +315,19 @@ LONGUEUR_MIN = 4
 # arrêts ne nomment pas tels quels : on les accepte quand même comme lieux.
 # « Sandaga » est l'arrêt central du Plateau : on l'accepte comme lieu pour que
 # « Maa ngi Sandaga, dama bëgg dem … » trouve une ligne (position via lieux_geo).
-LIEUX_SUPPLEMENTAIRES = ("Palais", "Plateau", "Dakar Plateau", "Liberté", "Sandaga")
+# Les lieux ci-dessous sont dits tels quels dans la collecte alors que le réseau
+# ne les nomme pas à l'identique : on les accepte comme lieux et c'est le nom
+# (alias de lieux.py) ou la position (lieux_geo.csv / Nominatim) qui trouve
+# l'arrêt. « Mbao », « Yarakh », « Point E », « Cité Soprim », « Cité Keur
+# Gorgui » n'ont pas d'arrêt au nom exact : leur position les situe.
+LIEUX_SUPPLEMENTAIRES = (
+    "Palais", "Plateau", "Dakar Plateau", "Liberté", "Sandaga",
+    # Alias sûrs (nom d'arrêt connu).
+    "Université", "Sam", "Dalale Diame", "Dalal Diam", "Yoff Tonghor",
+    "Wakhinane Nimzatt", "HLM Grand Médine",
+    # Lieux incertains, situés par leur position.
+    "Mbao", "Yarakh", "Point E", "Cité Soprim", "Soprim", "Cité Keur Gorgui",
+)
 
 
 def _sans_accents(texte: str) -> str:
@@ -328,6 +349,9 @@ def _cible(lieu: str) -> str:
 _CIBLES = [(_cible(lieu), lieu) for lieu in LIEUX] + [
     (_cible(lieu), lieu) for lieu in LIEUX_SUPPLEMENTAIRES
 ]
+# Noms normalisés exacts. Un lieu très court (« HLM ») doit être reconnu quand il
+# est écrit tel quel, même si sa longueur passe sous LONGUEUR_MIN.
+_CIBLES_EXACTES = {cible for cible, _ in _CIBLES}
 
 
 def _normaliser_phrase(phrase: str) -> str:
@@ -371,7 +395,7 @@ MOTS_DE_LA_PHRASE = {
     "dama", "begg", "begga", "beugg", "beugga", "naa", "maa", "ngi", "mangi", "maangi",
     "dem", "laa", "la", "nekk", "nek", "ma", "ci", "ba", "fi", "fii", "man", "gui", "bu",
     "fa", "wax", "nga", "ngay", "jem", "dafa", "def", "bus", "bi", "yi", "mu", "ak",
-    "de", "deu", "dee", "dawal", "jel", "jeel", "won", "ana", "fan", "fu",
+    "de", "deu", "dee", "dawal", "jel", "jeel", "won", "ana", "fan", "fu", "diougue",
 }
 # Premiers mots de nombreux arrêts : seuls, ils ne désignent aucun lieu
 # (« marché liberté cinq » ne doit pas devenir « Marché aux Poissons »).
@@ -379,7 +403,16 @@ MOTS_TROP_VAGUES = {
     "marche", "cite", "lycee", "hopital", "police", "poste", "ecole", "stade", "gare",
     "rond", "point", "station", "grand", "route", "place", "croisement", "terminus",
     "pont", "eglise", "college", "arret", "village", "quartier", "camp", "keur",
+    # « sicap » est un sigle générique (SICAP) : seul, il ne désigne aucun lieu
+    # (« Sicap Baobab » n'est pas « SICAP Mbao »). « SICAP Mbao » entier reste.
+    "sicap",
 }
+
+# Mots qui n'apparaissent dans le nom d'AUCUN arrêt : un n-gramme qui en contient
+# un ne peut pas viser un lieu, quelle que soit sa longueur. « baobab » (quartier
+# « Sicap Baobab ») se rapprochait tour à tour de « Banoba » (unigramme, 0,83) et
+# de « SICAP Mbao » (« sicap baobab », 0,86) : on préfère ne rien deviner.
+MOTS_HORS_LIEUX = {"baobab"}
 # Chiffres dits et leurs graphies ASR : un chiffre n'est JAMAIS un lieu. Après
 # « liberté »/« palais » il est converti en chiffre arabe ; isolé, il est ignoré
 # (sinon « siis » se ferait passer pour l'arrêt « SIPS »).
@@ -437,12 +470,24 @@ def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
     for taille in range(1, TAILLE_NGRAMMES + 1):
         for debut in range(len(mots) - taille + 1):
             morceau = mots[debut : debut + taille]
-            if any(mot in MOTS_DE_LA_PHRASE or mot in MOTS_CHIFFRES for mot in morceau):
+            gramme = " ".join(morceau)
+            # Un mot qu'aucun arrêt ne porte (« baobab ») disqualifie tout le
+            # n-gramme : inutile de le rapprocher d'un lieu par ressemblance.
+            if any(mot in MOTS_HORS_LIEUX for mot in morceau):
+                continue
+            # Un n-gramme qui contient un mot de la phrase (« de », « maa », un
+            # chiffre dit) est ignoré — sauf s'il forme exactement le nom d'un
+            # lieu : « Zone de Captage » ou « Hôtel de Ville » contiennent « de »
+            # mais sont de vrais arrêts. Sans cette exception, « zone » tombait
+            # seul sur l'arrêt « Zone B ».
+            exact = gramme in _CIBLES_EXACTES
+            if not exact and any(
+                mot in MOTS_DE_LA_PHRASE or mot in MOTS_CHIFFRES for mot in morceau
+            ):
                 continue
             if taille == 1 and morceau[0] in MOTS_TROP_VAGUES:
                 continue
-            gramme = " ".join(morceau)
-            if len(gramme) < LONGUEUR_MIN:
+            if len(gramme) < LONGUEUR_MIN and not exact:
                 continue
             for lieu_normalise, lieu_exact in _CIBLES:
                 score = _score(gramme, lieu_normalise)
@@ -469,6 +514,10 @@ def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
 # « dem ». Kiriku transcrit souvent « dama bëgg dem Palais, maa ngi Ouakam ».
 MARQUEURS_ICI_AVANT = {"ngi", "gui", "mangi", "maangi", "mangui"}
 MARQUEURS_ICI_APRES = {"laa", "la"}
+# « Ban bus moy diougué Keur Mbaye Fall pour dém Rufisque » : le verbe de départ
+# (« diougué », « jóge », « jogé », ramenés à « diougue » par _normaliser_phrase)
+# introduit le lieu de départ, quelle que soit sa place par rapport à « dem ».
+MARQUEURS_DEPART_EXPLICITE = {"diougue"}
 
 
 def _depart_marque(mots: list[str], trouves: list[tuple[int, int, str]]) -> str | None:
@@ -508,6 +557,26 @@ def extract_local(phrase: str) -> dict:
             arrivee = next(lieu for _, _, lieu in trouves if lieu != depart)
             return {
                 "depart": depart,
+                "arrivee": arrivee,
+                "compagnie": compagnie,
+                "erreur": None,
+                "source": "local",
+            }
+
+        # « Ban bus moy diougué Keur Mbaye Fall pour dém Rufisque » : le marqueur
+        # explicite de départ précède le lieu d'où l'on part.
+        depart_explicite = next(
+            (
+                lieu
+                for debut, _, lieu in trouves
+                if debut > 0 and mots[debut - 1] in MARQUEURS_DEPART_EXPLICITE
+            ),
+            None,
+        )
+        if depart_explicite:
+            arrivee = next(lieu for _, _, lieu in trouves if lieu != depart_explicite)
+            return {
+                "depart": depart_explicite,
                 "arrivee": arrivee,
                 "compagnie": compagnie,
                 "erreur": None,

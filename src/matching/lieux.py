@@ -56,6 +56,22 @@ ALIAS = {
     "sacree coeur": "sacre coeur",
     "pattesd oie": "patte d oie",
     "lat dior": "lat dior",
+    # Formes parlées entendues dans la collecte, ramenées au nom d'arrêt.
+    "sam": "sam notaire",
+    "dalale diame": "hopital dalal diam",
+    "dalal diam": "hopital dalal diam",
+    # « Yoff Tonghor » est un quartier de Yoff : les lignes de Yoff conviennent.
+    "yoff tonghor": "yoff",
+    # « Yarakh » n'a pas d'arrêt à son nom : on le rabat sur « Route de Yarakh »
+    # (lignes 40/41), l'arrêt du secteur (le géocodage le place à 1079 m).
+    "yarakh": "route de yarakh",
+    # Wakhinane Nimzatt est un arrondissement de Guédiawaye.
+    "wakhinane nimzatt": "guediawaye",
+    "wakhinane nimzat": "guediawaye",
+    # « Grand Médine » (HLM, à Grand Yoff) n'est PAS la Médina de Dakar.
+    "grand medine": "hlm grand medine",
+    # « Sicap Liberté » est le quartier Liberté, pas « SICAP Mbao ».
+    "sicap liberte": "liberte",
     # Palais 1 et Palais 2 sont deux terminus voisins du même quartier : pour qui
     # dit « Palais », une ligne vers l'un ou l'autre convient.
     "palais 1": "palais",

@@ -125,6 +125,40 @@ TRAJETS_QUARTIER = [
     "Maa ngi Dakar Plateau, dama bëgg dem Nord Foire",
 ]
 
+# Le marqueur de DÉPART « diougué / diogué / jóge » (« partir de X ») introduit le
+# lieu d'où l'on part, où qu'il soit : dans « Ban bus moy diougué X pour dém Y », X
+# est le départ et Y l'arrivée. Vérifie l'extraction seule (départ, arrivée).
+# (phrase, départs acceptés, arrivée attendue)
+TRAJETS_DIOUGUE = [
+    ("Ban bus moy diougué Keur Mbaye Fall pour dém Rufisque", {"Keur Mbaye Fall"}, "Rufisque"),
+    ("Ban bus mo diogué Grand Yoff dem Parcelles", {"Grand Yoff", "Grand-Yoff"}, "Parcelles"),
+    ("Ban bus moy diougué Mermoz dém Ngor", {"Mermoz"}, "Ngor"),
+    ("bëgg na diogué HLM dem Sacré-Cœur", {"HLM"}, "Sacré Cœur"),
+    ("bëgg na diogué Liberté 6 dem Nord Foire", {"Liberté 6"}, "Nord Foire"),
+]
+
+# Faux matches à ne JAMAIS produire (passe d'orthographe sur la collecte) :
+# (phrase, lieux interdits — ni départ ni arrivée).
+LIEUX_INTERDITS = [
+    # « Grand Médine » (HLM, à Grand Yoff) n'est pas la Médina de Dakar.
+    ("maa ngi Grand Médine dama bëgg dem Parcelles", {"Médina", "Medina"}),
+    # « Sicap Baobab » n'est ni « Banoba » ni « SICAP Mbao » : lieu non reconnu,
+    # on laisse vide plutôt que de deviner.
+    ("maa ngi Sicap Baobab dama bëgg dem Patte d'Oie", {"Banoba", "SICAP Mbao"}),
+    # Un mot « sicap » seul ne désigne aucun lieu.
+    ("sicap", {"SICAP Mbao"}),
+]
+
+# Corrections de faux matches : lieux qui doivent être reconnus correctement.
+# (phrase, départ attendu, arrivée attendue).
+TRAJETS_CORRIGES = [
+    # « Zone de Captage » est l'arrêt, jamais « Zone B » : le « de » du nom ne
+    # doit pas laisser le mot « zone » tomber seul sur un autre arrêt.
+    ("maa ngi Bène Tally ban bus la warra dieul pour dém Zone de Captage", "Bène Tally", "Zone de Captage"),
+    # L'arrêt « Banoba » (vrai) reste reconnu par son nom exact.
+    ("maa ngi Banoba dama bëgg dem Patte d'Oie", "Banoba", "Patte d'Oie"),
+]
+
 # Phrases texte envoyées en plus à l'app publiée (--en-ligne) : elles traversent
 # la vraie extraction (NVIDIA) et la carte affichée, pas seulement l'extraction locale.
 TRAJETS_EN_LIGNE = [
@@ -296,6 +330,34 @@ def test_local() -> int:
             f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
             f"      {lieux.get('depart')!r} -> {lieux.get('arrivee')!r}"
         )
+    # « diougué / diogué » (partir de) : le lieu qui suit le marqueur est le départ.
+    for phrase, departs, arrivee in TRAJETS_DIOUGUE:
+        lieux = extract_local(phrase)
+        bon = lieux.get("depart") in departs and lieux.get("arrivee") == arrivee
+        echecs += not bon
+        print(
+            f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
+            f"      {lieux.get('depart')!r} -> {lieux.get('arrivee')!r}"
+        )
+    # Un lieu ne doit jamais être confondu avec un autre (faux matches connus).
+    for phrase, interdits in LIEUX_INTERDITS:
+        lieux = extract_local(phrase)
+        trouves = {lieux.get("depart"), lieux.get("arrivee")}
+        bon = not (trouves & interdits)
+        echecs += not bon
+        print(
+            f"{'OK ' if bon else 'ÉCHEC'} | {phrase} (lieux interdits)\n"
+            f"      {lieux.get('depart')!r} -> {lieux.get('arrivee')!r}"
+        )
+    # Lieux corrigés : départ et arrivée exacts attendus.
+    for phrase, depart, arrivee in TRAJETS_CORRIGES:
+        lieux = extract_local(phrase)
+        bon = lieux.get("depart") == depart and lieux.get("arrivee") == arrivee
+        echecs += not bon
+        print(
+            f"{'OK ' if bon else 'ÉCHEC'} | {phrase} (lieu corrigé)\n"
+            f"      {lieux.get('depart')!r} -> {lieux.get('arrivee')!r}"
+        )
     # Un grand quartier (Plateau) doit trouver au moins une ligne.
     for phrase in TRAJETS_QUARTIER:
         lieux = extract_local(phrase)
@@ -450,6 +512,9 @@ if __name__ == "__main__":
             + len(TRAJETS_GEO)
             + len(TRAJETS_SANS_MONTEE_FAUSSE)
             + len(TRAJETS_SANS_MONTEE_HOMONYME)
+            + len(TRAJETS_DIOUGUE)
+            + len(LIEUX_INTERDITS)
+            + len(TRAJETS_CORRIGES)
             + 3
         )
     print(f"\n{total - echecs}/{total} réussis")
