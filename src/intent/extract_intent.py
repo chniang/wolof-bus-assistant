@@ -279,11 +279,30 @@ REPLACEMENTS_PHRASE = (
     # « medine » (Grand Médine, HLM Grand Médine) est un autre lieu : on n'y touche
     # pas, sinon « Grand Médine » deviendrait « Médina ».
     (r"\b(?:madiina|meddina|madina|mediina|medina)\b", " medina "),
+    # « ban bus » (« quel bus ») et ses déformations ASR (« bën biis », « ben
+    # bis », « bane bus »…) : ce n'est JAMAIS un lieu. On le ramène à une forme
+    # unique pour que « bën biis » ne devienne plus « Bene Baraque » ; les mots
+    # « ban » et « bus » sont traités comme des mots de la phrase.
+    (r"\b(?:ban|bann|bane|ben)\s+(?:bus|bis|biis)\b", " ban bus "),
+    # « HLM » entendu en toutes lettres (« as lm », « a s l m ») ou déformé.
+    (r"\b(?:assalem|asslem|asselem|asalem|aselem|achelem|a\s*s\s*l\s*m)\b", " hlm "),
+    # Sacré-Cœur : « sakkere kër », « sakre keur », « sacre keur »… « ker »/« keur »
+    # n'est réécrit QUE derrière « sakre/sakkere/sacre » : « keur » seul (Keur
+    # Massar, Keur Mbaye Fall…) reste intact et vague. On réinjecte la forme du
+    # réseau « sacre-cœur » (le tiret et le « œ » deviennent des espaces ensuite,
+    # comme pour le nom « Sacré-Cœur »), d'où les jetons « sacre c ur ».
+    (r"\b(?:sakkere|sakre|sacre)\s+keu?r\b", " sacre-c\u0153ur "),
+    # « pour dém » déformé : « kurdem », « kur dem », « pour dem ».
+    (r"\b(?:kur\s*dem|pour\s+dem)\b", " pour dem "),
     # Marqueur explicite de DÉPART : « diougué », « jóge », « jogé » (partir de
     # X). « Ban bus moy diougué Keur Mbaye Fall pour dém Rufisque » : ce qui suit
     # le marqueur est le départ, ce qui suit « dém » est l'arrivée. On le ramène à
     # un jeton unique pour que la répartition ne dépende pas de « dem ».
     (r"\b(?:diougu[eé]?|diog[ué]+e?|j[oó]g[eé]?)\b", " diougue "),
+    # Même marqueur, tournure « maa/moy juge X » : « juge », « jugé », « jooge »,
+    # « jóoge » (= partir de X). On ne restreint volontairement qu'à la suite
+    # « maa/moy juge » pour ne pas transformer un autre « juge » de la phrase.
+    (r"\b(maa|moy)\s+(?:juge|jooge)\b", r" \1 diougue "),
     # whisper-small entend « liberation » pour « Liberté ».
     (r"\bliberation\b", " liberte "),
     (r"\blibert[iy]\b", " liberte "),
@@ -396,6 +415,8 @@ MOTS_DE_LA_PHRASE = {
     "dem", "laa", "la", "nekk", "nek", "ma", "ci", "ba", "fi", "fii", "man", "gui", "bu",
     "fa", "wax", "nga", "ngay", "jem", "dafa", "def", "bus", "bi", "yi", "mu", "ak",
     "de", "deu", "dee", "dawal", "jel", "jeel", "won", "ana", "fan", "fu", "diougue",
+    # « ban bus » (« quel bus ») : formule, jamais un lieu.
+    "ban",
 }
 # Premiers mots de nombreux arrêts : seuls, ils ne désignent aucun lieu
 # (« marché liberté cinq » ne doit pas devenir « Marché aux Poissons »).

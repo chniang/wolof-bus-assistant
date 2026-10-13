@@ -159,6 +159,20 @@ TRAJETS_CORRIGES = [
     ("maa ngi Banoba dama bëgg dem Patte d'Oie", "Banoba", "Patte d'Oie"),
 ]
 
+# Cas réels ASR (Whisper secours) : la transcription fautive doit se réduire aux
+# bons lieux. (phrase, départ attendu, arrivée attendue).
+TRAJETS_ASR = [
+    # « bën biis maa juge as lm kurdem sakkere kër » pour « Ban bus moy diougué
+    # HLM pour dém Sacré-Cœur » : ne doit plus donner « Bene Baraque ».
+    ("bën biis maa juge as lm kurdem sakkere kër", "HLM", "Sacré Cœur"),
+    # « Bene Baraque » écrit correctement reste reconnu.
+    ("Maa ngi Bene Baraque, dama bëgg dem Pikine", "Bene Baraque", "Pikine"),
+    # « keur » ne doit pas être avalé par la règle Sacré-Cœur : Keur Massar et
+    # Keur Mbaye Fall restent des lieux.
+    ("maa ngi Keur Massar dama bëgg dem Pikine", "Keur Massar", "Pikine"),
+    ("maa ngi Keur Mbaye Fall dama bëgg dem Rufisque", "Keur Mbaye Fall", "Rufisque"),
+]
+
 # Phrases texte envoyées en plus à l'app publiée (--en-ligne) : elles traversent
 # la vraie extraction (NVIDIA) et la carte affichée, pas seulement l'extraction locale.
 TRAJETS_EN_LIGNE = [
@@ -358,6 +372,15 @@ def test_local() -> int:
             f"{'OK ' if bon else 'ÉCHEC'} | {phrase} (lieu corrigé)\n"
             f"      {lieux.get('depart')!r} -> {lieux.get('arrivee')!r}"
         )
+    # Cas réels ASR : départ et arrivée exacts attendus.
+    for phrase, depart, arrivee in TRAJETS_ASR:
+        lieux = extract_local(phrase)
+        bon = lieux.get("depart") == depart and lieux.get("arrivee") == arrivee
+        echecs += not bon
+        print(
+            f"{'OK ' if bon else 'ÉCHEC'} | {phrase} (ASR)\n"
+            f"      {lieux.get('depart')!r} -> {lieux.get('arrivee')!r}"
+        )
     # Un grand quartier (Plateau) doit trouver au moins une ligne.
     for phrase in TRAJETS_QUARTIER:
         lieux = extract_local(phrase)
@@ -515,6 +538,7 @@ if __name__ == "__main__":
             + len(TRAJETS_DIOUGUE)
             + len(LIEUX_INTERDITS)
             + len(TRAJETS_CORRIGES)
+            + len(TRAJETS_ASR)
             + 3
         )
     print(f"\n{total - echecs}/{total} réussis")

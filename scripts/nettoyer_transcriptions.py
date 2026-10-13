@@ -81,12 +81,24 @@ REMPLACEMENTS_LIEUX = {
     "sacre coeur": "Sacré-Cœur",
     "scare coeur": "Sacré-Cœur",
     "sacre cour": "Sacré-Cœur",
+    "sakkere ker": "Sacré-Cœur",
+    "sakre ker": "Sacré-Cœur",
+    "sakre keur": "Sacré-Cœur",
+    "sacre keur": "Sacré-Cœur",
     "parcelle assainie": "Parcelles Assainies",
     "parcelles assainies": "Parcelles Assainies",
     "parcelle": "Parcelles",
     "percelle": "Parcelles",
     "parcelles": "Parcelles",
     "hlm": "HLM",
+    "assalem": "HLM",
+    "asslem": "HLM",
+    "asselem": "HLM",
+    "asalem": "HLM",
+    "aselem": "HLM",
+    "achelem": "HLM",
+    "as lm": "HLM",
+    "a s l m": "HLM",
     # --- Yarakh / Almadies / Mamelles --------------------------------------
     "yaraakh": "Yarakh",
     "yarakh": "Yarakh",
@@ -180,6 +192,22 @@ REMPLACEMENTS_LIEUX = {
     "liberti": "Liberté",
 }
 
+# Formules (hors noms de lieux) ramenées à une orthographe unique, pour que les
+# transcriptions de fine-tuning ne gardent pas les déformations de l'ASR. Aucune
+# n'est un nom de lieu : « ban bus » (« quel bus ») n'est jamais une destination,
+# et « kurdem » est « pour dém ». Les composés ne sont réécrits qu'accolés.
+REMPLACEMENTS_FORMULES = {
+    "ban bus": "ban bus",
+    "bann bus": "ban bus",
+    "bane bus": "ban bus",
+    "ben bus": "ban bus",
+    "ban bis": "ban bus",
+    "ben bis": "ban bus",
+    "ben biis": "ban bus",
+    "kur dem": "pour dem",
+    "kurdem": "pour dem",
+}
+
 # Variantes accentuées par lettre : la table est écrite sans accent, la
 # comparaison accepte toutes ces formes.
 _VARIANTES = {
@@ -231,7 +259,7 @@ def _compiler(table: dict[str, str]):
     return regex, paires
 
 
-_REGEX, _PAIRES = _compiler(REMPLACEMENTS_LIEUX)
+_REGEX, _PAIRES = _compiler({**REMPLACEMENTS_LIEUX, **REMPLACEMENTS_FORMULES})
 
 
 def nettoyer(texte: str) -> str:
