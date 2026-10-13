@@ -23,6 +23,8 @@ import os
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 from functools import lru_cache
 from pathlib import Path
 
@@ -36,11 +38,11 @@ sys.path.insert(0, str(RACINE / "src"))
 
 from asr.transcribe import (  # noqa: E402
     MODEL_ASR_GPU,
-    MODEL_WHISPER,
     SAMPLE_RATE,
     load_audio,
     load_model,
     transcrire,
+    transcrir_avec_seconde_chance,
 )
 from intent.extract_intent import (  # noqa: E402
     NVIDIA_BASE_URL,
@@ -88,50 +90,71 @@ except ImportError:
     spaces = _SpacesLocal()
 
 
-def _charger_whisper():
-    """Charge le modèle de transcription une seule fois, au chargement du module.
+# Whisper (CPU) et Kiriku (GPU) sont chargés au démarrage du module : ZeroGPU
+# recommande un chargement au niveau module, jamais dans la fonction @spaces.GPU,
+# qui ne doit couvrir que le calcul. Un échec de chargement ne fait que garder
+# None ; la transcription du GPU renvoie alors ERREUR_ASR et l'app s'appuie sur
+# l'autre modèle préchargé.
+_MODELE_CPU = None
+_MODELE_GPU = None
 
-    Sur GPU (le Space) : Kiriku-Wolof-ASR en float16, bien meilleur sur les noms
-    d'arrêts. S'il ne se charge pas (secret HF_TOKEN absent, conditions non
-    acceptées, réseau), on retombe sur whisper-small-wolof : la démo reste en ligne.
-    Sur CPU on délègue à load_model(), qui applique la quantification int8 validée
-    sur le laptop.
 
-    Renvoie (pipeline, nom du modèle chargé).
+def _precharger_whisper():
+    """Précharge whisper-small quantifié sur CPU, dès l'ouverture du Space.
+
+    Ne pas attendre le premier refus du GPU pour charger le modèle de secours :
+    quand ZeroGPU refuse la carte, la transcription part immédiatement au lieu de
+    rester une minute devant « chargement du modèle ».
     """
+    global _MODELE_CPU
+    try:
+        _MODELE_CPU = load_model()
+        print("[ASR] whisper-small préchargé sur CPU", flush=True)
+    except Exception as exc:
+        message = f"{type(exc).__name__} : {exc}"[:160]
+        print(f"[ASR] préchargement whisper impossible ({message})", flush=True)
+
+
+def _charger_kiriku_gpu():
+    """Le pipeline Kiriku-Wolof-ASR en float16 sur GPU (modèle protégé : HF_TOKEN)."""
     import torch
     from transformers import pipeline
 
-    if torch.cuda.is_available():
-        try:
-            modele = pipeline(
-                "automatic-speech-recognition",
-                model=MODEL_ASR_GPU,
-                device=0,
-                dtype=torch.float16,
-                token=os.getenv("HF_TOKEN"),
-            )
-            print(f"[ASR] {MODEL_ASR_GPU} chargé sur GPU", flush=True)
-            return modele, MODEL_ASR_GPU
-        except Exception as exc:
-            print(f"[ASR] {MODEL_ASR_GPU} indisponible ({exc}), repli sur {MODEL_WHISPER}", flush=True)
-        return (
-            pipeline(
-                "automatic-speech-recognition",
-                model=MODEL_WHISPER,
-                device=0,
-                dtype=torch.float16,
-            ),
-            MODEL_WHISPER,
-        )
-    return load_model(), MODEL_WHISPER
+    return pipeline(
+        "automatic-speech-recognition",
+        model=MODEL_ASR_GPU,
+        device=0,
+        dtype=torch.float16,
+        token=os.getenv("HF_TOKEN"),
+    )
 
 
-MODELE_WHISPER, NOM_MODELE_ASR = _charger_whisper()
-# Crédit affiché en pied de page : le modèle réellement chargé.
-LIBELLE_ASR = (
-    "Kiriku-Wolof-ASR (AI Hub Sénégal)" if "Kiriku" in NOM_MODELE_ASR else "Whisper wolof"
-)
+def _precharger_kiriku():
+    """Précharge Kiriku-Wolof-ASR sur GPU au chargement du module.
+
+    Comme avant le refactor : à l'ouverture, si la carte est là, on charge Kiriku.
+    Sinon _MODELE_GPU reste None et la transcription GPU renvoie ERREUR_ASR ;
+    le whisper CPU préchargé prend alors le relais.
+    """
+    global _MODELE_GPU
+    try:
+        import torch
+
+        if not torch.cuda.is_available():
+            print("[ASR] pas de GPU au démarrage : Kiriku non chargé", flush=True)
+            return
+        _MODELE_GPU = _charger_kiriku_gpu()
+        print(f"[ASR] {MODEL_ASR_GPU} chargé sur GPU", flush=True)
+    except Exception as exc:
+        message = f"{type(exc).__name__} : {exc}"[:160]
+        print(f"[ASR] Kiriku indisponible au démarrage ({message})", flush=True)
+
+
+_precharger_whisper()
+_precharger_kiriku()
+
+# Crédit affiché en pied de page : les deux modèles de transcription.
+LIBELLE_ASR = "Whisper wolof + Kiriku-Wolof-ASR"
 
 # Le TTS ne sert qu'en secours, quand le cache disque n'a pas l'audio du résultat.
 # Le charger à la volée évite de téléchargement 578 Mo pour rien sur un Space.
@@ -224,33 +247,92 @@ def _decoder_audio(chemin_audio: str) -> np.ndarray:
 
 @spaces.GPU(duration=30)
 def transcrire_wolof(audio: np.ndarray) -> str:
-    """Transcrit l'audio avec Kiriku sur GPU.
+    """Transcrit avec Kiriku sur GPU — le seul endroit qui réserve le GPU.
 
-    Seul endroit de l'app qui réserve le GPU. Le modèle est déjà en mémoire, la
-    réservation ne couvre donc que le calcul.
+    Le modèle est déjà chargé au démarrage du module (recommandation ZeroGPU) :
+    la réservation ne couvre que le calcul, d'où les 30 s. Kiriku ne se charge
+    jamais ici. S'il est absent (pas de GPU au démarrage), on renvoie une phrase
+    préfixée par ERREUR_ASR : l'appelant bascule sur le whisper CPU préchargé.
     """
+    if _MODELE_GPU is None:
+        return f"{ERREUR_ASR}Kiriku non chargé (pas de GPU au démarrage)"
     try:
-        return transcrire(MODELE_WHISPER, audio)
+        return transcrire(_MODELE_GPU, audio)
     except Exception as exc:
-        # ZeroGPU ne renvoie que le nom de l'erreur (« RuntimeError ») : on garde le
-        # détail en texte pour l'afficher et le voir dans les logs.
         import traceback
 
         traceback.print_exc()
         return f"{ERREUR_ASR}{type(exc).__name__} : {str(exc)[:300]}"
 
 
-# Secours quand ZeroGPU ne fournit pas de GPU (« No CUDA GPUs are available ») :
-# whisper-small quantifié sur CPU, chargé seulement le jour où on en a besoin.
-_MODELE_CPU = None
-
-
 def _transcrire_cpu(audio: np.ndarray) -> str:
+    """whisper-small quantifié sur CPU, préchargé à l'ouverture du Space.
+
+    Charge le modèle à la demande s'il n'a pas pu l'être au démarrage, et lève si
+    la transcription échoue : c'est l'appelant qui choisit de remonter l'erreur.
+    """
     global _MODELE_CPU
     if _MODELE_CPU is None:
-        print("[ASR] GPU indisponible : chargement de whisper-small sur CPU", flush=True)
+        print("[ASR] chargement de whisper-small sur CPU…", flush=True)
         _MODELE_CPU = load_model()
     return transcrire(_MODELE_CPU, audio)
+
+
+def _transcrire_premier(audio: np.ndarray) -> tuple[str, str, float]:
+    """Essai principal : Kiriku sur GPU, whisper CPU si le GPU est refusé.
+
+    Renvoie (transcription, libellé du modèle, durée). Lève seulement si aucune
+    transcription n'aboutit (audio illisible, modèle absent) ; une phrase vide
+    signifie qu'il n'y avait rien d'audible.
+    """
+    debut = time.perf_counter()
+    try:
+        phrase = transcrire_wolof(audio)
+        if phrase.startswith(ERREUR_ASR):
+            raise RuntimeError(phrase[len(ERREUR_ASR):])
+        return phrase, "Kiriku-Wolof-ASR (GPU)", time.perf_counter() - debut
+    except Exception as exc:
+        print(f"[ASR] ZeroGPU en échec ({_court(exc)}), secours CPU", flush=True)
+        return _transcrire_cpu(audio), "whisper-small (secours)", time.perf_counter() - debut
+
+
+def _second_essai(audio: np.ndarray, libelle_premier: str) -> tuple[str, str, float]:
+    """L'autre modèle ASR, pour la seconde chance.
+
+    Si le premier essai a tourné sur Kiriku, l'autre est le whisper CPU, réputé
+    écrire autrement les noms d'arrêts. S'il a fini sur whisper (GPU refusé),
+    l'autre est Kiriku : le refus de ZeroGPU peut être passager, on redemande la
+    carte. Qu'un des deux échoue, et transcrir_avec_seconde_chance garde le
+    premier résultat.
+    """
+    debut = time.perf_counter()
+    if "Kiriku" in libelle_premier:
+        return _transcrire_cpu(audio), "whisper-small", time.perf_counter() - debut
+    try:
+        phrase = transcrire_wolof(audio)
+        if phrase.startswith(ERREUR_ASR):
+            raise RuntimeError(phrase[len(ERREUR_ASR):])
+        return phrase, "Kiriku-Wolof-ASR (GPU)", time.perf_counter() - debut
+    except Exception as exc:
+        print(f"[ASR] second essai GPU refusé ({_court(exc)})", flush=True)
+        raise
+
+
+def _phrase_donne_un_trajet(phrase: str) -> bool:
+    """La phrase mène-t-elle déjà à un trajet, sans LLM ?
+
+    Le même chemin que le pipeline principal (extraction locale puis recherche) :
+    on évite de re-transcrire quand la première transcription suffit. Un lieu
+    manquant ou absent du réseau, ou aucune ligne trouvée, déclenche donc la
+    seconde chance.
+    """
+    if not phrase or phrase.startswith(ERREUR_ASR):
+        return False
+    local = extract_local(phrase)
+    if not (local.get("depart") and local.get("arrivee")):
+        return False
+    essai = MATCHER.find_line(local["depart"], local["arrivee"])
+    return bool(essai["found"] or essai["correspondances"])
 
 
 def _phrase_correspondance(trajet: dict) -> str:
@@ -791,40 +873,33 @@ def _bandeau_compagnie(compagnie_voix: str, compagnie_bouton: str) -> str:
 # --------------------------------------------------------------------------- #
 
 
-def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str = "") -> tuple:
-    """Le pipeline complet, dans l'ordre de src/app/app.py.
+def _journal(modele_asr: str, duree_asr: float, phrase: str, depart: str, arrivee: str, resultat: dict, intent: dict) -> None:
+    """Une ligne par transcription dans les logs du Space (rien de personnel).
 
-    Le micro l'emporte sur le texte : si un enregistrement arrive, on le
-    transcrit. La compagnie dite à la voix l'emporte sur le bouton. Les cinq
-    retours correspondent aux cinq sorties de l'interface.
+    Heure, modèle ASR, durée, transcription, trajet, nombre de lignes, source de
+    l'extraction : tout ce qu'il faut pour débugger une démo sans avoir à écouter
+    les enregistrements. Printé avec flush, les logs du Space sont le stdout.
     """
-    vide = ("", "", _carte({}, "", ""), None, "")
-    modele_asr = ""
+    print(
+        f"[trajet] {time.strftime('%H:%M:%S')} ASR={modele_asr or 'texte'} "
+        f"durée={max(duree_asr, 0.0):.1f}s phrase={phrase!r} "
+        f"trajet={depart} → {arrivee} lignes={len(resultat['lignes'])} "
+        f"source={intent.get('source')}",
+        flush=True,
+    )
 
-    if audio:
-        try:
-            son = _decoder_audio(audio)
-        except Exception as exc:
-            return ("", "", f"### 🎤 Audio illisible\n\n{_court(exc)}", None, "")
-        modele_asr = "Kiriku-Wolof-ASR (GPU)"
-        try:
-            phrase = transcrire_wolof(son)
-        except Exception as exc:
-            # Panne côté Hugging Face (GPU non attribué, quota) : on ne laisse pas
-            # l'utilisateur sans réponse, on transcrit sur CPU, plus lentement.
-            print(f"[ASR] ZeroGPU en échec ({_court(exc)}), secours CPU", flush=True)
-            phrase = ERREUR_ASR
-        if phrase.startswith(ERREUR_ASR):
-            modele_asr = "whisper-small (secours sans GPU)"
-            try:
-                phrase = _transcrire_cpu(son)
-            except Exception as exc:
-                return ("", "", f"### 🎤 Transcription impossible\n\n`{_court(exc)}`", None, "")
-    else:
-        phrase = (phrase_ecrite or "").strip()
 
+def _pipeline(phrase: str, modele_asr: str, duree_asr: float, compagnie_choix: str = "") -> tuple:
+    """À partir d'une phrase transcrite : extraction, recherche, réponse.
+
+    C'est ce que trouver_le_bus faisait après la transcription, isolé pour pouvoir
+    rejouer tout le traitement sur la seconde transcription. Renvoie le quintuplet
+    des sorties, suivi d'un booléen : un trajet a-t-il été trouvé ?
+    """
+    quint = ("", "", _carte({}, "", ""), None, "")
     if not phrase:
-        return vide
+        _journal(modele_asr, duree_asr, "", "", "", {"lignes": []}, {})
+        return quint, False
 
     # L'extraction gère elle-même son repli local : si l'API est saturée, elle
     # rend quand même un départ et une arrivée tant que la phrase les porte.
@@ -842,7 +917,8 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
     depart, arrivee = intent.get("depart") or "", intent.get("arrivee") or ""
 
     if not depart or not arrivee:
-        return (phrase, "", _carte({}, depart, arrivee), None, _mention(intent, modele_asr))
+        _journal(modele_asr, duree_asr, phrase, depart, arrivee, {"lignes": []}, intent)
+        return (phrase, "", _carte({}, depart, arrivee), None, _mention(intent, modele_asr)), False
 
     resultat = MATCHER.find_line(depart, arrivee)
 
@@ -869,6 +945,9 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
         if not exacte and (resultat["found"] or resultat.get("correspondances")):
             avertissement = _bandeau_autre_compagnie(compagnie, resultat)
     bandeau_compagnie = _bandeau_compagnie(compagnie_voix, compagnie_choix)
+    trouve = bool(resultat["found"] or resultat.get("correspondances"))
+
+    _journal(modele_asr, duree_asr, phrase, depart, arrivee, resultat, intent)
 
     return (
         phrase,
@@ -876,7 +955,47 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
         _carte(resultat, depart, arrivee, avertissement, bandeau_compagnie),
         _voix_wolof(resultat["lignes"], resultat.get("correspondances")),
         _mention(intent, modele_asr),
-    )
+    ), trouve
+
+
+def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str = "") -> tuple:
+    """Le pipeline complet, dans l'ordre de src/app/app.py.
+
+    Le micro l'emporte sur le texte : si un enregistrement arrive, on le transcrit
+    (Kiriku sur GPU, whisper CPU en secours, et une seconde chance avec l'autre
+    modèle si la première transcription ne mène à aucun trajet). La compagnie dite
+    à la voix l'emporte sur le bouton. Les cinq retours correspondent aux cinq
+    sorties de l'interface.
+    """
+    vide = ("", "", _carte({}, "", ""), None, "")
+
+    if audio:
+        try:
+            son = _decoder_audio(audio)
+        except Exception as exc:
+            return ("", "", f"### 🎤 Audio illisible\n\n{_court(exc)}", None, "")
+        if son is None or len(son) < SAMPLE_RATE * 0.3:
+            # Moins de 0,3 s : clic involontaire sur le micro, rien à chercher.
+            return vide
+        try:
+            phrase, modele_asr, duree_asr, _ = transcrir_avec_seconde_chance(
+                son,
+                _transcrire_premier,
+                _second_essai,
+                _phrase_donne_un_trajet,
+            )
+        except Exception as exc:
+            return ("", "", f"### 🎤 Transcription impossible\n\n`{_court(exc)}`", None, "")
+        if not phrase:
+            return vide
+        quint, _ = _pipeline(phrase, modele_asr, duree_asr, compagnie_choix)
+        return quint
+
+    phrase = (phrase_ecrite or "").strip()
+    if not phrase:
+        return vide
+    quint, _ = _pipeline(phrase, "", 0.0, compagnie_choix)
+    return quint
 
 
 def _court(exc: Exception, longueur: int = 160) -> str:
@@ -892,6 +1011,56 @@ def trouver_le_bus_vocal(audio: str | None) -> tuple:
 def trouver_le_bus_texte(phrase: str) -> tuple:
     """Raccourci pour les exemples texte : le micro est vide."""
     return trouver_le_bus(None, phrase, "")
+
+
+# Un même geste peut déclencher plusieurs événements Gradio : arrêter le micro
+# émet change puis stop_recording, déposer un fichier émet upload puis change.
+# Sans garde-fou, le pipeline partirait deux fois sur le même audio.
+_DERNIERE_RECHERCHE: tuple | None = None
+_FENETRE_DOUBLON = 2.0
+
+
+def rechercher_une_fois(audio: str | None, phrase_ecrite: str, compagnie_choix: str = "") -> tuple:
+    """Lance trouver_le_bus, mais une seule fois par audio donné.
+
+    Renvoie gr.skip() pour les événements en double : les sorties déjà calculées
+    restent affichées. C'est ce qui permet de brancher stop_recording, change et
+    le choix d'un exemple sur le même pipeline sans la déclencher deux fois.
+    """
+    global _DERNIERE_RECHERCHE
+    cle = (audio, (phrase_ecrite or "").strip(), compagnie_choix or "")
+    maintenant = time.monotonic()
+    if (
+        _DERNIERE_RECHERCHE is not None
+        and _DERNIERE_RECHERCHE[0] == cle
+        and maintenant - _DERNIERE_RECHERCHE[1] < _FENETRE_DOUBLON
+    ):
+        return tuple(gr.skip() for _ in range(5))
+    _DERNIERE_RECHERCHE = (cle, maintenant)
+    return trouver_le_bus(audio, phrase_ecrite, compagnie_choix)
+
+
+def _echauffer_llm():
+    """Appel de chauffe à l'API NVIDIA, en arrière-plan au démarrage.
+
+    Le premier appel de Llama d'une instance prend ~13 s (« modèle froid »). En le
+    déclenchant dès l'ouverture du Space, le premier visiteur ne paie pas cette
+    attente. L'échec n'est qu'un bruit dans les logs : l'extraction fonctionne de
+    toute façon en local.
+    """
+    try:
+        client = _client_llm()
+        if client is None:
+            return
+        extract_intent("maa ngi Ouakam, bëgg naa dem Palais 2", client=client)
+    except Exception as exc:
+        print(f"[LLM] échauffement ignoré ({_court(exc)})", flush=True)
+
+
+# Thread détaché pour ne pas bloquer le démarrage du Space : le préchargement
+# whisper et l'échauffement de l'API avancent chacun de leur côté.
+_THREAD_CHAUFFE = threading.Thread(target=_echauffer_llm, name="echauffement-llm", daemon=True)
+_THREAD_CHAUFFE.start()
 
 
 # --------------------------------------------------------------------------- #
@@ -946,11 +1115,11 @@ def _construire():
             )
             audios_demo = sorted(DEMO_AUDIO_DIR.glob("*.wav"))
             if audios_demo:
+                # Pas de fn : choisir un exemple remplit audio_in, dont le change
+                # déclenche la recherche automatique (avec la compagnie choisie).
                 gr.Examples(
                     examples=[[str(chemin)] for chemin in audios_demo],
                     inputs=[audio_in],
-                    fn=trouver_le_bus_vocal,
-                    outputs=sorties,
                     cache_examples=False,
                     label="Ou alors, rejoue un enregistrement déjà prêt",
                 )
@@ -995,6 +1164,18 @@ def _construire():
 
         # Le branchement du bouton doit rester dans le bloc « with gr.Blocks ».
         bouton.click(trouver_le_bus, inputs=[audio_in, texte_in, compagnie_in], outputs=sorties)
+
+        # Recherche automatique, sans bouton : au relâchement du micro
+        # (stop_recording), au dépôt d'un fichier et au choix d'un exemple
+        # (change). La compagnie choisie est passée comme au clic du bouton ;
+        # rechercher_une_fois absorbe l'événement en double que produit un même
+        # geste. Le bouton reste là pour relancer l'onglet « Écrire » ou au besoin.
+        for evenement in (audio_in.stop_recording, audio_in.change):
+            evenement(
+                rechercher_une_fois,
+                inputs=[audio_in, texte_in, compagnie_in],
+                outputs=sorties,
+            )
     return interface
 
 

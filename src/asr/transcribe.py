@@ -131,6 +131,36 @@ def transcrire(model, audio_16k: np.ndarray) -> str:
     return re.sub(r"\s+", " ", texte).strip()
 
 
+def transcrir_avec_seconde_chance(son, premier_essai, second_essai, rendu):
+    """Réessaie de transcrire avec l'autre modèle ASR quand rien n'est trouvé.
+
+    Le pipeline audio de l'app ne s'arrête pas à la première transcription : si
+    elle ne mène à aucun trajet (lieu manquant, aucune ligne), on retranscrit une
+    fois avec l'autre modèle — la meilleure façon de « sauver » un trajet quand
+    un ASR a mal écrit un nom d'arrêt.
+
+    - premier_essai(son) -> (phrase, libelle, duree) : l'essai principal.
+    - second_essai(son, libelle_premier) -> (phrase, libelle, duree) : l'autre
+      modèle, choisi par l'appelant d'après le libellé du premier essai. Il peut
+      lever (ex. GPU de nouveau refusé) : on garde alors le premier résultat.
+    - rendu(phrase) -> bool : vrai si la phrase mène à un trajet.
+
+    Renvoie (phrase, libelle, duree, retente). `retente` est vrai dès qu'un
+    second essai a eu lieu ; quand c'est lui qui mène à un trajet, `libelle`
+    porte « (2e essai) » pour l'afficher dans les sorties de l'app.
+    """
+    phrase, libelle, duree = premier_essai(son)
+    if rendu(phrase):
+        return phrase, libelle, duree, False
+    try:
+        phrase2, libelle2, duree2 = second_essai(son, libelle)
+    except Exception:
+        return phrase, libelle, duree, True
+    if rendu(phrase2):
+        return phrase2, f"{libelle2} (2e essai)", duree2, True
+    return phrase, libelle, duree, True
+
+
 if __name__ == "__main__":
     # Petit test à la main : python src/asr/transcribe.py chemin/vers/audio.wav
     import sys
