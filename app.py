@@ -55,8 +55,12 @@ from matching.geo import arrets_non_fiables  # noqa: E402
 from matching.lieux import AVANT_NUMERO, FAUX_AMIS, joli, sans_accents  # noqa: E402
 from matching.stops_matcher import StopsMatcher  # noqa: E402
 from tts.speak import (  # noqa: E402
+    CACHE_DIR,
+    assembler,
     cache_complet,
+    compagnie_dite,
     load_tts,
+    nom_cache,
     nombre_en_wolof,
     numero_de,
     phrase_reponse,
@@ -155,6 +159,8 @@ _precharger_kiriku()
 
 # Crédit affiché en pied de page : les deux modèles de transcription.
 LIBELLE_ASR = "Whisper wolof + Kiriku-Wolof-ASR"
+# Voix des réponses pré-générées (voir scripts/phrases_voix.json).
+LIBELLE_VOIX = "Adia_TTS (CONCREE)"
 
 # Le TTS ne sert qu'en secours, quand le cache disque n'a pas l'audio du résultat.
 # Le charger à la volée évite de téléchargement 578 Mo pour rien sur un Space.
@@ -213,6 +219,10 @@ def _client_llm():
 # donc dans un dossier temporaire, un fichier par réponse.
 DOSSIER_VOIX = Path(tempfile.mkdtemp(prefix="guindima_voix_"))
 _COMPTEUR = itertools.count()
+
+# Fragment pré-généré qui joint les deux bus d'un trajet à correspondance :
+# les WAV de chaque ligne encadrent « Ci ginnaaw, » (voir phrases_voix.json).
+LIAISON_CORRESPONDANCE = "correspondance_liaison.wav"
 
 
 ERREUR_ASR = "\x00ERREUR_ASR "
@@ -340,21 +350,46 @@ def _phrase_correspondance(trajet: dict) -> str:
     morceaux = []
     for etape in (trajet["etape_1"], trajet["etape_2"]):
         numero = numero_de(etape["ligne"])
-        dit = f"ligne {nombre_en_wolof(numero)}" if numero is not None else etape["ligne"]
-        morceaux.append(f"bus bu {etape['compagnie']}, {dit}")
+        dit = f"numero {nombre_en_wolof(numero)}" if numero is not None else etape["ligne"]
+        morceaux.append(f"bus bu {compagnie_dite(etape['compagnie'])}, {dit}")
     return f"Jëlal {morceaux[0]}, ba {trajet['changement']}. Ci ginnaaw, jëlal {morceaux[1]}."
+
+
+def _voix_correspondance_cache(trajet: dict) -> bytes | None:
+    """Le trajet en deux bus dit avec les WAV pré-générés, ou None s'il en manque un.
+
+    On recolle les deux phrases de ligne de part et d'autre de « Ci ginnaaw, » ;
+    le nom de l'arrêt de changement reste affiché, il n'est pas prononcé.
+    """
+    if not cache_complet():
+        return None
+    morceaux = []
+    for etape in (trajet["etape_1"], trajet["etape_2"]):
+        numero = numero_de(etape["ligne"])
+        if numero is None:
+            return None
+        fichier = CACHE_DIR / nom_cache(etape["compagnie"], numero)
+        if not fichier.is_file():
+            return None
+        morceaux.append(fichier)
+    liaison = CACHE_DIR / LIAISON_CORRESPONDANCE
+    if not liaison.is_file():
+        return None
+    return assembler([morceaux[0], liaison, morceaux[1]])
 
 
 def _voix_wolof(lignes: list[dict], correspondances: list[dict] | None = None) -> str | None:
     """La réponse lue en wolof, sous forme de chemin de fichier.
 
     Cache disque d'abord : à la démo, tout est déjà synthétisé et aucun modèle n'a
-    besoin d'être chargé. Synthèse directe seulement s'il manque un morceau, et
-    toujours pour un trajet avec correspondance (phrase propre à chaque trajet).
+    besoin d'être chargé. Synthèse directe seulement s'il manque un morceau.
     """
     if not lignes and not correspondances:
         return None
-    octets = voix_depuis_cache(lignes) if lignes and cache_complet() else None
+    if lignes:
+        octets = voix_depuis_cache(lignes) if cache_complet() else None
+    else:
+        octets = _voix_correspondance_cache(correspondances[0])
     if octets is None:
         phrase = phrase_reponse(lignes) if lignes else _phrase_correspondance(correspondances[0])
         try:
@@ -1158,7 +1193,7 @@ def _construire():
         gr.Markdown(
             "<div style='text-align:center;color:#8A968F;font-size:12px;"
             "border-top:1px solid #E3EAE6;padding-top:10px;margin-top:18px'>"
-            f"Données : Dakar Dem Dikk, Tata AFTU · IA : {LIBELLE_ASR}, NVIDIA Build"
+            f"Données : Dakar Dem Dikk, Tata AFTU · IA : {LIBELLE_ASR}, NVIDIA Build · Voix : {LIBELLE_VOIX}"
             "</div>"
         )
 

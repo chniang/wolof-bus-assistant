@@ -1,0 +1,553 @@
+{
+  "modele": "CONCREE/Adia_TTS",
+  "description": "A warm and natural voice, with a conversational flow",
+  "graine": 1234,
+  "frequence": 24000,
+  "phrases": [
+    {
+      "fichier": "dakar_dem_dikk_1.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_2.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_4.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_5.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero juróom.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_6.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero juróom benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_7.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero juróom ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_8.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero juróom ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_9.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero juróom ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_10.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero fukk.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_11.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_12.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_13.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_15.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak juróom.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_16.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak juróom benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_18.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak juróom ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_20.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaar fukk.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_23.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaar fukk ak ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_121.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero téeméer ak ñaar fukk ak benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_208.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 208.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_213.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 213.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_217.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 217.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_218.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 218.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_219.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 219.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_220.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 220.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_221.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 221.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_227.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 227.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_228.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 228.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_232.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 232.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_233.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 233.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_234.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 234.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_501.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 501.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_502.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 502.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_503.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 503.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_504.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 504.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_1.wav",
+      "phrase": "Jëlal bus bu Tata, numero benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_2.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_3.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_4.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_5.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_24.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñaar fukk ak ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_25.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñaar fukk ak juróom.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_26.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñaar fukk ak juróom benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_27.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñaar fukk ak juróom ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_28.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñaar fukk ak juróom ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_29.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñaar fukk ak juróom ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_30.wav",
+      "phrase": "Jëlal bus bu Tata, numero fanweer.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_31.wav",
+      "phrase": "Jëlal bus bu Tata, numero fanweer ak benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_32.wav",
+      "phrase": "Jëlal bus bu Tata, numero fanweer ak ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_33.wav",
+      "phrase": "Jëlal bus bu Tata, numero fanweer ak ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_34.wav",
+      "phrase": "Jëlal bus bu Tata, numero fanweer ak ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_35.wav",
+      "phrase": "Jëlal bus bu Tata, numero fanweer ak juróom.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_36.wav",
+      "phrase": "Jëlal bus bu Tata, numero fanweer ak juróom benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_37.wav",
+      "phrase": "Jëlal bus bu Tata, numero fanweer ak juróom ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_38.wav",
+      "phrase": "Jëlal bus bu Tata, numero fanweer ak juróom ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_39.wav",
+      "phrase": "Jëlal bus bu Tata, numero fanweer ak juróom ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_40.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñeent fukk.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_41.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñeent fukk ak benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_42.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñeent fukk ak ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_43.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñeent fukk ak ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_44.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñeent fukk ak ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_45.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñeent fukk ak juróom.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_46.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñeent fukk ak juróom benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_47.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñeent fukk ak juróom ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_48.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñeent fukk ak juróom ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_49.wav",
+      "phrase": "Jëlal bus bu Tata, numero ñeent fukk ak juróom ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_50.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom fukk.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_51.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom fukk ak benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_52.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom fukk ak ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_53.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom fukk ak ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_54.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom fukk ak ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_55.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom fukk ak juróom.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_56.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom fukk ak juróom benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_57.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom fukk ak juróom ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_58.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom fukk ak juróom ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_59.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom fukk ak juróom ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_60.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom benn fukk.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_61.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom benn fukk ak benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_62.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom benn fukk ak ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_63.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom benn fukk ak ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_64.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom benn fukk ak ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_65.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom benn fukk ak juróom.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_66.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom benn fukk ak juróom benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_67.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom benn fukk ak juróom ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_68.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom benn fukk ak juróom ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_69.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom benn fukk ak juróom ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_70.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñaar fukk.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_71.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñaar fukk ak benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_72.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñaar fukk ak ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_73.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñaar fukk ak ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_74.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñaar fukk ak ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_75.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñaar fukk ak juróom.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_76.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñaar fukk ak juróom benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_77.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñaar fukk ak juróom ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_78.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñaar fukk ak juróom ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_79.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñaar fukk ak juróom ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_80.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñett fukk.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_81.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñett fukk ak benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_82.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñett fukk ak ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_83.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñett fukk ak ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_84.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñett fukk ak ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_85.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñett fukk ak juróom.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_86.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñett fukk ak juróom benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_87.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñett fukk ak juróom ñaar.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_88.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñett fukk ak juróom ñett.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_89.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñett fukk ak juróom ñeent.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "tata_aftu_91.wav",
+      "phrase": "Jëlal bus bu Tata, numero juróom ñeent fukk ak benn.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "aucune_ligne.wav",
+      "phrase": "Baal ma, gisuma bus bu dem fa.",
+      "type": "service"
+    },
+    {
+      "fichier": "walla.wav",
+      "phrase": "walla",
+      "type": "service"
+    },
+    {
+      "fichier": "correspondance_liaison.wav",
+      "phrase": "Ci ginnaaw,",
+      "type": "service"
+    }
+  ]
+}

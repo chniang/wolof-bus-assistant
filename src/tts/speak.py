@@ -8,7 +8,7 @@ edge-tts n'ont pas de voix wolof.
 Ce module ne dépend pas de Streamlit : l'app garde le modèle en mémoire, et on
 peut aussi le tester seul en ligne de commande :
 
-    python src/tts/speak.py "Jëlal bus bu Dakar Dem Dikk, ligne juróom ñaar."
+    python src/tts/speak.py "Jëlal bus bu Dakar Dem Dikk, numero juróom ñaar."
 """
 
 from __future__ import annotations
@@ -114,10 +114,18 @@ def lignes_annoncees(lignes: list[dict]) -> list[tuple[str, int]]:
     return annoncees
 
 
+def compagnie_dite(compagnie: str) -> str:
+    """Le nom de compagnie à l'oral : « Tata AFTU » se dit « Tata ».
+
+    L'affichage, lui, garde le nom complet du CSV.
+    """
+    return {"Tata AFTU": "Tata", "Dakar Dem Dikk": "Dem Dikk"}.get(compagnie, compagnie)
+
+
 def phrase_reponse(lignes: list[dict]) -> str:
     """La phrase à dire pour un résultat de correspondance."""
     morceaux = [
-        f"Jëlal bus bu {compagnie}, ligne {nombre_en_wolof(numero)}."
+        f"Jëlal bus bu {compagnie_dite(compagnie)}, numero {nombre_en_wolof(numero)}."
         for compagnie, numero in lignes_annoncees(lignes)
     ]
     if not morceaux:
