@@ -98,6 +98,12 @@ QUARTIERS = {
 FAUX_AMIS = {
     "garage guediawaye": ["garage"],
     "sortie pikine": ["sortie"],
+    # Voies nommées d'après un lieu qu'elles desservent, mais situées ailleurs :
+    # « Route de Rufisque » est à Dakar (16,7 km de Rufisque), « Route de Ouakam »
+    # à 3,2 km d'Ouakam, « Allées Médina ZAC » hors de la Médina de Dakar.
+    "route de rufisque": ["route"],
+    "route de ouakam": ["route"],
+    "allees medina zac": ["allees", "zac"],
 }
 
 

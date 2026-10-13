@@ -10,7 +10,8 @@ Robustesse de la recherche :
     puis commune de voisinage (« Pikine », « Guédiawaye », « Rufisque ») quand
     les arrêts voisins de la ligne y sont ;
   - les arrêts toujours introuvables reçoivent une position estimée (milieu de
-    leurs deux voisins connus sur la même ligne), confiance « estimee » ;
+    leurs deux voisins connus sur la même ligne, si ces voisins sont à moins de
+    3 km), confiance « estimee » ; sinon l'arrêt reste « introuvable » ;
   - un arrêt n'est « douteuse » que s'il fait un détour anormal entre ses deux
     voisins : d(précédent, arrêt) + d(arrêt, suivant) > 2·d(précédent, suivant) + 2 km ;
   - un géocodage inverse (reverse, zoom 14) donne un quartier/commune homogène
@@ -52,6 +53,7 @@ DELAI_SECONDES = 1.0
 TIMEOUT = 30
 ZOOM_REVERSE = 14
 RAYON_DETOUR = 2000.0  # marge du contrôle « détour anormal », en mètres
+DISTANCE_VOISINS_MAX = 3000.0  # écart max entre les deux voisins connus, pour estimer
 
 CHAMPS_QUARTIER = ("neighbourhood", "quarter", "suburb")
 CHAMPS_COMMUNE = ("city_district", "city", "municipality")
@@ -278,7 +280,12 @@ def communes_voisines(arret: str, par_ligne: dict, trouves: dict[str, dict]) -> 
 def interpoler(
     par_ligne: dict[tuple[str, str], list[str]], positions: dict[str, tuple[float, float]]
 ) -> dict[str, list[tuple[float, float]]]:
-    """Estimations : milieu des deux voisins connus sur la même ligne."""
+    """Estimations : milieu des deux voisins connus, s'ils sont à moins de 3 km.
+
+    On ne devine une position qu'entre deux arrêts géocodés proches : au-delà de
+    DISTANCE_VOISINS_MAX, le milieu n'a plus de sens (il tomberait au hasard
+    entre deux points éloignés) et l'arrêt reste « introuvable ».
+    """
     estimations: dict[str, list[tuple[float, float]]] = {}
     for arrets in par_ligne.values():
         connus = [i for i, a in enumerate(arrets) if a in positions]
@@ -290,6 +297,8 @@ def interpoler(
             if avant is None or apres is None:
                 continue
             pa, pb = positions[arrets[avant]], positions[arrets[apres]]
+            if distance_metres(pa, pb) > DISTANCE_VOISINS_MAX:
+                continue
             estimations.setdefault(arret, []).append(((pa[0] + pb[0]) / 2, (pa[1] + pb[1]) / 2))
     return estimations
 

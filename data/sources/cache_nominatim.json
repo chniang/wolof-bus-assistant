@@ -3269,6 +3269,9 @@
  "fwd|Rufisque SONADIS, Dakar, Sénégal": {
   "trouve": false
  },
+ "fwd|Rufisque Sonadis, Dakar, Sénégal": {
+  "trouve": false
+ },
  "fwd|Rufisque, Dakar, Sénégal": {
   "commune": "",
   "display_name": "Rufisque, Département de Rufisque, Région de Dakar, Sénégal",
@@ -4550,6 +4553,15 @@
   "quartier": "Amitié 2",
   "trouve": true
  },
+ "rev|14.68981,-17.45782": {
+  "commune": "Arrondissement de Dakar-Plateau",
+  "display_name": "Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+  "lat": 14.6882763,
+  "lon": -17.4553657,
+  "pays": "sn",
+  "quartier": "Commune de Gueule Tapée-Fass-Colobane",
+  "trouve": true
+ },
  "rev|14.69008,-17.45873": {
   "commune": "Arrondissement de Dakar-Plateau",
   "display_name": "Keur Mayacine Fall, N°9, Amitié 2, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13000, Sénégal",
@@ -5088,6 +5100,15 @@
   "lon": -17.4692086,
   "pays": "sn",
   "quartier": "Arrondissement des Almadies",
+  "trouve": true
+ },
+ "rev|14.71261,-17.26832": {
+  "commune": "Rufisque",
+  "display_name": "Commune de Rufisque Est, Rufisque, Département de Rufisque, Région de Dakar, Sénégal",
+  "lat": 14.7176516,
+  "lon": -17.2550986,
+  "pays": "sn",
+  "quartier": "",
   "trouve": true
  },
  "rev|14.71264,-17.43836": {
@@ -5738,6 +5759,15 @@
   "quartier": "Cité Sidak",
   "trouve": true
  },
+ "rev|14.73064,-17.43434": {
+  "commune": "Arrondissement de Grand Dakar",
+  "display_name": "Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 00221, Sénégal",
+  "lat": 14.7156355,
+  "lon": -17.4355632,
+  "pays": "sn",
+  "quartier": "Commune de Hann Bel-Air",
+  "trouve": true
+ },
  "rev|14.73065,-17.49054": {
   "commune": "Dakar",
   "display_name": "Commune de Ouakam, Arrondissement des Almadies, Dakar, Région de Dakar, Sénégal",
@@ -6062,6 +6092,15 @@
   "quartier": "",
   "trouve": true
  },
+ "rev|14.74303,-17.44958": {
+  "commune": "commune d'arrondissement des Parcelles Assainies",
+  "display_name": "Hlm Grand Yoff, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+  "lat": 14.7413724,
+  "lon": -17.455863,
+  "pays": "sn",
+  "quartier": "Hlm Grand Yoff",
+  "trouve": true
+ },
  "rev|14.74305,-17.48306": {
   "commune": "Dakar",
   "display_name": "Commune de Yoff, Arrondissement des Almadies, Dakar, Région de Dakar, 11900, Sénégal",
@@ -6198,6 +6237,15 @@
   "trouve": true
  },
  "rev|14.74565,-17.40093": {
+  "commune": "Commune de Pikine Est",
+  "display_name": "maison diedhiou, Commune de Pikine Est, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 15000, Sénégal",
+  "lat": 14.7570518,
+  "lon": -17.3857285,
+  "pays": "sn",
+  "quartier": "",
+  "trouve": true
+ },
+ "rev|14.74585,-17.38961": {
   "commune": "Commune de Pikine Est",
   "display_name": "maison diedhiou, Commune de Pikine Est, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 15000, Sénégal",
   "lat": 14.7570518,
@@ -6395,6 +6443,15 @@
   "quartier": "Commune de Patte d'Oie",
   "trouve": true
  },
+ "rev|14.74989,-17.42204": {
+  "commune": "Département de Guédiawaye",
+  "display_name": "Commune du Golf Sud, Arrondissement de Sam Notaire, Département de Guédiawaye, Région de Dakar, Sénégal",
+  "lat": 14.7717018,
+  "lon": -17.4089102,
+  "pays": "sn",
+  "quartier": "",
+  "trouve": true
+ },
  "rev|14.75067,-17.44134": {
   "commune": "commune d'arrondissement des Parcelles Assainies",
   "display_name": "Unite 22, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
@@ -6420,6 +6477,15 @@
   "lon": -17.468149,
   "pays": "sn",
   "quartier": "Arrondissement des Almadies",
+  "trouve": true
+ },
+ "rev|14.75123,-17.39988": {
+  "commune": "Commune de Pikine Est",
+  "display_name": "maison diedhiou, Commune de Pikine Est, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 15000, Sénégal",
+  "lat": 14.7570518,
+  "lon": -17.3857285,
+  "pays": "sn",
+  "quartier": "",
   "trouve": true
  },
  "rev|14.75185,-17.41111": {
@@ -7257,6 +7323,24 @@
   "lon": -17.3549472,
   "pays": "sn",
   "quartier": "",
+  "trouve": true
+ },
+ "rev|14.76904,-17.40184": {
+  "commune": "Pikine",
+  "display_name": "Pikine, Commune de Pikine Ouest, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, Sénégal",
+  "lat": 14.751544,
+  "lon": -17.396413,
+  "pays": "sn",
+  "quartier": "Commune de Pikine Ouest",
+  "trouve": true
+ },
+ "rev|14.76947,-17.35270": {
+  "commune": "",
+  "display_name": "Quartier Demba Seck, Commune de Yeumbeul Sud, Arrondissement de Yeumbeul, Département de Keur Massar, Région de Dakar, 17000, Sénégal",
+  "lat": 14.7657971,
+  "lon": -17.3520481,
+  "pays": "sn",
+  "quartier": "Quartier Demba Seck",
   "trouve": true
  },
  "rev|14.77057,-17.28237": {

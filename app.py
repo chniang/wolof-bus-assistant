@@ -16,12 +16,14 @@ Le reste du pipeline (extraction, correspondance, voix) tient en CPU et n'a pas
 
 from __future__ import annotations
 
+import csv
 import itertools
 import re
 import os
 import subprocess
 import sys
 import tempfile
+from functools import lru_cache
 from pathlib import Path
 
 import gradio as gr
@@ -47,7 +49,7 @@ from intent.extract_intent import (  # noqa: E402
     extract_local,
 )
 from matching.compagnie import message_autre_compagnie  # noqa: E402
-from matching.lieux import sans_accents  # noqa: E402
+from matching.lieux import AVANT_NUMERO, FAUX_AMIS, joli, sans_accents  # noqa: E402
 from matching.stops_matcher import StopsMatcher  # noqa: E402
 from tts.speak import (  # noqa: E402
     cache_complet,
@@ -295,43 +297,294 @@ QUARTIERS_VAGUES = {
 }
 
 
+def _cle_lieu(texte: str) -> str:
+    """Forme de comparaison d'un nom : minuscules, sans accents ni ponctuation."""
+    return re.sub(r"[^a-z0-9]+", " ", sans_accents(texte)).strip()
+
+
+_NIVEAUX_LARGES = ("arrondissement", "departement")
+
+
+def _niveau_precis(valeur: str) -> bool:
+    """Vrai si la valeur est un quartier/commune et non un arrondissement."""
+    return bool(valeur) and not _cle_lieu(valeur).startswith(_NIVEAUX_LARGES)
+
+
+@lru_cache(maxsize=32)
+def _arrets_du_quartier(quartier: str, limite: int = 2) -> tuple[str, ...]:
+    """Des arrêts réels d'un quartier, prêts à illustrer l'astuce.
+
+    Lecture seule. Deux passes. D'abord les arrêts dont le NOM contient le
+    quartier (« Police Guédiawaye », « Poste Thiaroye »), hors faux amis, en
+    gardant en tête ceux dont le quartier est le dernier mot. Seulement s'il n'y
+    en a pas : des arrêts de confiance « bonne » au niveau quartier/commune
+    précis — jamais « estimee », dont la position peut tomber dans un autre
+    quartier. On écarte l'arrêt qui porte exactement le nom du quartier :
+    « Médina » n'aide pas à préciser « Médina ».
+
+    Les noms sont rendus comme sur les cartes (joli, chiffres romains en
+    chiffres, sans annotation entre parenthèses) et les plus courts sont
+    préférés : au plus quatre mots.
+    """
+    cible = _cle_lieu(quartier)
+    if not cible or not ARRETS_GEO.exists():
+        return ()
+
+    par_suffixe: list[str] = []
+    par_nom: list[str] = []
+    par_quartier: list[str] = []
+    with open(ARRETS_GEO, newline="", encoding="utf-8") as f:
+        for rangee in csv.DictReader(f):
+            arret = (rangee.get("arret") or "").strip()
+            nom = _cle_lieu(arret)
+            hors = _cle_lieu(re.sub(r"\([^)]*\)", " ", arret))
+            if not hors or hors == cible or nom in FAUX_AMIS:
+                continue
+            if f" {cible} " in f" {hors} ":
+                (par_suffixe if hors.endswith(cible) else par_nom).append(arret)
+                continue
+            if rangee.get("confiance", "").strip().lower() != "bonne":
+                continue
+            lieux = [_cle_lieu(rangee.get("quartier", "")), _cle_lieu(rangee.get("commune", ""))]
+            if any(_niveau_precis(v) and f" {cible} " in f" {v} " for v in lieux):
+                par_quartier.append(arret)
+
+    bruts = par_suffixe + par_nom or par_quartier
+    propres: list[str] = []
+    for arret in bruts:
+        nom = _nom_astuce(arret)
+        if nom and nom not in propres:
+            propres.append(nom)
+    courts = [nom for nom in propres if len(nom.split()) <= 4]
+    choisis = courts + [nom for nom in propres if nom not in courts]
+    return tuple(choisis[:limite])
+
+
 def _astuce_quartier(*lieux: str) -> str:
     """Un rappel quand l'utilisateur n'a nommé qu'un grand quartier.
 
-    Le fond reste clair et le texte sombre en propre : le bloc se lit pareil en
-    mode clair et en mode sombre.
+    L'exemple vient du lieu dit : deux arrêts réels de ce quartier, pris dans
+    `data/arrets_geo.csv`. Le fond reste clair et le texte sombre en propre : le
+    bloc se lit pareil en mode clair et en mode sombre.
     """
-    normalises = {sans_accents(lieu).strip() for lieu in lieux if lieu}
-    if not (normalises & QUARTIERS_VAGUES):
+    vague = next(
+        (lieu for lieu in lieux if lieu and _cle_lieu(lieu) in QUARTIERS_VAGUES),
+        "",
+    )
+    if not vague:
         return ""
+    exemples = _arrets_du_quartier(vague)
+    illustration = (
+        f"ex. pour {joli(vague)} : {', '.join(exemples)}"
+        if exemples
+        else "ex. précise la rue ou un repère"
+    )
     return (
         "<div style='color:#7A5A00;background:#FFF7E0;border:1px solid #F0DFA8;"
         "border-radius:8px;padding:8px 12px;margin-top:10px;font-size:13px;'>"
-        "💡 Astuce : précise ton lieu (ex. Pikine Rue 10, Tally Boumack) "
+        f"💡 Astuce : précise ton lieu ({illustration}) "
         "pour un arrêt plus juste.</div>"
     )
 
 
+ARRETS_GEO = RACINE / "data" / "arrets_geo.csv"
+
+# Confiances pour lesquelles on affiche le quartier : seul « bonne » est
+# localisé au niveau du quartier ; « estimee » (position devinée entre deux
+# voisins) peut tomber dans un quartier voisin, on préfère ne rien afficher.
+CONFIANCES_QUARTIER = {"bonne"}
+
+# Qualificatifs administratifs qu'on enlève pour ne garder que le nom court du
+# quartier (« Commune de Médina » → « Médina »).
+_PREFIXE_QUARTIER = re.compile(
+    r"^(?:"
+    r"commune\s+d'arrondissement\s+(?:de\s+|des\s+|du\s+|d')?"
+    r"|commune\s+(?:de\s+|des\s+|du\s+|d')"
+    r"|arrondissement\s+(?:de\s+|des\s+|du\s+|d')"
+    r"|d[ée]partement\s+(?:de\s+|des\s+|du\s+|d')"
+    r")",
+    re.IGNORECASE,
+)
+
+
+# Quelques communes qu'on préfère nommer par leur quartier, comme on le dit
+# couramment (« Dakar-Plateau » → « Plateau »).
+QUARTIERS_RACCOURCIS = {"dakar-plateau": "Plateau"}
+
+
+def _quartier_court(valeur: str) -> str:
+    """Le nom court d'un quartier ou d'une commune, sans son qualificatif."""
+    court = _PREFIXE_QUARTIER.sub("", (valeur or "").strip()).strip(" ,-")
+    if not court:
+        return ""
+    court = QUARTIERS_RACCOURCIS.get(sans_accents(court).lower(), court)
+    return joli(court)
+
+
+@lru_cache(maxsize=1)
+def _quartiers_arrets() -> dict[str, str]:
+    """Arrêt (forme affichée) -> quartier court, quand la confiance le permet.
+
+    Lecture seule de `data/arrets_geo.csv` : on indexe chaque arrêt sous son nom
+    brut et sous sa forme affichée, pour retrouver le quartier depuis les arrêts
+    déjà mis en forme du trajet. Les arrêts « douteuse » ou « introuvable » sont
+    ignorés.
+    """
+    chemin = ARRETS_GEO
+    if not chemin.exists():
+        return {}
+    table: dict[str, str] = {}
+    with open(chemin, newline="", encoding="utf-8") as f:
+        for rangee in csv.DictReader(f):
+            if rangee.get("confiance", "").strip().lower() not in CONFIANCES_QUARTIER:
+                continue
+            quartier = _quartier_court(rangee.get("quartier") or rangee.get("commune") or "")
+            arret = (rangee.get("arret") or "").strip()
+            if quartier and arret:
+                table.setdefault(arret, quartier)
+                table.setdefault(joli(arret), quartier)
+    return table
+
+
+def _source_trajet(match: dict) -> str:
+    """L'origine de l'itinéraire, sous la liste des arrêts.
+
+    L'itinéraire officiel d'une ligne AFTU est publié par l'AFTU ; pour Dakar Dem
+    Dikk, le tracé vient d'OpenStreetMap. Le lien ne concerne que l'AFTU.
+    """
+    if match.get("compagnie") == "Tata AFTU":
+        numero = numero_de(match.get("ligne"))
+        if numero is not None:
+            url = f"https://aftu-senegal.org/map/dakar-urbain-ligne-{numero}/"
+            return (
+                "<div style='color:#6B7A72;font-size:12px;margin-top:8px;'>Source : "
+                f"<a href='{url}' target='_blank' rel='noopener' "
+                "style='color:#0B6B37;text-decoration:underline;'>"
+                "Itinéraire officiel AFTU</a></div>"
+            )
+        return (
+            "<div style='color:#6B7A72;font-size:12px;margin-top:8px;'>"
+            "Source : Itinéraire officiel AFTU</div>"
+        )
+    return (
+        "<div style='color:#6B7A72;font-size:12px;margin-top:8px;'>"
+        "Source : Itinéraire Dem Dikk / OpenStreetMap</div>"
+    )
+
+
+def _note_sens_inverse(match: dict) -> str:
+    """Le rappel discret quand le trajet va à l'inverse de l'itinéraire publié.
+
+    `match['depart']`/`match['arrivee']` suivent le sens du trajet ; l'itinéraire
+    publié, lui, va dans l'autre sens, soit de `arrivee` vers `depart`.
+    """
+    if str(match.get("sens", "")).lower() != "inverse":
+        return ""
+    sens_publie = f"{match.get('arrivee', '')} → {match.get('depart', '')}"
+    if match.get("compagnie") == "Tata AFTU":
+        intro = f"L'AFTU publie cet itinéraire dans le sens {sens_publie}."
+    else:
+        intro = f"L'itinéraire publié va dans le sens {sens_publie}."
+    return (
+        "<div style='color:#6B7A72;font-size:12px;font-style:italic;"
+        "margin-top:6px;'>"
+        f"{intro} Au retour, le bus peut emprunter d'autres rues dans le "
+        "centre-ville.</div>"
+    )
+
+
+# Chiffres romains remis en chiffres arabes à l'affichage, quand ils suivent un
+# mot qui appelle un numéro (« Giratoire de Liberté VI » → « ... 6 »).
+_CHIFFRES_ROMAINS = {
+    "ii": "2", "iii": "3", "iv": "4", "v": "5", "vi": "6",
+    "vii": "7", "viii": "8", "ix": "9", "x": "10",
+}
+
+
+def _chiffres_du_nom(nom: str) -> str:
+    """« Giratoire de Liberté VI » → « Giratoire de Liberté 6 »."""
+    mots = nom.split()
+    for i, mot in enumerate(mots):
+        if not i:
+            continue
+        cle = sans_accents(mot).strip("()'.,/")
+        avant = sans_accents(mots[i - 1]).strip("()'.,")
+        if cle in _CHIFFRES_ROMAINS and avant in AVANT_NUMERO:
+            mots[i] = _CHIFFRES_ROMAINS[cle]
+    return " ".join(mots)
+
+
+# Annotation d'itinéraire (« Retour Par Rue 37 ») : on l'enlève du nom et on la
+# garde à part, à rappeler en petit dans le bloc des arrêts.
+_NOTE_RETOUR = re.compile(r"\s*\(\s*(?:au\s+)?retour(?:\s+par)?\s+rue\s+(\d+)\s*\)", re.I)
+
+
+def _nom_arret(nom: str) -> tuple[str, str]:
+    """Le nom d'arrêt affiché et, s'il y a lieu, la note « au retour ».
+
+    « Rue 25 (Retour Par Rue 37) » → (« Rue 25 », « au retour : par la rue 37 »).
+    """
+    propre, note = nom, ""
+    trouve = _NOTE_RETOUR.search(nom)
+    if trouve:
+        note = f"au retour : par la rue {trouve.group(1)}"
+        propre = f"{nom[:trouve.start()]} {nom[trouve.end():]}".strip()
+    return _chiffres_du_nom(propre), note
+
+
+def _nom_astuce(arret: str) -> str:
+    """Nom d'arrêt pour l'astuce : comme sur la carte, sans annotation.
+
+    « RUE10 PIKINE (Retour Par Rue 37) » -> « Rue 10 Pikine ».
+    """
+    affiche, _ = _nom_arret(joli(arret))
+    affiche = re.sub(r"\([^)]*\)", " ", affiche)
+    return re.sub(r"\s+", " ", affiche).strip()
+
+
 def _bloc_arrets(match: dict) -> str:
-    """Le détail repliable des arrêts parcourus, montée et descente en gras."""
+    """Le détail repliable des arrêts parcourus, montée et descente en gras.
+
+    Chaque arrêt porte entre parenthèses le quartier connu d'`arrets_geo.csv` et,
+    s'il y a lieu, la note « au retour » en petit ; sous la liste viennent la
+    source de l'itinéraire et le rappel du sens publié.
+    """
     arrets = match.get("arrets_trajet") or []
     if not arrets:
         return ""
+    quartiers = _quartiers_arrets()
     dernier = len(arrets) - 1
     elements = []
     for i, arret in enumerate(arrets):
+        quartier = quartiers.get(arret, "")
+        affiche, note = _nom_arret(arret)
+        suffixe = (
+            f" <span style='color:#6B7A72;font-weight:400;'>({quartier})</span>"
+            if quartier
+            else ""
+        )
+        note_html = (
+            f" <span style='color:#6B7A72;font-size:12px;font-style:italic;'>"
+            f"{note}</span>"
+            if note
+            else ""
+        )
         if i in (0, dernier):
             elements.append(
-                f"<li style='margin:2px 0;'><b style='color:#081F11;'>{arret}</b></li>"
+                f"<li style='margin:2px 0;'><b style='color:#081F11;'>{affiche}</b>"
+                f"{suffixe}{note_html}</li>"
             )
         else:
-            elements.append(f"<li style='margin:2px 0;color:#2C4636;'>{arret}</li>")
+            elements.append(
+                f"<li style='margin:2px 0;color:#2C4636;'>{affiche}{suffixe}{note_html}</li>"
+            )
     return (
         "<details style='margin-top:10px;'>"
         "<summary style='color:#0B6B37;font-size:14px;font-weight:700;"
         "cursor:pointer;outline:none;'>Voir les arrêts du trajet</summary>"
         "<ol style='color:#2C4636;font-size:14px;margin:8px 0 0 20px;padding:0;'>"
-        f"{''.join(elements)}</ol></details>"
+        f"{''.join(elements)}</ol>"
+        f"{_source_trajet(match)}{_note_sens_inverse(match)}</details>"
     )
 
 
@@ -351,17 +604,19 @@ def _une_carte(match: dict, etape: str = "", depart: str = "", arrivee: str = ""
     trajet = ""
     if match.get("monte_a") and match.get("descend_a"):
         # Le lieu dit par l'utilisateur, avec l'arrêt conseillé le plus proche.
+        monte_a, _ = _nom_arret(match["monte_a"])
+        descend_a, _ = _nom_arret(match["descend_a"])
         depart_texte = depart if depart else match["monte_a"]
         arrivee_texte = arrivee if arrivee else match["descend_a"]
         trajet = (
             f"<div style='color:#11301C;font-size:22px;font-weight:800;"
             f"line-height:1.35;margin-top:8px;'>"
             f"Monte à <b style='color:#081F11;'>{depart_texte}</b> — arrêt conseillé : "
-            f"<b style='color:#081F11;'>{match['monte_a']}</b> "
+            f"<b style='color:#081F11;'>{monte_a}</b> "
             f"<span style='font-weight:600;font-size:15px;color:#3D5A48;'>"
             f"(ou tout arrêt de la ligne {affiche} près de toi)</span><br>"
             f"Descends à <b style='color:#081F11;'>{arrivee_texte}</b> — arrêt conseillé : "
-            f"<b style='color:#081F11;'>{match['descend_a']}</b></div>"
+            f"<b style='color:#081F11;'>{descend_a}</b></div>"
         )
     arrets = _bloc_arrets(match)
     # Les terminus de la ligne, en petit : le parcours réel du bus.
@@ -385,11 +640,18 @@ def _une_carte(match: dict, etape: str = "", depart: str = "", arrivee: str = ""
 """
 
 
-def _carte(resultat: dict, depart: str, arrivee: str, avertissement: str = "") -> str:
+def _carte(
+    resultat: dict,
+    depart: str,
+    arrivee: str,
+    avertissement: str = "",
+    bandeau_compagnie: str = "",
+) -> str:
     """La réponse en Markdown : compagnie et numéro de ligne mis en avant.
 
     L'astuce « précise ton lieu » ne figure qu'une fois, au-dessus des cartes,
-    et jamais dans chaque carte.
+    et jamais dans chaque carte. `bandeau_compagnie` rappelle d'où vient la
+    compagnie (voix ou bouton) ; il précède, lui aussi, les cartes.
     """
     if not depart or not arrivee:
         return (
@@ -399,14 +661,15 @@ def _carte(resultat: dict, depart: str, arrivee: str, avertissement: str = "") -
         )
 
     astuce = _astuce_quartier(depart, arrivee)
+    entete = bandeau_compagnie + avertissement + astuce
     if resultat["found"]:
-        return avertissement + astuce + "".join(
+        return entete + "".join(
             _une_carte(match, depart=depart, arrivee=arrivee) for match in resultat["lignes"]
         )
 
     correspondances = resultat.get("correspondances") or []
     if correspondances:
-        blocs = [avertissement, astuce, "### 🔁 Pas de bus direct : un changement suffit\n"]
+        blocs = [entete, "### 🔁 Pas de bus direct : un changement suffit\n"]
         for numero, trajet in enumerate(correspondances, start=1):
             if numero > 1:
                 blocs.append(f"\n**Autre possibilité {numero}**\n")
@@ -467,6 +730,33 @@ def _bandeau_autre_compagnie(compagnie: str, resultat: dict) -> str:
         "border-radius:8px;padding:8px 12px;margin:10px 0;font-size:14px;font-weight:600;'>"
         + message_autre_compagnie(compagnie, resultat)
         + "</div>\n\n"
+    )
+
+
+NOMS_COMPAGNIES = {"Tata AFTU": "Tata", "Dakar Dem Dikk": "Dem Dikk"}
+
+
+def _bandeau_compagnie(compagnie_voix: str, compagnie_bouton: str) -> str:
+    """Rappelle d'où vient la compagnie, au-dessus des cartes.
+
+    La voix l'emporte sur le bouton (comme dans la recherche) : si elle a nommé
+    une compagnie, on le dit ; sinon on signale le choix du bouton. Rien si ni
+    l'une ni l'autre n'a été dite. Fond et texte fixes : lisible dans les deux
+    thèmes.
+    """
+    if compagnie_voix:
+        nom = NOMS_COMPAGNIES.get(compagnie_voix, compagnie_voix)
+        mention = "dite à la voix, prioritaire sur le bouton"
+    elif compagnie_bouton:
+        nom = NOMS_COMPAGNIES.get(compagnie_bouton, compagnie_bouton)
+        mention = "choisie avec le bouton"
+    else:
+        return ""
+    return (
+        "<div style='color:#0B6B37;background:#EAF6EF;border:1px solid #C7E6D4;"
+        "border-radius:8px;padding:8px 12px;margin:10px 0;font-size:14px;"
+        "font-weight:600;'>"
+        f"Compagnie : {nom} ({mention})</div>\n\n"
     )
 
 
@@ -542,7 +832,8 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
                 intent = {**intent, "source": "llm+local"}
 
     # Compagnie : ce que l'utilisateur a dit à la voix prime sur le bouton.
-    compagnie = intent.get("compagnie") or compagnie_choix or ""
+    compagnie_voix = (intent.get("compagnie") or "").strip()
+    compagnie = compagnie_voix or compagnie_choix or ""
     avertissement = ""
     if compagnie:
         # On cherche d'abord dans la compagnie (directe, puis correspondance avec
@@ -551,11 +842,12 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
         resultat, exacte = MATCHER.find_line_compagnie(depart, arrivee, compagnie)
         if not exacte and (resultat["found"] or resultat.get("correspondances")):
             avertissement = _bandeau_autre_compagnie(compagnie, resultat)
+    bandeau_compagnie = _bandeau_compagnie(compagnie_voix, compagnie_choix)
 
     return (
         phrase,
         f"{depart} → {arrivee}",
-        _carte(resultat, depart, arrivee, avertissement),
+        _carte(resultat, depart, arrivee, avertissement, bandeau_compagnie),
         _voix_wolof(resultat["lignes"], resultat.get("correspondances")),
         _mention(intent, modele_asr),
     )

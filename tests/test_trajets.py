@@ -51,6 +51,13 @@ TRAJETS_EXCLUS = {
     "Maa ngi Pikine, bëgg naa dem Guédiawaye": {"Ligne 71", "Ligne 30", "Ligne 49"},
 }
 
+# Voies « faux amis » (voir FAUX_AMIS) : une voie nommée d'après un quartier ne doit
+# jamais servir de montée. « Route de Rufisque » est à Dakar, à 16,7 km de Rufisque.
+# (phrase, nom d'arrêt interdit comme montée).
+TRAJETS_SANS_MONTEE_FAUSSE = [
+    ("Maa ngi Rufisque, dama bëgg dem Colobane", "Route de Rufisque"),
+]
+
 # Phrases qui nomment un quartier que les noms d'arrêts ne portent pas (Médina,
 # Sandaga) : la position des arrêts (arrets_geo.csv) doit faire trouver une ligne.
 # (phrase, lignes attendues — au moins une —, lignes interdites).
@@ -224,6 +231,20 @@ def test_local() -> int:
             f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
             f"      {lieux.get('depart')} -> {lieux.get('arrivee')} | {sorted(trouvees) or 'rien'}"
         )
+    # Une voie « Route de X » (faux ami) ne doit jamais servir de montée.
+    for phrase, voie in TRAJETS_SANS_MONTEE_FAUSSE:
+        lieux = extract_local(phrase)
+        resultat = matcher.find_line(lieux.get("depart") or "", lieux.get("arrivee") or "")
+        montees = {ligne["monte_a"] for ligne in resultat["lignes"]}
+        for trajet in resultat["correspondances"]:
+            montees.add(trajet["etape_1"]["monte_a"])
+            montees.add(trajet["etape_2"]["monte_a"])
+        bon = voie not in montees
+        echecs += not bon
+        print(
+            f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
+            f"      montées : {sorted(montees)}"
+        )
     return echecs
 
 
@@ -318,6 +339,7 @@ if __name__ == "__main__":
             + len(TRAJETS_LIEUX)
             + len(TRAJETS_QUARTIER)
             + len(TRAJETS_GEO)
+            + len(TRAJETS_SANS_MONTEE_FAUSSE)
             + 3
         )
     print(f"\n{total - echecs}/{total} réussis")

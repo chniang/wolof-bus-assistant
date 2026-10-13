@@ -231,10 +231,12 @@ class LieuxGeo:
 
         Un arrêt dont le quartier ou la commune correspond au lieu vaut
         SCORE_QUARTIER ; un arrêt à moins de 800 m vaut d'autant plus que le
-        point est proche (au plus SCORE_GEO_MAX). Les arrêts « douteuse » et les
-        faux amis sont écartés. `proximite=False` n'utilise que le quartier ou la
-        commune : quand le lieu est déjà reconnu par son nom, on ne veut pas y
-        ajouter les arrêts simplement proches.
+        point est proche (au plus SCORE_GEO_MAX). La correspondance de quartier,
+        comme la proximité, ne retient que la confiance « bonne » : un arrêt
+        « estimee » peut tomber dans un quartier voisin. Les arrêts « douteuse »
+        et les faux amis sont écartés. `proximite=False` n'utilise que le quartier
+        ou la commune : quand le lieu est déjà reconnu par son nom, on ne veut pas
+        y ajouter les arrêts simplement proches.
         """
         if not lieu:
             return {}
@@ -249,7 +251,11 @@ class LieuxGeo:
             if normaliser(arret) in FAUX_AMIS:
                 continue
             note = 0.0
-            if cible and cible <= self._cible_mots.get(arret, set()):
+            if (
+                cible
+                and info["confiance"] in CONFIANCE_PROXIMITE
+                and cible <= self._cible_mots.get(arret, set())
+            ):
                 note = SCORE_QUARTIER
             if (
                 proximite
