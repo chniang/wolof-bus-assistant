@@ -49,6 +49,7 @@ from intent.extract_intent import (  # noqa: E402
     extract_local,
 )
 from matching.compagnie import message_autre_compagnie  # noqa: E402
+from matching.geo import arrets_non_fiables  # noqa: E402
 from matching.lieux import AVANT_NUMERO, FAUX_AMIS, joli, sans_accents  # noqa: E402
 from matching.stops_matcher import StopsMatcher  # noqa: E402
 from tts.speak import (  # noqa: E402
@@ -427,23 +428,36 @@ def _quartiers_arrets() -> dict[str, str]:
 
     Lecture seule de `data/arrets_geo.csv` : on indexe chaque arrêt sous son nom
     brut et sous sa forme affichée, pour retrouver le quartier depuis les arrêts
-    déjà mis en forme du trajet. Les arrêts « douteuse » ou « introuvable » sont
-    ignorés.
+    déjà mis en forme du trajet. Les arrêts « douteuse » ou « introuvable », les
+    rues numérotées et les homonymes isolés sur leur ligne (mêmes jugements que
+    la recherche de ligne) sont ignorés : pas de quartier trompeur affiché.
     """
     chemin = ARRETS_GEO
     if not chemin.exists():
         return {}
+    ignores = _arrets_sans_quartier()
     table: dict[str, str] = {}
     with open(chemin, newline="", encoding="utf-8") as f:
         for rangee in csv.DictReader(f):
             if rangee.get("confiance", "").strip().lower() not in CONFIANCES_QUARTIER:
                 continue
-            quartier = _quartier_court(rangee.get("quartier") or rangee.get("commune") or "")
             arret = (rangee.get("arret") or "").strip()
-            if quartier and arret:
+            if not arret or arret in ignores:
+                continue
+            quartier = _quartier_court(rangee.get("quartier") or rangee.get("commune") or "")
+            if quartier:
                 table.setdefault(arret, quartier)
                 table.setdefault(joli(arret), quartier)
     return table
+
+
+@lru_cache(maxsize=1)
+def _arrets_sans_quartier() -> frozenset[str]:
+    """Les arrêts à position non fiable, jugés comme dans la recherche de ligne."""
+    try:
+        return frozenset(arrets_non_fiables(ARRETS_GEO))
+    except Exception:
+        return frozenset()
 
 
 def _source_trajet(match: dict) -> str:
@@ -518,18 +532,30 @@ def _chiffres_du_nom(nom: str) -> str:
 # garde à part, à rappeler en petit dans le bloc des arrêts.
 _NOTE_RETOUR = re.compile(r"\s*\(\s*(?:au\s+)?retour(?:\s+par)?\s+rue\s+(\d+)\s*\)", re.I)
 
+# Parenthèses qui font partie du NOM (« Rue Abebebikila (Rue 11 Prolongée) ») :
+# rendues avec un tiret, pour ne pas ressembler au quartier affiché entre
+# parenthèses juste après.
+_PARENTHESES_NOM = re.compile(r"\s*\(([^)]*)\)\s*")
+
+
+def _sans_parentheses_quartier(nom: str) -> str:
+    """« Rue Abebebikila (Rue 11 Prolongée) » → « Rue Abebebikila – Rue 11 Prolongée »."""
+    transforme = _PARENTHESES_NOM.sub(r" – \1 ", nom)
+    return re.sub(r"\s+", " ", transforme).strip()
+
 
 def _nom_arret(nom: str) -> tuple[str, str]:
     """Le nom d'arrêt affiché et, s'il y a lieu, la note « au retour ».
 
     « Rue 25 (Retour Par Rue 37) » → (« Rue 25 », « au retour : par la rue 37 »).
+    Les parenthèses qui restent font partie du nom et sont rendues avec un tiret.
     """
     propre, note = nom, ""
     trouve = _NOTE_RETOUR.search(nom)
     if trouve:
         note = f"au retour : par la rue {trouve.group(1)}"
         propre = f"{nom[:trouve.start()]} {nom[trouve.end():]}".strip()
-    return _chiffres_du_nom(propre), note
+    return _sans_parentheses_quartier(_chiffres_du_nom(propre)), note
 
 
 def _nom_astuce(arret: str) -> str:

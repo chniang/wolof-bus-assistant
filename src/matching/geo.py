@@ -33,6 +33,7 @@ except ImportError:  # pragma: no cover
 DATA = Path(__file__).resolve().parents[2] / "data"
 ARRETS_GEO = DATA / "arrets_geo.csv"
 LIEUX_GEO = DATA / "lieux_geo.csv"
+ITINERAIRES_CSV = DATA / "itineraires_dakar.csv"
 CACHE_LIEUX = DATA / "sources" / "cache_lieux_nominatim.json"
 
 GEOCODE = "https://nominatim.openstreetmap.org/search"
@@ -49,6 +50,113 @@ CONFIANCE_IGNOREE = {"douteuse"}
 # Seule une position de confiance « bonne » sert à la proximité : une position
 # « estimee » peut tomber dans le mauvais quartier.
 CONFIANCE_PROXIMITE = {"bonne"}
+
+# Un arrêt isolé de tout son voisinage sur une ligne AFTU a une position fausse
+# (nom d'arrêt retrouvé ailleurs par homonymie). Les lignes Dem Dikk, tracées sur
+# OpenStreetMap, ne sont pas concernées.
+SEUIL_VOISIN_METRES = 3000.0
+COMPAGNIE_VOISINS = "Tata AFTU"
+# « Rue 9 », « Rue 9bis », « Rue 34 » : le nom seul ne dit pas de quel quartier
+# il s'agit, la position géocodée n'est donc jamais fiable. Une rue numérotée qui
+# porte en plus une localité (« Rue 10 Pikine Ouest ») reste situable.
+_RUE_NUMEROTEE = re.compile(r"^rue\s+\d+\s*(?:bis|ter)?$", re.IGNORECASE)
+
+
+def nom_rue_numerotee(arret: str) -> bool:
+    """Vrai si le nom d'arrêt est une rue numérotée seule (« Rue 9 », « Rue 9bis »)."""
+    sans_annotation = re.sub(r"\([^)]*\)", " ", str(arret))
+    return bool(_RUE_NUMEROTEE.match(normaliser(sans_annotation)))
+
+
+def _hors_voisinage(
+    positions: dict[str, tuple[float, float]],
+    bonnes: set[str],
+    itineraires_csv: Path,
+) -> set[str]:
+    """Arrêts « bonne » loin de TOUS leurs voisins connus sur une ligne Tata AFTU.
+
+    Le précédent et le suivant qui ont une position servent de repères : un arrêt
+    « bonne » à plus de 3 km de chacun est un homonyme géocodé ailleurs. Un arrêt
+    sans voisin connu n'est pas jugé (isolé dans les données, pas forcément faux).
+    """
+    chemin = Path(itineraires_csv)
+    if not chemin.exists():
+        return set()
+    lignes: dict[tuple[str, str], list[str]] = {}
+    with open(chemin, newline="", encoding="utf-8") as f:
+        rangees = [
+            rangee
+            for rangee in csv.DictReader(f)
+            if rangee.get("compagnie") == COMPAGNIE_VOISINS
+        ]
+    for rangee in sorted(rangees, key=lambda r: int(r.get("ordre") or 0)):
+        lignes.setdefault((rangee["compagnie"], rangee["ligne"]), []).append(rangee["arret"])
+    ecartes: set[str] = set()
+    for arrets in lignes.values():
+        for i, arret in enumerate(arrets):
+            # Un terminus n'a qu'un côté : il peut être loin du dernier arrêt connu
+            # (tronçon de ligne long), ce n'est pas un indice d'homonymie.
+            if not 0 < i < len(arrets) - 1:
+                continue
+            if arret not in bonnes:
+                continue
+            ici = positions.get(arret)
+            if ici is None:
+                continue
+            voisins = [
+                positions[arrets[j]]
+                for j in (i - 1, i + 1)
+                if arrets[j] in positions
+            ]
+            if voisins and all(
+                distance_metres(ici, voisin) > SEUIL_VOISIN_METRES for voisin in voisins
+            ):
+                ecartes.add(arret)
+    return ecartes
+
+
+def _non_fiables(arrets: dict[str, dict], itineraires_csv: Path) -> set[str]:
+    """Arrêts à position non fiable : rues numérotées et isolés sur une ligne AFTU."""
+    rues = {arret for arret in arrets if nom_rue_numerotee(arret)}
+    positions = {
+        arret: info["point"]
+        for arret, info in arrets.items()
+        if info.get("point") is not None
+    }
+    bonnes = {
+        arret
+        for arret, info in arrets.items()
+        if info.get("confiance") == "bonne"
+    }
+    return rues | _hors_voisinage(positions, bonnes, itineraires_csv)
+
+
+def arrets_non_fiables(
+    arrets_geo: Path = ARRETS_GEO,
+    itineraires_csv: Path = ITINERAIRES_CSV,
+) -> set[str]:
+    """Noms d'arrêts dont la position ne vaut ni pour le quartier ni pour la proximité.
+
+    Partagé avec l'affichage (app.py) : les mêmes arrêts ne montrent pas de
+    quartier entre parenthèses.
+    """
+    arrets: dict[str, dict] = {}
+    chemin = Path(arrets_geo)
+    if chemin.exists():
+        with open(chemin, newline="", encoding="utf-8") as f:
+            for rangee in csv.DictReader(f):
+                point = None
+                if rangee.get("lat") and rangee.get("lon"):
+                    try:
+                        point = (float(rangee["lat"]), float(rangee["lon"]))
+                    except ValueError:
+                        point = None
+                arrets[rangee["arret"]] = {
+                    "point": point,
+                    "confiance": rangee.get("confiance", ""),
+                }
+    return _non_fiables(arrets, itineraires_csv)
+
 
 # Mots de structure, retirés avant de comparer un lieu à un quartier/commune.
 GENERIQUES = {
@@ -152,10 +260,14 @@ class LieuxGeo:
         arrets_geo: Path = ARRETS_GEO,
         lieux_geo: Path = LIEUX_GEO,
         cache: Path = CACHE_LIEUX,
+        itineraires_csv: Path = ITINERAIRES_CSV,
     ) -> None:
         self._arrets: dict[str, dict] = {}
         self._cible_mots: dict[str, set[str]] = {}
         self._lire_arrets(arrets_geo)
+        # Les positions trompeuses (rues numérotées, homonymes isolés sur une
+        # ligne AFTU) sont écartées en mémoire, sans toucher aux CSV.
+        self._ecarter_non_fiables(itineraires_csv)
 
         self._lieux: dict[str, tuple[float, float]] = {}
         self._absents: set[str] = set()
@@ -191,6 +303,13 @@ class LieuxGeo:
                     "confiance": rangee.get("confiance", ""),
                 }
                 self._cible_mots[arret] = cible
+
+    def _ecarter_non_fiables(self, itineraires_csv: Path) -> None:
+        """Neutralise les positions trompeuses, sans modifier les CSV."""
+        for arret in _non_fiables(self._arrets, itineraires_csv):
+            if arret in self._arrets:
+                self._arrets[arret]["confiance"] = "douteuse"
+                self._cible_mots[arret] = set()
 
     def _lire_lieux(self, chemin: Path) -> None:
         if not chemin.exists():

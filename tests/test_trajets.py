@@ -58,6 +58,13 @@ TRAJETS_SANS_MONTEE_FAUSSE = [
     ("Maa ngi Rufisque, dama bëgg dem Colobane", "Route de Rufisque"),
 ]
 
+# Homonymes géocodés ailleurs : « Rue 9 » et « Avenue Cheikh Anta Diop » ont été
+# posés aux Almadies. Leur position ne doit jamais servir à conseiller la montée.
+# (phrase, noms d'arrêt interdits comme montée).
+TRAJETS_SANS_MONTEE_HOMONYME = [
+    ("Maa ngi Almadies, dama bëgg dem Médina", {"Rue 9", "Avenue Cheikh Anta Diop"}),
+]
+
 # Phrases qui nomment un quartier que les noms d'arrêts ne portent pas (Médina,
 # Sandaga) : la position des arrêts (arrets_geo.csv) doit faire trouver une ligne.
 # (phrase, lignes attendues — au moins une —, lignes interdites).
@@ -245,6 +252,21 @@ def test_local() -> int:
             f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
             f"      montées : {sorted(montees)}"
         )
+    # Un homonyme géocodé ailleurs (Rue 9, Avenue Cheikh Anta Diop) ne doit jamais
+    # être conseillé comme montée.
+    for phrase, interdites in TRAJETS_SANS_MONTEE_HOMONYME:
+        lieux = extract_local(phrase)
+        resultat = matcher.find_line(lieux.get("depart") or "", lieux.get("arrivee") or "")
+        montees = {ligne["monte_a"] for ligne in resultat["lignes"]}
+        for trajet in resultat["correspondances"]:
+            montees.add(trajet["etape_1"]["monte_a"])
+            montees.add(trajet["etape_2"]["monte_a"])
+        bon = not (montees & interdites)
+        echecs += not bon
+        print(
+            f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
+            f"      montées : {sorted(montees)}"
+        )
     return echecs
 
 
@@ -340,6 +362,7 @@ if __name__ == "__main__":
             + len(TRAJETS_QUARTIER)
             + len(TRAJETS_GEO)
             + len(TRAJETS_SANS_MONTEE_FAUSSE)
+            + len(TRAJETS_SANS_MONTEE_HOMONYME)
             + 3
         )
     print(f"\n{total - echecs}/{total} réussis")
