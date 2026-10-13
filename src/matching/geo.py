@@ -61,11 +61,29 @@ COMPAGNIE_VOISINS = "Tata AFTU"
 # porte en plus une localité (« Rue 10 Pikine Ouest ») reste situable.
 _RUE_NUMEROTEE = re.compile(r"^rue\s+\d+\s*(?:bis|ter)?$", re.IGNORECASE)
 
+# Noms d'équipement sans localité (« Préfecture », « Police », « Marché »…) : le
+# nom seul ne dit pas de quel quartier il s'agit, et le géocodage le pose souvent
+# au mauvais endroit. Cas réel : le « Préfecture » de la ligne 46 est en banlieue
+# mais géocodé au Plateau, ce qui fait monter Sandaga → Pikine au 46 à Préfecture.
+# Un nom qui porte en plus une localité (« Préfecture Guédiawaye », « Marché
+# Jeudi », « Hôpital Roi Baudouin ») reste fiable.
+NOMS_GENERIQUES = {
+    "prefecture", "police", "poste", "mairie", "marche", "gare", "hopital",
+    "stade", "lycee", "pharmacie", "station",
+}
+
 
 def nom_rue_numerotee(arret: str) -> bool:
     """Vrai si le nom d'arrêt est une rue numérotée seule (« Rue 9 », « Rue 9bis »)."""
     sans_annotation = re.sub(r"\([^)]*\)", " ", str(arret))
     return bool(_RUE_NUMEROTEE.match(normaliser(sans_annotation)))
+
+
+def nom_generique(arret: str) -> bool:
+    """Vrai si le nom d'arrêt est un équipement seul, sans localité qui le situe."""
+    sans_annotation = re.sub(r"\([^)]*\)", " ", str(arret))
+    mots = normaliser(sans_annotation).split()
+    return bool(mots) and all(mot in NOMS_GENERIQUES for mot in mots)
 
 
 def _hors_voisinage(
@@ -116,8 +134,13 @@ def _hors_voisinage(
 
 
 def _non_fiables(arrets: dict[str, dict], itineraires_csv: Path) -> set[str]:
-    """Arrêts à position non fiable : rues numérotées et isolés sur une ligne AFTU."""
-    rues = {arret for arret in arrets if nom_rue_numerotee(arret)}
+    """Arrêts à position non fiable : rues numérotées, équipements sans localité,
+    et isolés sur une ligne AFTU."""
+    douteuses = {
+        arret
+        for arret in arrets
+        if nom_rue_numerotee(arret) or nom_generique(arret)
+    }
     positions = {
         arret: info["point"]
         for arret, info in arrets.items()
@@ -128,7 +151,7 @@ def _non_fiables(arrets: dict[str, dict], itineraires_csv: Path) -> set[str]:
         for arret, info in arrets.items()
         if info.get("confiance") == "bonne"
     }
-    return rues | _hors_voisinage(positions, bonnes, itineraires_csv)
+    return douteuses | _hors_voisinage(positions, bonnes, itineraires_csv)
 
 
 def arrets_non_fiables(
@@ -169,6 +192,13 @@ GENERIQUES = {
 # que l'arrêt est dans la ville de Guédiawaye (il peut être à Pikine).
 NIVEAUX_LARGES = ("arrondissement", "departement")
 
+# Villes dont le département porte le nom, et que les voyageurs demandent tels
+# quels : un arrêt « Département de Guédiawaye » compte alors pour « Guédiawaye ».
+# C'est ce qui rend directe la ligne 78 (Golf, Lycée Canada…). « Dakar » n'y est
+# jamais : le département de Dakar ne dit pas la ville, et « Dakar » ramènerait
+# toute la banlieue.
+DEPARTEMENTS_COMME_VILLE = {"guediawaye", "pikine", "rufisque"}
+
 
 def normaliser(texte: str) -> str:
     """Minuscules, sans accents ni ponctuation : « Dakar-Plateau » -> « dakar plateau »."""
@@ -182,6 +212,22 @@ def _mots(texte: str) -> list[str]:
 def _niveau_precis(valeur: str) -> bool:
     """Un quartier ou une commune, jamais « Département de » ni « Arrondissement de »."""
     return bool(valeur) and not normaliser(valeur).startswith(NIVEAUX_LARGES)
+
+
+def _mots_niveau(valeur: str) -> set[str]:
+    """Mots d'un quartier/commune à retenir pour comparer à un lieu dit.
+
+    Un « Département de X » ne situe pas l'arrêt dans la ville X — sauf quand X
+    est justement la ville demandée (Guédiawaye, Pikine, Rufisque, jamais Dakar).
+    """
+    if _niveau_precis(valeur):
+        return set(_mots(valeur))
+    bas = normaliser(valeur)
+    if bas.startswith("departement"):
+        ville = [mot for mot in bas.split() if mot not in GENERIQUES]
+        if len(ville) == 1 and ville[0] in DEPARTEMENTS_COMME_VILLE:
+            return set(ville)
+    return set()
 
 
 def distance_metres(a: tuple[float, float], b: tuple[float, float]) -> float:
@@ -292,10 +338,8 @@ class LieuxGeo:
                 quartier = rangee.get("quartier", "")
                 commune = rangee.get("commune", "")
                 cible: set[str] = set()
-                if _niveau_precis(quartier):
-                    cible |= set(_mots(quartier))
-                if _niveau_precis(commune):
-                    cible |= set(_mots(commune))
+                cible |= _mots_niveau(quartier)
+                cible |= _mots_niveau(commune)
                 self._arrets[arret] = {
                     "point": point,
                     "quartier": quartier,

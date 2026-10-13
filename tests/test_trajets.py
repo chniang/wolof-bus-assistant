@@ -38,10 +38,33 @@ TRAJETS = [
     ("Maa ngi Thiaroye, bëgg naa dem Ouakam", {"Ligne 217"}),
     ("Maa ngi Pikine, dama bëgg dem Colobane", {"Ligne 48", "Ligne 50", "Ligne 75"}),
     ("Maa ngi Keur Massar, dama bëgg dem UCAD", {"Ligne 54", "Ligne 71"}),
-    # « Liberté 5 » comme « Guédiawaye » sont des lieux : la montée doit être un
-    # arrêt « Liberté 5 » et non l'arrêt simplement proche « Liberté 6 ».
-    ("Maa ngi Liberté 5, dama bëgg dem Guédiawaye", {"corr:Ligne 77", "corr:Ligne 78"}),
+    # Ligne 78 : Liberté 5 -> Golf (Guédiawaye), DIRECT. « Département de
+    # Guédiawaye » compte pour Guédiawaye quand l'utilisateur dit « Guédiawaye »
+    # (jamais « Dakar »), et une ligne directe passe avant une correspondance.
+    ("Maa ngi Liberté 5, dama bëgg dem Guédiawaye", {"Ligne 78"}),
     ("Maa ngi Pikine, bëgg naa dem Guédiawaye", {"Ligne 37", "Ligne 41", "Ligne 46"}),
+]
+
+# Trajets qui doivent rester DIRECTS, sans correspondance proposée :
+# phrase -> ligne directe attendue.
+TRAJETS_DIRECTS = {
+    "Maa ngi Liberté 5, dama bëgg dem Guédiawaye": "Ligne 78",
+}
+
+# Arrêts qui ne doivent jamais servir (montée ni descente) sur un trajet :
+# le « Stade Amadou Barry » touche Pikine, il n'est pas une descente fiable pour
+# Pikine -> Guédiawaye.
+# (phrase, noms d'arrêt interdits comme montée ou descente).
+TRAJETS_SANS_ARRET = [
+    ("Maa ngi Pikine, bëgg naa dem Guédiawaye", {"Stade Amadou Barry"}),
+]
+
+# Noms d'équipement sans localité (« Préfecture ») : position non fiable, comme
+# « Rue 9 ». Le « Préfecture » de la ligne 46 (banlieue) est géocodé au Plateau à
+# tort : Sandaga -> Pikine ne doit donc pas y monter.
+# (phrase, noms d'arrêt interdits comme montée).
+TRAJETS_SANS_MONTEE_GENERIQUE = [
+    ("Maa ngi Sandaga, dama bëgg dem Pikine", {"Préfecture"}),
 ]
 
 # Lignes qui ne doivent surtout PAS sortir pour une phrase : « Garage Guédiawaye »
@@ -119,6 +142,41 @@ def _ok(trouvees: set[str], attendues: set[str], exclues: set[str] = frozenset()
     return bool(trouvees & attendues) and not (trouvees & exclues)
 
 
+def _lignes(resultat: dict) -> set[str]:
+    """Numéros de ligne trouvés, les correspondances préfixées « corr: »."""
+    trouvees = {l["ligne"] for l in resultat["lignes"]}
+    trouvees |= {"corr:" + c["etape_1"]["ligne"] for c in resultat["correspondances"]}
+    return trouvees
+
+
+def _arrets_utilises(resultat: dict) -> set[str]:
+    """Arrêts conseillés comme montée ou descente, correspondances comprises."""
+    arrets = set()
+    for ligne in resultat["lignes"]:
+        arrets.add(ligne["monte_a"])
+        arrets.add(ligne["descend_a"])
+    for trajet in resultat["correspondances"]:
+        for etape in (trajet["etape_1"], trajet["etape_2"]):
+            arrets.add(etape["monte_a"])
+            arrets.add(etape["descend_a"])
+    return arrets
+
+
+def _detail(resultat: dict) -> str:
+    """Détail à vérifier à la main : ligne, arrêt de montée, arrêt de descente."""
+    morceaux = [
+        f"{ligne['ligne']} : monte à {ligne['monte_a']} → descends à {ligne['descend_a']}"
+        for ligne in resultat["lignes"]
+    ]
+    for trajet in resultat["correspondances"]:
+        e1, e2 = trajet["etape_1"], trajet["etape_2"]
+        morceaux.append(
+            f"corr {e1['ligne']} : monte à {e1['monte_a']} → descends à {e1['descend_a']} "
+            f"| puis {e2['ligne']} : monte à {e2['monte_a']} → descends à {e2['descend_a']}"
+        )
+    return "  ;  ".join(morceaux) or "rien"
+
+
 def test_local() -> int:
     from intent.extract_intent import extract_local
     from matching.compagnie import message_autre_compagnie
@@ -129,11 +187,16 @@ def test_local() -> int:
     for phrase, attendues in TRAJETS:
         lieux = extract_local(phrase)
         resultat = matcher.find_line(lieux.get("depart") or "", lieux.get("arrivee") or "")
-        trouvees = {l["ligne"] for l in resultat["lignes"]}
-        trouvees |= {"corr:" + c["etape_1"]["ligne"] for c in resultat["correspondances"]}
+        trouvees = _lignes(resultat)
         bon = _ok(trouvees, attendues, TRAJETS_EXCLUS.get(phrase, frozenset()))
+        # Une ligne directe passe avant une correspondance : si le trajet est attendu
+        # direct, aucune correspondance ne doit être proposée.
+        directe = TRAJETS_DIRECTS.get(phrase)
+        if directe:
+            bon = bon and directe in {l["ligne"] for l in resultat["lignes"]} and not resultat["correspondances"]
         echecs += not bon
-        print(f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n      {lieux.get('depart')} -> {lieux.get('arrivee')} | {sorted(trouvees) or 'rien'}")
+        print(f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n      {lieux.get('depart')} -> {lieux.get('arrivee')}")
+        print(f"      {_detail(resultat) if (resultat['lignes'] or resultat['correspondances']) else 'rien'}")
     for phrase, compagnie, attendues, interdites in TRAJETS_COMPAGNIE:
         lieux = extract_local(phrase)
         resultat = matcher.find_line(lieux.get("depart") or "", lieux.get("arrivee") or "")
@@ -143,8 +206,28 @@ def test_local() -> int:
         echecs += not bon
         print(
             f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
-            f"      compagnie={lieux.get('compagnie')!r} | {lieux.get('depart')} -> {lieux.get('arrivee')} | {sorted(trouvees) or 'rien'}"
+            f"      compagnie={lieux.get('compagnie')!r} | {lieux.get('depart')} -> {lieux.get('arrivee')}"
         )
+        print(f"      {_detail(resultat) if (resultat['lignes'] or resultat['correspondances']) else 'rien'}")
+    # Des arrêts précis ne doivent jamais être utilisés (montée ni descente).
+    for phrase, interdits in TRAJETS_SANS_ARRET:
+        lieux = extract_local(phrase)
+        resultat = matcher.find_line(lieux.get("depart") or "", lieux.get("arrivee") or "")
+        utilises = _arrets_utilises(resultat)
+        bon = not (utilises & interdits)
+        echecs += not bon
+        print(f"{'OK ' if bon else 'ÉCHEC'} | {phrase} (arrêts interdits)\n      {_detail(resultat)}")
+    # Un nom d'équipement sans localité ne doit jamais servir de montée.
+    for phrase, interdites in TRAJETS_SANS_MONTEE_GENERIQUE:
+        lieux = extract_local(phrase)
+        resultat = matcher.find_line(lieux.get("depart") or "", lieux.get("arrivee") or "")
+        montees = {ligne["monte_a"] for ligne in resultat["lignes"]}
+        for trajet in resultat["correspondances"]:
+            montees.add(trajet["etape_1"]["monte_a"])
+            montees.add(trajet["etape_2"]["monte_a"])
+        bon = not (montees & interdites)
+        echecs += not bon
+        print(f"{'OK ' if bon else 'ÉCHEC'} | {phrase} (montée générique)\n      montées : {sorted(montees)}")
     # Cas réel : la compagnie demandée n'a pas forcément de ligne directe. On
     # reproduit le choix de l'app : trajet 100 % Tata s'il existe, sinon bandeau
     # « aucune ligne Tata » suivi des lignes des autres compagnies (Dem Dikk).
@@ -223,8 +306,9 @@ def test_local() -> int:
         echecs += not bon
         print(
             f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
-            f"      {lieux.get('depart')} -> {lieux.get('arrivee')} | {sorted(trouvees) or 'rien'}"
+            f"      {lieux.get('depart')} -> {lieux.get('arrivee')}"
         )
+        print(f"      {_detail(resultat) if (resultat['lignes'] or resultat['correspondances']) else 'rien'}")
     # Un quartier dit tel quel (Médina, Sandaga) doit trouver une ligne grâce aux
     # positions des arrêts (data/arrets_geo.csv), pas seulement à leur nom.
     for phrase, attendues, exclues in TRAJETS_GEO:
@@ -236,8 +320,9 @@ def test_local() -> int:
         echecs += not bon
         print(
             f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
-            f"      {lieux.get('depart')} -> {lieux.get('arrivee')} | {sorted(trouvees) or 'rien'}"
+            f"      {lieux.get('depart')} -> {lieux.get('arrivee')}"
         )
+        print(f"      {_detail(resultat) if (resultat['lignes'] or resultat['correspondances']) else 'rien'}")
     # Une voie « Route de X » (faux ami) ne doit jamais servir de montée.
     for phrase, voie in TRAJETS_SANS_MONTEE_FAUSSE:
         lieux = extract_local(phrase)
@@ -358,6 +443,8 @@ if __name__ == "__main__":
         total = (
             len(TRAJETS)
             + len(TRAJETS_COMPAGNIE)
+            + len(TRAJETS_SANS_ARRET)
+            + len(TRAJETS_SANS_MONTEE_GENERIQUE)
             + len(TRAJETS_LIEUX)
             + len(TRAJETS_QUARTIER)
             + len(TRAJETS_GEO)

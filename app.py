@@ -619,8 +619,7 @@ def _note_sens_inverse(match: dict) -> str:
     return (
         "<div style='color:#6B7A72;font-size:12px;font-style:italic;"
         "margin-top:6px;'>"
-        f"{intro} Au retour, le bus peut emprunter d'autres rues dans le "
-        "centre-ville.</div>"
+        f"{intro} Au retour, le bus peut emprunter d'autres rues.</div>"
     )
 
 
@@ -731,14 +730,21 @@ def _bloc_arrets(match: dict) -> str:
     )
 
 
-def _une_carte(match: dict, etape: str = "", depart: str = "", arrivee: str = "") -> str:
+def _une_carte(
+    match: dict,
+    etape: str = "",
+    depart: str = "",
+    arrivee: str = "",
+    changement: bool = False,
+) -> str:
     """Une ligne : compagnie, numéro, trajet conseillé, arrêts parcourus.
 
     On ne prétend pas connaître l'arrêt exact de l'utilisateur : on conseille
     l'arrêt le plus proche du lieu qu'il a dit, et on rappelle que tout arrêt de
-    la ligne parcouru convient. Les couleurs sont portées en propre par chaque
-    bloc (fond clair fixe + texte sombre) : la carte reste lisible en mode clair
-    comme en mode sombre, quel que soit le thème Gradio.
+    la ligne parcouru convient. `changement=True` (1er bus d'une correspondance)
+    ajoute « pour changer de bus » à la descente. Les couleurs sont portées en
+    propre par chaque bloc (fond clair fixe + texte sombre) : la carte reste
+    lisible en mode clair comme en mode sombre, quel que soit le thème Gradio.
     """
     numero = numero_de(match["ligne"])
     affiche = re.sub(r"^Ligne\s*", "", str(match["ligne"]))
@@ -751,6 +757,7 @@ def _une_carte(match: dict, etape: str = "", depart: str = "", arrivee: str = ""
         descend_a, _ = _nom_arret(match["descend_a"])
         depart_texte = depart if depart else match["monte_a"]
         arrivee_texte = arrivee if arrivee else match["descend_a"]
+        fin = " pour changer de bus" if changement else ""
         trajet = (
             f"<div style='color:#11301C;font-size:22px;font-weight:800;"
             f"line-height:1.35;margin-top:8px;'>"
@@ -759,7 +766,7 @@ def _une_carte(match: dict, etape: str = "", depart: str = "", arrivee: str = ""
             f"<span style='font-weight:600;font-size:15px;color:#3D5A48;'>"
             f"(ou tout arrêt de la ligne {affiche} près de toi)</span><br>"
             f"Descends à <b style='color:#081F11;'>{arrivee_texte}</b> — arrêt conseillé : "
-            f"<b style='color:#081F11;'>{descend_a}</b></div>"
+            f"<b style='color:#081F11;'>{descend_a}</b>{fin}</div>"
         )
     arrets = _bloc_arrets(match)
     # Les terminus de la ligne, en petit : le parcours réel du bus.
@@ -816,7 +823,7 @@ def _carte(
         for numero, trajet in enumerate(correspondances, start=1):
             if numero > 1:
                 blocs.append(f"\n**Autre possibilité {numero}**\n")
-            blocs.append(_une_carte(trajet["etape_1"], "1er bus", depart=depart))
+            blocs.append(_une_carte(trajet["etape_1"], "1er bus", depart=depart, changement=True))
             blocs.append(
                 f"<div style='text-align:center;color:#6B7A72;margin:2px 0;'>"
                 f"🔁 Change à <b>{trajet['changement']}</b></div>"
