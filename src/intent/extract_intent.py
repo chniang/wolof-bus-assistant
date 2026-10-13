@@ -271,20 +271,23 @@ REPLACEMENTS_PHRASE = (
     (r"(?:palee|paale|pale|pali)\b", " palais "),
     # « pala dee » : Palais entendu en deux morceaux.
     (r"\bpala(?:\s+d?ee?)?\b", " palais "),
-    (r"meddina\b", " medina "),
+    # Médina : l'ASR écrit « madiina », « madina », « mediina » ou « medina ».
+    # « medine » (Grand Médine, HLM Grand Médine) est un autre lieu : on n'y touche
+    # pas, sinon « Grand Médine » deviendrait « Médina ».
+    (r"\b(?:madiina|meddina|madina|mediina|medina)\b", " medina "),
     # whisper-small entend « liberation » pour « Liberté ».
     (r"\bliberation\b", " liberte "),
     (r"\blibert[iy]\b", " liberte "),
     # Kiriku écrit les numéros en toutes lettres (« liberté cinq ») et
-    # whisper-small en wolof phonétique (« sënk ») : on remet le chiffre du CSV.
-    # « juroom benn » (6) avant « juroom » (5) et « benn » (1).
+    # whisper-small en wolof phonétique (« sënk », « siis ») : on remet le chiffre
+    # du CSV. « juroom benn » (6) avant « juroom » (5) et « benn » (1).
     (r"\b(liberte)\s+juroom\s+benn\b", r" \1 6 "),
     (r"\b(liberte|palais)\s+(?:un|une|benn|ben)\b", r" \1 1 "),
     (r"\b(liberte|palais)\s+(?:deux|deu|doe|naar|ñaar|nyaar)\b", r" \1 2 "),
     (r"\b(liberte)\s+(?:trois|troi|nett|net)\b", r" \1 3 "),
     (r"\b(liberte)\s+(?:quatre|katr|nient|ñeent|nyent)\b", r" \1 4 "),
     (r"\b(liberte)\s+(?:cinq|senk|sank|sink|sinq|juroom|jurom|five)\b", r" \1 5 "),
-    (r"\b(liberte)\s+(?:six|sis|siss|sise|sees)\b", r" \1 6 "),
+    (r"\b(liberte)\s+(?:six|sixe|sis|siss|sise|siis|sees|siks)\b", r" \1 6 "),
 )
 
 # En dessous de ce ratio, on préfère ne rien trouver plutôt qu'inventer un quartier.
@@ -296,11 +299,14 @@ LONGUEUR_MIN = 4
 
 # Le CSV distingue « Palais 1 » et « Palais 2 » : quand le numéro n'est pas prononcé,
 # « Palais » seul doit rester acceptable, exactement comme le fait le LLM.
+# « Liberté » sans numéro : l'ASR écrit « liberation » sans qu'on sache 5 ou 6 ;
+# on garde « Liberté » et c'est la recherche (qui couvre toutes les Liberté) qui
+# tranche, plutôt que de choisir un numéro par défaut.
 # « Plateau » et « Dakar Plateau » sont des quartiers du centre de Dakar que les
 # arrêts ne nomment pas tels quels : on les accepte quand même comme lieux.
 # « Sandaga » est l'arrêt central du Plateau : on l'accepte comme lieu pour que
 # « Maa ngi Sandaga, dama bëgg dem … » trouve une ligne (position via lieux_geo).
-LIEUX_SUPPLEMENTAIRES = ("Palais", "Plateau", "Dakar Plateau", "Sandaga")
+LIEUX_SUPPLEMENTAIRES = ("Palais", "Plateau", "Dakar Plateau", "Liberté", "Sandaga")
 
 
 def _sans_accents(texte: str) -> str:
@@ -350,6 +356,11 @@ def _score(gramme: str, lieu: str) -> float:
     # proximité de caractères, mais moins bien qu'une égalité.
     if lieu.startswith(gramme) or gramme.startswith(lieu):
         return 0.9
+    # Un mot de 4 lettres ou moins (« siis », « benn ») n'a pas de ressemblance
+    # approximative : il ne vaut un lieu que s'il est identique (ou préfixe). Sans
+    # cela, « siis » se ferait passer pour l'arrêt « SIPS ».
+    if min(len(gramme), len(lieu)) <= LONGUEUR_MIN:
+        return 0.0
     return SequenceMatcher(None, gramme, lieu).ratio()
 
 
@@ -368,6 +379,15 @@ MOTS_TROP_VAGUES = {
     "marche", "cite", "lycee", "hopital", "police", "poste", "ecole", "stade", "gare",
     "rond", "point", "station", "grand", "route", "place", "croisement", "terminus",
     "pont", "eglise", "college", "arret", "village", "quartier", "camp", "keur",
+}
+# Chiffres dits et leurs graphies ASR : un chiffre n'est JAMAIS un lieu. Après
+# « liberté »/« palais » il est converti en chiffre arabe ; isolé, il est ignoré
+# (sinon « siis » se ferait passer pour l'arrêt « SIPS »).
+MOTS_CHIFFRES = {
+    "un", "une", "benn", "ben", "deux", "deu", "doe", "naar", "trois", "troi",
+    "nett", "net", "quatre", "katr", "nient", "neent", "nyent", "cinq", "senk",
+    "sank", "sink", "sinq", "five", "juroom", "jurom", "six", "sixe", "sis",
+    "siss", "sise", "sees", "siis", "siks",
 }
 
 # Compagnies que l'utilisateur peut nommer. Les formes sont celles de l'ASR :
@@ -417,7 +437,7 @@ def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
     for taille in range(1, TAILLE_NGRAMMES + 1):
         for debut in range(len(mots) - taille + 1):
             morceau = mots[debut : debut + taille]
-            if any(mot in MOTS_DE_LA_PHRASE for mot in morceau):
+            if any(mot in MOTS_DE_LA_PHRASE or mot in MOTS_CHIFFRES for mot in morceau):
                 continue
             if taille == 1 and morceau[0] in MOTS_TROP_VAGUES:
                 continue

@@ -30,7 +30,8 @@ CHIFFRES_ROMAINS = {
     "i": "1", "ii": "2", "iii": "3", "iv": "4", "v": "5", "vi": "6",
     # Le LLM ou l'ASR écrit aussi les numéros en lettres : « Liberté six ».
     "un": "1", "deux": "2", "trois": "3", "quatre": "4", "cinq": "5", "six": "6",
-    "senk": "5", "sis": "6", "siss": "6",
+    "senk": "5", "sis": "6", "siss": "6", "sixe": "6", "sise": "6", "sees": "6",
+    "siis": "6", "siks": "6",
 }
 # Le chiffre romain n'est converti qu'après ces mots : « V » seul ne veut rien dire.
 AVANT_NUMERO = {"liberte", "hamo", "unite", "unites", "jaxaay", "gorom", "palais"}
@@ -41,6 +42,11 @@ ALIAS = {
     "leclerc": "place leclerc",
     "ucad": "universite cheikh anta diop",
     "universite": "universite cheikh anta diop",
+    # Variantes de « Médina » vues par l'ASR. « medine » (Grand Médine) reste à
+    # part : c'est un autre lieu, on ne le rabat pas sur Médina.
+    "madiina": "medina",
+    "madina": "medina",
+    "mediina": "medina",
     "stade lss": "stade leopold sedar senghor",
     "stade l s s": "stade leopold sedar senghor",
     "aeroport lss": "aeroport",

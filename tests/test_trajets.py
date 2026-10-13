@@ -64,6 +64,10 @@ TRAJETS_GEO = [
 TRAJETS_COMPAGNIE = [
     ("Maa ngi Pikine, dama bëgg dem Colobane ak Tata", "Tata AFTU", {"Ligne 48", "Ligne 50", "Ligne 75"}, {"Dakar Dem Dikk"}),
     ("Maa ngi Liberté 6, bëgg naa dem Palais ci Dem Dikk", "Dakar Dem Dikk", {"Ligne 9"}, {"Tata AFTU"}),
+    # Bug ASR réel : « liberation siis » (Liberté 6) et « madiina » (Médina).
+    # Le chiffre dit « siis » ne doit pas devenir l'arrêt « SIPS », et Tata doit
+    # tout de même trouver sa ligne 1.
+    ("maa ngi liberation siis dama bëgg a dem madiina ak tata", "Tata AFTU", {"Ligne 1"}, {"Dakar Dem Dikk"}),
 ]
 
 # Cas réel : « Liberté 5 -> Médina » avec Tata. Tata n'a pas de ligne directe ;
@@ -82,6 +86,13 @@ TRAJETS_LIEUX = [
 # proposer au moins une ligne, directe ou avec changement.
 TRAJETS_QUARTIER = [
     "Maa ngi Dakar Plateau, dama bëgg dem Nord Foire",
+]
+
+# Phrases texte envoyées en plus à l'app publiée (--en-ligne) : elles traversent
+# la vraie extraction (NVIDIA) et la carte affichée, pas seulement l'extraction locale.
+TRAJETS_EN_LIGNE = [
+    ("Maa ngi Liberté 6, dama bëgg dem Médina ak Tata", {"Ligne 1"}),
+    ("Maa ngi Sandaga, dama bëgg dem Pikine", {"Ligne 27", "Ligne 41", "Ligne 50", "Ligne 55", "Ligne 56"}),
 ]
 
 AUDIOS = [
@@ -166,6 +177,14 @@ def test_local() -> int:
     print(
         f"{'OK ' if bon else 'ÉCHEC'} | « tata » n'est jamais un lieu "
         f"({lieux.get('depart')!r} -> {lieux.get('arrivee')!r}, compagnie={lieux.get('compagnie')!r})"
+    )
+    # « siis » (six, dit en wolof) ne doit jamais devenir l'arrêt « SIPS ».
+    lieux = extract_local("siis")
+    bon = not lieux.get("depart") and not lieux.get("arrivee")
+    echecs += not bon
+    print(
+        f"{'OK ' if bon else 'ÉCHEC'} | « siis » n'est jamais un lieu "
+        f"({lieux.get('depart')!r} -> {lieux.get('arrivee')!r})"
     )
     # Un lieu contenant « dakar » survit à la détection de compagnie.
     for phrase, departs, arrivees in TRAJETS_LIEUX:
@@ -257,7 +276,11 @@ def test_en_ligne() -> int:
     import httpx
 
     echecs = 0
-    cas = [(p, None, a) for p, a in TRAJETS] + [(None, RACINE / f, a) for f, a in AUDIOS]
+    cas = (
+        [(p, None, a) for p, a in TRAJETS]
+        + [(None, RACINE / f, a) for f, a in AUDIOS]
+        + [(p, None, a) for p, a in TRAJETS_EN_LIGNE]
+    )
     with httpx.Client(timeout=180) as client:
         for phrase, audio, attendues in cas:
             nom = phrase or f"[audio] {audio.name}"
@@ -285,17 +308,17 @@ if __name__ == "__main__":
     print(f"=== Test {'de l app en ligne (' + SPACE + ')' if en_ligne else 'local'} ===\n")
     if en_ligne:
         echecs = test_en_ligne()
-        total = len(TRAJETS) + len(AUDIOS)
+        total = len(TRAJETS) + len(AUDIOS) + len(TRAJETS_EN_LIGNE)
     else:
         echecs = test_local()
-        # +1 pour « tata » jamais un lieu, +1 pour le cas compagnie réelle.
+        # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
             len(TRAJETS)
             + len(TRAJETS_COMPAGNIE)
             + len(TRAJETS_LIEUX)
             + len(TRAJETS_QUARTIER)
             + len(TRAJETS_GEO)
-            + 2
+            + 3
         )
     print(f"\n{total - echecs}/{total} réussis")
     sys.exit(1 if echecs else 0)
