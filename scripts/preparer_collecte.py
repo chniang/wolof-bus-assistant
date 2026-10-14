@@ -5,6 +5,7 @@ Utilisation :
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip" --depuis 09/10/2026
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip" --collecteur TIJAANI
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip" --locuteur locuteur_04
+    .\.venv\Scripts\python.exe scripts\preparer_collecte.py "chemin\fichier.zip" --texte-avant
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py --reverifier
     .\.venv\Scripts\python.exe scripts\preparer_collecte.py --exclure "Wa bahna"
 
@@ -24,6 +25,17 @@ l'association), vos textes restent candidats.
 --locuteur locuteur_04 : tous les vocaux du zip sont rangés sous ce locuteur
 (dossier et colonne locuteur) au lieu d'un nouveau numéro. Un audio déjà
 présent dans metadata.csv (même nom) est sauté, jamais doublé.
+--texte-avant : le texte de la phrase a été écrit AVANT le vocal (et non
+après, le comportement par défaut) ; chaque vocal est associé au dernier
+texte utile qui le PRÉCÈDE, jusqu'au vocal précédent.
+
+Après chaque import, si data/collecte/asr_whisper.csv contient déjà des
+transcriptions Whisper pour des vocaux qu'on vient d'ajouter, un contrôle
+automatique compare la transcription Whisper de chaque vocal à son texte
+associé ET aux textes voisins (vocal précédent/suivant). Si le voisin
+ressemble mieux pour la majorité des vocaux comparés, un avertissement
+« décalage probable » s'affiche : c'est le signe d'un import à refaire avec
+--texte-avant (rien n'est modifié automatiquement).
 --reverifier : sans zip, relit metadata.csv, réapplique NORMALISATION et le
 contrôle « lieu » ; le statut ne change qu'entre « ok » et « sans_lieu ».
 --exclure TEXTE : sans zip, met statut = « exclu » aux lignes de metadata.csv
@@ -37,6 +49,7 @@ devient locuteur_01, locuteur_02... dans un dossier qui porte ce pseudo-nom.
 from __future__ import annotations
 
 import csv
+import difflib
 import math
 import re
 import shutil
@@ -475,6 +488,63 @@ def _nom_fichier_sur(nom: str) -> str:
     return base or "vocal"
 
 
+def _ressemblance(a: str, b: str) -> float:
+    """Score de ressemblance (0 à 1) entre deux textes, insensible à la casse.
+
+    N'uniformise pas : la transcription Whisper brute n'a pas vocation à
+    matcher NORMALISATION, on compare juste des chaînes de caractères.
+    """
+    return difflib.SequenceMatcher(None, (a or "").casefold(), (b or "").casefold()).ratio()
+
+
+def _detecter_decalage(lignes_ajoutees: list[dict], collecte_dir: Path) -> None:
+    """Avertit si l'association vocal/texte ressemble à un décalage d'un cran.
+
+    Compare, pour chaque vocal qu'on vient d'ajouter et déjà présent dans
+    asr_whisper.csv, sa transcription Whisper à son texte associé ET aux
+    textes voisins (vocal précédent/suivant dans l'ordre d'ajout). Si le
+    voisin ressemble mieux pour la majorité des vocaux comparables, c'est le
+    signe d'un décalage comme celui trouvé sur locuteur_10 (texte écrit AVANT
+    le vocal, pris par erreur comme texte du vocal suivant) : on prévient,
+    sans rien modifier, à vérifier et réimporter avec --texte-avant si besoin.
+    """
+    asr = Path(collecte_dir) / "asr_whisper.csv"
+    if not asr.exists() or len(lignes_ajoutees) < 2:
+        return
+    whisper: dict[str, str] = {}
+    with open(asr, "r", encoding="utf-8", newline="") as fichier:
+        for ligne in csv.DictReader(fichier):
+            whisper[(ligne.get("file_name") or "").strip()] = ligne.get("transcription_whisper") or ""
+
+    comparables = [l for l in lignes_ajoutees if whisper.get(l["file_name"])]
+    if len(comparables) < 2:
+        return
+
+    mieux_voisin = 0
+    total = 0
+    for i, ligne in enumerate(comparables):
+        w = whisper[ligne["file_name"]]
+        voisins = []
+        if i > 0:
+            voisins.append(_ressemblance(w, comparables[i - 1]["transcription"]))
+        if i + 1 < len(comparables):
+            voisins.append(_ressemblance(w, comparables[i + 1]["transcription"]))
+        if not voisins:
+            continue
+        total += 1
+        if max(voisins) > _ressemblance(w, ligne["transcription"]):
+            mieux_voisin += 1
+
+    if total >= 2 and mieux_voisin > total / 2:
+        print(
+            f"\nATTENTION : décalage probable entre vocaux et textes "
+            f"({mieux_voisin}/{total} vocaux comparés où le texte voisin "
+            "ressemble mieux à la transcription Whisper que le texte associé). "
+            "Vérifie avant de lancer le fine-tuning ; si le texte était écrit "
+            "avant le vocal, réimporte avec --texte-avant."
+        )
+
+
 def _valider_locuteur(nom: str) -> str:
     """Normalise --locuteur (locuteur_04) ; erreur claire sinon."""
     propre = (nom or "").strip()
@@ -493,6 +563,7 @@ def traiter_zip(
     depuis: date | None = None,
     collecteur: str | None = None,
     locuteur: str | None = None,
+    texte_avant: bool = False,
 ) -> dict:
     """Traite un export WhatsApp et renvoie un rapport. Ne rien afficher ici."""
     pseudo_fixe = _valider_locuteur(locuteur) if locuteur else None
@@ -560,17 +631,32 @@ def traiter_zip(
     collecteur_vocaux = sum(1 for info in infos if info["vocal_collecteur"])
     associations: dict[int, int] = {}
 
-    for position in positions_vocaux:
-        suivante = next((p for p in positions_vocaux if p > position), len(infos))
-        for j in range(position + 1, suivante):
-            info = infos[j]
-            if info["nom_audio"] or info["systeme"] or info["media"]:
-                continue
-            texte = _texte_propre(messages[j]["contenu"])
-            if not texte or len(texte) > TAILLE_MAX_TEXTE or _est_ignorable(texte):
-                continue
-            associations[position] = j
-            break
+    if texte_avant:
+        # Le texte précède le vocal : on prend le dernier texte utile juste
+        # avant, en remontant jusqu'au vocal précédent (exclu).
+        for position in positions_vocaux:
+            precedente = next((p for p in reversed(positions_vocaux) if p < position), -1)
+            for j in range(position - 1, precedente, -1):
+                info = infos[j]
+                if info["nom_audio"] or info["systeme"] or info["media"]:
+                    continue
+                texte = _texte_propre(messages[j]["contenu"])
+                if not texte or len(texte) > TAILLE_MAX_TEXTE or _est_ignorable(texte):
+                    continue
+                associations[position] = j
+                break
+    else:
+        for position in positions_vocaux:
+            suivante = next((p for p in positions_vocaux if p > position), len(infos))
+            for j in range(position + 1, suivante):
+                info = infos[j]
+                if info["nom_audio"] or info["systeme"] or info["media"]:
+                    continue
+                texte = _texte_propre(messages[j]["contenu"])
+                if not texte or len(texte) > TAILLE_MAX_TEXTE or _est_ignorable(texte):
+                    continue
+                associations[position] = j
+                break
 
     consommes = set(associations.values())
 
@@ -668,6 +754,7 @@ def traiter_zip(
             if nouveau:
                 redacteur.writeheader()
             redacteur.writerows(lignes)
+        _detecter_decalage(lignes, Path(collecte_dir))
 
     return {
         "zip": str(zip_path),
@@ -835,6 +922,12 @@ def main(argv: list[str]) -> int:
         help="range tous les vocaux du zip sous ce locuteur (locuteur_04) au "
              "lieu d'un nouveau numéro.",
     )
+    analyseur.add_argument(
+        "--texte-avant",
+        action="store_true",
+        help="le texte de la phrase a été écrit AVANT le vocal (et non après) : "
+             "associe chaque vocal au dernier texte qui le précède.",
+    )
     args = analyseur.parse_args(argv[1:])
 
     if args.reverifier and args.exclure:
@@ -870,6 +963,7 @@ def main(argv: list[str]) -> int:
             depuis=depuis,
             collecteur=args.collecteur,
             locuteur=args.locuteur,
+            texte_avant=args.texte_avant,
         )
     except FileExistsError as erreur:
         # Erreur attendue (zip déjà traité) : message clair, pas de traceback.

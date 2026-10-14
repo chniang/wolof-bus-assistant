@@ -246,6 +246,7 @@ REMPLACEMENTS_FORMULES = {
     "jooge": "diougué",
     "njuge": "diougué",
     "njugee": "diougué",
+    "djouguei": "diougué",
 }
 
 # Variantes accentuées par lettre : la table est écrite sans accent, la

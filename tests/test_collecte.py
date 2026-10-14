@@ -16,8 +16,10 @@ Code de sortie : 0 si tout passe.
 
 from __future__ import annotations
 
+import contextlib
 import csv
 import importlib.util
+import io
 import shutil
 import subprocess
 import sys
@@ -54,6 +56,9 @@ NOMS_A = [
 ]
 NOMS_B = ["PTT-20261009-WA0010", "PTT-20261009-WA0011"]
 NOMS_L4 = ["PTT-20261009-WA0020", "PTT-20261009-WA0021"]
+NOMS_TA = ["PTT-20261009-WA0030", "PTT-20261009-WA0031"]
+PHRASE_TA1 = "Maa ngi Fass, dama bëgg dem Mermoz"
+PHRASE_TA2 = "Maa ngi Ouakam, dama bëgg dem Ngor"
 
 
 def _charger_module():
@@ -195,6 +200,17 @@ def _fabriquer_zip_b(dossier: Path) -> Path:
         f"\u200e09/10/2026 20:01 - Moi: {PHRASE_TAPEE}",
     ]
     return _ecrire_zip(dossier, lignes, NOMS_B)
+
+
+def _fabriquer_zip_texte_avant(dossier: Path) -> Path:
+    """Le texte de chaque phrase précède son vocal (au lieu de le suivre)."""
+    lignes = [
+        f"09/10/2026 21:00 - Awa: {PHRASE_TA1}",
+        "‎09/10/2026 21:01 - Awa: PTT-20261009-WA0030.m4a (fichier joint)",
+        f"‎09/10/2026 21:02 - Awa: {PHRASE_TA2}",
+        "‎09/10/2026 21:03 - Awa: PTT-20261009-WA0031.m4a (fichier joint)",
+    ]
+    return _ecrire_zip(dossier, lignes, NOMS_TA)
 
 
 def _lire_metadata(collecte: Path) -> list[dict]:
@@ -378,6 +394,53 @@ def _locuteur_ok(module, travail: Path, ffmpeg: str) -> list[tuple[str, bool]]:
     ]
 
 
+def _decalage_ok(module, travail: Path) -> list[tuple[str, bool]]:
+    """_detecter_decalage avertit quand le texte voisin ressemble mieux (majorité).
+
+    Inspiré du cas réel trouvé sur locuteur_10 : chaque vocal reçoit, par
+    erreur, le texte qui aurait dû aller au vocal suivant (texte écrit avant
+    le vocal, préparer_collecte.py associant par défaut le texte qui suit).
+    """
+    dossier = travail / "decalage"
+    dossier.mkdir(parents=True, exist_ok=True)
+    asr = dossier / "asr_whisper.csv"
+    with open(asr, "w", newline="", encoding="utf-8") as fichier:
+        redacteur = csv.writer(fichier)
+        redacteur.writerow(["file_name", "transcription_whisper"])
+        redacteur.writerows([
+            ["locuteur_10/a.wav", "ban lin mooy joge rufisque dem grand yoff"],
+            ["locuteur_10/b.wav", "ban lin mooy joge pikine dem sangalkam"],
+            ["locuteur_10/c.wav", "ban buus mooy joge bambilor dem yoff"],
+        ])
+
+    # Décalées : le texte stocké pour le vocal N est en fait celui du vocal N+1.
+    lignes_decalees = [
+        {"file_name": "locuteur_10/a.wav", "transcription": "ban bus mooy diougué pikine dem sangalkam"},
+        {"file_name": "locuteur_10/b.wav", "transcription": "ban bus mooy diougué bambilor dem yoff"},
+        {"file_name": "locuteur_10/c.wav", "transcription": "ban bus mooy diougué apix dem grand mbao"},
+    ]
+    sortie_decalee = io.StringIO()
+    with contextlib.redirect_stdout(sortie_decalee):
+        module._detecter_decalage(lignes_decalees, dossier)
+
+    # Alignées : le texte stocké pour le vocal N correspond bien au vocal N.
+    lignes_alignees = [
+        {"file_name": "locuteur_10/a.wav", "transcription": "ban bus mooy diougué rufisque dem grand yoff"},
+        {"file_name": "locuteur_10/b.wav", "transcription": "ban bus mooy diougué pikine dem sangalkam"},
+        {"file_name": "locuteur_10/c.wav", "transcription": "ban bus mooy diougué bambilor dem yoff"},
+    ]
+    sortie_alignee = io.StringIO()
+    with contextlib.redirect_stdout(sortie_alignee):
+        module._detecter_decalage(lignes_alignees, dossier)
+
+    return [
+        ("D: avertit quand le texte voisin ressemble mieux (majorité)",
+         "décalage probable" in sortie_decalee.getvalue()),
+        ("D: rien quand les textes sont déjà bien associés",
+         "décalage probable" not in sortie_alignee.getvalue()),
+    ]
+
+
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     module = _charger_module()
@@ -491,6 +554,30 @@ def main() -> int:
 
         # --- --locuteur : rangement sous un pseudo fixe, sans doublon.
         verifications += _locuteur_ok(module, travail, ffmpeg)
+
+        # --- --texte-avant : le texte précède le vocal.
+        dossier_ta = travail / "scenario_texte_avant"
+        dossier_ta.mkdir(exist_ok=True)
+        _fabriquer_bip(dossier_ta, NOMS_TA, ffmpeg)
+        archive_ta = _fabriquer_zip_texte_avant(dossier_ta)
+        rapport_ta = module.traiter_zip(
+            archive_ta,
+            brut_dir=dossier_ta / "brut",
+            collecte_dir=dossier_ta / "collecte",
+            installer_si_besoin=False,
+            texte_avant=True,
+        )
+        textes_ta = {Path(l["file_name"]).name: l["transcription"] for l in _lire_metadata(dossier_ta / "collecte")}
+        verifications += [
+            ("TA: 2 vocaux associés", rapport_ta["associes"] == 2),
+            ("TA: vocal 1 reçoit le texte qui le précède",
+             textes_ta.get("PTT-20261009-WA0030.wav") == PHRASE_TA1),
+            ("TA: vocal 2 reçoit le texte qui le précède",
+             textes_ta.get("PTT-20261009-WA0031.wav") == PHRASE_TA2),
+        ]
+
+        # --- Contrôle automatique « décalage probable » (asr_whisper.csv).
+        verifications += _decalage_ok(module, travail)
 
         # --- scripts/nettoyer_transcriptions.py : variantes Whisper sûres.
         module_nettoyer = _charger_module_nettoyer()
