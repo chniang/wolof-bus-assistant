@@ -285,13 +285,16 @@ REPLACEMENTS_PHRASE = (
     # « ban » et « bus » sont traités comme des mots de la phrase.
     (r"\b(?:ban|bann|bane|ben)\s+(?:bus|bis|biis)\b", " ban bus "),
     # « HLM » entendu en toutes lettres (« as lm », « a s l m ») ou déformé.
-    (r"\b(?:assalem|asslem|asselem|asalem|aselem|achelem|a\s*s\s*l\s*m)\b", " hlm "),
+    # « asoleem », « aslem », « oshlem » : Whisper, ≥2 occurrences chacune.
+    (r"\b(?:assalem|asslem|asselem|asalem|aselem|achelem|asoleem|aslem|oshlem"
+     r"|a\s*s\s*l\s*m)\b", " hlm "),
     # Sacré-Cœur : « sakkere kër », « sakre keur », « sacre keur »… « ker »/« keur »
     # n'est réécrit QUE derrière « sakre/sakkere/sacre » : « keur » seul (Keur
     # Massar, Keur Mbaye Fall…) reste intact et vague. On réinjecte la forme du
     # réseau « sacre-cœur » (le tiret et le « œ » deviennent des espaces ensuite,
     # comme pour le nom « Sacré-Cœur »), d'où les jetons « sacre c ur ».
-    (r"\b(?:sakkere|sakre|sacre)\s+keu?r\b", " sacre-c\u0153ur "),
+    # \u00ab sakkari ker \u00bb (Whisper, \u22652 occurrences, \u22652 locuteurs) rejoint la famille.
+    (r"\b(?:sakkere|sakre|sacre|sakkari)\s+keu?r\b", " sacre-c\u0153ur "),
     # « pour dém » déformé : « kurdem », « kur dem », « pour dem ».
     (r"\b(?:kur\s*dem|pour\s+dem)\b", " pour dem "),
     # Marqueur explicite de DÉPART : « diougué », « jóge », « jogé » (partir de
@@ -299,10 +302,15 @@ REPLACEMENTS_PHRASE = (
     # le marqueur est le départ, ce qui suit « dém » est l'arrivée. On le ramène à
     # un jeton unique pour que la répartition ne dépende pas de « dem ».
     (r"\b(?:diougu[eé]?|diog[ué]+e?|j[oó]g[eé]?)\b", " diougue "),
-    # Même marqueur, tournure « maa/moy juge X » : « juge », « jugé », « jooge »,
-    # « jóoge » (= partir de X). On ne restreint volontairement qu'à la suite
-    # « maa/moy juge » pour ne pas transformer un autre « juge » de la phrase.
-    (r"\b(maa|moy)\s+(?:juge|jooge)\b", r" \1 diougue "),
+    # Même marqueur, Whisper l'entend souvent « juge », « njuge », « njugée »,
+    # « jooge » — jamais écrit tel quel dans la transcription propre, qui
+    # garde toujours « diougué »/« diogué » (vérifié sur toute la collecte,
+    # voir scripts/analyser_whisper.py). Confirmé sûr : ≥2 occurrences, ≥2
+    # locuteurs différents pour chaque forme. On ne restreint plus à la suite
+    # « maa/moy » : sur toute la collecte, « juge »/« njuge » n'apparaît que
+    # pour ce marqueur, précédé de sujets variés (naa, mu, ma, maa…).
+    # « dem » (annonce l'ARRIVÉE) n'est et ne doit JAMAIS être dans cette liste.
+    (r"\b(?:n?juge|n?jooge|njugee)\b", " diougue "),
     # whisper-small entend « liberation » pour « Liberté ».
     (r"\bliberation\b", " liberte "),
     (r"\blibert[iy]\b", " liberte "),
@@ -316,6 +324,43 @@ REPLACEMENTS_PHRASE = (
     (r"\b(liberte)\s+(?:quatre|katr|nient|ñeent|nyent)\b", r" \1 4 "),
     (r"\b(liberte)\s+(?:cinq|senk|sank|sink|sinq|juroom|jurom|five)\b", r" \1 5 "),
     (r"\b(liberte)\s+(?:six|sixe|sis|siss|sise|siis|sees|siks)\b", r" \1 6 "),
+    # ---------------------------------------------------------------------- #
+    # Variantes Whisper « sûres » (scripts/analyser_whisper.py, étape 5) :
+    # entendues ≥2 fois chez ≥2 locuteurs différents, et le lieu visé confirmé
+    # comme le plus proche parmi tous les lieux connus (pas seulement « pas
+    # trop proche d'un autre »). Chacune est gardée là où elle capturerait
+    # sinon un AUTRE lieu déjà bien reconnu (vérifié ligne par ligne sur
+    # toute la collecte avant ajout).
+    # ---------------------------------------------------------------------- #
+    (r"\bfaas\b", " fass "),
+    # « west/ouest foor » (« Ouest Foire », pas un lieu reconnu du réseau —
+    # extract_local(propre) le réduit déjà à « Foire ») : consommé AVANT la
+    # règle générale ci-dessous, pour que le garde-fou « pas devant dem » ne
+    # l'empêche pas de devenir « Foire » dans « ... west foor dem Grand Yoff ».
+    (r"\b(?:west|ouest)\s+foor\b", " foire "),
+    # (?<!noor ) protège « Nord Foire » : « noor foor » reste « noor foire »,
+    # pas « Foire » (la version courte gagnerait sinon le score exact).
+    # (?!...dem) : « foor » juste avant « dem » est « pour dem » (« Maa ngi
+    # Yoff foor dem Parcelles » = « ... pour dém Parcelles »), jamais « Foire ».
+    (r"(?<!noor\s)\bfoor\b(?!\s+dem\b)", " foire "),
+    (r"\bjeppal\b", " dieuppeul "),
+    # « ker ma saar » contient « ma », un mot de la phrase (MOTS_DE_LA_PHRASE) :
+    # sans cette réécriture en un seul lieu, le n-gramme est ignoré d'office.
+    (r"\bker\s+ma\s+saar\b", " keur massar "),
+    # (?<!faas )(?<!fas ) protège « Fass Mbao » : sans ces gardes, « faas
+    # mbaaw »/« fas mbaaw » deviendrait juste « Mbao ».
+    (r"(?<!faas\s)(?<!fas\s)\bmbaaw\b", " mbao "),
+    # (?!...asini) : la seule collision connue, « parsel asini » (Parcelles
+    # Assainies, vu une fois), n'est pas touchée — mieux vaut ne rien
+    # reconnaître que lui faire perdre son « Assainies ».
+    (r"\bparsel\b(?!\s+asini)", " parcelles "),
+    (r"\bsonde\s+kaptas\b", " zone de captage "),
+    # (?<!geran )(?<!gerana )(?<!garan ) protègent « Grand-Yoff » : ces
+    # préfixes Whisper de « grand » suivis de « yoof » restent sur Grand-Yoff
+    # (score flou) plutôt que de perdre face au « Yoff » nouvellement exact.
+    (r"(?<!geran\s)(?<!gerana\s)(?<!garan\s)\byoof\b", " yoff "),
+    (r"\byaraax\b", " yarakh "),
+    (r"\byembal\b", " yeumbeul "),
 )
 
 # En dessous de ce ratio, on préfère ne rien trouver plutôt qu'inventer un quartier.

@@ -39,10 +39,15 @@ REMPLACEMENTS_LIEUX = {
     "fass mbao": "Fass Mbao",
     "face": "Fass",
     "fass": "Fass",
+    # Whisper (variante sûre).
+    "faas": "Fass",
     "grand mbao": "Grand Mbao",
     "petit mbao": "Petit Mbao",
     "sicap mbao": "SICAP Mbao",
     "mbao": "Mbao",
+    # Whisper (variante « sûre », scripts/analyser_whisper.py étape 5) : ≥2
+    # occurrences, ≥2 locuteurs, lieu confirmé comme le plus proche.
+    "mbaaw": "Mbao",
     # --- Guédiawaye / Diamaguène -------------------------------------------
     "guediawaye": "Guédiawaye",
     "guediaway": "Guédiawaye",
@@ -67,6 +72,8 @@ REMPLACEMENTS_LIEUX = {
     "keur massa": "Keur Massar",
     "keur masar": "Keur Massar",
     "keur massare": "Keur Massar",
+    # Whisper (variante sûre) : « ma » coupe le lieu en deux, d'où la forme.
+    "ker ma saar": "Keur Massar",
     "keur mbaye fall": "Keur Mbaye Fall",
     "keurmbaye fall": "Keur Mbaye Fall",
     "keur ndiaye lo": "Keur Ndiaye Lo",
@@ -77,6 +84,9 @@ REMPLACEMENTS_LIEUX = {
     "ouest foir": "Ouest Foire",
     "west foire": "Ouest Foire",
     "foire": "Foire",
+    # « foor » (Whisper, variante sûre) a besoin de contexte (jamais devant
+    # « dem », « noor foor » reste Nord Foire) : géré à part par _nettoyer_foor,
+    # pas dans cette table. Voir plus bas, avant REMPLACEMENTS_FORMULES.
     # --- Sacré-Cœur / Parcelles / HLM --------------------------------------
     "sacre coeur": "Sacré-Cœur",
     "scare coeur": "Sacré-Cœur",
@@ -85,11 +95,15 @@ REMPLACEMENTS_LIEUX = {
     "sakre ker": "Sacré-Cœur",
     "sakre keur": "Sacré-Cœur",
     "sacre keur": "Sacré-Cœur",
+    # Whisper (variante sûre).
+    "sakkari ker": "Sacré-Cœur",
     "parcelle assainie": "Parcelles Assainies",
     "parcelles assainies": "Parcelles Assainies",
     "parcelle": "Parcelles",
     "percelle": "Parcelles",
     "parcelles": "Parcelles",
+    # Whisper (variante sûre).
+    "parsel": "Parcelles",
     "hlm": "HLM",
     "assalem": "HLM",
     "asslem": "HLM",
@@ -99,9 +113,15 @@ REMPLACEMENTS_LIEUX = {
     "achelem": "HLM",
     "as lm": "HLM",
     "a s l m": "HLM",
+    # Whisper (variante sûre).
+    "asoleem": "HLM",
+    "aslem": "HLM",
+    "oshlem": "HLM",
     # --- Yarakh / Almadies / Mamelles --------------------------------------
     "yaraakh": "Yarakh",
     "yarakh": "Yarakh",
+    # Whisper (variante sûre).
+    "yaraax": "Yarakh",
     "almadie": "Almadies",
     "almadies": "Almadies",
     "mamelle": "Mamelles",
@@ -129,6 +149,8 @@ REMPLACEMENTS_LIEUX = {
     "ngor": "Ngor",
     "yoff tonghor": "Yoff",
     "yoff": "Yoff",
+    # Whisper (variante sûre).
+    "yoof": "Yoff",
     "point e": "Point E",
     "sandaga": "Sandaga",
     "colobane": "Colobane",
@@ -142,6 +164,8 @@ REMPLACEMENTS_LIEUX = {
     "geul tapei": "Gueule Tapée",
     "dieuppeul": "Dieuppeul",
     "dieupeul": "Dieuppeul",
+    # Whisper (variante sûre).
+    "jeppal": "Dieuppeul",
     "maristes": "Maristes",
     "mariste": "Maristes",
     # --- Patte d'Oie -------------------------------------------------------
@@ -158,12 +182,16 @@ REMPLACEMENTS_LIEUX = {
     "tivaouane peulh": "Tivaouane Peulh",
     "tivaouane peul": "Tivaouane Peulh",
     "yeumbeul": "Yeumbeul",
+    # Whisper (variante sûre).
+    "yembal": "Yeumbeul",
     "rufisque": "Rufisque",
     "sebikotane": "Sébikotane",
     "bargny": "Bargny",
     "diamniadio": "Diamniadio",
     "pikine": "Pikine",
     "zone de captage": "Zone de Captage",
+    # Whisper (variante sûre).
+    "sonde kaptas": "Zone de Captage",
     # --- Cité / Golf / Autres ---------------------------------------------
     "cite soprime": "Cité Soprim",
     "cite soprim": "Cité Soprim",
@@ -206,6 +234,18 @@ REMPLACEMENTS_FORMULES = {
     "ben biis": "ban bus",
     "kur dem": "pour dem",
     "kurdem": "pour dem",
+    # Marqueur de départ (« partir de X ») : Whisper l'entend souvent « juge »,
+    # « njuge », « njugée », « jooge » (jamais présent tel quel dans la
+    # transcription propre humaine, qui écrit toujours « diougué »/« diogué »
+    # — vérifié sur toute la collecte, voir scripts/analyser_whisper.py).
+    # Variantes sûres : ≥2 occurrences, ≥2 locuteurs différents chacune.
+    # « dem » annonce l'ARRIVÉE (voir CLAUDE.md) : il n'est et ne doit JAMAIS
+    # être dans cette table.
+    "joge": "diougué",
+    "juge": "diougué",
+    "jooge": "diougué",
+    "njuge": "diougué",
+    "njugee": "diougué",
 }
 
 # Variantes accentuées par lettre : la table est écrite sans accent, la
@@ -261,11 +301,26 @@ def _compiler(table: dict[str, str]):
 
 _REGEX, _PAIRES = _compiler({**REMPLACEMENTS_LIEUX, **REMPLACEMENTS_FORMULES})
 
+# « foor » (Foire) a besoin de contexte que la table ci-dessus ne peut pas
+# exprimer (une seule forme -> une seule cible, toujours) : « noor foor »
+# reste Nord Foire, et « foor » juste avant « dem » est « pour dem », jamais
+# Foire (même raisonnement que src/intent/extract_intent.py). Appliqué à part,
+# AVANT la table : « west/ouest foor » devient Foire en premier, pour ne pas
+# se faire bloquer ensuite par le garde-fou « pas devant dem ».
+_FOOR_OUEST = re.compile(r"(?<!\w)(?:west|ouest)\s+foor(?!\w)", re.IGNORECASE)
+_FOOR_SEUL = re.compile(r"(?<!\w)(?<!noor\s)foor(?!\w)(?!\s+dem(?!\w))", re.IGNORECASE)
+
+
+def _nettoyer_foor(texte: str) -> str:
+    texte = _FOOR_OUEST.sub("Foire", texte)
+    return _FOOR_SEUL.sub("Foire", texte)
+
 
 def nettoyer(texte: str) -> str:
     """Réécrit les noms de lieux d'une transcription, sans toucher aux mots wolof."""
     if not texte:
         return texte
+    texte = _nettoyer_foor(texte)
     return _REGEX.sub(lambda m: _PAIRES[int(m.lastgroup[1:])][1], texte)
 
 

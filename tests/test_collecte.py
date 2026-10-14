@@ -28,6 +28,7 @@ from pathlib import Path
 
 RACINE = Path(__file__).resolve().parents[1]
 SCRIPT = RACINE / "scripts" / "preparer_collecte.py"
+SCRIPT_NETTOYER = RACINE / "scripts" / "nettoyer_transcriptions.py"
 
 PHRASE_1 = "Maa ngi Guédiawaye, dama bëgg dem Palais"
 PHRASE_2 = "Maa ngi Thiaroye, bëgg naa dem Ouakam"
@@ -60,6 +61,71 @@ def _charger_module():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _charger_module_nettoyer():
+    spec = importlib.util.spec_from_file_location("nettoyer_transcriptions", SCRIPT_NETTOYER)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _nettoyer_ok(module) -> list[tuple[str, bool]]:
+    """Variantes Whisper « sûres » (scripts/analyser_whisper.py étape 5) :
+    ≥2 occurrences, ≥2 locuteurs différents, lieu confirmé comme le plus
+    proche. « ban bus »/« ban bis » existants sont déjà normalisés en
+    minuscules par la table : on n'y touche pas, c'est un comportement
+    préexistant sans rapport avec ces nouvelles entrées.
+    """
+    n = module.nettoyer
+    return [
+        ("N: faas -> Fass",
+         n("maa ngi Faas dama bëgg dem Palais") == "maa ngi Fass dama bëgg dem Palais"),
+        ("N: foor -> Foire",
+         n("maa ngi Liberté 6 dama bëgg dem Foor") == "maa ngi Liberté 6 dama bëgg dem Foire"),
+        ("N: jeppal -> Dieuppeul",
+         n("maa ngi Jeppal dama bëgg dem Ouakam") == "maa ngi Dieuppeul dama bëgg dem Ouakam"),
+        ("N: ker ma saar -> Keur Massar",
+         n("maa ngi Ker ma saar dama bëgg dem Pikine") == "maa ngi Keur Massar dama bëgg dem Pikine"),
+        ("N: mbaaw -> Mbao",
+         n("maa ngi Liberté 6 dama bëgg dem Mbaaw") == "maa ngi Liberté 6 dama bëgg dem Mbao"),
+        ("N: parsel -> Parcelles",
+         n("maa ngi Parsel dama bëgg dem Ouakam") == "maa ngi Parcelles dama bëgg dem Ouakam"),
+        ("N: sakkari ker -> Sacré-Cœur",
+         n("maa ngi Sakkari ker dama bëgg dem Guédiawaye") == "maa ngi Sacré-Cœur dama bëgg dem Guédiawaye"),
+        ("N: sonde kaptas -> Zone de Captage",
+         n("maa ngi Médina dama bëgg dem Sonde kaptas") == "maa ngi Médina dama bëgg dem Zone de Captage"),
+        ("N: yaraax -> Yarakh",
+         n("maa ngi Yaraax dama bëgg dem Ouakam") == "maa ngi Yarakh dama bëgg dem Ouakam"),
+        ("N: yembal -> Yeumbeul",
+         n("maa ngi Yembal dama bëgg dem Palais") == "maa ngi Yeumbeul dama bëgg dem Palais"),
+        ("N: yoof -> Yoff",
+         n("maa ngi Yoof dama bëgg dem Dieuppeul") == "maa ngi Yoff dama bëgg dem Dieuppeul"),
+        ("N: asoleem -> HLM",
+         n("maa ngi Asoleem dama bëgg dem Parcelles") == "maa ngi HLM dama bëgg dem Parcelles"),
+        ("N: aslem -> HLM",
+         n("maa ngi Aslem dama bëgg dem Parcelles") == "maa ngi HLM dama bëgg dem Parcelles"),
+        ("N: oshlem -> HLM",
+         n("maa ngi Oshlem dama bëgg dem Parcelles") == "maa ngi HLM dama bëgg dem Parcelles"),
+        # Garde-fou foor/dem (même raisonnement que extract_intent.py, mais
+        # implémentation séparée ici : _nettoyer_foor, pas la table).
+        ("N: foor juste avant dem n'est jamais Foire",
+         n("maa ngi Yoff foor dem Parcelles") == "maa ngi Yoff foor dem Parcelles"),
+        ("N: noor foor reste Nord Foire",
+         n("bëgg naa jóge libertesis dem noor foor ban mbirus laa wara jël")
+         == "bëgg naa diougué libertesis dem noor foor ban mbirus laa wara jël"),
+        ("N: west foor dem devient quand même Foire",
+         n("bëgg naa juge west foor dem garañ yoof") == "bëgg naa diougué Foire dem garañ Yoff"),
+        ("N: marqueur joge -> diougué",
+         n("Bëgg naa joge Sandaga dem Yoof") == "Bëgg naa diougué Sandaga dem Yoff"),
+        ("N: marqueur juge -> diougué",
+         n("Bëgg naa juge HLM dem Ouakam") == "Bëgg naa diougué HLM dem Ouakam"),
+        ("N: marqueur njuge -> diougué",
+         n("Bëgg naa njuge Keur Massar dem Rufisque") == "Bëgg naa diougué Keur Massar dem Rufisque"),
+        # Garde-fou explicite : « dem » (annonce l'arrivée) n'est jamais réécrit.
+        ("N: dem jamais un marqueur de départ",
+         n("Bëgg naa dem Palais") == "Bëgg naa dem Palais"),
+    ]
 
 
 def _fabriquer_bip(dossier: Path, noms: list[str], ffmpeg: str) -> list[Path]:
@@ -425,6 +491,10 @@ def main() -> int:
 
         # --- --locuteur : rangement sous un pseudo fixe, sans doublon.
         verifications += _locuteur_ok(module, travail, ffmpeg)
+
+        # --- scripts/nettoyer_transcriptions.py : variantes Whisper sûres.
+        module_nettoyer = _charger_module_nettoyer()
+        verifications += _nettoyer_ok(module_nettoyer)
 
         echecs = 0
         for titre, bon in verifications:

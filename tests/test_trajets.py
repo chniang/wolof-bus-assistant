@@ -149,6 +149,57 @@ LIEUX_INTERDITS = [
     ("sicap", {"SICAP Mbao"}),
 ]
 
+# Variantes Whisper « sûres » (scripts/analyser_whisper.py, étape 5) : entendues
+# ≥2 fois chez ≥2 locuteurs différents, lieu visé confirmé comme le plus proche.
+# Un seul cas réel de la collecte peut couvrir plusieurs variantes à la fois.
+# (phrase réelle ou reconstituée, départ attendu, arrivée attendue).
+TRAJETS_VARIANTES_SURES = [
+    ("maa ngi faas dama bëgg dem palais", "Fass", "Palais"),
+    ("maa ngi liberte 6 dama bëgg dem foor", "Liberté 6", "Foire"),
+    # « jëppal » (Dieuppeul) et « yoof » (Yoff) dans le même vocal réel.
+    ("maa ngiy yoof damaa bëgga dem jëppal", "Yoff", "Dieuppeul"),
+    # « ker ma saar » (Keur Massar) et « sakkari kër » (Sacré-Cœur) réels.
+    ("mbaa ngiy kër ma saar te ba bëgg a leen sakkari kër", "Keur Massar", "Sacré Cœur"),
+    ("maa ngi liberte 6 dama bëgg dem mbaaw", "Liberté 6", "Mbao"),
+    ("maa ngi parsel dama bëgg dem ouakam", "Parcelles", "Ouakam"),
+    ("ban biis laa man a jël pour dem madi na maa ngi sonde kaptas", "Zone de Captage", "Médina"),
+    ("maa ngi yaraax dama bëgg dem ouakam", "Yarakh", "Ouakam"),
+    ("maa ngi yembal dama begga dem geran yoof", "Yeumbeul", "Grand-Yoff"),
+    # « asoleem », « aslem », « oshlem » (HLM) : cas réels de la collecte.
+    ("maa ngi lekk sandaga bës ban lawara jël pour dem aslem", "Sandaga", "HLM"),
+    ("maa ngi asoleem bëgg bislaa war jël wu dem parsel", "HLM", "Parcelles"),
+    ("maa ngi liberation sanc bën biis la war a jël pour dem oshlem", "Liberté", "HLM"),
+]
+
+# Marqueur de départ, famille jóge/joge, juge, njuge, njugee (liste blanche
+# MARQUEURS_DEPART_PROPRES, en plus de diougué/diogué couverts par
+# TRAJETS_DIOUGUE). « dem » n'est JAMAIS un marqueur de départ (voir CLAUDE.md).
+# (phrase, départs acceptés, arrivée attendue).
+TRAJETS_MARQUEUR_ETENDU = [
+    ("bël mbuus ma joge sanni dagay bu dem yoof", {"Sandaga"}, "Yoff"),
+    ("bëgg bi naa juge hlm dem ouakam", {"HLM"}, "Ouakam"),
+    ("man mbés mu njuge ka masar jëmme dinaa", {"Keur Massar"}, "Médina"),
+    ("ban bis ma njuge keur mbaye fall per dem rufisque", {"Keur Mbaye Fall"}, "Rufisque"),
+]
+
+# Garde-fous : les nouvelles variantes ci-dessus ne doivent jamais faire perdre
+# un lieu DÉJÀ bien reconnu (un match court mais exact qui l'emporterait sur un
+# match plus long mais approximatif). (phrase réelle, départ attendu, arrivée).
+TRAJETS_GARDES_VARIANTES = [
+    # « gerana yoof » doit rester Grand-Yoff, pas juste Yoff.
+    ("ma ngi naari tali dma begg a dem gerana yoof", "Taliboubess", "Grand-Yoff"),
+    # « faas mbaaw » doit rester Fass Mbao, pas juste Mbao.
+    ("maa ngi kér mbay fall dama bëgg a dem faas mbaaw", "Keur Mbaye Fall", "Fass Mbao"),
+    # « noor foor » doit rester Nord Foire, pas juste Foire.
+    ("bëgg naa jóge libertesis dem noor foor ban mbirus laa wara jël", "Liberté", "Nord Foire"),
+    # « foor » juste avant « dem » est « pour dem », jamais « Foire ».
+    ("maa ngi Yoff foor dem Parcelles", "Yoff", "Parcelles"),
+    # « west foor dem » doit quand même devenir Foire (règle dédiée, avant le
+    # garde-fou ci-dessus) : Ouest Foire n'est pas un lieu du réseau,
+    # extract_local(propre) le réduit lui aussi à Foire.
+    ("bëgg naa juge west foor dem garañ yoof man bislaw a jël", "Foire", "Grand-Yoff"),
+]
+
 # Corrections de faux matches : lieux qui doivent être reconnus correctement.
 # (phrase, départ attendu, arrivée attendue).
 TRAJETS_CORRIGES = [
@@ -363,6 +414,33 @@ def test_local() -> int:
             f"{'OK ' if bon else 'ÉCHEC'} | {phrase} (lieux interdits)\n"
             f"      {lieux.get('depart')!r} -> {lieux.get('arrivee')!r}"
         )
+    # Variantes Whisper « sûres » : départ et arrivée exacts attendus.
+    for phrase, depart, arrivee in TRAJETS_VARIANTES_SURES:
+        lieux = extract_local(phrase)
+        bon = lieux.get("depart") == depart and lieux.get("arrivee") == arrivee
+        echecs += not bon
+        print(
+            f"{'OK ' if bon else 'ÉCHEC'} | {phrase} (variante sûre)\n"
+            f"      {lieux.get('depart')!r} -> {lieux.get('arrivee')!r}"
+        )
+    # Marqueur de départ étendu (jóge/joge, juge, njuge, njugee).
+    for phrase, departs, arrivee in TRAJETS_MARQUEUR_ETENDU:
+        lieux = extract_local(phrase)
+        bon = lieux.get("depart") in departs and lieux.get("arrivee") == arrivee
+        echecs += not bon
+        print(
+            f"{'OK ' if bon else 'ÉCHEC'} | {phrase} (marqueur étendu)\n"
+            f"      {lieux.get('depart')!r} -> {lieux.get('arrivee')!r}"
+        )
+    # Garde-fous : les variantes sûres ne doivent pas écraser un lieu déjà reconnu.
+    for phrase, depart, arrivee in TRAJETS_GARDES_VARIANTES:
+        lieux = extract_local(phrase)
+        bon = lieux.get("depart") == depart and lieux.get("arrivee") == arrivee
+        echecs += not bon
+        print(
+            f"{'OK ' if bon else 'ÉCHEC'} | {phrase} (garde-fou variante)\n"
+            f"      {lieux.get('depart')!r} -> {lieux.get('arrivee')!r}"
+        )
     # Lieux corrigés : départ et arrivée exacts attendus.
     for phrase, depart, arrivee in TRAJETS_CORRIGES:
         lieux = extract_local(phrase)
@@ -536,6 +614,9 @@ if __name__ == "__main__":
             + len(TRAJETS_SANS_MONTEE_FAUSSE)
             + len(TRAJETS_SANS_MONTEE_HOMONYME)
             + len(TRAJETS_DIOUGUE)
+            + len(TRAJETS_VARIANTES_SURES)
+            + len(TRAJETS_MARQUEUR_ETENDU)
+            + len(TRAJETS_GARDES_VARIANTES)
             + len(LIEUX_INTERDITS)
             + len(TRAJETS_CORRIGES)
             + len(TRAJETS_ASR)
