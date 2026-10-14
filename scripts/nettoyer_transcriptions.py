@@ -136,6 +136,8 @@ REMPLACEMENTS_LIEUX = {
     "hlm grand yoff": "HLM Grand Yoff",
     "grand dakar": "Grand Dakar",
     "dakar plateau": "Dakar Plateau",
+    # Whisper/collecte (variante sûre) : « ville » comme synonyme du Plateau.
+    "dakar ville": "Dakar Plateau",
     "plateau": "Plateau",
     "sam": "Sam Notaire",
     "dalale diame": "Hôpital Dalal Diam",
@@ -175,6 +177,8 @@ REMPLACEMENTS_LIEUX = {
     "pates d'oie": "Patte d'Oie",
     "pate d'oie": "Patte d'Oie",
     "pattesd'oie": "Patte d'Oie",
+    # Whisper/collecte (variante sûre, sans apostrophe) : « doie » -> « d'oie ».
+    "patte doie": "Patte d'Oie",
     # --- Thiaroye / Tivaouane / Yeumbeul / Rufisque ------------------------
     "poste thiaroye": "Poste Thiaroye",
     "thiaroye": "Thiaroye",
@@ -182,6 +186,8 @@ REMPLACEMENTS_LIEUX = {
     "tivaouane peulh": "Tivaouane Peulh",
     "tivaouane peul": "Tivaouane Peulh",
     "yeumbeul": "Yeumbeul",
+    "beau maraicher": "Beaux Maraîchers",
+    "gadaay": "Gadaye",
     # Whisper (variante sûre).
     "yembal": "Yeumbeul",
     "rufisque": "Rufisque",

@@ -44,7 +44,17 @@ DEPOT_HUB = "TIJAANI/whisper-small-wolof-dakar"
 
 GRAINE = 1337
 LR = 1e-5
-PART_TEST = 0.2
+
+# Découpage des jeux (voir decouper_jeux) : locuteur_10 est TOUJOURS le jeu de
+# TEST (jamais vu à l'entraînement ni à la validation, condition sine qua non
+# pour une évaluation honnête — comme le fait déjà scripts/analyser_whisper.py
+# --locuteur). Le reste est découpé PAR LOCUTEUR en entraînement et validation,
+# puis l'entraînement est plafonné à MAX_TRAIN_PAR_LOCUTEUR vocaux par locuteur
+# pour qu'un locuteur très bavard (locuteur_08, locuteur_09...) ne domine pas
+# l'entraînement face aux locuteurs qui ont peu contribué.
+LOCUTEUR_TEST = "locuteur_10"
+PART_VALIDATION = 0.10
+MAX_TRAIN_PAR_LOCUTEUR = 25
 
 
 # --------------------------------------------------------------------------- #
@@ -149,7 +159,13 @@ def _charger_audio_16k(chemin: Path):
 
 
 def charger_metadata(metadata_csv: Path) -> list[dict]:
-    """Charge metadata.csv et garde uniquement les audios de statut « ok »."""
+    """Charge metadata.csv : audios « ok » dont transcription_propre est remplie.
+
+    Le texte vient de transcription_propre (orthographe des lieux uniformisée
+    par scripts/nettoyer_transcriptions.py), jamais de transcription brute. Une
+    ligne « ok » sans transcription_propre (nettoyage pas encore passé dessus)
+    est sautée plutôt que d'entraîner sur un texte non relu.
+    """
     metadata_csv = Path(metadata_csv)
     if not metadata_csv.exists():
         return []
@@ -159,34 +175,63 @@ def charger_metadata(metadata_csv: Path) -> list[dict]:
         for rangee in csv.DictReader(fichier):
             if (rangee.get("statut") or "").strip() != "ok":
                 continue
+            texte = (rangee.get("transcription_propre") or "").strip()
             chemin = dossier / (rangee.get("file_name") or "")
-            if not rangee.get("transcription") or not chemin.exists():
+            if not texte or not chemin.exists():
                 continue
+            try:
+                duree_s = float(rangee.get("duree_s") or 0.0)
+            except ValueError:
+                duree_s = 0.0
             exemples.append(
                 {
                     "chemin_audio": chemin,
-                    "transcription": rangee["transcription"].strip(),
+                    "transcription": texte,
                     "locuteur": (rangee.get("locuteur") or "inconnu").strip(),
+                    "duree_s": duree_s,
                 }
             )
     return exemples
 
 
-def decouper_par_locuteur(exemples: list[dict], graine: int, part_test: float):
-    """Découpe train/test par locuteur, pour ne jamais tester sur un locuteur vu."""
+def decouper_jeux(
+    exemples: list[dict],
+    graine: int,
+    locuteur_test: str = LOCUTEUR_TEST,
+    part_validation: float = PART_VALIDATION,
+    max_train_par_locuteur: int = MAX_TRAIN_PAR_LOCUTEUR,
+):
+    """locuteur_test = jeu de TEST en entier, jamais vu à l'entraînement ni à la
+    validation. Le reste est découpé PAR LOCUTEUR (chaque locuteur contribue à
+    peu près part_validation à la validation, le tirage est stable d'un lancement
+    à l'autre pour une même graine), puis l'entraînement de chaque locuteur est
+    plafonné à max_train_par_locuteur vocaux (le surplus, tiré au sort, est
+    perdu pour l'entraînement — jamais déplacé vers la validation ni le test).
+    """
     import random
 
-    par_locuteur: dict[str, list[dict]] = {}
-    for exemple in exemples:
-        par_locuteur.setdefault(exemple["locuteur"], []).append(exemple)
+    rng = random.Random(graine)
+    test = [e for e in exemples if e["locuteur"] == locuteur_test]
 
-    locuteurs = sorted(par_locuteur)
-    random.Random(graine).shuffle(locuteurs)
-    n_test = max(1, round(len(locuteurs) * part_test))
-    test_loc = set(locuteurs[:n_test])
-    train = [e for e in exemples if e["locuteur"] not in test_loc]
-    test = [e for e in exemples if e["locuteur"] in test_loc]
-    return train, test
+    reste_par_locuteur: dict[str, list[dict]] = {}
+    for exemple in exemples:
+        if exemple["locuteur"] == locuteur_test:
+            continue
+        reste_par_locuteur.setdefault(exemple["locuteur"], []).append(exemple)
+
+    train: list[dict] = []
+    validation: list[dict] = []
+    for locuteur in sorted(reste_par_locuteur):
+        vocaux = list(reste_par_locuteur[locuteur])
+        rng.shuffle(vocaux)
+        n_validation = round(len(vocaux) * part_validation)
+        validation.extend(vocaux[:n_validation])
+        a_entrainer = vocaux[n_validation:]
+        if len(a_entrainer) > max_train_par_locuteur:
+            a_entrainer = a_entrainer[:max_train_par_locuteur]
+        train.extend(a_entrainer)
+
+    return train, validation, test
 
 
 # --------------------------------------------------------------------------- #
@@ -332,11 +377,22 @@ def executer(
         return 1
 
     formes = _charger_formes_lieux()
-    train, test = decouper_par_locuteur(exemples, GRAINE, PART_TEST)
+    train, validation, test = decouper_jeux(exemples, GRAINE)
+    if not test:
+        print(f"Aucun vocal pour le locuteur de test ({LOCUTEUR_TEST}). Arrêt.")
+        return 1
     loc_train = sorted({e["locuteur"] for e in train})
-    loc_test = sorted({e["locuteur"] for e in test})
-    print(f"Train : {len(train)} audios / {len(loc_train)} locuteurs -> {loc_train}")
-    print(f"Test  : {len(test)} audios / {len(loc_test)} locuteurs -> {loc_test}")
+    loc_validation = sorted({e["locuteur"] for e in validation})
+
+    def _duree_min(lot: list[dict]) -> float:
+        return sum(e.get("duree_s", 0.0) for e in lot) / 60.0
+
+    print(f"Train      : {len(train)} audios ({_duree_min(train):.1f} min) / "
+          f"{len(loc_train)} locuteurs -> {loc_train}")
+    print(f"Validation : {len(validation)} audios ({_duree_min(validation):.1f} min) / "
+          f"{len(loc_validation)} locuteurs -> {loc_validation}")
+    print(f"Test       : {len(test)} audios ({_duree_min(test):.1f} min) / locuteur {LOCUTEUR_TEST} "
+          "(jamais entraîné dessus)")
 
     device = "cpu" if forcer_cpu else ("cuda" if torch.cuda.is_available() else "cpu")
     fp16 = device == "cuda"
@@ -358,13 +414,19 @@ def executer(
                 param.requires_grad = False
     model.config.use_cache = False
 
-    print("\nÉvaluation AVANT entraînement…")
+    print("\nÉvaluation AVANT entraînement (sur le jeu de TEST, "
+          f"{LOCUTEUR_TEST})…")
     avant = evaluer(model, processor, test, formes, device, batch=(batch or 8))
     print(f"  WER = {avant['wer']:.1f} % | lieux = {avant['exactitude_lieux']:.1f} %")
 
     JeuAudio, Collateur = _fabriquer_jeu_et_collateur(processor)
     jeu_train = JeuAudio(train)
-    jeu_test = JeuAudio(test)
+    # La validation guide le choix du meilleur modèle (metric_for_best_model) ;
+    # le jeu de TEST, lui, n'est JAMAIS vu par le Trainer, ni à l'entraînement
+    # ni à la validation : seulement pour les évaluations avant/après ci-dessus
+    # et ci-dessous.
+    a_une_validation = bool(validation)
+    jeu_validation = JeuAudio(validation) if a_une_validation else None
 
     pas = max_steps
     # transformers 5 a retiré warmup_ratio : on calcule 10 % du nombre de pas
@@ -387,16 +449,16 @@ def executer(
         num_train_epochs=epochs,
         max_steps=pas if pas else -1,
         fp16=fp16,
-        eval_strategy="steps" if pas else "epoch",
-        eval_steps=pas if pas else None,
+        eval_strategy=("steps" if pas else "epoch") if a_une_validation else "no",
+        eval_steps=pas if (pas and a_une_validation) else None,
         save_strategy="steps" if pas else "epoch",
         save_steps=pas if pas else 500,
         logging_steps=1,
         predict_with_generate=True,
         generation_max_length=MAX_NEW_TOKENS,
-        load_best_model_at_end=True,
-        metric_for_best_model="wer",
-        greater_is_better=False,
+        load_best_model_at_end=a_une_validation,
+        metric_for_best_model="wer" if a_une_validation else None,
+        greater_is_better=False if a_une_validation else None,
         save_total_limit=2,
         report_to="none",
         remove_unused_columns=False,
@@ -408,16 +470,17 @@ def executer(
         model=model,
         args=arguments,
         train_dataset=jeu_train,
-        eval_dataset=jeu_test,
+        eval_dataset=jeu_validation,
         data_collator=Collateur(processor),
-        compute_metrics=_fabriquer_compute_metrics(processor, formes),
+        compute_metrics=_fabriquer_compute_metrics(processor, formes) if a_une_validation else None,
         processing_class=processor.feature_extractor,
     )
 
     print("\nEntraînement…")
     entraineur.train()
 
-    print("\nÉvaluation APRÈS entraînement (meilleur modèle)…")
+    print(f"\nÉvaluation APRÈS entraînement (meilleur modèle, sur le jeu de TEST, "
+          f"{LOCUTEUR_TEST})…")
     apres = evaluer(model, processor, test, formes, device, batch=(batch or 8))
     print(f"  WER = {apres['wer']:.1f} % | lieux = {apres['exactitude_lieux']:.1f} %")
 
@@ -434,8 +497,8 @@ def executer(
         "learning_rate": LR,
         "epochs": epochs,
         "encodeur_gele": not degeler,
-        "audios": {"train": len(train), "test": len(test)},
-        "locuteurs": {"train": loc_train, "test": loc_test},
+        "audios": {"train": len(train), "validation": len(validation), "test": len(test)},
+        "locuteurs": {"train": loc_train, "validation": loc_validation, "test": [LOCUTEUR_TEST]},
         "avant": {"wer": round(avant["wer"], 2), "exactitude_lieux": round(avant["exactitude_lieux"], 2)},
         "apres": {"wer": round(apres["wer"], 2), "exactitude_lieux": round(apres["exactitude_lieux"], 2)},
         "duree_s": round(duree, 1),
@@ -492,16 +555,18 @@ PHRASES_ESSAI = [
 
 
 def _fabriquer_faux_jeu(travail: Path) -> tuple[Path, Path]:
-    """Crée ~20 bips de 2 s, 4 faux locuteurs, un metadata.csv, dans un dossier temporaire."""
+    """Crée des bips de 2 s pour 4 locuteurs d'entraînement + LOCUTEUR_TEST, un
+    metadata.csv (transcription_propre remplie), dans un dossier temporaire.
+    """
     import numpy as np
     import soundfile as sf
 
     collecte = travail / "data" / "collecte"
     collecte.mkdir(parents=True, exist_ok=True)
-    locuteurs = [f"locuteur_{i:02d}" for i in range(1, 5)]
+    locuteurs = [f"locuteur_{i:02d}" for i in range(1, 5)] + [LOCUTEUR_TEST]
     lignes: list[dict] = []
 
-    for i in range(20):
+    for i in range(50):
         locuteur = locuteurs[i % len(locuteurs)]
         dossier = collecte / locuteur
         dossier.mkdir(parents=True, exist_ok=True)
@@ -509,10 +574,12 @@ def _fabriquer_faux_jeu(travail: Path) -> tuple[Path, Path]:
         t = np.linspace(0, 2.0, int(SAMPLE_RATE * 2.0), endpoint=False)
         signal = (0.3 * np.sin(2 * np.pi * (300 + 40 * i) * t)).astype("float32")
         sf.write(str(dossier / nom), signal, SAMPLE_RATE)
+        texte = PHRASES_ESSAI[i % len(PHRASES_ESSAI)]
         lignes.append(
             {
                 "file_name": f"{locuteur}/{nom}",
-                "transcription": PHRASES_ESSAI[i % len(PHRASES_ESSAI)],
+                "transcription": texte,
+                "transcription_propre": texte,
                 "locuteur": locuteur,
                 "duree_s": "2.00",
                 "statut": "ok",
@@ -522,7 +589,8 @@ def _fabriquer_faux_jeu(travail: Path) -> tuple[Path, Path]:
     metadata = collecte / "metadata.csv"
     with open(metadata, "w", encoding="utf-8", newline="") as fichier:
         redacteur = csv.DictWriter(
-            fichier, fieldnames=["file_name", "transcription", "locuteur", "duree_s", "statut"]
+            fichier,
+            fieldnames=["file_name", "transcription", "transcription_propre", "locuteur", "duree_s", "statut"],
         )
         redacteur.writeheader()
         redacteur.writerows(lignes)

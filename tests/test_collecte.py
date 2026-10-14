@@ -108,6 +108,18 @@ def _nettoyer_ok(module) -> list[tuple[str, bool]]:
          n("maa ngi Yoof dama bëgg dem Dieuppeul") == "maa ngi Yoff dama bëgg dem Dieuppeul"),
         ("N: asoleem -> HLM",
          n("maa ngi Asoleem dama bëgg dem Parcelles") == "maa ngi HLM dama bëgg dem Parcelles"),
+        ("N: patte doie -> Patte d'Oie",
+         n("Bane Ligne mooy diougué Colobane dem Patte doie")
+         == "Bane Ligne mooy diougué Colobane dem Patte d'Oie"),
+        ("N: beau maraicher -> Beaux Maraîchers",
+         n("ban bus mooy diougué Bargny dem Beau Maraicher")
+         == "ban bus mooy diougué Bargny dem Beaux Maraîchers"),
+        ("N: gadaay -> Gadaye",
+         n("Bane Ligne mooy diougué Colobane dem Gadaay")
+         == "Bane Ligne mooy diougué Colobane dem Gadaye"),
+        ("N: dakar ville -> Dakar Plateau",
+         n("Bane Ligne mooy diougué Guédiawaye dem Dakar Ville")
+         == "Bane Ligne mooy diougué Guédiawaye dem Dakar Plateau"),
         ("N: aslem -> HLM",
          n("maa ngi Aslem dama bëgg dem Parcelles") == "maa ngi HLM dama bëgg dem Parcelles"),
         ("N: oshlem -> HLM",
