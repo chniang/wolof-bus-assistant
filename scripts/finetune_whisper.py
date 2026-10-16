@@ -45,14 +45,16 @@ DEPOT_HUB = "TIJAANI/whisper-small-wolof-dakar"
 GRAINE = 1337
 LR = 1e-5
 
-# Découpage des jeux (voir decouper_jeux) : locuteur_10 est TOUJOURS le jeu de
-# TEST (jamais vu à l'entraînement ni à la validation, condition sine qua non
-# pour une évaluation honnête — comme le fait déjà scripts/analyser_whisper.py
-# --locuteur). Le reste est découpé PAR LOCUTEUR en entraînement et validation,
-# puis l'entraînement est plafonné à MAX_TRAIN_PAR_LOCUTEUR vocaux par locuteur
-# pour qu'un locuteur très bavard (locuteur_08, locuteur_09...) ne domine pas
+# Découpage des jeux (voir decouper_jeux) : LOCUTEURS_TEST sont TOUJOURS le jeu
+# de TEST (jamais vus à l'entraînement ni à la validation, condition sine qua
+# non pour une évaluation honnête — comme le fait déjà scripts/analyser_whisper.py
+# --locuteur). D'autres locuteurs de test arriveront au fil de la collecte, d'où
+# une liste plutôt qu'un seul nom (surchargeable avec --locuteurs-test). Le
+# reste est découpé PAR LOCUTEUR en entraînement et validation, puis
+# l'entraînement est plafonné à MAX_TRAIN_PAR_LOCUTEUR vocaux par locuteur pour
+# qu'un locuteur très bavard (locuteur_08, locuteur_09...) ne domine pas
 # l'entraînement face aux locuteurs qui ont peu contribué.
-LOCUTEUR_TEST = "locuteur_10"
+LOCUTEURS_TEST = ["locuteur_10", "locuteur_11"]
 PART_VALIDATION = 0.10
 MAX_TRAIN_PAR_LOCUTEUR = 25
 
@@ -197,25 +199,27 @@ def charger_metadata(metadata_csv: Path) -> list[dict]:
 def decouper_jeux(
     exemples: list[dict],
     graine: int,
-    locuteur_test: str = LOCUTEUR_TEST,
+    locuteurs_test: list[str] = LOCUTEURS_TEST,
     part_validation: float = PART_VALIDATION,
     max_train_par_locuteur: int = MAX_TRAIN_PAR_LOCUTEUR,
 ):
-    """locuteur_test = jeu de TEST en entier, jamais vu à l'entraînement ni à la
-    validation. Le reste est découpé PAR LOCUTEUR (chaque locuteur contribue à
-    peu près part_validation à la validation, le tirage est stable d'un lancement
-    à l'autre pour une même graine), puis l'entraînement de chaque locuteur est
-    plafonné à max_train_par_locuteur vocaux (le surplus, tiré au sort, est
-    perdu pour l'entraînement — jamais déplacé vers la validation ni le test).
+    """locuteurs_test = jeu de TEST en entier, jamais vus à l'entraînement ni à
+    la validation. Le reste est découpé PAR LOCUTEUR (chaque locuteur contribue
+    à peu près part_validation à la validation, le tirage est stable d'un
+    lancement à l'autre pour une même graine), puis l'entraînement de chaque
+    locuteur est plafonné à max_train_par_locuteur vocaux (le surplus, tiré au
+    sort, est perdu pour l'entraînement — jamais déplacé vers la validation ni
+    le test).
     """
     import random
 
+    locuteurs_test_ens = set(locuteurs_test)
     rng = random.Random(graine)
-    test = [e for e in exemples if e["locuteur"] == locuteur_test]
+    test = [e for e in exemples if e["locuteur"] in locuteurs_test_ens]
 
     reste_par_locuteur: dict[str, list[dict]] = {}
     for exemple in exemples:
-        if exemple["locuteur"] == locuteur_test:
+        if exemple["locuteur"] in locuteurs_test_ens:
             continue
         reste_par_locuteur.setdefault(exemple["locuteur"], []).append(exemple)
 
@@ -361,6 +365,7 @@ def executer(
     batch: int | None = None,
     mettre_en_gros: bool = True,
     forcer_cpu: bool = False,
+    locuteurs_test: list[str] | None = None,
 ) -> int:
     import torch
     from transformers import (
@@ -370,6 +375,8 @@ def executer(
         WhisperProcessor,
     )
 
+    locuteurs_test = list(locuteurs_test) if locuteurs_test else list(LOCUTEURS_TEST)
+
     debut = time.perf_counter()
     exemples = charger_metadata(Path(metadata_csv))
     if not exemples:
@@ -377,12 +384,13 @@ def executer(
         return 1
 
     formes = _charger_formes_lieux()
-    train, validation, test = decouper_jeux(exemples, GRAINE)
+    train, validation, test = decouper_jeux(exemples, GRAINE, locuteurs_test=locuteurs_test)
     if not test:
-        print(f"Aucun vocal pour le locuteur de test ({LOCUTEUR_TEST}). Arrêt.")
+        print(f"Aucun vocal pour les locuteurs de test ({locuteurs_test}). Arrêt.")
         return 1
     loc_train = sorted({e["locuteur"] for e in train})
     loc_validation = sorted({e["locuteur"] for e in validation})
+    loc_test = sorted({e["locuteur"] for e in test})
 
     def _duree_min(lot: list[dict]) -> float:
         return sum(e.get("duree_s", 0.0) for e in lot) / 60.0
@@ -391,8 +399,8 @@ def executer(
           f"{len(loc_train)} locuteurs -> {loc_train}")
     print(f"Validation : {len(validation)} audios ({_duree_min(validation):.1f} min) / "
           f"{len(loc_validation)} locuteurs -> {loc_validation}")
-    print(f"Test       : {len(test)} audios ({_duree_min(test):.1f} min) / locuteur {LOCUTEUR_TEST} "
-          "(jamais entraîné dessus)")
+    print(f"Test       : {len(test)} audios ({_duree_min(test):.1f} min) / locuteurs {loc_test} "
+          "(jamais entraînés dessus)")
 
     device = "cpu" if forcer_cpu else ("cuda" if torch.cuda.is_available() else "cpu")
     fp16 = device == "cuda"
@@ -415,7 +423,7 @@ def executer(
     model.config.use_cache = False
 
     print("\nÉvaluation AVANT entraînement (sur le jeu de TEST, "
-          f"{LOCUTEUR_TEST})…")
+          f"{loc_test})…")
     avant = evaluer(model, processor, test, formes, device, batch=(batch or 8))
     print(f"  WER = {avant['wer']:.1f} % | lieux = {avant['exactitude_lieux']:.1f} %")
 
@@ -480,7 +488,7 @@ def executer(
     entraineur.train()
 
     print(f"\nÉvaluation APRÈS entraînement (meilleur modèle, sur le jeu de TEST, "
-          f"{LOCUTEUR_TEST})…")
+          f"{loc_test})…")
     apres = evaluer(model, processor, test, formes, device, batch=(batch or 8))
     print(f"  WER = {apres['wer']:.1f} % | lieux = {apres['exactitude_lieux']:.1f} %")
 
@@ -498,7 +506,7 @@ def executer(
         "epochs": epochs,
         "encodeur_gele": not degeler,
         "audios": {"train": len(train), "validation": len(validation), "test": len(test)},
-        "locuteurs": {"train": loc_train, "validation": loc_validation, "test": [LOCUTEUR_TEST]},
+        "locuteurs": {"train": loc_train, "validation": loc_validation, "test": loc_test},
         "avant": {"wer": round(avant["wer"], 2), "exactitude_lieux": round(avant["exactitude_lieux"], 2)},
         "apres": {"wer": round(apres["wer"], 2), "exactitude_lieux": round(apres["exactitude_lieux"], 2)},
         "duree_s": round(duree, 1),
@@ -555,7 +563,7 @@ PHRASES_ESSAI = [
 
 
 def _fabriquer_faux_jeu(travail: Path) -> tuple[Path, Path]:
-    """Crée des bips de 2 s pour 4 locuteurs d'entraînement + LOCUTEUR_TEST, un
+    """Crée des bips de 2 s pour 4 locuteurs d'entraînement + LOCUTEURS_TEST, un
     metadata.csv (transcription_propre remplie), dans un dossier temporaire.
     """
     import numpy as np
@@ -563,10 +571,10 @@ def _fabriquer_faux_jeu(travail: Path) -> tuple[Path, Path]:
 
     collecte = travail / "data" / "collecte"
     collecte.mkdir(parents=True, exist_ok=True)
-    locuteurs = [f"locuteur_{i:02d}" for i in range(1, 5)] + [LOCUTEUR_TEST]
+    locuteurs = [f"locuteur_{i:02d}" for i in range(1, 5)] + list(LOCUTEURS_TEST)
     lignes: list[dict] = []
 
-    for i in range(50):
+    for i in range(60):
         locuteur = locuteurs[i % len(locuteurs)]
         dossier = collecte / locuteur
         dossier.mkdir(parents=True, exist_ok=True)
@@ -633,6 +641,14 @@ def main(argv: list[str] | None = None) -> int:
     analyseur.add_argument("--epochs", type=int, default=8, help="Nombre d'époques (défaut : 8).")
     analyseur.add_argument("--degeler-encodeur", action="store_true", help="Entraîne aussi l'encodeur.")
     analyseur.add_argument("--pousser-hub", action="store_true", help="Envoie le modèle sur le Hub (privé).")
+    analyseur.add_argument(
+        "--locuteurs-test",
+        nargs="+",
+        metavar="LOCUTEUR",
+        default=None,
+        help=f"locuteurs formant le jeu de TEST, jamais entraînés dessus "
+             f"(défaut : {' '.join(LOCUTEURS_TEST)}).",
+    )
     args = analyseur.parse_args(argv)
 
     if args.essai_a_blanc:
@@ -645,6 +661,7 @@ def main(argv: list[str] | None = None) -> int:
         epochs=args.epochs,
         degeler=args.degeler_encodeur,
         pousser_hub=args.pousser_hub,
+        locuteurs_test=args.locuteurs_test,
     )
 
 

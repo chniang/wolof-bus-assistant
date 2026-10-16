@@ -1,10 +1,10 @@
 r"""Évalue un modèle Whisper (actuel OU fine-tuné) sur le jeu de TEST figé
-(scripts/finetune_whisper.py : LOCUTEUR_TEST, jamais vu à l'entraînement).
+(scripts/finetune_whisper.py : LOCUTEURS_TEST, jamais vus à l'entraînement).
 
 Utilisation :
     .\.venv\Scripts\python.exe scripts\evaluer_modele.py M9and2M/whisper-small-wolof
     .\.venv\Scripts\python.exe scripts\evaluer_modele.py models\whisper-small-wolof-dakar
-    .\.venv\Scripts\python.exe scripts\evaluer_modele.py M9and2M/whisper-small-wolof --locuteur locuteur_09
+    .\.venv\Scripts\python.exe scripts\evaluer_modele.py M9and2M/whisper-small-wolof --locuteurs-test locuteur_09
 
 « modele » est soit un identifiant Hugging Face (modèle actuel, en ligne), soit
 un chemin local (le modèle fine-tuné sauvegardé par finetune_whisper.py) :
@@ -41,10 +41,11 @@ import finetune_whisper as ft  # noqa: E402
 META_DEFAUT = RACINE / "data" / "collecte" / "metadata.csv"
 
 
-def charger_jeu_test(metadata_csv: Path, locuteur: str) -> list[dict]:
-    """Vocaux « ok » du locuteur demandé (par défaut, le jeu de TEST figé)."""
+def charger_jeu_test(metadata_csv: Path, locuteurs: list[str]) -> list[dict]:
+    """Vocaux « ok » des locuteurs demandés (par défaut, le jeu de TEST figé)."""
+    locuteurs_ens = set(locuteurs)
     exemples = ft.charger_metadata(Path(metadata_csv))
-    return [e for e in exemples if e["locuteur"] == locuteur]
+    return [e for e in exemples if e["locuteur"] in locuteurs_ens]
 
 
 def trajet_compris(matcher: StopsMatcher, transcription: str) -> bool:
@@ -108,24 +109,28 @@ def main(argv: list[str]) -> int:
     analyseur = argparse.ArgumentParser(description=__doc__.splitlines()[0] if __doc__ else "")
     analyseur.add_argument("modele", help="identifiant Hugging Face ou chemin local du modèle à évaluer.")
     analyseur.add_argument(
-        "--locuteur", default=ft.LOCUTEUR_TEST,
-        help=f"locuteur à évaluer (défaut : {ft.LOCUTEUR_TEST}, le jeu de TEST figé).",
+        "--locuteurs-test",
+        nargs="+",
+        metavar="LOCUTEUR",
+        default=None,
+        help=f"locuteurs à évaluer (défaut : {' '.join(ft.LOCUTEURS_TEST)}, le jeu de TEST figé).",
     )
     analyseur.add_argument("--metadata", default=str(META_DEFAUT), help="chemin de metadata.csv.")
     analyseur.add_argument("--batch", type=int, default=8)
     analyseur.add_argument("--detail", action="store_true", help="affiche chaque transcription.")
     args = analyseur.parse_args(argv[1:])
 
-    exemples = charger_jeu_test(Path(args.metadata), args.locuteur)
+    locuteurs_test = args.locuteurs_test or list(ft.LOCUTEURS_TEST)
+    exemples = charger_jeu_test(Path(args.metadata), locuteurs_test)
     if not exemples:
-        print(f"Aucun vocal « ok » pour le locuteur {args.locuteur!r} dans {args.metadata}.")
+        print(f"Aucun vocal « ok » pour les locuteurs {locuteurs_test} dans {args.metadata}.")
         return 1
 
     debut = time.perf_counter()
     resultat = evaluer_modele(args.modele, exemples, batch=args.batch)
     duree = time.perf_counter() - debut
 
-    print(f"\n=== Évaluation sur {args.locuteur} ({resultat['n']} vocaux) ===")
+    print(f"\n=== Évaluation sur {locuteurs_test} ({resultat['n']} vocaux) ===")
     print(f"  Modèle                : {args.modele}")
     print(f"  WER                   : {resultat['wer']:.1f} %")
     print(f"  Trajets bien compris  : {resultat['trajets_compris']}/{resultat['n']}")

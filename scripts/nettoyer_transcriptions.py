@@ -77,6 +77,8 @@ REMPLACEMENTS_LIEUX = {
     "keur mbaye fall": "Keur Mbaye Fall",
     "keurmbaye fall": "Keur Mbaye Fall",
     "keur ndiaye lo": "Keur Ndiaye Lo",
+    "keur guorgui": "Keur Gorgui",
+    "khar yallah": "Khar Yalla",
     # --- Foire -------------------------------------------------------------
     "nord foire": "Nord Foire",
     "nord foir": "Nord Foire",
@@ -224,6 +226,8 @@ REMPLACEMENTS_LIEUX = {
     "sicap liberte": "Liberté",
     "liberte": "Liberté",
     "liberti": "Liberté",
+    "liberte 06": "Liberté 6",
+    "fann": "Fann",
 }
 
 # Formules (hors noms de lieux) ramenées à une orthographe unique, pour que les

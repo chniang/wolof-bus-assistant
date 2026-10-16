@@ -14,3 +14,9 @@ soundfile==0.14.0
 
 # Lecture du token `hf auth login` pour --pousser-hub (déjà tiré par transformers).
 huggingface_hub==1.32.0
+
+# scripts/evaluer_modele.py importe src/intent/extract_intent.py (pour
+# extract_local), qui charge .env avec python-dotenv dès l'import : absent
+# d'ici, il manquait sur une machine GPU fraîche qui n'a que ce fichier
+# (requirements.txt, qui l'installe, est le fichier de l'inférence locale).
+python-dotenv==1.2.1

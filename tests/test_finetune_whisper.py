@@ -87,13 +87,18 @@ def _charger_metadata_ok(module, travail: Path) -> list[tuple[str, bool]]:
 
 
 def _decouper_jeux_ok(module) -> list[tuple[str, bool]]:
-    """decouper_jeux : locuteur_test entier en TEST, jamais en train/validation ;
-    plafond respecté à l'entraînement ; validation ~10 % du reste."""
+    """decouper_jeux : PLUSIEURS locuteurs de test (LOCUTEURS_TEST / --locuteurs-test)
+    entièrement en TEST, jamais en train/validation ; plafond respecté à
+    l'entraînement ; validation ~10 % du reste."""
     exemples = []
-    # locuteur_test : 6 vocaux, jamais touchés par le découpage train/validation.
+    # Deux locuteurs de test (liste, pas un seul nom) : jamais touchés par le
+    # découpage train/validation, même partiellement.
     for i in range(6):
-        exemples.append({"locuteur": "locuteur_test", "transcription": f"test {i}",
-                          "chemin_audio": Path(f"locuteur_test/{i}.wav"), "duree_s": 3.0})
+        exemples.append({"locuteur": "locuteur_test_a", "transcription": f"test a {i}",
+                          "chemin_audio": Path(f"locuteur_test_a/{i}.wav"), "duree_s": 3.0})
+    for i in range(4):
+        exemples.append({"locuteur": "locuteur_test_b", "transcription": f"test b {i}",
+                          "chemin_audio": Path(f"locuteur_test_b/{i}.wav"), "duree_s": 3.0})
     # locuteur_gros : 30 vocaux, le plafond doit en couper 5 à l'entraînement.
     for i in range(30):
         exemples.append({"locuteur": "locuteur_gros", "transcription": f"gros {i}",
@@ -104,7 +109,7 @@ def _decouper_jeux_ok(module) -> list[tuple[str, bool]]:
                           "chemin_audio": Path(f"locuteur_petit/{i}.wav"), "duree_s": 3.0})
 
     train, validation, test = module.decouper_jeux(
-        exemples, graine=1337, locuteur_test="locuteur_test",
+        exemples, graine=1337, locuteurs_test=["locuteur_test_a", "locuteur_test_b"],
         part_validation=0.10, max_train_par_locuteur=25,
     )
 
@@ -116,9 +121,11 @@ def _decouper_jeux_ok(module) -> list[tuple[str, bool]]:
     aucun_doublon = len(toutes_les_entrees) == len(train) + len(validation)
 
     return [
-        ("D: locuteur_test entièrement en TEST", len(test) == 6 and loc_test == {"locuteur_test"}),
-        ("D: locuteur_test absent du train", "locuteur_test" not in loc_train),
-        ("D: locuteur_test absent de la validation", "locuteur_test" not in loc_validation),
+        ("D: les 2 locuteurs de test entièrement en TEST",
+         len(test) == 10 and loc_test == {"locuteur_test_a", "locuteur_test_b"}),
+        ("D: locuteurs de test absents du train", loc_train.isdisjoint({"locuteur_test_a", "locuteur_test_b"})),
+        ("D: locuteurs de test absents de la validation",
+         loc_validation.isdisjoint({"locuteur_test_a", "locuteur_test_b"})),
         ("D: plafond respecté (locuteur_gros <= 25 à l'entraînement)", len(train_gros) == 25),
         # round(5 * 0.10) == 0 (arrondi bancaire de Python) : avec si peu de
         # vocaux, locuteur_petit part entièrement à l'entraînement.
@@ -130,7 +137,8 @@ def _decouper_jeux_ok(module) -> list[tuple[str, bool]]:
          sum(1 for e in validation if e["locuteur"] == "locuteur_petit") == 0),
         ("D: train et validation disjoints (aucun doublon)", aucun_doublon),
         ("D: reproductible (même graine => même découpage)",
-         module.decouper_jeux(exemples, graine=1337, locuteur_test="locuteur_test")[0] == train),
+         module.decouper_jeux(exemples, graine=1337,
+                               locuteurs_test=["locuteur_test_a", "locuteur_test_b"])[0] == train),
     ]
 
 

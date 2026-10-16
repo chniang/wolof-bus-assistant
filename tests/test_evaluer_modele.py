@@ -42,7 +42,8 @@ def _trajet_compris_ok(module) -> list[tuple[str, bool]]:
 
 
 def _charger_jeu_test_ok(module, travail: Path) -> list[tuple[str, bool]]:
-    """charger_jeu_test : ne garde que les vocaux « ok » du locuteur demandé."""
+    """charger_jeu_test : ne garde que les vocaux « ok » des locuteurs demandés
+    (une LISTE, pour supporter plusieurs locuteurs de test en même temps)."""
     dossier = travail / "collecte"
     dossier.mkdir(parents=True, exist_ok=True)
     lignes = [
@@ -50,6 +51,8 @@ def _charger_jeu_test_ok(module, travail: Path) -> list[tuple[str, bool]]:
          "maa ngi Guédiawaye dama bëgg dem Colobane", "locuteur": "locuteur_10", "duree_s": "3.00", "statut": "ok"},
         {"file_name": "locuteur_10/b.wav", "transcription": "x", "transcription_propre":
          "Gawal ndayam", "locuteur": "locuteur_10", "duree_s": "3.00", "statut": "sans_lieu"},
+        {"file_name": "locuteur_11/d.wav", "transcription": "x", "transcription_propre":
+         "maa ngi Thiaroye dama bëgg dem Mbao", "locuteur": "locuteur_11", "duree_s": "3.00", "statut": "ok"},
         {"file_name": "locuteur_01/c.wav", "transcription": "x", "transcription_propre":
          "maa ngi Yoff dama bëgg dem Ouakam", "locuteur": "locuteur_01", "duree_s": "3.00", "statut": "ok"},
     ]
@@ -64,13 +67,14 @@ def _charger_jeu_test_ok(module, travail: Path) -> list[tuple[str, bool]]:
         redacteur.writeheader()
         redacteur.writerows(lignes)
 
-    jeu_10 = module.charger_jeu_test(meta, "locuteur_10")
-    jeu_01 = module.charger_jeu_test(meta, "locuteur_01")
-    jeu_vide = module.charger_jeu_test(meta, "locuteur_99")
+    jeu_10_11 = module.charger_jeu_test(meta, ["locuteur_10", "locuteur_11"])
+    jeu_01 = module.charger_jeu_test(meta, ["locuteur_01"])
+    jeu_vide = module.charger_jeu_test(meta, ["locuteur_99"])
 
     return [
-        ("J: ne garde que le locuteur demandé, statut ok", len(jeu_10) == 1
-            and jeu_10[0]["chemin_audio"].name == "a.wav"),
+        ("J: plusieurs locuteurs de test combinés, statut ok seulement",
+         len(jeu_10_11) == 2
+         and {e["chemin_audio"].name for e in jeu_10_11} == {"a.wav", "d.wav"}),
         ("J: autre locuteur isolé", len(jeu_01) == 1 and jeu_01[0]["chemin_audio"].name == "c.wav"),
         ("J: locuteur absent => jeu vide", jeu_vide == []),
     ]
