@@ -1,8 +1,13 @@
-"""Transcription wolof pour l'app : audio -> texte, avec whisper-small-wolof.
+"""Transcription wolof pour l'app : audio -> texte, avec notre whisper fine-tuné.
 
-On reprend exactement le modèle et les réglages validés dans test_asr_models.py
-(M9and2M/whisper-small-wolof, CPU, décodage glouton). SpeechBrain reste écarté :
-wav2vec2-large ne tient pas dans les 8 Go de RAM du laptop.
+On charge d'abord TIJAANI/whisper-small-wolof-dakar-essai3, notre fine-tuning
+de whisper-small sur les vocaux collectés par WhatsApp (WER 89,7 % -> 74,1 %
+sur 22 vocaux de 3 voix jamais vues). Le dépôt est privé : il faut le secret
+HF_TOKEN d'un compte du dépôt TIJAANI. S'il ne se charge pas (token absent,
+erreur réseau), on retombe tout seul sur M9and2M/whisper-small-wolof, le modèle
+de base wolof, public. Réglages inchangés : CPU, quantification int8,
+décodage glouton. SpeechBrain reste écarté : wav2vec2-large ne tient pas dans
+les 8 Go de RAM du laptop.
 
 Ce module ne dépend pas de Streamlit : c'est l'app qui se charge de garder le
 modèle en mémoire (st.cache_resource), pour qu'on puisse aussi le tester seul
@@ -17,14 +22,29 @@ import re
 
 import numpy as np
 
-MODEL_WHISPER = "M9and2M/whisper-small-wolof"
+# Notre fine-tuning sur les voix dakaroises (voir scripts/finetune_whisper.py
+# et scripts/evaluer_modele.py) : les trajets compris passent de 5/22 à 10/22
+# sur des voix jamais vues de l'entraînement.
+MODEL_WHISPER = "TIJAANI/whisper-small-wolof-dakar-essai3"
+
+# Repli automatique, public : si le dépôt fine-tuné n'est pas accessible, la
+# transcription continue avec le modèle wolof de base plutôt que d'échouer.
+MODEL_WHISPER_SECOURS = "M9and2M/whisper-small-wolof"
+
+# Le dépôt fine-tuné contient les checkpoints de l'entraînement (checkpoint-32/,
+# checkpoint-48/…, ~2 Go) : inutiles en production, on ne télécharge que les
+# fichiers de la racine — poids, config, tokenizer. Les motifs passent par
+# fnmatch, où « * » traverse les « / » : « */* » écarte tout sous-dossier et
+# « checkpoint-* » un checkpoint éventuel rangé à la racine.
+TELECHARGEMENT_RACINE = ["*/*", "checkpoint-*"]
 
 # Sur GPU (Hugging Face Space), on utilise Kiriku-Wolof-ASR de l'AI Hub Sénégal :
 # au banc d'essai du 07/10/2026 il a reconnu ~9 noms d'arrêts sur 10 au micro,
-# contre 1 sur 10 pour whisper-small-wolof, à vitesse égale (~1,5 s sur GPU).
+# contre 1 sur 10 pour le whisper wolof de base, à vitesse égale (~1,5 s sur GPU).
 # Taille Whisper large (6 Go en float32) : trop lourd pour le CPU du laptop, qui
-# garde whisper-small. Modèle protégé : il faut le secret HF_TOKEN d'un compte
-# ayant accepté ses conditions. Surchargeable par la variable ASR_MODEL_GPU.
+# garde notre whisper fine-tuné. Modèle protégé : il faut le secret HF_TOKEN
+# d'un compte ayant accepté ses conditions. Surchargeable par la variable
+# ASR_MODEL_GPU.
 MODEL_ASR_GPU = os.getenv("ASR_MODEL_GPU", "AIHubSN/Kiriku-Wolof-ASR")
 
 # torch sur un portable : 4 cœurs au maximum, sans surcharger la machine.
@@ -39,16 +59,29 @@ SAMPLE_RATE = 16000
 MAX_NEW_TOKENS = 48
 
 
-def load_model():
-    """Charge le pipeline Whisper quantifié en int8 sur CPU. Long la première fois (~1 min)."""
+def _telecharger_modele(depot: str, token: str | None = None) -> str:
+    """Télécharge les seuls fichiers de la racine d'un dépôt ; renvoie le dossier local.
+
+    Le token (secret HF_TOKEN) ne sert que pour les dépôts privés ou protégés ;
+    sans lui, la bibliothèque essaie quand même le jeton déjà connecté en local.
+    """
+    from huggingface_hub import snapshot_download
+
+    return snapshot_download(
+        repo_id=depot,
+        token=token,
+        ignore_patterns=TELECHARGEMENT_RACINE,
+    )
+
+
+def _charger_pipeline(dossier: str):
+    """Construit le pipeline ASR sur CPU depuis un dossier déjà téléchargé."""
     import torch
     from transformers import pipeline
 
-    torch.set_num_threads(NB_THREADS)
-
     modele = pipeline(
         "automatic-speech-recognition",
-        model=MODEL_WHISPER,
+        model=dossier,
         device=-1,
     )
     # Quantification dynamique des Linear en int8 : poids 4 fois plus légers et
@@ -57,6 +90,41 @@ def load_model():
         modele.model, {torch.nn.Linear}, dtype=torch.qint8
     )
     return modele
+
+
+def load_model():
+    """Charge le pipeline Whisper quantifié en int8 sur CPU. Long la première fois (~1 min).
+
+    Le modèle fine-tuné d'abord, le wolof public en repli : un dépôt privé sans
+    secret HF_TOKEN ou une coupure réseau ne doivent pas empêcher la
+    transcription. L'échec du premier est annoncé dans le journal ; seul un
+    échec des deux à la fois lève une exception.
+    """
+    import torch
+
+    torch.set_num_threads(NB_THREADS)
+
+    # Secret d'un compte du dépôt TIJAANI ; vide ou absent, on reste anonyme et
+    # la bibliothèque essaie quand même le jeton déjà connecté en local.
+    token = os.getenv("HF_TOKEN", "").strip() or None
+    for depot in (MODEL_WHISPER, MODEL_WHISPER_SECOURS):
+        try:
+            modele = _charger_pipeline(_telecharger_modele(depot, token))
+        except Exception as exc:
+            if depot != MODEL_WHISPER:
+                raise RuntimeError(
+                    f"ni {MODEL_WHISPER} ni {MODEL_WHISPER_SECOURS} ne se chargent"
+                ) from exc
+            detail = f"{type(exc).__name__} : {exc}"
+            if not token:
+                detail += " (secret HF_TOKEN absent de l'environnement)"
+            print(
+                f"[ASR] {depot} inaccessible ({detail}) -> repli sur {MODEL_WHISPER_SECOURS}",
+                flush=True,
+            )
+            continue
+        print(f"[ASR] {depot} chargé sur CPU (int8)", flush=True)
+        return modele
 
 
 def _resample(audio: np.ndarray, sr_origine: int) -> np.ndarray:
@@ -170,7 +238,7 @@ if __name__ == "__main__":
         print("Usage : python src/asr/transcribe.py fichier_audio.wav")
         sys.exit(1)
 
-    print(f"Chargement de {MODEL_WHISPER} …")
+    print(f"Chargement de {MODEL_WHISPER} (repli : {MODEL_WHISPER_SECOURS}) …")
     modele = load_model()
     with open(sys.argv[1], "rb") as fichier:
         audio = load_audio(fichier.read())

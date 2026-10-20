@@ -158,7 +158,9 @@ _precharger_whisper()
 _precharger_kiriku()
 
 # Crédit affiché en pied de page : les deux modèles de transcription.
-LIBELLE_ASR = "Whisper wolof + Kiriku-Wolof-ASR"
+# Le whisper CPU est notre fine-tuning sur la collecte dakaroise ; Kiriku sert
+# sur GPU, avec repli sur le même whisper quand ZeroGPU refuse la carte.
+LIBELLE_ASR = "Whisper wolof fine-tuné à Dakar + Kiriku-Wolof-ASR"
 # Voix des réponses pré-générées (voir scripts/phrases_voix.json).
 LIBELLE_VOIX = "Adia_TTS (CONCREE)"
 

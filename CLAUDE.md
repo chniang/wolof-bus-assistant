@@ -25,6 +25,7 @@ $env:PYTHONIOENCODING='utf-8'
 .\.venv\Scripts\python.exe tests\test_trajets.py              # tests locaux (doivent tous passer)
 .\.venv\Scripts\python.exe tests\test_collecte.py             # tests de la collecte de voix
 .\.venv\Scripts\python.exe tests\test_seconde_chance.py       # tests de la seconde chance ASR
+.\.venv\Scripts\python.exe tests\test_asr_secours.py           # tests du chargement Whisper CPU (repli)
 .\.venv\Scripts\python.exe tests\test_trajets.py --en-ligne   # tests contre l'app publiée (après déploiement)
 ```
 
@@ -37,7 +38,11 @@ Astuce PowerShell : un script Python passé en « here-string » perd les accent
 1. **Transcription** (`src/asr/transcribe.py`, `app.py`)
    - Kiriku-Wolof-ASR sur GPU, **chargé au niveau module** au démarrage (règle ZeroGPU) ;
      `@spaces.GPU(duration=30)` ne fait que le calcul, **ne jamais y charger un modèle**.
-   - Secours : Whisper small wolof sur CPU (int8), préchargé au démarrage.
+   - Secours / local : notre Whisper fine-tuné sur la collecte,
+     `TIJAANI/whisper-small-wolof-dakar-essai3` (CPU, int8, préchargé au démarrage).
+     Dépôt **privé** : lit le secret `HF_TOKEN` ; sans token, repli automatique sur
+     `M9and2M/whisper-small-wolof` (message dans le journal). Seuls les fichiers de
+     la racine sont téléchargés, jamais les dossiers `checkpoint-*`.
    - Seconde chance : si aucun trajet, réessai avec l'autre modèle.
 2. **Compréhension** (`src/intent/extract_intent.py`)
    - Extraction locale d'abord : n-grammes, `LIEUX`, `LIEUX_SUPPLEMENTAIRES`, `REPLACEMENTS_PHRASE`,

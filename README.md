@@ -16,7 +16,7 @@ avec le numéro de ligne énoncé en wolof plutôt qu'en chiffres.
 
 | Étape | Modèle | Rôle |
 | ----- | ------ | ---- |
-| 1. Transcription | `AIHubSN/Kiriku-Wolof-ASR` (en ligne, GPU) · `M9and2M/whisper-small-wolof` (secours et local, CPU) | Transcrit la demande vocale wolof. Kiriku (AI Hub Sénégal) reconnaît bien mieux les noms d'arrêts (~9 sur 10 contre 1 sur 10 au banc d'essai micro, voir `kiriku_test/`). Quand le GPU gratuit de Hugging Face n'est pas attribué, l'app bascule seule sur whisper-small quantifié en int8 sur CPU, qui sert aussi en local (Kiriku, taille Whisper large, ne tient pas sur un laptop). |
+| 1. Transcription | `AIHubSN/Kiriku-Wolof-ASR` (en ligne, GPU) · `TIJAANI/whisper-small-wolof-dakar-essai3` (secours et local, CPU) | Transcrit la demande vocale wolof. Kiriku (AI Hub Sénégal) reconnaît bien mieux les noms d'arrêts (~9 sur 10 contre 1 sur 10 au banc d'essai micro, voir `kiriku_test/`). Quand le GPU gratuit de Hugging Face n'est pas attribué, l'app bascule seule sur notre whisper fine-tuné sur les voix collectées (WER 89,7 % → 74,1 % sur 22 vocaux de voix jamais vues), quantifié en int8 sur CPU, qui sert aussi en local (Kiriku, taille Whisper large, ne tient pas sur un laptop). Dépôt privé : il faut le secret `HF_TOKEN`, sinon l'app repart seule de `M9and2M/whisper-small-wolof`. |
 | 2. Extraction | extraction locale, puis `meta/llama-3.2-11b-vision-instruct` (NVIDIA Build) | Repère `depart` et `arrivee`. D'abord en local, par correspondance floue sur les lieux du réseau, en tenant compte des écritures phonétiques de l'ASR (« wakaam », « liberti sënk », « pale ») et des numéros dits en lettres ou en wolof. Le LLM n'intervient que si ce repérage ne donne pas de trajet complet ; son prompt contient la liste des lieux du réseau. |
 | 3. Correspondance | — | Recherche arrêt par arrêt sur 112 lignes : une ligne convient si elle passe par le départ puis par l'arrivée, pas seulement si ce sont ses terminus. Sans ligne directe, propose un trajet avec un changement. Tolère l'orthographe phonétique et les variantes (« wakaam » → Ouakam, « Liberté VI » → Liberté 6) ; Palais 1 et Palais 2 valent tous deux « Palais ». |
 | 4. Réponse | — | Affiche le trajet en texte **et** le fait dire en wolof (`bilalfaye/speecht5_tts-wolof`). |
@@ -106,7 +106,8 @@ en ligne après chaque déploiement. Code de sortie 0 si tout passe.
 | Modèle | Licence |
 | ------ | ------- |
 | `AIHubSN/Kiriku-Wolof-ASR` (transcription en ligne) | modèle protégé de l'AI Hub Sénégal : accès après acceptation de ses conditions |
-| `M9and2M/whisper-small-wolof` (transcription de secours et locale) | MIT |
+| `TIJAANI/whisper-small-wolof-dakar-essai3` (transcription de secours et locale) | fine-tuning de `M9and2M/whisper-small-wolof` (MIT), dépôt privé |
+| `M9and2M/whisper-small-wolof` (repli si le dépôt fine-tuné est inaccessible) | MIT |
 | `bilalfaye/speecht5_tts-wolof` (synthèse vocale) | MIT |
 | `microsoft/speecht5_hifigan` (vocodeur) | MIT |
 | `meta/llama-3.2-11b-vision-instruct` (extraction, en dernier recours) | Llama 3.2 Community License, servi par NVIDIA Build selon ses conditions d'utilisation |
@@ -131,9 +132,9 @@ quartier, et n'annonce jamais une ligne qui ne relie pas les deux points.
 
 - **GPU partagé** : en ligne, le GPU gratuit de Hugging Face (ZeroGPU) est
   rarement attribué aux visiteurs non connectés à un compte Hugging Face. Ils
-  passent alors par whisper-small sur CPU : réponse en ~5 à 25 s, transcription
-  moins précise que Kiriku, mais trajets toujours retrouvés grâce à la
-  normalisation phonétique.
+  passent alors par notre whisper fine-tuné sur CPU : réponse en ~5 à 25 s,
+  transcription moins précise que Kiriku, mais trajets toujours retrouvés grâce
+  à la normalisation phonétique.
 - **Couverture partielle** : 112 lignes DDD et AFTU, mais les arrêts
   intermédiaires ne sont connus que pour les lignes AFTU et 7 lignes DDD ; les
   autres lignes DDD ne sont trouvées que d'un terminus à l'autre. Les lieux
@@ -148,8 +149,8 @@ quartier, et n'annonce jamais une ligne qui ne relie pas les deux points.
 
 L'application a été prévue pour tenir sur un CPU ordinaire, mais la transcription
 est le goulot d'étranglement. Sur une instance NVIDIA Brev (GPU),
-`whisper-small-wolof` se charge vite et transcrit en moins d'une seconde, ce qui
-rend la démonstration fluide de bout en bout.
+`TIJAANI/whisper-small-wolof-dakar-essai3` se charge vite et transcrit en moins
+d'une seconde, ce qui rend la démonstration fluide de bout en bout.
 
 Pour changer de matériel : installer la version CUDA de PyTorch
 (`pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu124`)
