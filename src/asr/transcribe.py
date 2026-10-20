@@ -31,6 +31,18 @@ MODEL_WHISPER = "TIJAANI/whisper-small-wolof-dakar-essai3"
 # transcription continue avec le modèle wolof de base plutôt que d'échouer.
 MODEL_WHISPER_SECOURS = "M9and2M/whisper-small-wolof"
 
+# Libellés affichés sous chaque résultat (« Transcription : … ») : le nom du
+# dépôt ne dit rien à l'utilisateur, on dit plutôt quel modèle a servi — et
+# un repli doit se voir. Kiriku (GPU) a son propre libellé, dans l'app.
+LIBELLE_MODELES = {
+    MODEL_WHISPER: "Whisper fine-tuné Dakar (CPU)",
+    MODEL_WHISPER_SECOURS: "Whisper wolof de base (CPU, repli)",
+}
+
+# Dernier dépôt réellement chargé par load_model() ; None tant que rien n'a
+# servi (libellé neutre plutôt que d'afficher un modèle qui n'est pas là).
+MODELE_CHARGE: str | None = None
+
 # Le dépôt fine-tuné contient les checkpoints de l'entraînement (checkpoint-32/,
 # checkpoint-48/…, ~2 Go) : inutiles en production, on ne télécharge que les
 # fichiers de la racine — poids, config, tokenizer. Les motifs passent par
@@ -92,6 +104,16 @@ def _charger_pipeline(dossier: str):
     return modele
 
 
+def libelle_charge() -> str:
+    """Le libellé du Whisper CPU réellement en service, pour l'affichage.
+
+    L'app l'affiche sous chaque résultat (« Transcription : … ») : le visiteur
+    doit savoir s'il a eu le modèle fine-tuné sur les voix dakaroises ou le
+    repli public, sans lire le journal du Space.
+    """
+    return LIBELLE_MODELES.get(MODELE_CHARGE or "", "Whisper wolof (CPU)")
+
+
 def load_model():
     """Charge le pipeline Whisper quantifié en int8 sur CPU. Long la première fois (~1 min).
 
@@ -100,6 +122,8 @@ def load_model():
     transcription. L'échec du premier est annoncé dans le journal ; seul un
     échec des deux à la fois lève une exception.
     """
+    global MODELE_CHARGE
+
     import torch
 
     torch.set_num_threads(NB_THREADS)
@@ -123,6 +147,7 @@ def load_model():
                 flush=True,
             )
             continue
+        MODELE_CHARGE = depot
         print(f"[ASR] {depot} chargé sur CPU (int8)", flush=True)
         return modele
 

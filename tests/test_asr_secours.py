@@ -5,7 +5,8 @@ Aucun modèle n'est téléchargé ni exécuté : `_telecharger_modele` et
 `_charger_pipeline` sont remplacés par des bouchons, pour ne tester que la
 logique — le dépôt TIJAANI privé en tête, le repli sur M9and2M/whisper-small-wolof
 quand le premier ne se charge pas (token absent, dépôt protégé, erreur réseau),
-et le téléchargement des seuls fichiers de la racine (jamais les checkpoints).
+le téléchargement des seuls fichiers de la racine (jamais les checkpoints) et
+le libellé affiché sous chaque résultat, qui doit dire quel Whisper a servi.
 
     .\.venv\Scripts\python.exe tests\test_asr_secours.py
 
@@ -63,6 +64,7 @@ def _charger_avec_bouchons(fuites: dict, depot_qui_lève: str | None = None):
         return f"pipeline de {dossier}"
 
     journal = io.StringIO()
+    transcribe.MODELE_CHARGE = None
     with patch.object(transcribe, "_telecharger_modele", faux_telechargement), patch.object(
         transcribe, "_charger_pipeline", faux_pipeline
     ), redirect_stdout(journal):
@@ -80,6 +82,37 @@ def cas_finetune_dabord() -> int:
         and transcribe.MODEL_WHISPER_SECOURS not in journal
     )
     print(f"{'OK ' if bon else 'ÉCHEC'} | modèle fine-tuné chargé en premier ({depots})")
+    return not bon
+
+
+def cas_libelle_du_modele_charge() -> int:
+    """La mention « Transcription : … » dit quel Whisper a servi, et triche jamais.
+
+    Le libellé vient de `libelle_charge()` : l'app l'affiche sous chaque
+    résultat. Textes fixés par l'interface — un repli doit se voir.
+    """
+    _charger_avec_bouchons({})
+    fine_tune = transcribe.libelle_charge()
+    _charger_avec_bouchons({}, depot_qui_lève=transcribe.MODEL_WHISPER)
+    repli = transcribe.libelle_charge()
+    ancien = transcribe.MODELE_CHARGE
+    transcribe.MODELE_CHARGE = None
+    rien = transcribe.libelle_charge()
+    transcribe.MODELE_CHARGE = ancien
+
+    attendus = {
+        "fine-tuné": ("Whisper fine-tuné Dakar (CPU)", fine_tune),
+        "repli": ("Whisper wolof de base (CPU, repli)", repli),
+        "rien chargé": ("Whisper wolof (CPU)", rien),
+    }
+    bon = all(voulu == dit for _, (voulu, dit) in attendus.items()) and not any(
+        "Kiriku" in dit for _, dit in attendus.values()
+    )
+    print(f"{'OK ' if bon else 'ÉCHEC'} | libellés : {fine_tune!r} / {repli!r}")
+    if not bon:
+        for nom, (voulu, dit) in attendus.items():
+            if voulu != dit:
+                print(f"    {nom}: attendu {voulu!r}, obtenu {dit!r}")
     return not bon
 
 
@@ -155,13 +188,14 @@ def main() -> int:
     echecs = 0
     for essai in (
         cas_finetune_dabord,
+        cas_libelle_du_modele_charge,
         cas_repli_sans_token,
         cas_repli_sur_erreur_reseau,
         cas_les_deux_echouent,
         cas_racine_seule,
     ):
         echecs += essai()
-    print(f"\n{5 - echecs}/5 réussis")
+    print(f"\n{6 - echecs}/6 réussis")
     sys.exit(1 if echecs else 0)
 
 

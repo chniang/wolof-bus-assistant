@@ -39,6 +39,7 @@ sys.path.insert(0, str(RACINE / "src"))
 from asr.transcribe import (  # noqa: E402
     MODEL_ASR_GPU,
     SAMPLE_RATE,
+    libelle_charge,
     load_audio,
     load_model,
     transcrire,
@@ -305,7 +306,7 @@ def _transcrire_premier(audio: np.ndarray) -> tuple[str, str, float]:
         return phrase, "Kiriku-Wolof-ASR (GPU)", time.perf_counter() - debut
     except Exception as exc:
         print(f"[ASR] ZeroGPU en échec ({_court(exc)}), secours CPU", flush=True)
-        return _transcrire_cpu(audio), "whisper-small (secours)", time.perf_counter() - debut
+        return _transcrire_cpu(audio), libelle_charge(), time.perf_counter() - debut
 
 
 def _second_essai(audio: np.ndarray, libelle_premier: str) -> tuple[str, str, float]:
@@ -319,7 +320,7 @@ def _second_essai(audio: np.ndarray, libelle_premier: str) -> tuple[str, str, fl
     """
     debut = time.perf_counter()
     if "Kiriku" in libelle_premier:
-        return _transcrire_cpu(audio), "whisper-small", time.perf_counter() - debut
+        return _transcrire_cpu(audio), libelle_charge(), time.perf_counter() - debut
     try:
         phrase = transcrire_wolof(audio)
         if phrase.startswith(ERREUR_ASR):
