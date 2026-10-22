@@ -114,7 +114,7 @@ def _precharger_whisper():
     global _MODELE_CPU
     try:
         _MODELE_CPU = load_model()
-        print("[ASR] whisper-small préchargé sur CPU", flush=True)
+        print(f"[ASR] {libelle_charge()} préchargé sur CPU", flush=True)
     except Exception as exc:
         message = f"{type(exc).__name__} : {exc}"[:160]
         print(f"[ASR] préchargement whisper impossible ({message})", flush=True)

@@ -1,0 +1,16 @@
+Tous droits réservés
+
+Copyright (c) 2026 Cheikh Niang
+
+Le code de ce dépôt (GuindiMa AI, assistant vocal wolof pour les bus de Dakar)
+est mis à disposition à titre consultable. Toute réutilisation, reproduction,
+copie, modification, publication ou redistribution — commerciale ou non,
+totale ou partielle — est interdite sans l'autorisation écrite préalable de
+Cheikh Niang.
+
+Les modèles tiers cités dans le README (Kiriku-Wolof-ASR de l'AI Hub Sénégal,
+M9and2M/whisper-small-wolof, bilalfaye/speecht5_tts-wolof, microsoft/
+speecht5_hifigan, meta/llama-3.2-11b-vision-instruct, ainsi que notre
+fine-tuning TIJAANI/whisper-small-wolof-dakar-essai3 dérivé de
+M9and2M/whisper-small-wolof) restent soumis à leurs propres licences, qui
+s'appliquent à ces modèles et non à ce dépôt.

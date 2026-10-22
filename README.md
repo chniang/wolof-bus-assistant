@@ -156,3 +156,8 @@ Pour changer de matériel : installer la version CUDA de PyTorch
 (`pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu124`)
 puis relancer l'application. Le reste du code est inchangé — les modèles sont
 chargés par `transformers` et suivent le matériel disponible.
+
+## Licence
+
+Code © 2026 Cheikh Niang — tous droits réservés (voir `LICENSE`) : consultable, mais aucune réutilisation, copie ou modification sans autorisation écrite ; les modèles tiers gardent les licences déjà listées plus haut.
+
