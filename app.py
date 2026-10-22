@@ -57,16 +57,15 @@ from matching.geo import arrets_non_fiables  # noqa: E402
 from matching.lieux import AVANT_NUMERO, FAUX_AMIS, joli, sans_accents  # noqa: E402
 from matching.stops_matcher import StopsMatcher  # noqa: E402
 from tts.speak import (  # noqa: E402
-    CACHE_DIR,
-    assembler,
+    MAX_POSSIBILITES,
     cache_complet,
-    compagnie_dite,
     load_tts,
-    nom_cache,
     nombre_en_wolof,
     numero_de,
+    phrase_correspondances,
     phrase_reponse,
     synthetiser,
+    voix_correspondances_depuis_cache,
     voix_depuis_cache,
 )
 
@@ -224,11 +223,6 @@ def _client_llm():
 DOSSIER_VOIX = Path(tempfile.mkdtemp(prefix="guindima_voix_"))
 _COMPTEUR = itertools.count()
 
-# Fragment pré-généré qui joint les deux bus d'un trajet à correspondance :
-# les WAV de chaque ligne encadrent « Ci ginnaaw, » (voir phrases_voix.json).
-LIAISON_CORRESPONDANCE = "correspondance_liaison.wav"
-
-
 ERREUR_ASR = "\x00ERREUR_ASR "
 
 
@@ -349,53 +343,32 @@ def _phrase_donne_un_trajet(phrase: str) -> bool:
     return bool(essai["found"] or essai["correspondances"])
 
 
-def _phrase_correspondance(trajet: dict) -> str:
-    """La réponse à dire pour un trajet en deux bus."""
-    morceaux = []
-    for etape in (trajet["etape_1"], trajet["etape_2"]):
-        numero = numero_de(etape["ligne"])
-        dit = f"numero {nombre_en_wolof(numero)}" if numero is not None else etape["ligne"]
-        morceaux.append(f"bus bu {compagnie_dite(etape['compagnie'])}, {dit}")
-    return f"Jëlal {morceaux[0]}, ba {trajet['changement']}. Ci ginnaaw, jëlal {morceaux[1]}."
-
-
-def _voix_correspondance_cache(trajet: dict) -> bytes | None:
-    """Le trajet en deux bus dit avec les WAV pré-générés, ou None s'il en manque un.
-
-    On recolle les deux phrases de ligne de part et d'autre de « Ci ginnaaw, » ;
-    le nom de l'arrêt de changement reste affiché, il n'est pas prononcé.
-    """
-    if not cache_complet():
-        return None
-    morceaux = []
-    for etape in (trajet["etape_1"], trajet["etape_2"]):
-        numero = numero_de(etape["ligne"])
-        if numero is None:
-            return None
-        fichier = CACHE_DIR / nom_cache(etape["compagnie"], numero)
-        if not fichier.is_file():
-            return None
-        morceaux.append(fichier)
-    liaison = CACHE_DIR / LIAISON_CORRESPONDANCE
-    if not liaison.is_file():
-        return None
-    return assembler([morceaux[0], liaison, morceaux[1]])
-
-
 def _voix_wolof(lignes: list[dict], correspondances: list[dict] | None = None) -> str | None:
     """La réponse lue en wolof, sous forme de chemin de fichier.
 
     Cache disque d'abord : à la démo, tout est déjà synthétisé et aucun modèle n'a
-    besoin d'être chargé. Synthèse directe seulement s'il manque un morceau.
+    besoin d'être chargé. On dit TOUTES les possibilités affichées (trois au plus),
+    avec changement comme sans changement.
     """
+    correspondances = correspondances or []
     if not lignes and not correspondances:
         return None
+    complet = cache_complet()
     if lignes:
-        octets = voix_depuis_cache(lignes) if cache_complet() else None
+        octets = voix_depuis_cache(lignes) if complet else None
     else:
-        octets = _voix_correspondance_cache(correspondances[0])
+        octets = voix_correspondances_depuis_cache(correspondances) if complet else None
     if octets is None:
-        phrase = phrase_reponse(lignes) if lignes else _phrase_correspondance(correspondances[0])
+        if complet:
+            # Tous les segments manquent : mieux vaut le silence qu'une ancienne
+            # voix qui ne correspond plus au cache Adia.
+            print("[voix] aucun segment disponible, réponse laissée sans voix", flush=True)
+            return None
+        phrase = (
+            phrase_reponse(lignes)
+            if lignes
+            else phrase_correspondances(correspondances)
+        )
         try:
             octets = synthetiser(_tts(), phrase)
         except Exception as exc:
@@ -820,7 +793,8 @@ def _carte(
         return (
             entete
             + "".join(
-                _une_carte(match, depart=depart, arrivee=arrivee) for match in resultat["lignes"]
+                _une_carte(match, depart=depart, arrivee=arrivee)
+                for match in resultat["lignes"][:MAX_POSSIBILITES]
             )
             + bouton_partage(depart, arrivee, resultat)
         )
@@ -828,7 +802,9 @@ def _carte(
     correspondances = resultat.get("correspondances") or []
     if correspondances:
         blocs = [entete, "### 🔁 Pas de bus direct : un changement suffit\n"]
-        for numero, trajet in enumerate(correspondances, start=1):
+        for numero, trajet in enumerate(
+            correspondances[:MAX_POSSIBILITES], start=1
+        ):
             if numero > 1:
                 blocs.append(f"\n**Autre possibilité {numero}**\n")
             blocs.append(_une_carte(trajet["etape_1"], "1er bus", depart=depart, changement=True))

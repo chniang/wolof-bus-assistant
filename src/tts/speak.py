@@ -63,6 +63,14 @@ CACHE_DIR = Path(__file__).resolve().parents[2] / "data" / "tts_cache"
 MARQUEUR = CACHE_DIR / "cache_complet.txt"
 AUCUNE_LIGNE = "aucune_ligne.wav"
 WALLA = "walla.wav"
+# « Walla, » sépare deux possibilités AVEC changement ; un fichier distinct de
+# « walla » car la voix doit marquer une vraie pause avant la suivante.
+WALLA_AUTRE = "walla_autre.wav"
+LIAISON_CORRESPONDANCE = "correspondance_liaison.wav"
+
+# Plafond commun à l'affichage (stops_matcher) et à la voix : au-delà de trois
+# possibilités, l'oral devient trop long et l'usager décroche.
+MAX_POSSIBILITES = 3
 
 # Un silence entre deux morceaux, sinon « walla » se colle à la ligne d'avant.
 SILENCE_ENTRE = 0.3
@@ -101,17 +109,29 @@ def numero_de(ligne: object) -> int | None:
     return int(trouve.group()) if trouve else None
 
 
-def lignes_annoncees(lignes: list[dict]) -> list[tuple[str, int]]:
-    """Les (compagnie, numéro) réellement dits à l'oral, deux au maximum.
+def suffixe_de(ligne: object) -> str:
+    """La lettre qui suit le numéro (« Ligne 15A » -> « A »), vide sinon.
 
-    Deux lignes et pas plus, sinon la phrase devient interminable à écouter.
+    Le CSV distingue 15A et 15B : à l'écran la carte affiche « 15A », donc la
+    voix ne peut pas se contenter de « 15 », qui ferait prendre le mauvais bus.
     """
-    annoncees = []
-    for match in lignes[:2]:
-        numero = numero_de(match.get("ligne"))
-        if numero is not None:
-            annoncees.append((str(match.get("compagnie", "")).strip(), numero))
-    return annoncees
+    trouve = re.search(r"\d+\s*([A-Za-z])\b", str(ligne))
+    return trouve.group(1).upper() if trouve else ""
+
+
+def lignes_annoncees(lignes: list[dict]) -> list[dict]:
+    """Les lignes réellement dites, dans l'ordre affiché, au plus 3.
+
+    Le plafond est celui de l'affichage (stops_matcher.MAX_LIGNES) : la voix ne
+    doit ni oublier une carte ni en annoncer une qui n'est pas à l'écran. On
+    garde aussi les lignes sans numéro (« TAF TAF ») : elles sont affichées et
+    ont donc leur propre audio.
+    """
+    return [
+        match
+        for match in lignes[:MAX_POSSIBILITES]
+        if str(match.get("ligne", "")).strip()
+    ]
 
 
 def compagnie_dite(compagnie: str) -> str:
@@ -122,22 +142,85 @@ def compagnie_dite(compagnie: str) -> str:
     return {"Tata AFTU": "Tata", "Dakar Dem Dikk": "Dem Dikk"}.get(compagnie, compagnie)
 
 
+def _dit_ligne(match: dict) -> str:
+    """Un morceau de phrase pour une ligne : « Jëlal bus bu Tata, numero ñaar. »"""
+    compagnie = compagnie_dite(str(match.get("compagnie", "")).strip())
+    numero = numero_de(match.get("ligne"))
+    if numero is None:
+        return f"Jëlal bus bu {compagnie}, {str(match.get('ligne', '')).strip()}."
+    suffixe = suffixe_de(match.get("ligne"))
+    fin = f" {suffixe}" if suffixe else ""
+    return f"Jëlal bus bu {compagnie}, numero {nombre_en_wolof(numero)}{fin}."
+
+
 def phrase_reponse(lignes: list[dict]) -> str:
-    """La phrase à dire pour un résultat de correspondance."""
-    morceaux = [
-        f"Jëlal bus bu {compagnie_dite(compagnie)}, numero {nombre_en_wolof(numero)}."
-        for compagnie, numero in lignes_annoncees(lignes)
-    ]
+    """La phrase à dire pour des lignes directes, dans l'ordre affiché."""
+    morceaux = [_dit_ligne(match) for match in lignes_annoncees(lignes)]
     if not morceaux:
         return "Baal ma, gisuma bus bu dem fa."
     return " walla ".join(morceaux)
 
 
+def _dit_etape(etape: dict) -> str:
+    """Un bus d'un trajet avec changement : « bus bu Tata, numero fanweer ». """
+    compagnie = compagnie_dite(str(etape.get("compagnie", "")).strip())
+    numero = numero_de(etape.get("ligne"))
+    if numero is None:
+        return f"bus bu {compagnie}, {str(etape.get('ligne', '')).strip()}"
+    suffixe = suffixe_de(etape.get("ligne"))
+    fin = f" {suffixe}" if suffixe else ""
+    return f"bus bu {compagnie}, numero {nombre_en_wolof(numero)}{fin}"
+
+
+def phrase_correspondance(trajet: dict) -> str:
+    """Une possibilité avec changement : 1er bus, « Ci ginnaaw, », 2e bus."""
+    premier = _dit_etape(trajet["etape_1"])
+    second = _dit_etape(trajet["etape_2"])
+    return f"Jëlal {premier}. Ci ginnaaw, jëlal {second}."
+
+
+def phrase_correspondances(correspondances: list[dict]) -> str:
+    """Toutes les possibilités avec changement, dans l'ordre affiché, au plus 3.
+
+    Chaque possibilité garde son « Ci ginnaaw, » interne ; « Walla, » marque le
+    passage à la possibilité suivante, comme les cartes « Autre possibilité ».
+    """
+    phrases = [
+        phrase_correspondance(trajet)
+        for trajet in correspondances[:MAX_POSSIBILITES]
+    ]
+    if not phrases:
+        return "Baal ma, gisuma bus bu dem fa."
+    return " Walla, ".join(phrases)
+
+
+def _slug(texte: str) -> str:
+    """Forme de fichier : accents retirés, espaces et ponctuation en soulignés."""
+    sans_accent = unicodedata.normalize("NFKD", texte)
+    en_ascii = "".join(c for c in sans_accent if not unicodedata.combining(c))
+    return re.sub(r"[^a-zA-Z0-9]+", "_", en_ascii).strip("_").lower()
+
+
 def nom_cache(compagnie: str, numero: int) -> str:
     """Nom de fichier d'une ligne : Tata AFTU 25 devient tata_aftu_25.wav."""
-    sans_accent = unicodedata.normalize("NFKD", compagnie)
-    en_ascii = "".join(c for c in sans_accent if not unicodedata.combining(c))
-    return f"{re.sub(r'[^a-zA-Z0-9]+', '_', en_ascii).strip('_').lower()}_{numero}.wav"
+    return f"{_slug(compagnie)}_{numero}.wav"
+
+
+def nom_cache_texte(compagnie: str, ligne: str) -> str:
+    """Nom de fichier d'une ligne sans numéro : TAF TAF devient ..._taf_taf.wav."""
+    return f"{_slug(compagnie)}_{_slug(ligne)}.wav"
+
+
+def nom_cache_match(match: dict) -> str:
+    """Le nom du WAV d'une ligne, qu'elle ait un numéro, une lettre ou non."""
+    compagnie = str(match.get("compagnie", "")).strip()
+    numero = numero_de(match.get("ligne"))
+    if numero is None:
+        return nom_cache_texte(compagnie, str(match.get("ligne", "")))
+    suffixe = suffixe_de(match.get("ligne"))
+    if suffixe:
+        return f"{_slug(compagnie)}_{numero}{suffixe.lower()}.wav"
+    return nom_cache(compagnie, numero)
 
 
 def cache_complet() -> bool:
@@ -170,19 +253,81 @@ def assembler(fichiers: list[Path]) -> bytes:
     return tampon.getvalue()
 
 
-def voix_depuis_cache(lignes: list[dict]) -> bytes | None:
-    """L'audio déjà tout prêt pour ce résultat, ou None s'il manque un morceau.
+def _segment_manquant(nom: str) -> None:
+    """Signale un audio absent sans interrompre la réponse.
 
-    None veut dire « reviens à la synthèse en direct » : c'est le filet de
-    sécurité si le cache n'a pas été généré ou s'il est incomplet.
+    On saute le segment : la voix perd un mot, mais l'usager n'attend pas une
+    synthèse de plusieurs secondes et l'app ne plante pas. Le journal du Space
+    dit quel fichier générer avec Adia.
     """
+    print(f"[voix] segment manquant : {nom} (ignoré, à générer avec Adia)", flush=True)
+
+
+def _separateur(dossier: Path, nom: str) -> list[Path]:
+    """Le WAV de liaison s'il existe, sinon rien (le silence de 0,3 s suffit)."""
+    chemin = dossier / nom
+    if chemin.is_file():
+        return [chemin]
+    _segment_manquant(nom)
+    return []
+
+
+def voix_depuis_cache(
+    lignes: list[dict], cache_dir: Path | None = None
+) -> bytes | None:
+    """L'audio des lignes directes, dans l'ordre affiché, au plus 3.
+
+    Un segment absent est sauté et signalé : on assemble ce qui existe plutôt
+    que de renvoyer None, car la synthèse en direct (ancienne voix) ne doit pas
+    remplacer les nouveaux morceaux Adia.
+    """
+    dossier = cache_dir or CACHE_DIR
     if not lignes:
-        fichiers = [CACHE_DIR / AUCUNE_LIGNE]
-    else:
-        fichiers = [CACHE_DIR / nom_cache(compagnie, numero) for compagnie, numero in lignes_annoncees(lignes)]
-        if len(fichiers) == 2:
-            fichiers.insert(1, CACHE_DIR / WALLA)
-    if not fichiers or not all(chemin.is_file() for chemin in fichiers):
+        chemin = dossier / AUCUNE_LIGNE
+        if not chemin.is_file():
+            _segment_manquant(AUCUNE_LIGNE)
+            return None
+        return assembler([chemin])
+
+    fichiers: list[Path] = []
+    for match in lignes_annoncees(lignes):
+        chemin = dossier / nom_cache_match(match)
+        if not chemin.is_file():
+            _segment_manquant(chemin.name)
+            continue
+        if fichiers:
+            fichiers.extend(_separateur(dossier, WALLA))
+        fichiers.append(chemin)
+    if not fichiers:
+        return None
+    return assembler(fichiers)
+
+
+def voix_correspondances_depuis_cache(
+    correspondances: list[dict], cache_dir: Path | None = None
+) -> bytes | None:
+    """L'audio de TOUTES les possibilités avec changement, au plus 3.
+
+    Chaque possibilité : 1er bus, « Ci ginnaaw, », 2e bus. « Walla, » sépare
+    deux possibilités. Un morceau absent est sauté et journalisé, jamais
+    remplacé par la voix SpeechT5.
+    """
+    dossier = cache_dir or CACHE_DIR
+    fichiers: list[Path] = []
+    for trajet in correspondances[:MAX_POSSIBILITES]:
+        if fichiers:
+            fichiers.extend(_separateur(dossier, WALLA_AUTRE))
+        etapes: list[Path] = []
+        for etape in (trajet["etape_1"], trajet["etape_2"]):
+            chemin = dossier / nom_cache_match(etape)
+            if chemin.is_file():
+                etapes.append(chemin)
+            else:
+                _segment_manquant(chemin.name)
+        if len(etapes) == 2:
+            etapes[1:1] = _separateur(dossier, LIAISON_CORRESPONDANCE)
+        fichiers.extend(etapes)
+    if not fichiers:
         return None
     return assembler(fichiers)
 

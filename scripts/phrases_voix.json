@@ -65,13 +65,23 @@
       "type": "ligne"
     },
     {
-      "fichier": "dakar_dem_dikk_15.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak juróom.",
+      "fichier": "dakar_dem_dikk_15a.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak juróom A.",
       "type": "ligne"
     },
     {
-      "fichier": "dakar_dem_dikk_16.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak juróom benn.",
+      "fichier": "dakar_dem_dikk_15b.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak juróom B.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_16a.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak juróom benn A.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_16b.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak juróom benn B.",
       "type": "ligne"
     },
     {
@@ -160,18 +170,33 @@
       "type": "ligne"
     },
     {
-      "fichier": "dakar_dem_dikk_502.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 502.",
+      "fichier": "dakar_dem_dikk_502a.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 502 A.",
       "type": "ligne"
     },
     {
-      "fichier": "dakar_dem_dikk_503.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 503.",
+      "fichier": "dakar_dem_dikk_502b.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 502 B.",
       "type": "ligne"
     },
     {
-      "fichier": "dakar_dem_dikk_504.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 504.",
+      "fichier": "dakar_dem_dikk_503a.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 503 A.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_503b.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 503 B.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_504a.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 504 A.",
+      "type": "ligne"
+    },
+    {
+      "fichier": "dakar_dem_dikk_504b.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero 504 B.",
       "type": "ligne"
     },
     {
@@ -545,9 +570,19 @@
       "type": "service"
     },
     {
+      "fichier": "walla_autre.wav",
+      "phrase": "Walla,",
+      "type": "service"
+    },
+    {
       "fichier": "correspondance_liaison.wav",
       "phrase": "Ci ginnaaw,",
       "type": "service"
+    },
+    {
+      "fichier": "dakar_dem_dikk_taf_taf.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, TAF TAF.",
+      "type": "ligne"
     }
   ]
 }

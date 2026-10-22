@@ -593,6 +593,173 @@ def test_partage() -> tuple[int, int]:
     return echecs, total
 
 
+def test_voix() -> tuple[int, int]:
+    """La voix dit exactement les possibilités affichées, trois au plus.
+
+    Les cas réels qui ont motivé ces tests : Almadies -> Malika (2 possibilités
+    avec changement, la voix n'en disait qu'une) et les trajets à 3 lignes
+    directes (la voix s'arrêtait à 2, ou sautait « TAF TAF » faute de numéro).
+    """
+    import tempfile
+    import wave
+
+    from matching.stops_matcher import MAX_CORRESPONDANCES, MAX_LIGNES, StopsMatcher
+    from tts.speak import (
+        MAX_POSSIBILITES,
+        lignes_annoncees,
+        nom_cache_match,
+        phrase_correspondances,
+        phrase_reponse,
+        voix_correspondances_depuis_cache,
+        voix_depuis_cache,
+    )
+
+    matcher = StopsMatcher()
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | voix {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    verifie(
+        "même plafond affichage/voix",
+        MAX_POSSIBILITES == MAX_LIGNES == 3
+        and MAX_CORRESPONDANCES <= MAX_POSSIBILITES,
+        (MAX_POSSIBILITES, MAX_LIGNES, MAX_CORRESPONDANCES),
+    )
+
+    une = [{"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 7"}]
+    verifie(
+        "1 ligne directe",
+        phrase_reponse(une)
+        == "Jëlal bus bu Dem Dikk, numero juróom ñaar.",
+        phrase_reponse(une),
+    )
+
+    deux = [
+        {"compagnie": "Tata AFTU", "ligne": "Ligne 7"},
+        {"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 8"},
+    ]
+    verifie(
+        "2 lignes directes",
+        phrase_reponse(deux)
+        == "Jëlal bus bu Tata, numero juróom ñaar. walla "
+        "Jëlal bus bu Dem Dikk, numero juróom ñett.",
+        phrase_reponse(deux),
+    )
+
+    trois = matcher.find_line("Pikine", "Colobane")["lignes"]
+    phrase_trois = phrase_reponse(trois)
+    verifie(
+        "3 lignes directes",
+        len(trois) == 3
+        and phrase_trois.count("Jëlal") == 3
+        and phrase_trois.count(" walla ") == 2,
+        phrase_trois,
+    )
+    audio_trois = voix_depuis_cache(trois)
+    verifie(
+        "audio 3 lignes directes",
+        audio_trois is not None and audio_trois.startswith(b"RIFF"),
+        audio_trois,
+    )
+
+    taf_taf = [{"compagnie": "Dakar Dem Dikk", "ligne": "TAF TAF"}]
+    verifie(
+        "ligne sans numéro (TAF TAF)",
+        phrase_reponse(taf_taf) == "Jëlal bus bu Dem Dikk, TAF TAF.",
+        phrase_reponse(taf_taf),
+    )
+    ouakam_parcelles = matcher.find_line("Ouakam", "Parcelles")["lignes"]
+    annoncees = [match["ligne"] for match in lignes_annoncees(ouakam_parcelles)]
+    verifie(
+        "TAF TAF annoncé quand il est affiché",
+        "TAF TAF" in annoncees,
+        annoncees,
+    )
+
+    suffixe = [{"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 15A"}]
+    verifie(
+        "suffixe de ligne (15A) dit et fichier distinct",
+        phrase_reponse(suffixe)
+        == "Jëlal bus bu Dem Dikk, numero fukk ak juróom A."
+        and nom_cache_match(suffixe[0]) == "dakar_dem_dikk_15a.wav",
+        (phrase_reponse(suffixe), nom_cache_match(suffixe[0])),
+    )
+
+    quatre = [
+        {"compagnie": "Dakar Dem Dikk", "ligne": f"Ligne {numero}"}
+        for numero in (1, 2, 4, 5)
+    ]
+    phrase_quatre = phrase_reponse(quatre)
+    verifie(
+        "plus de 3 lignes directes coupées à 3",
+        len(lignes_annoncees(quatre)) == 3
+        and phrase_quatre.count("Jëlal") == 3
+        and "numero juróom." not in phrase_quatre,
+        phrase_quatre,
+    )
+
+    corr = matcher.find_line("Almadies", "Malika")["correspondances"]
+    verifie(
+        "Almadies -> Malika : 2 changements affichés",
+        len(corr) == 2,
+        [(c["etape_1"]["ligne"], c["etape_2"]["ligne"]) for c in corr],
+    )
+    phrase_corr = phrase_correspondances(corr)
+    attendu_corr = (
+        "Jëlal bus bu Dem Dikk, numero 221. Ci ginnaaw, "
+        "jëlal bus bu Tata, numero fanweer ak juróom ñaar. Walla, "
+        "Jëlal bus bu Dem Dikk, numero 221. Ci ginnaaw, "
+        "jëlal bus bu Tata, numero juróom ñaar fukk ak juróom ñeent."
+    )
+    verifie("voix 2 changements", phrase_corr == attendu_corr, phrase_corr)
+    audio_corr = voix_correspondances_depuis_cache(corr)
+    verifie(
+        "audio 2 changements (segments manquants sautés)",
+        audio_corr is not None and audio_corr.startswith(b"RIFF"),
+        audio_corr,
+    )
+
+    phrase_corr_quatre = phrase_correspondances(corr + corr)
+    verifie(
+        "plus de 3 changements coupés à 3",
+        phrase_corr_quatre.count("Ci ginnaaw,") == 3
+        and phrase_corr_quatre.count(" Walla, ") == 2,
+        phrase_corr_quatre,
+    )
+
+    # Un séparateur absent ne doit ni planter ni faire durer le silence : on
+    # assemble les lignes présentes et on journalise le manque.
+    with tempfile.TemporaryDirectory() as dossier_temporaire:
+        dossier = Path(dossier_temporaire)
+        for nom in ("dakar_dem_dikk_1.wav", "dakar_dem_dikk_2.wav"):
+            with wave.open(str(dossier / nom), "wb") as wav:
+                wav.setnchannels(1)
+                wav.setsampwidth(2)
+                wav.setframerate(24000)
+                wav.writeframes(b"\x00\x00" * 2400)
+        partiel = voix_depuis_cache(
+            [
+                {"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 1"},
+                {"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 2"},
+            ],
+            cache_dir=dossier,
+        )
+        verifie(
+            "segment manquant sauté sans crash",
+            partiel is not None and partiel.startswith(b"RIFF"),
+            partiel,
+        )
+
+    return echecs, total
+
+
 def _lignes_dans(carte: str) -> set[str]:
     """Numéros de ligne affichés dans la carte HTML renvoyée par l'app."""
     texte = re.sub(r"<[^>]+>", " ", carte)
@@ -677,9 +844,10 @@ if __name__ == "__main__":
         total = len(TRAJETS) + len(AUDIOS) + len(TRAJETS_EN_LIGNE)
     else:
         echecs_partage, total_partage = test_partage()
-        echecs = test_local() + echecs_partage
+        echecs_voix, total_voix = test_voix()
+        echecs = test_local() + echecs_partage + echecs_voix
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
-        total = total_partage + (
+        total = total_partage + total_voix + (
             len(TRAJETS)
             + len(TRAJETS_COMPAGNIE)
             + len(TRAJETS_SANS_ARRET)

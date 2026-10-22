@@ -251,9 +251,14 @@ def dire_la_reponse(lignes: list[dict], origine: str) -> None:
         return
 
     # Démo : tout est déjà synthétisé, on colle les morceaux sans charger le modèle.
-    octets = voix_depuis_cache(lignes) if cache_complet() else None
+    complet = cache_complet()
+    octets = voix_depuis_cache(lignes) if complet else None
 
     if octets is None:
+        if complet:
+            # Segment absent (voir le journal) : pas de repli sur l'ancienne voix.
+            st.caption("Voix indisponible : segment audio manquant.")
+            return
         try:
             tts = get_tts()
             with st.spinner("Préparation de la voix…"):

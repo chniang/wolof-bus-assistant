@@ -2,9 +2,9 @@
 
 Synthétiser coûte environ 4x le temps réel sur ce portable : le faire en direct
 devant un jury, c'est prendre un risque. Ce script génère donc tous les cas
-possibles — une voix par ligne du jeu de données, plus les deux phrases de
-service — et l'app se contente ensuite de coller les bons morceaux, sans même
-charger le modèle.
+possibles — une voix par ligne du jeu de données, plus les phrases de service
+(« walla », « Walla, », « Ci ginnaaw, ») — et l'app se contente ensuite de coller
+les bons morceaux, sans même charger le modèle.
 
     python src/tts/pregenerer.py
 
@@ -27,47 +27,55 @@ sys.path.insert(0, str(RACINE / "src"))
 from tts.speak import (  # noqa: E402  (après l'ajout au sys.path)
     AUCUNE_LIGNE,
     CACHE_DIR,
+    LIAISON_CORRESPONDANCE,
     MARQUEUR,
     WALLA,
-    lignes_annoncees,
+    WALLA_AUTRE,
     load_tts,
-    nom_cache,
-    numero_de,
+    nom_cache_match,
     phrase_reponse,
     synthetiser,
 )
 
-# Les deux phrases de service, absentes du CSV.
+# Les phrases de service, absentes du CSV.
 PHRASES_SERVICE = [
     (AUCUNE_LIGNE, "Baal ma, gisuma bus bu dem fa."),
     (WALLA, "walla"),
+    (WALLA_AUTRE, "Walla,"),
+    (LIAISON_CORRESPONDANCE, "Ci ginnaaw,"),
 ]
 
 
-def couples_du_csv() -> list[tuple[str, int]]:
-    """Tous les couples (compagnie, numéro) du jeu de données, sans doublon."""
+def lignes_du_csv() -> list[tuple[str, str]]:
+    """Tous les couples (compagnie, ligne) du jeu de données, sans doublon.
+
+    On garde aussi les lignes sans numéro (« TAF TAF ») : elles s'affichent et
+    doivent donc s'entendre, avec leur propre audio.
+    """
     import csv
 
     couples = set()
     with open(CSV_LIGNES, newline="", encoding="utf-8") as fichier:
         records = list(csv.DictReader(fichier))
     for record in records:
-        numero = numero_de(record.get("ligne"))
-        if numero is not None:
-            couples.add((str(record.get("compagnie", "")).strip(), numero))
+        ligne = str(record.get("ligne", "")).strip()
+        if ligne:
+            couples.add((str(record.get("compagnie", "")).strip(), ligne))
     return sorted(couples)
 
 
 def cibles() -> list[tuple[str, str]]:
-    """Chaque audio à produire : nom de fichier et phrase à dire."""
-    liste = [
-        (
-            nom_cache(compagnie, numero),
-            phrase_reponse([{"compagnie": compagnie, "ligne": f"Ligne {numero}"}]),
-        )
-        for compagnie, numero in couples_du_csv()
-    ]
-    return liste + PHRASES_SERVICE
+    """Chaque audio à produire : nom de fichier et phrase à dire, sans doublon."""
+    liste = []
+    vus = set()
+    for compagnie, ligne in lignes_du_csv():
+        match = {"compagnie": compagnie, "ligne": ligne}
+        nom = nom_cache_match(match)
+        if nom in vus:
+            continue
+        vus.add(nom)
+        liste.append((nom, phrase_reponse([match])))
+    return liste + [(nom, phrase) for nom, phrase in PHRASES_SERVICE if nom not in vus]
 
 
 def main() -> int:

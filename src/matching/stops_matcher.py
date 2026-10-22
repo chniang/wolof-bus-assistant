@@ -32,6 +32,10 @@ MIN_SCORE = 0.6
 # arrivée) est à moins de cet écart de la meilleure. « Yoff » exact écarte ainsi
 # les lignes qui ne passent qu'à « Grand Yoff ».
 TOLERANCE = 0.15
+# Plafond global de l'affichage, comme la voix (tts.speak.MAX_POSSIBILITES) :
+# la réponse orale ne doit ni oublier une carte ni en annoncer une qui n'est pas
+# affichée. Les correspondances restent plus rares : deux trajets en deux bus
+# suffisent, et le troisième calculé n'était pas proposé aux usagers.
 MAX_LIGNES = 3
 MAX_CORRESPONDANCES = 2
 
