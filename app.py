@@ -36,6 +36,7 @@ RACINE = Path(__file__).resolve().parent
 # que src/ soit dans le chemin, comme le fait src/app/app.py pour son propre lancement.
 sys.path.insert(0, str(RACINE / "src"))
 
+from app.cartes import titre_autre_possibilite  # noqa: E402
 from app.partage import bouton_partage  # noqa: E402
 from asr.transcribe import (  # noqa: E402
     MODEL_ASR_GPU,
@@ -806,7 +807,7 @@ def _carte(
             correspondances[:MAX_POSSIBILITES], start=1
         ):
             if numero > 1:
-                blocs.append(f"\n**Autre possibilité {numero}**\n")
+                blocs.append(titre_autre_possibilite(numero))
             blocs.append(_une_carte(trajet["etape_1"], "1er bus", depart=depart, changement=True))
             blocs.append(
                 f"<div style='text-align:center;color:#6B7A72;margin:2px 0;'>"

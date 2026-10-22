@@ -524,6 +524,7 @@ def test_partage() -> tuple[int, int]:
     Le texte est vérifié mot pour mot : c'est lui que le contact lira, et une
     flèche ou un accent mal encodé casserait le lien wa.me.
     """
+    from app.cartes import titre_autre_possibilite
     from app.partage import LIEN_APP, bouton_partage, lien_partage, texte_partage
     from matching.stops_matcher import StopsMatcher
 
@@ -590,6 +591,15 @@ def test_partage() -> tuple[int, int]:
         and "Partager sur WhatsApp" in bouton,
         bouton,
     )
+
+    titre = titre_autre_possibilite(2)
+    verifie(
+        "titre « Autre possibilité » en gras HTML",
+        "Autre possibilité 2" in titre
+        and "font-weight:700" in titre
+        and "**" not in titre,
+        titre,
+    )
     return echecs, total
 
 
@@ -608,6 +618,7 @@ def test_voix() -> tuple[int, int]:
         MAX_POSSIBILITES,
         lignes_annoncees,
         nom_cache_match,
+        nombre_en_wolof,
         phrase_correspondances,
         phrase_reponse,
         voix_correspondances_depuis_cache,
@@ -631,6 +642,43 @@ def test_voix() -> tuple[int, int]:
         MAX_POSSIBILITES == MAX_LIGNES == 3
         and MAX_CORRESPONDANCES <= MAX_POSSIBILITES,
         (MAX_POSSIBILITES, MAX_LIGNES, MAX_CORRESPONDANCES),
+    )
+
+    nombres = {
+        100: "téeméer",
+        121: "téeméer ak ñaar fukk ak benn",
+        200: "ñaari téeméer",
+        217: "ñaari téeméer ak fukk ak juróom ñaar",
+        221: "ñaari téeméer ak ñaar fukk ak benn",
+        300: "ñetti téeméer",
+        502: "juróomi téeméer ak ñaar",
+    }
+    for nombre, attendu in nombres.items():
+        obtenu = nombre_en_wolof(nombre)
+        verifie(f"{nombre} en wolof", obtenu == attendu, obtenu)
+
+    import json
+
+    plan = json.loads(
+        (RACINE / "scripts" / "phrases_voix.json").read_text(encoding="utf-8")
+    )
+    avec_chiffres = [
+        entree["fichier"]
+        for entree in plan["phrases"]
+        if any(caractere.isdigit() for caractere in entree["phrase"])
+    ]
+    verifie(
+        "aucun chiffre dans phrases_voix.json",
+        not avec_chiffres,
+        avec_chiffres,
+    )
+    entrees = {entree["fichier"]: entree for entree in plan["phrases"]}
+    verifie(
+        "221 écrit en wolof et marqué à régénérer",
+        entrees["dakar_dem_dikk_221.wav"]["phrase"]
+        == "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn."
+        and entrees["dakar_dem_dikk_221.wav"].get("a_regenerer") is True,
+        entrees["dakar_dem_dikk_221.wav"],
     )
 
     une = [{"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 7"}]
@@ -713,10 +761,10 @@ def test_voix() -> tuple[int, int]:
     )
     phrase_corr = phrase_correspondances(corr)
     attendu_corr = (
-        "Jëlal bus bu Dem Dikk, numero 221. Ci ginnaaw, "
-        "jëlal bus bu Tata, numero fanweer ak juróom ñaar. Walla, "
-        "Jëlal bus bu Dem Dikk, numero 221. Ci ginnaaw, "
-        "jëlal bus bu Tata, numero juróom ñaar fukk ak juróom ñeent."
+        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn. "
+        "Ci ginnaaw, jëlal bus bu Tata, numero fanweer ak juróom ñaar. Walla, "
+        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn. "
+        "Ci ginnaaw, jëlal bus bu Tata, numero juróom ñaar fukk ak juróom ñeent."
     )
     verifie("voix 2 changements", phrase_corr == attendu_corr, phrase_corr)
     audio_corr = voix_correspondances_depuis_cache(corr)

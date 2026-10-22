@@ -51,9 +51,21 @@ DIZAINES = {
     90: "juróom ñeent fukk",
 }
 CENT = "téeméer"
+# Formes de liaison devant « téeméer » : 200 -> ñaari téeméer, 500 ->
+# juróomi téeméer. Au-delà de 599 on garde la même construction.
+CENTAINES = {
+    2: "ñaari",
+    3: "ñetti",
+    4: "ñeenti",
+    5: "juróomi",
+    6: "juróom benni",
+    7: "juróom ñaari",
+    8: "juróom ñetti",
+    9: "juróom ñeenti",
+}
 
 # Au-delà, on n'a pas de formulation : on lit les chiffres tels quels.
-MAX_ECRIT = 199
+MAX_ECRIT = 999
 
 # Audios pré-générés pour la démo (voir pregenerer.py). La synthèse est trop
 # lente pour être faite devant un jury, alors on la prépare une fois pour toutes.
@@ -85,7 +97,7 @@ class Tts(NamedTuple):
 
 
 def nombre_en_wolof(n: int) -> str:
-    """Écrit un numéro de 1 à 199 en mots wolof (ligne 22 -> « ñaar fukk ak ñaar »)."""
+    """Écrit un numéro de 1 à 999 en mots wolof (221 -> « ñaari téeméer ak … »)."""
     n = int(n)
     if n < 1:
         return str(n)
@@ -95,12 +107,12 @@ def nombre_en_wolof(n: int) -> str:
         return UNITES[n]
     if n < 20:
         return "fukk" if n == 10 else f"fukk ak {UNITES[n - 10]}"
-    if n == 100:
-        return CENT
     if n < 100:
         dizaines = DIZAINES[n - n % 10]
         return dizaines if n % 10 == 0 else f"{dizaines} ak {UNITES[n % 10]}"
-    return f"{CENT} ak {nombre_en_wolof(n - 100)}"
+    centaines, reste = divmod(n, 100)
+    tete = CENT if centaines == 1 else f"{CENTAINES[centaines]} {CENT}"
+    return tete if reste == 0 else f"{tete} ak {nombre_en_wolof(reste)}"
 
 
 def numero_de(ligne: object) -> int | None:

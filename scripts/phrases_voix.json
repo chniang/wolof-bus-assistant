@@ -106,98 +106,117 @@
     },
     {
       "fichier": "dakar_dem_dikk_208.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 208.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak juróom ñett.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_213.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 213.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak ñett.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_217.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 217.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñaar.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_218.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 218.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñett.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_219.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 219.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñeent.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_220.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 220.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_221.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 221.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_227.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 227.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak juróom ñaar.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_228.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 228.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak juróom ñett.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_232.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 232.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñaar.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_233.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 233.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñett.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_234.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 234.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñeent.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_501.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 501.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero juróomi téeméer ak benn.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_502a.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 502 A.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñaar A.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_502b.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 502 B.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñaar B.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_503a.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 503 A.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñett A.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_503b.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 503 B.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñett B.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_504a.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 504 A.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñeent A.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_504b.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, numero 504 B.",
-      "type": "ligne"
+      "phrase": "Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñeent B.",
+      "type": "ligne",
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_1.wav",
