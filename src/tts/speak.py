@@ -79,6 +79,9 @@ WALLA = "walla.wav"
 # « walla » car la voix doit marquer une vraie pause avant la suivante.
 WALLA_AUTRE = "walla_autre.wav"
 LIAISON_CORRESPONDANCE = "correspondance_liaison.wav"
+# Dans un changement : « … nga wàcc <lieu> » et « … moo lay yóbbu ba <lieu> ».
+NGA_WACC = "nga_wacc.wav"
+MOO_LAY_YOBBU_BA = "moo_lay_yobbu_ba.wav"
 
 # Plafond commun à l'affichage (stops_matcher) et à la voix : au-delà de trois
 # possibilités, l'oral devient trop long et l'usager décroche.
@@ -86,6 +89,9 @@ MAX_POSSIBILITES = 3
 
 # Un silence entre deux morceaux, sinon « walla » se colle à la ligne d'avant.
 SILENCE_ENTRE = 0.3
+# Entre le connecteur et le nom du lieu, la pause doit être plus courte : on dit
+# « nga wàcc Gadaye » d'un trait, pas avec un blanc de fin de phrase.
+PAUSE_LIEU = 0.1
 
 
 class Tts(NamedTuple):
@@ -113,6 +119,102 @@ def nombre_en_wolof(n: int) -> str:
     centaines, reste = divmod(n, 100)
     tete = CENT if centaines == 1 else f"{CENTAINES[centaines]} {CENT}"
     return tete if reste == 0 else f"{tete} ak {nombre_en_wolof(reste)}"
+
+
+UNITES_FR = {
+    0: "zéro",
+    1: "un",
+    2: "deux",
+    3: "trois",
+    4: "quatre",
+    5: "cinq",
+    6: "six",
+    7: "sept",
+    8: "huit",
+    9: "neuf",
+    10: "dix",
+    11: "onze",
+    12: "douze",
+    13: "treize",
+    14: "quatorze",
+    15: "quinze",
+    16: "seize",
+}
+DIZAINES_FR = {
+    20: "vingt",
+    30: "trente",
+    40: "quarante",
+    50: "cinquante",
+    60: "soixante",
+}
+
+
+def nombre_en_francais(n: int) -> str:
+    """Écrit un nombre en français pour les noms de lieux (« Liberté 6 »)."""
+    n = int(n)
+    if n < 17:
+        return UNITES_FR[n]
+    if n < 20:
+        return f"dix-{UNITES_FR[n - 10]}"
+    if n < 70:
+        dizaine, reste = divmod(n, 10)
+        mot = DIZAINES_FR[dizaine * 10]
+        if reste == 0:
+            return mot
+        if reste == 1:
+            return f"{mot} et un"
+        return f"{mot}-{UNITES_FR[reste]}"
+    if n < 80:
+        if n == 71:
+            return "soixante et onze"
+        return f"soixante-{nombre_en_francais(n - 60)}"
+    if n < 100:
+        if n == 80:
+            return "quatre-vingts"
+        if n < 90:
+            return f"quatre-vingt-{UNITES_FR[n - 80]}"
+        if n == 90:
+            return "quatre-vingt-dix"
+        return f"quatre-vingt-{nombre_en_francais(n - 80)}"
+    if n < 1000:
+        centaines, reste = divmod(n, 100)
+        tete = "cent" if centaines == 1 else f"{nombre_en_francais(centaines)} cent"
+        if reste == 0:
+            return tete + ("s" if centaines > 1 else "")
+        return f"{tete} {nombre_en_francais(reste)}"
+    return str(n)
+
+
+def _mots_chiffres(chiffres: str) -> str:
+    """« 02 » -> « zéro deux », pour ne pas perdre le zéro de « UE 02 »."""
+    if len(chiffres) > 1 and chiffres.startswith("0"):
+        return " ".join(UNITES_FR[int(caractere)] for caractere in chiffres)
+    return nombre_en_francais(int(chiffres))
+
+
+def nom_lieu_parle(arret: object) -> str:
+    """Le nom d'un arrêt tel qu'on le dit à Dakar.
+
+    « Av Hyacinthe Thiandoum (Grand-Yoff) » -> « Avenue Hyacinthe Thiandoum ».
+    Les chiffres sont dits en français (« Palais 1 » -> « Palais un ») : c'est
+    la langue des noms de rues, même quand la phrase autour est en wolof.
+    """
+    texte = str(arret if arret is not None else "")
+    texte = re.sub(r"\s*\([^)]*\)", "", texte)
+    texte = re.sub(r"\bAv\.?(?=\s|$)", "Avenue", texte, flags=re.IGNORECASE)
+    texte = re.sub(r"\bBd\.?(?=\s|$)", "Boulevard", texte, flags=re.IGNORECASE)
+    texte = re.sub(
+        r"\d+",
+        lambda trouve: f" {_mots_chiffres(trouve.group())} ",
+        texte,
+    )
+    texte = texte.replace("&", " et ")
+    return " ".join(texte.split())
+
+
+def nom_fichier_lieu(arret: object) -> str:
+    """Le WAV d'un arrêt ; deux noms qui se disent pareil partagent le fichier."""
+    return f"lieu_{_slug(nom_lieu_parle(arret))}.wav"
 
 
 def numero_de(ligne: object) -> int | None:
@@ -185,10 +287,25 @@ def _dit_etape(etape: dict) -> str:
 
 
 def phrase_correspondance(trajet: dict) -> str:
-    """Une possibilité avec changement : 1er bus, « Ci ginnaaw, », 2e bus."""
-    premier = _dit_etape(trajet["etape_1"])
-    second = _dit_etape(trajet["etape_2"])
-    return f"Jëlal {premier}. Ci ginnaaw, jëlal {second}."
+    """Une possibilité avec changement, avec les lieux où l'on monte et descend.
+
+    Exemple : « Jëlal bus bu Dem Dikk, numero …, nga wàcc Gadaye. Ci ginnaaw,
+    jëlal bus bu Tata, numero …, moo lay yóbbu ba Malika. »
+    """
+    etape_1 = trajet["etape_1"]
+    etape_2 = trajet["etape_2"]
+    premier = _dit_etape(etape_1)
+    second = _dit_etape(etape_2)
+    changement = nom_lieu_parle(trajet.get("changement") or etape_1.get("descend_a"))
+    descente = nom_lieu_parle(etape_2.get("descend_a"))
+
+    debut = f"Jëlal {premier}"
+    if changement:
+        debut += f", nga wàcc {changement}"
+    fin = f"Ci ginnaaw, jëlal {second}"
+    if descente:
+        fin += f", moo lay yóbbu ba {descente}"
+    return f"{debut}. {fin}."
 
 
 def phrase_correspondances(correspondances: list[dict]) -> str:
@@ -240,23 +357,27 @@ def cache_complet() -> bool:
     return MARQUEUR.is_file()
 
 
-def assembler(fichiers: list[Path]) -> bytes:
+def assembler(
+    fichiers: list[Path], pauses: list[float] | None = None
+) -> bytes:
     """Colle des WAV bout à bout avec un silence entre chaque, et renvoie les octets.
 
-    Tout vient de synthetiser(), donc tous les fichiers partagent la même
-    fréquence : on reprend celle du premier.
+    `pauses[i]` est le silence après `fichiers[i]`. Sans liste, on garde le
+    silence standard de 0,3 s partout. Tout vient du même modèle, donc tous les
+    fichiers partagent la même fréquence : on reprend celle du premier.
     """
     import numpy as np
     import soundfile as sf
 
     morceaux = []
-    for chemin in fichiers:
+    for i, chemin in enumerate(fichiers):
         audio, sr = sf.read(str(chemin), dtype="float32")
         if audio.ndim > 1:
             audio = audio.mean(axis=1)
         morceaux.append(audio)
-        if chemin != fichiers[-1]:
-            morceaux.append(np.zeros(int(sr * SILENCE_ENTRE), dtype="float32"))
+        if i < len(fichiers) - 1:
+            pause = pauses[i] if pauses is not None else SILENCE_ENTRE
+            morceaux.append(np.zeros(int(sr * pause), dtype="float32"))
     if not morceaux:
         raise ValueError("aucun fichier à assembler")
 
@@ -282,6 +403,68 @@ def _separateur(dossier: Path, nom: str) -> list[Path]:
         return [chemin]
     _segment_manquant(nom)
     return []
+
+
+def _ajoute_segment(
+    morceaux: list[tuple[Path, float]], dossier: Path, nom: str, pause: float
+) -> None:
+    """Ajoute un WAV et la pause qui le suit ; signale le fichier absent."""
+    chemin = dossier / nom
+    if chemin.is_file():
+        morceaux.append((chemin, pause))
+    else:
+        _segment_manquant(nom)
+
+
+def _ajoute_lieu(
+    morceaux: list[tuple[Path, float]],
+    dossier: Path,
+    connecteur: str,
+    arret: object,
+    pause_lieu: float,
+) -> None:
+    """Ajoute « connecteur + lieu », ou saute les deux si le lieu manque.
+
+    Le connecteur seul (« nga wàcc ») ne veut rien dire : mieux vaut le taire
+    que de laisser l'usager attendre un nom d'arrêt qui n'arrive pas.
+    """
+    if not str(arret if arret is not None else "").strip():
+        return
+    nom_lieu = nom_fichier_lieu(arret)
+    chemin_lieu = dossier / nom_lieu
+    if not chemin_lieu.is_file():
+        _segment_manquant(nom_lieu)
+        return
+    _ajoute_segment(morceaux, dossier, connecteur, PAUSE_LIEU)
+    morceaux.append((chemin_lieu, pause_lieu))
+
+
+def plan_correspondance(
+    trajet: dict, cache_dir: Path | None = None
+) -> list[tuple[Path, float]]:
+    """Les morceaux d'une possibilité avec changement, dans l'ordre à dire.
+
+    Chaque élément porte la pause qui le suit : 0,1 s après « nga wàcc » et
+    « moo lay yóbbu ba », 0,3 s ailleurs. Le premier bus et le second restent
+    joués même si un lieu manque.
+    """
+    dossier = cache_dir or CACHE_DIR
+    etape_1 = trajet["etape_1"]
+    etape_2 = trajet["etape_2"]
+    changement = trajet.get("changement") or etape_1.get("descend_a")
+    descente = etape_2.get("descend_a")
+
+    morceaux: list[tuple[Path, float]] = []
+    _ajoute_segment(morceaux, dossier, nom_cache_match(etape_1), SILENCE_ENTRE)
+    _ajoute_lieu(morceaux, dossier, NGA_WACC, changement, SILENCE_ENTRE)
+    _ajoute_segment(
+        morceaux, dossier, LIAISON_CORRESPONDANCE, SILENCE_ENTRE
+    )
+    _ajoute_segment(morceaux, dossier, nom_cache_match(etape_2), SILENCE_ENTRE)
+    _ajoute_lieu(
+        morceaux, dossier, MOO_LAY_YOBBU_BA, descente, SILENCE_ENTRE
+    )
+    return morceaux
 
 
 def voix_depuis_cache(
@@ -320,28 +503,22 @@ def voix_correspondances_depuis_cache(
 ) -> bytes | None:
     """L'audio de TOUTES les possibilités avec changement, au plus 3.
 
-    Chaque possibilité : 1er bus, « Ci ginnaaw, », 2e bus. « Walla, » sépare
-    deux possibilités. Un morceau absent est sauté et journalisé, jamais
-    remplacé par la voix SpeechT5.
+    Chaque possibilité : 1er bus, « nga wàcc », lieu de changement,
+    « Ci ginnaaw, », 2e bus, « moo lay yóbbu ba », lieu de descente.
+    « Walla, » sépare deux possibilités. Un morceau absent est sauté et
+    journalisé, jamais remplacé par la voix SpeechT5.
     """
     dossier = cache_dir or CACHE_DIR
-    fichiers: list[Path] = []
+    morceaux: list[tuple[Path, float]] = []
     for trajet in correspondances[:MAX_POSSIBILITES]:
-        if fichiers:
-            fichiers.extend(_separateur(dossier, WALLA_AUTRE))
-        etapes: list[Path] = []
-        for etape in (trajet["etape_1"], trajet["etape_2"]):
-            chemin = dossier / nom_cache_match(etape)
-            if chemin.is_file():
-                etapes.append(chemin)
-            else:
-                _segment_manquant(chemin.name)
-        if len(etapes) == 2:
-            etapes[1:1] = _separateur(dossier, LIAISON_CORRESPONDANCE)
-        fichiers.extend(etapes)
-    if not fichiers:
+        if morceaux:
+            _ajoute_segment(morceaux, dossier, WALLA_AUTRE, SILENCE_ENTRE)
+        morceaux.extend(plan_correspondance(trajet, dossier))
+    if not morceaux:
         return None
-    return assembler(fichiers)
+    fichiers = [chemin for chemin, _ in morceaux]
+    pauses = [pause for _, pause in morceaux[:-1]]
+    return assembler(fichiers, pauses)
 
 
 def load_tts() -> Tts:

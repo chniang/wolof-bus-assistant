@@ -674,9 +674,9 @@ def test_voix() -> tuple[int, int]:
     )
     entrees = {entree["fichier"]: entree for entree in plan["phrases"]}
     verifie(
-        "221 écrit en wolof et marqué à régénérer",
+        "221 écrit en wolof, sans point final, et marqué à régénérer",
         entrees["dakar_dem_dikk_221.wav"]["phrase"]
-        == "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn."
+        == "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn"
         and entrees["dakar_dem_dikk_221.wav"].get("a_regenerer") is True,
         entrees["dakar_dem_dikk_221.wav"],
     )
@@ -761,10 +761,12 @@ def test_voix() -> tuple[int, int]:
     )
     phrase_corr = phrase_correspondances(corr)
     attendu_corr = (
-        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn. "
-        "Ci ginnaaw, jëlal bus bu Tata, numero fanweer ak juróom ñaar. Walla, "
-        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn. "
-        "Ci ginnaaw, jëlal bus bu Tata, numero juróom ñaar fukk ak juróom ñeent."
+        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
+        "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Tata, numero fanweer ak "
+        "juróom ñaar, moo lay yóbbu ba Malika Terminus. Walla, "
+        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
+        "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Tata, numero juróom ñaar "
+        "fukk ak juróom ñeent, moo lay yóbbu ba Malika."
     )
     verifie("voix 2 changements", phrase_corr == attendu_corr, phrase_corr)
     audio_corr = voix_correspondances_depuis_cache(corr)
@@ -803,6 +805,155 @@ def test_voix() -> tuple[int, int]:
             "segment manquant sauté sans crash",
             partiel is not None and partiel.startswith(b"RIFF"),
             partiel,
+        )
+
+    return echecs, total
+
+
+def test_lieux() -> tuple[int, int]:
+    """Le nouveau format des changements, avec des WAV factices (aucun audio réel)."""
+    import contextlib
+    import io
+    import tempfile
+    import wave
+
+    from tts.speak import (
+        MOO_LAY_YOBBU_BA,
+        NGA_WACC,
+        PAUSE_LIEU,
+        SILENCE_ENTRE,
+        nom_fichier_lieu,
+        nom_lieu_parle,
+        phrase_correspondance,
+        plan_correspondance,
+        voix_correspondances_depuis_cache,
+    )
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lieux {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    exemples = {
+        "Liberté 6": "Liberté six",
+        "Av Hyacinthe Thiandoum (Grand-Yoff)": "Avenue Hyacinthe Thiandoum",
+        "Palais 1": "Palais un",
+        "30 & 42": "trente et quarante-deux",
+        "Croisement Gadaye": "Croisement Gadaye",
+        "Malika Terminus": "Malika Terminus",
+    }
+    for arret, attendu in exemples.items():
+        obtenu = nom_lieu_parle(arret)
+        verifie(f"nom parlé : {arret}", obtenu == attendu, obtenu)
+
+    verifie(
+        "deux arrêts au même slug partagent le fichier",
+        nom_fichier_lieu("Av Hyacinthe Thiandoum (Grand-Yoff)")
+        == nom_fichier_lieu("Av Hyacinthe Thiandoum")
+        == "lieu_avenue_hyacinthe_thiandoum.wav",
+        nom_fichier_lieu("Av Hyacinthe Thiandoum (Grand-Yoff)"),
+    )
+
+    trajet = {
+        "etape_1": {
+            "compagnie": "Dakar Dem Dikk",
+            "ligne": "Ligne 221",
+            "descend_a": "Gadaye",
+        },
+        "etape_2": {
+            "compagnie": "Tata AFTU",
+            "ligne": "Ligne 37",
+            "descend_a": "Malika",
+        },
+        "changement": "Gadaye",
+    }
+    attendu_phrase = (
+        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
+        "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Tata, numero fanweer ak "
+        "juróom ñaar, moo lay yóbbu ba Malika."
+    )
+    verifie(
+        "format de la phrase avec changement",
+        phrase_correspondance(trajet) == attendu_phrase,
+        phrase_correspondance(trajet),
+    )
+
+    with tempfile.TemporaryDirectory() as dossier_temporaire:
+        dossier = Path(dossier_temporaire)
+        noms = [
+            "dakar_dem_dikk_221.wav",
+            NGA_WACC,
+            nom_fichier_lieu("Gadaye"),
+            "correspondance_liaison.wav",
+            "tata_aftu_37.wav",
+            MOO_LAY_YOBBU_BA,
+            nom_fichier_lieu("Malika"),
+        ]
+        for nom in noms:
+            with wave.open(str(dossier / nom), "wb") as wav:
+                wav.setnchannels(1)
+                wav.setsampwidth(2)
+                wav.setframerate(24000)
+                wav.writeframes(b"\x00\x00" * 240)
+
+        plan = plan_correspondance(trajet, dossier)
+        verifie(
+            "ordre des segments",
+            [chemin.name for chemin, _ in plan] == noms,
+            [chemin.name for chemin, _ in plan],
+        )
+        verifie(
+            "pauses : 0,1 s après les connecteurs, 0,3 s ailleurs",
+            [pause for _, pause in plan]
+            == [
+                SILENCE_ENTRE,
+                PAUSE_LIEU,
+                SILENCE_ENTRE,
+                SILENCE_ENTRE,
+                SILENCE_ENTRE,
+                PAUSE_LIEU,
+                SILENCE_ENTRE,
+            ],
+            [pause for _, pause in plan],
+        )
+
+        audio = voix_correspondances_depuis_cache([trajet], cache_dir=dossier)
+        with wave.open(io.BytesIO(audio or b"")) as wav:
+            frames = wav.getnframes()
+        attendu_frames = 7 * 240 + 4 * 7200 + 2 * 2400
+        verifie(
+            "pause courte réellement assemblée",
+            audio is not None and frames == attendu_frames,
+            (frames, attendu_frames),
+        )
+
+        (dossier / nom_fichier_lieu("Gadaye")).unlink()
+        flux = io.StringIO()
+        with contextlib.redirect_stdout(flux):
+            plan = plan_correspondance(trajet, dossier)
+        noms_sans_lieu = [chemin.name for chemin, _ in plan]
+        verifie(
+            "lieu manquant : connecteur et lieu sautés, le reste gardé",
+            NGA_WACC not in noms_sans_lieu
+            and nom_fichier_lieu("Gadaye") not in noms_sans_lieu
+            and "dakar_dem_dikk_221.wav" in noms_sans_lieu
+            and "correspondance_liaison.wav" in noms_sans_lieu
+            and "tata_aftu_37.wav" in noms_sans_lieu
+            and MOO_LAY_YOBBU_BA in noms_sans_lieu
+            and nom_fichier_lieu("Malika") in noms_sans_lieu,
+            noms_sans_lieu,
+        )
+        verifie(
+            "lieu manquant journalisé",
+            "[voix] segment manquant" in flux.getvalue()
+            and nom_fichier_lieu("Gadaye") in flux.getvalue(),
+            flux.getvalue(),
         )
 
     return echecs, total
@@ -893,9 +1044,10 @@ if __name__ == "__main__":
     else:
         echecs_partage, total_partage = test_partage()
         echecs_voix, total_voix = test_voix()
-        echecs = test_local() + echecs_partage + echecs_voix
+        echecs_lieux, total_lieux = test_lieux()
+        echecs = test_local() + echecs_partage + echecs_voix + echecs_lieux
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
-        total = total_partage + total_voix + (
+        total = total_partage + total_voix + total_lieux + (
             len(TRAJETS)
             + len(TRAJETS_COMPAGNIE)
             + len(TRAJETS_SANS_ARRET)
