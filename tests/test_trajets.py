@@ -518,6 +518,81 @@ def test_local() -> int:
     return echecs
 
 
+def test_partage() -> tuple[int, int]:
+    """Le message WhatsApp : trajet direct, avec changement, aucun trajet, encodage.
+
+    Le texte est vérifié mot pour mot : c'est lui que le contact lira, et une
+    flèche ou un accent mal encodé casserait le lien wa.me.
+    """
+    from app.partage import LIEN_APP, bouton_partage, lien_partage, texte_partage
+    from matching.stops_matcher import StopsMatcher
+
+    matcher = StopsMatcher()
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: str = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | partage {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    direct = matcher.find_line("Ouakam", "Palais")
+    texte = texte_partage("Ouakam", "Palais", direct)
+    attendu = (
+        "🚌 GuindiMa : Ouakam → Palais\n"
+        "Ligne 7 (Dakar Dem Dikk) : monte à Ouakam, descends à Palais 2.\n"
+        f"{LIEN_APP}"
+    )
+    verifie("trajet direct", texte == attendu, texte)
+
+    corr = matcher.find_line("Ngor", "Colobane")
+    attendu_corr = (
+        "🚌 GuindiMa : Ngor → Colobane\n"
+        "1. Ligne 35 (Tata AFTU) : monte à Ngor, descends à Patte d'Oie.\n"
+        "2. Ligne 48 (Tata AFTU) : monte à Patte d'Oie, descends à Colobane.\n"
+        f"{LIEN_APP}"
+    )
+    verifie(
+        "trajet avec changement",
+        texte_partage("Ngor", "Colobane", corr, corr["correspondances"][0]) == attendu_corr,
+        texte_partage("Ngor", "Colobane", corr, corr["correspondances"][0]),
+    )
+    verifie(
+        "changement sans possibilité précisée",
+        texte_partage("Ngor", "Colobane", corr) == attendu_corr,
+        texte_partage("Ngor", "Colobane", corr),
+    )
+
+    aucun = {"found": False, "lignes": [], "correspondances": []}
+    verifie("aucun trajet", texte_partage("Ouakam", "Ngor", aucun) == "")
+    verifie("aucun bouton", bouton_partage("Ouakam", "Ngor", aucun) == "")
+
+    avec_accents = texte_partage("Liberté 5", "Médina", matcher.find_line("Liberté 5", "Médina"))
+    lien = lien_partage(avec_accents)
+    verifie(
+        "lien encodé",
+        lien.startswith("https://wa.me/?text=")
+        and " " not in lien
+        and "%0A" in lien
+        and "%E2%86%92" in lien
+        and "%C3%A9" in lien,
+        lien,
+    )
+    bouton = bouton_partage(
+        "Ngor", "Colobane", corr, corr["correspondances"][0]
+    )
+    verifie(
+        "bouton dans le résultat",
+        f"href='{lien_partage(attendu_corr)}'" in bouton
+        and "Partager sur WhatsApp" in bouton,
+        bouton,
+    )
+    return echecs, total
+
+
 def _lignes_dans(carte: str) -> set[str]:
     """Numéros de ligne affichés dans la carte HTML renvoyée par l'app."""
     texte = re.sub(r"<[^>]+>", " ", carte)
@@ -601,9 +676,10 @@ if __name__ == "__main__":
         echecs = test_en_ligne()
         total = len(TRAJETS) + len(AUDIOS) + len(TRAJETS_EN_LIGNE)
     else:
-        echecs = test_local()
+        echecs_partage, total_partage = test_partage()
+        echecs = test_local() + echecs_partage
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
-        total = (
+        total = total_partage + (
             len(TRAJETS)
             + len(TRAJETS_COMPAGNIE)
             + len(TRAJETS_SANS_ARRET)

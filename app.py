@@ -36,6 +36,7 @@ RACINE = Path(__file__).resolve().parent
 # que src/ soit dans le chemin, comme le fait src/app/app.py pour son propre lancement.
 sys.path.insert(0, str(RACINE / "src"))
 
+from app.partage import bouton_partage  # noqa: E402
 from asr.transcribe import (  # noqa: E402
     MODEL_ASR_GPU,
     SAMPLE_RATE,
@@ -816,8 +817,12 @@ def _carte(
     astuce = _astuce_quartier(depart, arrivee)
     entete = bandeau_compagnie + avertissement + astuce
     if resultat["found"]:
-        return entete + "".join(
-            _une_carte(match, depart=depart, arrivee=arrivee) for match in resultat["lignes"]
+        return (
+            entete
+            + "".join(
+                _une_carte(match, depart=depart, arrivee=arrivee) for match in resultat["lignes"]
+            )
+            + bouton_partage(depart, arrivee, resultat)
         )
 
     correspondances = resultat.get("correspondances") or []
@@ -832,6 +837,7 @@ def _carte(
                 f"🔁 Change à <b>{trajet['changement']}</b></div>"
             )
             blocs.append(_une_carte(trajet["etape_2"], "2e bus", arrivee=arrivee))
+            blocs.append(bouton_partage(depart, arrivee, resultat, trajet))
         return "".join(blocs)
 
     inconnus = [
