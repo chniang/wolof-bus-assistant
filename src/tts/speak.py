@@ -192,24 +192,59 @@ def _mots_chiffres(chiffres: str) -> str:
     return nombre_en_francais(int(chiffres))
 
 
-def nom_lieu_parle(arret: object) -> str:
+ROMAINS_FR = {
+    "I": "un",
+    "II": "deux",
+    "III": "trois",
+    "IV": "quatre",
+    "V": "cinq",
+    "VI": "six",
+    "VII": "sept",
+    "VIII": "huit",
+    "IX": "neuf",
+    "X": "dix",
+}
+MOTIF_ROMAIN = re.compile(
+    r"(?<![^\W_])(?:VIII|VII|III|IV|VI|IX|II|X|V|I)(?![^\W_])",
+    re.IGNORECASE,
+)
+# Sigles à épeler lettre par lettre. Vide pour l'instant : le contenu sera
+# décidé après écoute (« HLM » -> « H L M »).
+SIGLES_EPELES: list[str] = []
+
+
+def nom_lieu_parle(
+    arret: object, sigles_epeles: list[str] | None = None
+) -> str:
     """Le nom d'un arrêt tel qu'on le dit à Dakar.
 
     « Av Hyacinthe Thiandoum (Grand-Yoff) » -> « Avenue Hyacinthe Thiandoum ».
-    Les chiffres sont dits en français (« Palais 1 » -> « Palais un ») : c'est
-    la langue des noms de rues, même quand la phrase autour est en wolof.
+    Les chiffres sont dits en français (« Palais 1 » -> « Palais un », « Liberté
+    VI » -> « Liberté six ») : c'est la langue des noms de rues, même quand la
+    phrase autour est en wolof. Les sigles de `SIGLES_EPELES` sont épelés.
     """
     texte = str(arret if arret is not None else "")
     texte = re.sub(r"\s*\([^)]*\)", "", texte)
     texte = re.sub(r"\bAv\.?(?=\s|$)", "Avenue", texte, flags=re.IGNORECASE)
     texte = re.sub(r"\bBd\.?(?=\s|$)", "Boulevard", texte, flags=re.IGNORECASE)
+    texte = MOTIF_ROMAIN.sub(
+        lambda trouve: ROMAINS_FR[trouve.group().upper()], texte
+    )
     texte = re.sub(
         r"\d+",
         lambda trouve: f" {_mots_chiffres(trouve.group())} ",
         texte,
     )
     texte = texte.replace("&", " et ")
-    return " ".join(texte.split())
+    sigles = SIGLES_EPELES if sigles_epeles is None else sigles_epeles
+    for sigle in sorted({s for s in sigles if s}, key=len, reverse=True):
+        texte = re.sub(
+            rf"\b{re.escape(sigle)}\b",
+            " ".join(sigle),
+            texte,
+        )
+    texte = " ".join(texte.split())
+    return texte[:1].upper() + texte[1:] if texte else texte
 
 
 def nom_fichier_lieu(arret: object) -> str:

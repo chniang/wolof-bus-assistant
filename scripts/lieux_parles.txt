@@ -1,10 +1,10 @@
-2 Voies de Liberté VI -> deux Voies de Liberté VI
-2 Voies Liberté 6 -> deux Voies Liberté six
+2 Voies de Liberté VI -> Deux Voies de Liberté six
+2 Voies Liberté 6 -> Deux Voies Liberté six
 2 Voies Notaire -> Deux Voies Notaire
-30 & 42 -> trente et quarante-deux
-49 -> quarante-neuf
-63 -> soixante-trois
-72 -> soixante-douze
+30 & 42 -> Trente et quarante-deux
+49 -> Quarante-neuf
+63 -> Soixante-trois
+72 -> Soixante-douze
 AIBD -> AIBD
 Allées Ababacar Sy (Dieuppeul/derklé) -> Allées Ababacar Sy
 Allées Cheikh Sidaty Aïdara (Niaritalli) -> Allées Cheikh Sidaty Aïdara
@@ -204,9 +204,9 @@ Gare Lat Dior -> Gare Lat Dior
 Gare Lat-Dior -> Gare Lat Dior
 Gare Petersen -> Gare Petersen
 Gare routière de Colobane -> Gare routière de Colobane
-Giratoire de Liberté VI -> Giratoire de Liberté VI
+Giratoire de Liberté VI -> Giratoire de Liberté six
 Giratoire Liberté 6 -> Giratoire Liberté six
-Giratoire Liberté VI -> Giratoire Liberté VI
+Giratoire Liberté VI -> Giratoire Liberté six
 Golf -> Golf
 Golf Fadia -> Golf Fadia
 Gorom 1 -> Gorom un
@@ -221,10 +221,10 @@ Gueule Tapée Claudel -> Gueule Tapée Claudel
 Guédiawaye -> Guédiawaye
 Guédiawaye Cité des Enseignants -> Guédiawaye Cité des Enseignants
 Hamo 6 -> Hamo six
-Hamo III -> Hamo III
-Hamo IV -> Hamo IV
-Hamo V/vi -> Hamo V/vi
-Hamo VI -> Hamo VI
+Hamo III -> Hamo trois
+Hamo IV -> Hamo quatre
+Hamo V/vi -> Hamo cinq/six
+Hamo VI -> Hamo six
 HLM -> HLM
 HLM Grand Yoff -> HLM Grand Yoff
 HLM Guédiawaye -> HLM Guédiawaye
@@ -464,8 +464,8 @@ Rufisque SONADIS -> Rufisque SONADIS
 Sacré Cœur -> Sacré Cœur
 Sacré-Cœur -> Sacré Cœur
 SAFCO -> SAFCO
-SAHM -> SAHM
-Sahm -> SAHM
+SAHM -> Sahm
+Sahm -> Sahm
 Sam Notaire -> Sam Notaire
 Sangalkam -> Sangalkam
 Sapeurs-Pompiers de Gw -> Sapeurs-Pompiers de Gw
@@ -508,7 +508,7 @@ Tally Boumack -> Tally Boumack
 Tally Diallo -> Tally Diallo
 Tally Icotaf -> Tally Icotaf
 Tally Icotaf Pikine -> Tally Icotaf Pikine
-Tally Icotaf X Rte des Niayes (Pikine) -> Tally Icotaf X Rte des Niayes
+Tally Icotaf X Rte des Niayes (Pikine) -> Tally Icotaf dix Rte des Niayes
 Tallyboumack -> Tallyboumack
 Tallyicotaf -> Tallyicotaf
 Tawfeex -> Tawfeex

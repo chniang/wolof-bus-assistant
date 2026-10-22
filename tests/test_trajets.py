@@ -821,6 +821,7 @@ def test_lieux() -> tuple[int, int]:
         MOO_LAY_YOBBU_BA,
         NGA_WACC,
         PAUSE_LIEU,
+        SIGLES_EPELES,
         SILENCE_ENTRE,
         nom_fichier_lieu,
         nom_lieu_parle,
@@ -842,15 +843,47 @@ def test_lieux() -> tuple[int, int]:
 
     exemples = {
         "Liberté 6": "Liberté six",
+        "Liberté VI": "Liberté six",
+        "Giratoire de Liberté VI": "Giratoire de Liberté six",
+        "Hamo III": "Hamo trois",
+        "Hamo VIII": "Hamo huit",
+        "Hamo IX": "Hamo neuf",
+        "Hamo X": "Hamo dix",
+        "Hamo V/vi": "Hamo cinq/six",
+        "2 Voies de Liberté VI": "Deux Voies de Liberté six",
+        "2 Voies Liberté 6": "Deux Voies Liberté six",
         "Av Hyacinthe Thiandoum (Grand-Yoff)": "Avenue Hyacinthe Thiandoum",
         "Palais 1": "Palais un",
-        "30 & 42": "trente et quarante-deux",
+        "30 & 42": "Trente et quarante-deux",
         "Croisement Gadaye": "Croisement Gadaye",
         "Malika Terminus": "Malika Terminus",
+        "Icotaf Villa": "Icotaf Villa",
+        "Véto": "Véto",
+        "Village VI": "Village six",
     }
     for arret, attendu in exemples.items():
         obtenu = nom_lieu_parle(arret)
         verifie(f"nom parlé : {arret}", obtenu == attendu, obtenu)
+
+    verifie(
+        "sigles : liste disponible",
+        isinstance(SIGLES_EPELES, list),
+        SIGLES_EPELES,
+    )
+    verifie(
+        "sigle non épelé avec une liste vide",
+        nom_lieu_parle("HLM Grand Yoff", []) == "HLM Grand Yoff",
+        nom_lieu_parle("HLM Grand Yoff", []),
+    )
+    verifie(
+        "sigle épelé quand il est dans la liste",
+        nom_lieu_parle("HLM Grand Yoff", ["HLM"]) == "H L M Grand Yoff"
+        and nom_lieu_parle("UCAD", ["UCAD"]) == "U C A D",
+        (
+            nom_lieu_parle("HLM Grand Yoff", ["HLM"]),
+            nom_lieu_parle("UCAD", ["UCAD"]),
+        ),
+    )
 
     verifie(
         "deux arrêts au même slug partagent le fichier",
@@ -955,6 +988,92 @@ def test_lieux() -> tuple[int, int]:
             and nom_fichier_lieu("Gadaye") in flux.getvalue(),
             flux.getvalue(),
         )
+
+    import json
+
+    plan = json.loads(
+        (RACINE / "scripts" / "phrases_voix.json").read_text(encoding="utf-8")
+    )
+    lieux = [e["phrase"] for e in plan["phrases"] if e["type"] == "lieu"]
+    verifie(
+        "JSON : aucun chiffre dans les lieux",
+        all(not re.search(r"\d", phrase) for phrase in lieux),
+        [phrase for phrase in lieux if re.search(r"\d", phrase)],
+    )
+    verifie(
+        "JSON : majuscule initiale dans les lieux",
+        all(phrase[:1].isupper() for phrase in lieux),
+        [phrase for phrase in lieux if not phrase[:1].isupper()],
+    )
+
+    pilote = json.loads(
+        (RACINE / "scripts" / "phrases_voix_pilote.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    attendus_pilote = [
+        "dakar_dem_dikk_221.wav",
+        "nga_wacc.wav",
+        "moo_lay_yobbu_ba.wav",
+        "lieu_gadaye.wav",
+        "lieu_malika.wav",
+        "lieu_liberte_six.wav",
+        "lieu_deux_voies_liberte_six.wav",
+        "lieu_palais_un.wav",
+        "lieu_avenue_hyacinthe_thiandoum.wav",
+        "lieu_croisement_gadaye.wav",
+        "lieu_ucad.wav",
+        "lieu_trente_et_quarante_deux.wav",
+        "pilote_aibd_mot.wav",
+        "pilote_aibd_epele.wav",
+        "pilote_hlm_mot.wav",
+        "pilote_hlm_epele.wav",
+        "pilote_vdn_mot.wav",
+        "pilote_vdn_epele.wav",
+    ]
+    verifie(
+        "pilote : mêmes métadonnées que le plan",
+        all(
+            pilote[cle] == plan[cle]
+            for cle in ("modele", "description", "graine", "frequence")
+        ),
+    )
+    verifie(
+        "pilote : fichiers attendus",
+        [e["fichier"] for e in pilote["phrases"]] == attendus_pilote,
+        [e["fichier"] for e in pilote["phrases"]],
+    )
+    verifie(
+        "pilote : toutes les phrases à régénérer",
+        all(e.get("a_regenerer") is True for e in pilote["phrases"]),
+        [e["fichier"] for e in pilote["phrases"] if not e.get("a_regenerer")],
+    )
+    phrases_pilote = {e["fichier"]: e["phrase"] for e in pilote["phrases"]}
+    verifie(
+        "pilote : 221 sans point final",
+        not phrases_pilote["dakar_dem_dikk_221.wav"].endswith("."),
+        phrases_pilote["dakar_dem_dikk_221.wav"],
+    )
+    verifie(
+        "pilote : sigles mot puis épelé",
+        (
+            phrases_pilote["pilote_aibd_mot.wav"],
+            phrases_pilote["pilote_aibd_epele.wav"],
+            phrases_pilote["pilote_hlm_mot.wav"],
+            phrases_pilote["pilote_hlm_epele.wav"],
+            phrases_pilote["pilote_vdn_mot.wav"],
+            phrases_pilote["pilote_vdn_epele.wav"],
+        )
+        == ("AIBD", "A I B D", "HLM", "H L M", "VDN", "V D N"),
+        [phrases_pilote[nom] for nom in (
+            "pilote_aibd_mot.wav",
+            "pilote_aibd_epele.wav",
+            "pilote_hlm_mot.wav",
+            "pilote_hlm_epele.wav",
+            "pilote_vdn_mot.wav",
+            "pilote_vdn_epele.wav",
+        )],
+    )
 
     return echecs, total
 

@@ -1309,13 +1309,13 @@
       "type": "lieu"
     },
     {
-      "fichier": "lieu_deux_voies_de_liberte_vi.wav",
-      "phrase": "deux Voies de Liberté VI",
+      "fichier": "lieu_deux_voies_de_liberte_six.wav",
+      "phrase": "Deux Voies de Liberté six",
       "type": "lieu"
     },
     {
       "fichier": "lieu_deux_voies_liberte_six.wav",
-      "phrase": "deux Voies Liberté six",
+      "phrase": "Deux Voies Liberté six",
       "type": "lieu"
     },
     {
@@ -1559,18 +1559,13 @@
       "type": "lieu"
     },
     {
-      "fichier": "lieu_giratoire_de_liberte_vi.wav",
-      "phrase": "Giratoire de Liberté VI",
+      "fichier": "lieu_giratoire_de_liberte_six.wav",
+      "phrase": "Giratoire de Liberté six",
       "type": "lieu"
     },
     {
       "fichier": "lieu_giratoire_liberte_six.wav",
       "phrase": "Giratoire Liberté six",
-      "type": "lieu"
-    },
-    {
-      "fichier": "lieu_giratoire_liberte_vi.wav",
-      "phrase": "Giratoire Liberté VI",
       "type": "lieu"
     },
     {
@@ -1634,13 +1629,13 @@
       "type": "lieu"
     },
     {
-      "fichier": "lieu_hamo_iii.wav",
-      "phrase": "Hamo III",
+      "fichier": "lieu_hamo_cinq_six.wav",
+      "phrase": "Hamo cinq/six",
       "type": "lieu"
     },
     {
-      "fichier": "lieu_hamo_iv.wav",
-      "phrase": "Hamo IV",
+      "fichier": "lieu_hamo_quatre.wav",
+      "phrase": "Hamo quatre",
       "type": "lieu"
     },
     {
@@ -1649,13 +1644,8 @@
       "type": "lieu"
     },
     {
-      "fichier": "lieu_hamo_v_vi.wav",
-      "phrase": "Hamo V/vi",
-      "type": "lieu"
-    },
-    {
-      "fichier": "lieu_hamo_vi.wav",
-      "phrase": "Hamo VI",
+      "fichier": "lieu_hamo_trois.wav",
+      "phrase": "Hamo trois",
       "type": "lieu"
     },
     {
@@ -2305,7 +2295,7 @@
     },
     {
       "fichier": "lieu_quarante_neuf.wav",
-      "phrase": "quarante-neuf",
+      "phrase": "Quarante-neuf",
       "type": "lieu"
     },
     {
@@ -2795,7 +2785,7 @@
     },
     {
       "fichier": "lieu_sahm.wav",
-      "phrase": "SAHM",
+      "phrase": "Sahm",
       "type": "lieu"
     },
     {
@@ -2910,12 +2900,12 @@
     },
     {
       "fichier": "lieu_soixante_douze.wav",
-      "phrase": "soixante-douze",
+      "phrase": "Soixante-douze",
       "type": "lieu"
     },
     {
       "fichier": "lieu_soixante_trois.wav",
-      "phrase": "soixante-trois",
+      "phrase": "Soixante-trois",
       "type": "lieu"
     },
     {
@@ -3014,13 +3004,13 @@
       "type": "lieu"
     },
     {
-      "fichier": "lieu_tally_icotaf_pikine.wav",
-      "phrase": "Tally Icotaf Pikine",
+      "fichier": "lieu_tally_icotaf_dix_rte_des_niayes.wav",
+      "phrase": "Tally Icotaf dix Rte des Niayes",
       "type": "lieu"
     },
     {
-      "fichier": "lieu_tally_icotaf_x_rte_des_niayes.wav",
-      "phrase": "Tally Icotaf X Rte des Niayes",
+      "fichier": "lieu_tally_icotaf_pikine.wav",
+      "phrase": "Tally Icotaf Pikine",
       "type": "lieu"
     },
     {
@@ -3085,7 +3075,7 @@
     },
     {
       "fichier": "lieu_trente_et_quarante_deux.wav",
-      "phrase": "trente et quarante-deux",
+      "phrase": "Trente et quarante-deux",
       "type": "lieu"
     },
     {

@@ -1,0 +1,116 @@
+{
+  "modele": "CONCREE/Adia_TTS",
+  "description": "A warm and natural voice, with a conversational flow",
+  "graine": 1234,
+  "frequence": 24000,
+  "phrases": [
+    {
+      "fichier": "dakar_dem_dikk_221.wav",
+      "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn",
+      "type": "ligne",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "nga_wacc.wav",
+      "phrase": "nga wàcc",
+      "type": "service",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "moo_lay_yobbu_ba.wav",
+      "phrase": "moo lay yóbbu ba",
+      "type": "service",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "lieu_gadaye.wav",
+      "phrase": "Gadaye",
+      "type": "lieu",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "lieu_malika.wav",
+      "phrase": "Malika",
+      "type": "lieu",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "lieu_liberte_six.wav",
+      "phrase": "Liberté six",
+      "type": "lieu",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "lieu_deux_voies_liberte_six.wav",
+      "phrase": "Deux Voies Liberté six",
+      "type": "lieu",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "lieu_palais_un.wav",
+      "phrase": "Palais un",
+      "type": "lieu",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "lieu_avenue_hyacinthe_thiandoum.wav",
+      "phrase": "Avenue Hyacinthe Thiandoum",
+      "type": "lieu",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "lieu_croisement_gadaye.wav",
+      "phrase": "Croisement Gadaye",
+      "type": "lieu",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "lieu_ucad.wav",
+      "phrase": "UCAD",
+      "type": "lieu",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "lieu_trente_et_quarante_deux.wav",
+      "phrase": "Trente et quarante-deux",
+      "type": "lieu",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "pilote_aibd_mot.wav",
+      "phrase": "AIBD",
+      "type": "test",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "pilote_aibd_epele.wav",
+      "phrase": "A I B D",
+      "type": "test",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "pilote_hlm_mot.wav",
+      "phrase": "HLM",
+      "type": "test",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "pilote_hlm_epele.wav",
+      "phrase": "H L M",
+      "type": "test",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "pilote_vdn_mot.wav",
+      "phrase": "VDN",
+      "type": "test",
+      "a_regenerer": true
+    },
+    {
+      "fichier": "pilote_vdn_epele.wav",
+      "phrase": "V D N",
+      "type": "test",
+      "a_regenerer": true
+    }
+  ]
+}
