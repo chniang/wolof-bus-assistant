@@ -674,10 +674,10 @@ def test_voix() -> tuple[int, int]:
     )
     entrees = {entree["fichier"]: entree for entree in plan["phrases"]}
     verifie(
-        "221 écrit en wolof, sans point final, et marqué à régénérer",
+        "221 écrit en wolof, sans point final, et hors de cette séance",
         entrees["dakar_dem_dikk_221.wav"]["phrase"]
         == "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn"
-        and entrees["dakar_dem_dikk_221.wav"].get("a_regenerer") is True,
+        and entrees["dakar_dem_dikk_221.wav"].get("a_regenerer") is False,
         entrees["dakar_dem_dikk_221.wav"],
     )
 
@@ -1065,13 +1065,38 @@ def test_prononciations() -> tuple[int, int]:
             if len(entree["phrase"]) > 200
         ],
     )
+    marquees = [entree for entree in plan["phrases"] if entree.get("a_regenerer") is True]
+    marquees_lieux = [entree for entree in marquees if entree["type"] == "lieu"]
+    marquees_tata = [
+        entree for entree in marquees if entree["fichier"].startswith("tata_aftu_")
+    ]
+    marquees_taf = [
+        entree for entree in marquees if entree["fichier"] == "dakar_dem_dikk_taf_taf.wav"
+    ]
     verifie(
-        "tous les lieux sont à régénérer",
-        all(entree.get("a_regenerer") is True for entree in lieux.values()),
+        "274 entrées à régénérer (201 lieux + 72 Tata + TAF)",
+        len(marquees) == 274
+        and len(marquees_lieux) == 201
+        and len(marquees_tata) == 72
+        and len(marquees_taf) == 1,
+        {
+            "total": len(marquees),
+            "lieux": len(marquees_lieux),
+            "tata": len(marquees_tata),
+            "taf": len(marquees_taf),
+        },
+    )
+    verifie(
+        "aucun service de cette séance n'est régénéré",
+        all(
+            entree.get("a_regenerer") is False
+            for entree in plan["phrases"]
+            if entree["type"] == "service"
+        ),
         [
             entree["fichier"]
-            for entree in lieux.values()
-            if entree.get("a_regenerer") is not True
+            for entree in plan["phrases"]
+            if entree["type"] == "service" and entree.get("a_regenerer") is True
         ],
     )
 
@@ -1111,11 +1136,19 @@ def test_prononciations() -> tuple[int, int]:
 
     nga = entrees.get("nga_wacc.wav")
     verifie(
-        "nga_wacc vaut nga wathie et est à régénérer",
+        "nga_wacc vaut nga wathie et reste hors de cette séance",
         nga is not None
         and nga["phrase"] == "nga wathie"
-        and nga.get("a_regenerer") is True,
+        and nga.get("a_regenerer") is False,
         nga,
+    )
+    moo = entrees.get("moo_lay_yobbu_ba.wav")
+    verifie(
+        "moo_lay_yobbu_ba reste inchangé et hors séance",
+        moo is not None
+        and moo["phrase"] == "moo lay yóbbu ba"
+        and moo.get("a_regenerer") is False,
+        moo,
     )
     taf = entrees.get("dakar_dem_dikk_taf_taf.wav")
     verifie(
@@ -1124,6 +1157,161 @@ def test_prononciations() -> tuple[int, int]:
         and taf["phrase"] == "Jëlal bus bu Dem Dikk, Tàf Tàf."
         and taf.get("a_regenerer") is True,
         taf,
+    )
+    bene = [
+        entrees.get("lieu_bene_baraque.wav"),
+        entrees.get("lieu_yeumbeul_bene_baraque.wav"),
+    ]
+    verifie(
+        "Bene Baraque et Yeumbeul Bene Baraque sont à régénérer",
+        all(
+            entree is not None
+            and entree["phrase"] in ("Benn baraak", "Yembël Benn baraak")
+            and entree.get("a_regenerer") is True
+            for entree in bene
+        ),
+        bene,
+    )
+
+    return echecs, total
+
+
+def test_verification_voix() -> tuple[int, int]:
+    """Teste le best-of-3 (similarité, durée, choix) sans charger un modèle."""
+    import json
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | vérification voix {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    notebook = json.loads(
+        (RACINE / "notebooks" / "voix_adia_colab.ipynb").read_text(encoding="utf-8")
+    )
+    source = None
+    for cellule in notebook["cells"]:
+        texte = "".join(cellule["source"])
+        if "# HELPERS_VERIFICATION_VOIX" in texte:
+            source = texte
+            break
+    verifie("cellule helpers présente dans le notebook", source is not None)
+    if source is None:
+        return echecs, total
+
+    # On exécute uniquement la cellule pure : aucun import de torch/parler_tts.
+    espace: dict[str, object] = {}
+    exec(compile(source, "<helpers notebook>", "exec"), espace)
+    normaliser = espace["normaliser_texte"]
+    distance = espace["distance_levenshtein"]
+    score = espace["similarite"]
+    bornes = espace["bornes_duree"]
+    controler = espace["controler_duree"]
+    douteux_score = espace["est_douteux"]
+    choisir = espace["choisir_meilleur_candidat"]
+
+    verifie(
+        "normalisation accents, ponctuation et majuscules",
+        normaliser("Jëlal bus bu Dem Dikk, Tàf Tàf.") == "jelal bus bu dem dikk taf taf",
+        normaliser("Jëlal bus bu Dem Dikk, Tàf Tàf."),
+    )
+    verifie(
+        "normalisation de ñ et ŋ",
+        normaliser("Ñaari Ŋa") == "naari na",
+        normaliser("Ñaari Ŋa"),
+    )
+    verifie("Levenshtein identique", distance("abc", "abc") == 0)
+    verifie("Levenshtein substitution", distance("abc", "abd") == 1)
+    verifie("similarité identique après normalisation", score("Tàf Tàf", "taf taf") == 1.0)
+    verifie(
+        "similarité partielle entre 0 et 1",
+        0.0 < score("Benn baraak", "benn baraq") < 1.0,
+        score("Benn baraak", "benn baraq"),
+    )
+
+    mini, maxi = bornes("Benn baraak")
+    verifie("bornes de durée cohérentes", 0.0 < mini < maxi, (mini, maxi))
+    ok_court, raison_court = controler(0.2, "Benn baraak")
+    verifie(
+        "durée trop courte détectée",
+        not ok_court and "court" in raison_court,
+        (ok_court, raison_court),
+    )
+    ok_long, raison_long = controler(maxi + 2.0, "Benn baraak")
+    verifie(
+        "son après la fin attendue détecté",
+        not ok_long and "fin" in raison_long,
+        (ok_long, raison_long),
+    )
+    ok_normal, _ = controler((mini + maxi) / 2, "Benn baraak")
+    verifie("durée normale acceptée", ok_normal)
+    verifie(
+        "douteux si la similarité est faible",
+        douteux_score(0.4, True) is True and douteux_score(0.9, True) is False,
+    )
+    verifie(
+        "douteux si la durée est anormale",
+        douteux_score(0.9, False) is True,
+    )
+
+    candidats = [
+        {"score": 0.80, "duree_ok": True},
+        {"score": 0.90, "duree_ok": False},
+        {"score": 0.70, "duree_ok": True},
+    ]
+    verifie(
+        "un candidat à durée anormale ne passe pas devant un bon",
+        choisir(candidats) == 0,
+        choisir(candidats),
+    )
+    candidats_valides = [
+        {"score": 0.40, "duree_ok": True},
+        {"score": 0.60, "duree_ok": True},
+        {"score": 0.50, "duree_ok": True},
+    ]
+    verifie(
+        "le meilleur score gagne quand les durées sont bonnes",
+        choisir(candidats_valides) == 1,
+        choisir(candidats_valides),
+    )
+
+    plan = json.loads(
+        (RACINE / "scripts" / "phrases_voix.json").read_text(encoding="utf-8")
+    )
+    entrees = {entree["fichier"]: entree for entree in plan["phrases"]}
+    marquees = [entree for entree in plan["phrases"] if entree.get("a_regenerer") is True]
+    verifie(
+        "le plan marque exactement 201 lieux, 72 Tata et TAF",
+        len(marquees) == 274
+        and sum(1 for e in marquees if e["type"] == "lieu") == 201
+        and sum(1 for e in marquees if e["fichier"].startswith("tata_aftu_")) == 72
+        and sum(1 for e in marquees if e["fichier"] == "dakar_dem_dikk_taf_taf.wav") == 1,
+        {
+            "total": len(marquees),
+            "lieux": sum(1 for e in marquees if e["type"] == "lieu"),
+        },
+    )
+    verifie(
+        "les deux lieux Bene sont marqués",
+        entrees["lieu_bene_baraque.wav"].get("a_regenerer") is True
+        and entrees["lieu_yeumbeul_bene_baraque.wav"].get("a_regenerer") is True,
+        {
+            "bene": entrees["lieu_bene_baraque.wav"].get("a_regenerer"),
+            "yeumbeul": entrees["lieu_yeumbeul_bene_baraque.wav"].get("a_regenerer"),
+        },
+    )
+
+    page_ecoute = (RACINE / "scripts" / "ecoute_voix.html").read_text(encoding="utf-8")
+    verifie(
+        "la page d'écoute filtre douteux depuis rapport_voix.csv",
+        'value="douteux"' in page_ecoute
+        and "rapport_voix.csv" in page_ecoute
+        and "function parseCsv" in page_ecoute,
     )
 
     return echecs, total
@@ -1216,12 +1404,14 @@ if __name__ == "__main__":
         echecs_voix, total_voix = test_voix()
         echecs_lieux, total_lieux = test_lieux()
         echecs_prononciations, total_prononciations = test_prononciations()
+        echecs_verification, total_verification = test_verification_voix()
         echecs = (
             test_local()
             + echecs_partage
             + echecs_voix
             + echecs_lieux
             + echecs_prononciations
+            + echecs_verification
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -1229,6 +1419,7 @@ if __name__ == "__main__":
             + total_voix
             + total_lieux
             + total_prononciations
+            + total_verification
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)
