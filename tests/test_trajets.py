@@ -989,90 +989,141 @@ def test_lieux() -> tuple[int, int]:
             flux.getvalue(),
         )
 
+    return echecs, total
+
+
+def test_prononciations() -> tuple[int, int]:
+    """Le plan porte le texte exact préparé pour une seule génération Adia."""
     import json
 
     plan = json.loads(
         (RACINE / "scripts" / "phrases_voix.json").read_text(encoding="utf-8")
     )
-    lieux = [e["phrase"] for e in plan["phrases"] if e["type"] == "lieu"]
-    verifie(
-        "JSON : aucun chiffre dans les lieux",
-        all(not re.search(r"\d", phrase) for phrase in lieux),
-        [phrase for phrase in lieux if re.search(r"\d", phrase)],
-    )
-    verifie(
-        "JSON : majuscule initiale dans les lieux",
-        all(phrase[:1].isupper() for phrase in lieux),
-        [phrase for phrase in lieux if not phrase[:1].isupper()],
-    )
-
-    pilote = json.loads(
-        (RACINE / "scripts" / "phrases_voix_pilote.json").read_text(
+    prononciations = json.loads(
+        (RACINE / "scripts" / "prononciations_wolof.json").read_text(
             encoding="utf-8"
         )
+    )["lieux"]
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | prononciations {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    lieux = {
+        entree["fichier"]: entree
+        for entree in plan["phrases"]
+        if entree["type"] == "lieu"
+    }
+    fichiers_plan = set(lieux)
+    fichiers_prononciations = set(prononciations)
+    verifie(
+        "mêmes fichiers lieu des deux côtés",
+        fichiers_plan == fichiers_prononciations,
+        {
+            "absents_du_plan": sorted(fichiers_prononciations - fichiers_plan),
+            "absents_des_prononciations": sorted(
+                fichiers_plan - fichiers_prononciations
+            ),
+        },
     )
-    attendus_pilote = [
-        "dakar_dem_dikk_221.wav",
-        "nga_wacc.wav",
-        "moo_lay_yobbu_ba.wav",
-        "lieu_gadaye.wav",
-        "lieu_malika.wav",
-        "lieu_liberte_six.wav",
-        "lieu_deux_voies_liberte_six.wav",
-        "lieu_palais_un.wav",
-        "lieu_avenue_hyacinthe_thiandoum.wav",
-        "lieu_croisement_gadaye.wav",
-        "lieu_ucad.wav",
-        "lieu_trente_et_quarante_deux.wav",
-        "pilote_aibd_mot.wav",
-        "pilote_aibd_epele.wav",
-        "pilote_hlm_mot.wav",
-        "pilote_hlm_epele.wav",
-        "pilote_vdn_mot.wav",
-        "pilote_vdn_epele.wav",
+
+    differentes = [
+        fichier
+        for fichier in fichiers_plan & fichiers_prononciations
+        if lieux[fichier]["phrase"] != prononciations[fichier]
     ]
     verifie(
-        "pilote : mêmes métadonnées que le plan",
-        all(
-            pilote[cle] == plan[cle]
-            for cle in ("modele", "description", "graine", "frequence")
-        ),
+        "chaque lieu reprend exactement la prononciation",
+        not differentes,
+        [
+            (fichier, lieux[fichier]["phrase"], prononciations[fichier])
+            for fichier in differentes
+        ],
     )
     verifie(
-        "pilote : fichiers attendus",
-        [e["fichier"] for e in pilote["phrases"]] == attendus_pilote,
-        [e["fichier"] for e in pilote["phrases"]],
+        "aucun chiffre dans une phrase du plan",
+        all(not re.search(r"\d", entree["phrase"]) for entree in plan["phrases"]),
+        [
+            entree["fichier"]
+            for entree in plan["phrases"]
+            if re.search(r"\d", entree["phrase"])
+        ],
     )
     verifie(
-        "pilote : toutes les phrases à régénérer",
-        all(e.get("a_regenerer") is True for e in pilote["phrases"]),
-        [e["fichier"] for e in pilote["phrases"] if not e.get("a_regenerer")],
-    )
-    phrases_pilote = {e["fichier"]: e["phrase"] for e in pilote["phrases"]}
-    verifie(
-        "pilote : 221 sans point final",
-        not phrases_pilote["dakar_dem_dikk_221.wav"].endswith("."),
-        phrases_pilote["dakar_dem_dikk_221.wav"],
+        "aucune phrase du plan au-delà de 200 caractères",
+        all(len(entree["phrase"]) <= 200 for entree in plan["phrases"]),
+        [
+            (entree["fichier"], len(entree["phrase"]))
+            for entree in plan["phrases"]
+            if len(entree["phrase"]) > 200
+        ],
     )
     verifie(
-        "pilote : sigles mot puis épelé",
-        (
-            phrases_pilote["pilote_aibd_mot.wav"],
-            phrases_pilote["pilote_aibd_epele.wav"],
-            phrases_pilote["pilote_hlm_mot.wav"],
-            phrases_pilote["pilote_hlm_epele.wav"],
-            phrases_pilote["pilote_vdn_mot.wav"],
-            phrases_pilote["pilote_vdn_epele.wav"],
-        )
-        == ("AIBD", "A I B D", "HLM", "H L M", "VDN", "V D N"),
-        [phrases_pilote[nom] for nom in (
-            "pilote_aibd_mot.wav",
-            "pilote_aibd_epele.wav",
-            "pilote_hlm_mot.wav",
-            "pilote_hlm_epele.wav",
-            "pilote_vdn_mot.wav",
-            "pilote_vdn_epele.wav",
-        )],
+        "tous les lieux sont à régénérer",
+        all(entree.get("a_regenerer") is True for entree in lieux.values()),
+        [
+            entree["fichier"]
+            for entree in lieux.values()
+            if entree.get("a_regenerer") is not True
+        ],
+    )
+
+    entrees = {entree["fichier"]: entree for entree in plan["phrases"]}
+    lignes = [entree for entree in plan["phrases"] if entree["type"] == "ligne"]
+    lignes_tata = [
+        entree for entree in lignes if "bus bu Tàtaa" in entree["phrase"]
+    ]
+    verifie(
+        "aucune ligne ne dit encore « bus bu Tata, »",
+        all("bus bu Tata," not in entree["phrase"] for entree in lignes),
+        [
+            entree["fichier"]
+            for entree in lignes
+            if "bus bu Tata," in entree["phrase"]
+        ],
+    )
+    verifie(
+        "aucune ligne ne dit encore « TAF TAF »",
+        all("TAF TAF" not in entree["phrase"] for entree in lignes),
+        [
+            entree["fichier"]
+            for entree in lignes
+            if "TAF TAF" in entree["phrase"]
+        ],
+    )
+    verifie(
+        "les 72 lignes Tata disent Tàtaa et sont à régénérer",
+        len(lignes_tata) == 72
+        and all(entree.get("a_regenerer") is True for entree in lignes_tata),
+        [
+            entree["fichier"]
+            for entree in lignes_tata
+            if entree.get("a_regenerer") is not True
+        ],
+    )
+
+    nga = entrees.get("nga_wacc.wav")
+    verifie(
+        "nga_wacc vaut nga wathie et est à régénérer",
+        nga is not None
+        and nga["phrase"] == "nga wathie"
+        and nga.get("a_regenerer") is True,
+        nga,
+    )
+    taf = entrees.get("dakar_dem_dikk_taf_taf.wav")
+    verifie(
+        "TAF TAF devient Tàf Tàf et est à régénérer",
+        taf is not None
+        and taf["phrase"] == "Jëlal bus bu Dem Dikk, Tàf Tàf."
+        and taf.get("a_regenerer") is True,
+        taf,
     )
 
     return echecs, total
@@ -1164,26 +1215,39 @@ if __name__ == "__main__":
         echecs_partage, total_partage = test_partage()
         echecs_voix, total_voix = test_voix()
         echecs_lieux, total_lieux = test_lieux()
-        echecs = test_local() + echecs_partage + echecs_voix + echecs_lieux
+        echecs_prononciations, total_prononciations = test_prononciations()
+        echecs = (
+            test_local()
+            + echecs_partage
+            + echecs_voix
+            + echecs_lieux
+            + echecs_prononciations
+        )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
-        total = total_partage + total_voix + total_lieux + (
-            len(TRAJETS)
-            + len(TRAJETS_COMPAGNIE)
-            + len(TRAJETS_SANS_ARRET)
-            + len(TRAJETS_SANS_MONTEE_GENERIQUE)
-            + len(TRAJETS_LIEUX)
-            + len(TRAJETS_QUARTIER)
-            + len(TRAJETS_GEO)
-            + len(TRAJETS_SANS_MONTEE_FAUSSE)
-            + len(TRAJETS_SANS_MONTEE_HOMONYME)
-            + len(TRAJETS_DIOUGUE)
-            + len(TRAJETS_VARIANTES_SURES)
-            + len(TRAJETS_MARQUEUR_ETENDU)
-            + len(TRAJETS_GARDES_VARIANTES)
-            + len(LIEUX_INTERDITS)
-            + len(TRAJETS_CORRIGES)
-            + len(TRAJETS_ASR)
-            + 3
+        total = (
+            total_partage
+            + total_voix
+            + total_lieux
+            + total_prononciations
+            + (
+                len(TRAJETS)
+                + len(TRAJETS_COMPAGNIE)
+                + len(TRAJETS_SANS_ARRET)
+                + len(TRAJETS_SANS_MONTEE_GENERIQUE)
+                + len(TRAJETS_LIEUX)
+                + len(TRAJETS_QUARTIER)
+                + len(TRAJETS_GEO)
+                + len(TRAJETS_SANS_MONTEE_FAUSSE)
+                + len(TRAJETS_SANS_MONTEE_HOMONYME)
+                + len(TRAJETS_DIOUGUE)
+                + len(TRAJETS_VARIANTES_SURES)
+                + len(TRAJETS_MARQUEUR_ETENDU)
+                + len(TRAJETS_GARDES_VARIANTES)
+                + len(LIEUX_INTERDITS)
+                + len(TRAJETS_CORRIGES)
+                + len(TRAJETS_ASR)
+                + 3
+            )
         )
     print(f"\n{total - echecs}/{total} réussis")
     sys.exit(1 if echecs else 0)

@@ -1,0 +1,43 @@
+Poste Thiaroye | 24 | Poste Thiaroye
+Bountou Pikine | 17 | Bountou Pikine
+Croisement Cambérène | 17 | Croisement Cambérène
+Route des Niayes | 16 | Route des Niayes, Route des Niayes (Guédiawaye)
+Croisement Keur Massar | 13 | Croisement Keur Massar
+Autoroute | 12 | Autoroute
+Avenue Blaise Diagne | 11 | Av Blaise Diagne, Avenue Blaise Diagne
+Colobane | 11 | Colobane
+Fass Mbao | 10 | Fass Mbao, Fass Mbao (Rail-Ba)
+Case Ba | 9 | Case Ba, Case-Ba
+Keur Massar | 9 | Keur Massar, Keur Massar (Cité MTOA), Keur Massar (Marché)
+UCAD | 9 | UCAD, UCAD (Claudel)
+Avenue Bourguiba | 8 | Av Bourguiba, Avenue Bourguiba
+Diamaguène | 8 | Diamaguène
+Palais un | 8 | Palais 1
+Patte d'Oie | 8 | Patte d'Oie
+Pont de l'Émergence | 8 | Pont de l'Émergence
+Route Nationale un | 8 | Route Nationale 1
+Station Keur Massar | 8 | Station Keur Massar
+Tally Diallo | 8 | Tally Diallo
+Keur Mbaye Fall | 7 | Keur Mbaye Fall
+Liberté cinq | 7 | Liberté 5
+Malika | 7 | Malika, Malika (Cité Sonatel)
+Ouakam | 7 | Ouakam
+Palais deux | 7 | Palais 2
+Petersen | 7 | Petersen
+Police Thiaroye | 7 | Police Thiaroye
+Route Nationale N° un | 7 | Route Nationale N° 1, Route Nationale N°1
+Rufisque | 7 | Rufisque
+Avenue Cheikh Anta Diop | 6 | Av Cheikh Anta Diop, Avenue Cheikh Anta Diop
+Bargny | 6 | Bargny, Bargny (Gare Ferroviaire)
+Echangeur Patte d'Oie | 6 | Echangeur Patte d'Oie
+Lat Dior | 6 | Lat Dior
+Route du Front de Terre | 6 | Route du Front de Terre
+Allées Papa Gueye Fall | 5 | Allées Papa Gueye Fall
+Avenue Emile Badiane | 5 | Av Emile Badiane, Av. Emile Badiane, Avenue Emile Badiane
+Aéroport LSS | 5 | Aéroport LSS
+Branche Est Autoroute | 5 | Branche Est Autoroute, Branche Est-Autoroute
+Castors | 5 | Castors
+Croisement Tivaouane Peulh | 5 | Croisement Tivaouane Peulh
+Gadaye | 5 | Gadaye, Gadaye (Guédiawaye)
+Almadies | 4 | Almadies
+AIBD | 1 | AIBD
