@@ -1065,25 +1065,38 @@ def test_prononciations() -> tuple[int, int]:
             if len(entree["phrase"]) > 200
         ],
     )
-    marquees = [entree for entree in plan["phrases"] if entree.get("a_regenerer") is True]
-    marquees_lieux = [entree for entree in marquees if entree["type"] == "lieu"]
-    marquees_tata = [
-        entree for entree in marquees if entree["fichier"].startswith("tata_aftu_")
+    liste_a_regenerer = [
+        ligne.strip()
+        for ligne in (RACINE / "scripts" / "a_regenerer.txt")
+        .read_text(encoding="utf-8")
+        .splitlines()
+        if ligne.strip()
     ]
-    marquees_taf = [
-        entree for entree in marquees if entree["fichier"] == "dakar_dem_dikk_taf_taf.wav"
+    marquees = {
+        entree["fichier"]
+        for entree in plan["phrases"]
+        if entree.get("a_regenerer") is True
+    }
+    marquees_lieux = [
+        entree for entree in plan["phrases"]
+        if entree["fichier"] in marquees and entree["type"] == "lieu"
+    ]
+    marquees_lignes = [
+        entree for entree in plan["phrases"]
+        if entree["fichier"] in marquees and entree["type"] == "ligne"
     ]
     verifie(
-        "274 entrées à régénérer (201 lieux + 72 Tata + TAF)",
-        len(marquees) == 274
-        and len(marquees_lieux) == 201
-        and len(marquees_tata) == 72
-        and len(marquees_taf) == 1,
+        "104 entrées à régénérer, exactement la liste fournie",
+        len(liste_a_regenerer) == 104
+        and marquees == set(liste_a_regenerer)
+        and len(marquees_lieux) == 102
+        and len(marquees_lignes) == 2,
         {
-            "total": len(marquees),
+            "liste": len(liste_a_regenerer),
+            "marquees": len(marquees),
             "lieux": len(marquees_lieux),
-            "tata": len(marquees_tata),
-            "taf": len(marquees_taf),
+            "lignes": len(marquees_lignes),
+            "ecart": sorted(marquees.symmetric_difference(set(liste_a_regenerer))),
         },
     )
     verifie(
@@ -1124,14 +1137,10 @@ def test_prononciations() -> tuple[int, int]:
         ],
     )
     verifie(
-        "les 72 lignes Tata disent Tàtaa et sont à régénérer",
+        "les 72 lignes Tata disent Tàtaa",
         len(lignes_tata) == 72
-        and all(entree.get("a_regenerer") is True for entree in lignes_tata),
-        [
-            entree["fichier"]
-            for entree in lignes_tata
-            if entree.get("a_regenerer") is not True
-        ],
+        and all("bus bu Tàtaa" in entree["phrase"] for entree in lignes_tata),
+        [entree["fichier"] for entree in lignes_tata],
     )
 
     nga = entrees.get("nga_wacc.wav")
@@ -1152,10 +1161,10 @@ def test_prononciations() -> tuple[int, int]:
     )
     taf = entrees.get("dakar_dem_dikk_taf_taf.wav")
     verifie(
-        "TAF TAF devient Tàf Tàf et est à régénérer",
+        "TAF TAF devient Tàf Tàf et reste hors de cette séance",
         taf is not None
         and taf["phrase"] == "Jëlal bus bu Dem Dikk, Tàf Tàf."
-        and taf.get("a_regenerer") is True,
+        and taf.get("a_regenerer") is False,
         taf,
     )
     bene = [
@@ -1163,11 +1172,11 @@ def test_prononciations() -> tuple[int, int]:
         entrees.get("lieu_yeumbeul_bene_baraque.wav"),
     ]
     verifie(
-        "Bene Baraque et Yeumbeul Bene Baraque sont à régénérer",
+        "Bene Baraque et Yeumbeul Bene Baraque gardent leur phrase",
         all(
             entree is not None
             and entree["phrase"] in ("Benn baraak", "Yembël Benn baraak")
-            and entree.get("a_regenerer") is True
+            and entree.get("a_regenerer") is False
             for entree in bene
         ),
         bene,
@@ -1283,26 +1292,25 @@ def test_verification_voix() -> tuple[int, int]:
     plan = json.loads(
         (RACINE / "scripts" / "phrases_voix.json").read_text(encoding="utf-8")
     )
-    entrees = {entree["fichier"]: entree for entree in plan["phrases"]}
-    marquees = [entree for entree in plan["phrases"] if entree.get("a_regenerer") is True]
+    liste_a_regenerer = [
+        ligne.strip()
+        for ligne in (RACINE / "scripts" / "a_regenerer.txt")
+        .read_text(encoding="utf-8")
+        .splitlines()
+        if ligne.strip()
+    ]
+    marquees = {
+        entree["fichier"]
+        for entree in plan["phrases"]
+        if entree.get("a_regenerer") is True
+    }
     verifie(
-        "le plan marque exactement 201 lieux, 72 Tata et TAF",
-        len(marquees) == 274
-        and sum(1 for e in marquees if e["type"] == "lieu") == 201
-        and sum(1 for e in marquees if e["fichier"].startswith("tata_aftu_")) == 72
-        and sum(1 for e in marquees if e["fichier"] == "dakar_dem_dikk_taf_taf.wav") == 1,
+        "le plan marque exactement les 104 fichiers de a_regenerer.txt",
+        len(liste_a_regenerer) == 104 and marquees == set(liste_a_regenerer),
         {
-            "total": len(marquees),
-            "lieux": sum(1 for e in marquees if e["type"] == "lieu"),
-        },
-    )
-    verifie(
-        "les deux lieux Bene sont marqués",
-        entrees["lieu_bene_baraque.wav"].get("a_regenerer") is True
-        and entrees["lieu_yeumbeul_bene_baraque.wav"].get("a_regenerer") is True,
-        {
-            "bene": entrees["lieu_bene_baraque.wav"].get("a_regenerer"),
-            "yeumbeul": entrees["lieu_yeumbeul_bene_baraque.wav"].get("a_regenerer"),
+            "liste": len(liste_a_regenerer),
+            "marquees": len(marquees),
+            "ecart": sorted(marquees.symmetric_difference(set(liste_a_regenerer))),
         },
     )
 
