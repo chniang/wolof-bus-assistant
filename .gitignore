@@ -17,5 +17,9 @@ data/tts_cache_avant_adia_*/
 data/collecte/
 data/collecte_brut/
 
+# Réglages locaux de l'agent (chemins du PC, commandes) : jamais dans Git ni
+# dans le Space.
+.claude/
+
 upload_space.py
 test_modeles_nvidia.py

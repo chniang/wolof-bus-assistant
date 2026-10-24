@@ -14,10 +14,13 @@ Le reste du pipeline (extraction, correspondance, voix) tient en CPU et n'a pas
 
 from __future__ import annotations
 
+import atexit
 import csv
+import html
 import itertools
 import re
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -26,7 +29,13 @@ import time
 from functools import lru_cache
 from pathlib import Path
 
-import gradio as gr
+try:
+    import gradio as gr
+except ImportError:
+    # Les tests unitaires importent les fonctions pures de ce module sans
+    # installer Gradio. L'interface n'est construite que hors mode test.
+    gr = None
+
 import numpy as np
 
 RACINE = Path(__file__).resolve().parent
@@ -38,6 +47,7 @@ from app.cartes import titre_autre_possibilite  # noqa: E402
 from app.partage import bouton_partage  # noqa: E402
 from asr.transcribe import (  # noqa: E402
     MODEL_ASR_GPU,
+    REVISION_ASR_GPU,
     SAMPLE_RATE,
     libelle_charge,
     load_audio,
@@ -47,6 +57,7 @@ from asr.transcribe import (  # noqa: E402
 )
 from intent.extract_intent import (  # noqa: E402
     NVIDIA_BASE_URL,
+    TEXTE_MAX,
     TIMEOUT_APPEL,
     extract_intent,
     extract_local,
@@ -97,6 +108,11 @@ except ImportError:
 _MODELE_CPU = None
 _MODELE_GPU = None
 
+# Les tests unitaires n'ont pas le droit de télécharger ni de charger un modèle.
+# Ce garde coupe le préchargement, l'échauffement LLM et la construction Gradio ;
+# il n'est jamais activé sur le Space.
+MODE_TEST = os.getenv("GUINDIMA_SANS_MODELES", "").strip().lower() in {"1", "true", "oui"}
+
 
 def _precharger_whisper():
     """Précharge whisper-small quantifié sur CPU, dès l'ouverture du Space.
@@ -116,12 +132,19 @@ def _precharger_whisper():
 
 def _charger_kiriku_gpu():
     """Le pipeline Kiriku-Wolof-ASR en float16 sur GPU (modèle protégé : HF_TOKEN)."""
+    if not REVISION_ASR_GPU:
+        raise RuntimeError(
+            "ASR_MODEL_GPU_REVISION est obligatoire quand ASR_MODEL_GPU n'est "
+            "pas le dépôt Kiriku par défaut."
+        )
+
     import torch
     from transformers import pipeline
 
     return pipeline(
         "automatic-speech-recognition",
         model=MODEL_ASR_GPU,
+        revision=REVISION_ASR_GPU,
         device=0,
         dtype=torch.float16,
         token=os.getenv("HF_TOKEN"),
@@ -149,8 +172,9 @@ def _precharger_kiriku():
         print(f"[ASR] Kiriku indisponible au démarrage ({message})", flush=True)
 
 
-_precharger_whisper()
-_precharger_kiriku()
+if not MODE_TEST:
+    _precharger_whisper()
+    _precharger_kiriku()
 
 # Crédit affiché en pied de page : les deux modèles de transcription.
 # Le whisper CPU est notre fine-tuning sur la collecte dakaroise ; Kiriku sert
@@ -204,35 +228,92 @@ def _client_llm():
 # donc dans un dossier temporaire, un fichier par réponse.
 DOSSIER_VOIX = Path(tempfile.mkdtemp(prefix="guindima_voix_"))
 _COMPTEUR = itertools.count()
+DUREE_VIE_VOIX = 600  # secondes : un WAV de réponse plus vieux est supprimé
+
+TAILLE_MAX_AUDIO = 10 * 1024 * 1024  # 10 Mo
+DUREE_MAX_AUDIO = 30.0  # secondes
+MESSAGE_AUDIO_TROP_LOURD = (
+    "Fichier trop lourd : 10 Mo maximum. / Fi bi bari na : 10 Mo rekk."
+)
+MESSAGE_AUDIO_TROP_LONG = (
+    "Enregistrement trop long : 30 secondes maximum. / "
+    "Mbind mi guddoon na : 30 segond rekk."
+)
 
 ERREUR_ASR = "\x00ERREUR_ASR "
+
+
+class AudioRefuse(ValueError):
+    """Un audio écarté avant transcription (taille ou durée), avec un message clair."""
+
+
+def _nettoyer_voix_anciennes() -> None:
+    """Supprime les réponses WAV trop anciennes du dossier temporaire.
+
+    Gradio a besoin du fichier le temps de servir la réponse ; on ne peut donc
+    pas l'effacer juste après l'avoir écrit. On purge à chaque nouvelle réponse,
+    et `atexit` enlève le dossier à la fin du processus.
+    """
+    limite = time.time() - DUREE_VIE_VOIX
+    for chemin in DOSSIER_VOIX.glob("reponse_*.wav"):
+        try:
+            if chemin.stat().st_mtime < limite:
+                chemin.unlink()
+        except OSError:
+            # Un fichier déjà supprimé ou verrouillé ne doit pas casser la réponse.
+            pass
+
+
+atexit.register(shutil.rmtree, DOSSIER_VOIX, ignore_errors=True)
 
 
 def _decoder_audio(chemin_audio: str) -> np.ndarray:
     """Lit l'enregistrement (micro ou fichier) en 16 kHz mono, sur CPU.
 
     Fait hors de la réservation GPU : décoder un fichier n'a pas besoin du GPU.
+    La taille est vérifiée avant `read_bytes()` pour ne jamais charger 100 Mo en
+    mémoire ; la durée est vérifiée après décodage, avant la transcription.
     """
-    octets = Path(chemin_audio).read_bytes()
+    chemin = Path(chemin_audio)
     try:
-        return load_audio(octets)
+        taille = chemin.stat().st_size
+    except OSError as exc:
+        raise AudioRefuse("Fichier audio introuvable.") from exc
+    if taille > TAILLE_MAX_AUDIO:
+        raise AudioRefuse(MESSAGE_AUDIO_TROP_LOURD)
+
+    octets = chemin.read_bytes()
+    try:
+        son = load_audio(octets)
     except Exception:
         # Le navigateur enregistre en WebM/Opus, que soundfile ne sait pas lire.
         # ffmpeg, déclaré dans packages.txt, ramène ça en WAV avant de réessayer.
         with tempfile.TemporaryDirectory() as dossier:
             converti = Path(dossier) / "micro.wav"
-            subprocess.run(
-                [
-                    "ffmpeg", "-y", "-loglevel", "error",
-                    "-i", chemin_audio,
-                    "-ar", str(SAMPLE_RATE),
-                    "-ac", "1",
-                    str(converti),
-                ],
-                check=True,
-                capture_output=True,
-            )
-            return load_audio(converti.read_bytes())
+            try:
+                subprocess.run(
+                    [
+                        "ffmpeg", "-y", "-loglevel", "error",
+                        "-i", str(chemin),
+                        "-t", str(int(DUREE_MAX_AUDIO) + 1),
+                        "-ar", str(SAMPLE_RATE),
+                        "-ac", "1",
+                        str(converti),
+                    ],
+                    check=True,
+                    capture_output=True,
+                    timeout=30,
+                )
+            except subprocess.TimeoutExpired as exc:
+                raise AudioRefuse(
+                    "Conversion audio trop longue : 30 secondes maximum. / "
+                    "Waxtaan wi guddoon na : 30 segond rekk."
+                ) from exc
+            son = load_audio(converti.read_bytes())
+
+    if son is not None and len(son) > int(DUREE_MAX_AUDIO * SAMPLE_RATE):
+        raise AudioRefuse(MESSAGE_AUDIO_TROP_LONG)
+    return son
 
 
 @spaces.GPU(duration=30)
@@ -343,6 +424,7 @@ def _voix_wolof(lignes: list[dict], correspondances: list[dict] | None = None) -
     if octets is None:
         print("[voix] aucun segment disponible, réponse laissée sans voix", flush=True)
         return None
+    _nettoyer_voix_anciennes()
     chemin = DOSSIER_VOIX / f"reponse_{next(_COMPTEUR)}.wav"
     chemin.write_bytes(octets)
     return str(chemin)
@@ -351,6 +433,21 @@ def _voix_wolof(lignes: list[dict], correspondances: list[dict] | None = None) -
 # --------------------------------------------------------------------------- #
 # Rendu
 # --------------------------------------------------------------------------- #
+
+
+def _echapper(valeur: object) -> str:
+    """Échappe une valeur avant insertion dans du HTML.
+
+    Les noms d'arrêts viennent des CSV, mais `depart`/`arrivee` peuvent venir
+    d'une transcription ou d'un LLM : on ne les insère jamais bruts.
+    """
+    return html.escape("" if valeur is None else str(valeur), quote=True)
+
+
+def _echapper_markdown(valeur: object) -> str:
+    """Échappe HTML puis les caractères Markdown encore actifs dans `gr.Markdown`."""
+    texte = _echapper(valeur)
+    return re.sub(r"([\\`*_{}\[\]()#+.!|>~-])", r"\\\1", texte)
 
 
 # Grands quartiers : leur nom dit ne désigne pas un point précis, le même dit
@@ -439,7 +536,8 @@ def _astuce_quartier(*lieux: str) -> str:
         return ""
     exemples = _arrets_du_quartier(vague)
     illustration = (
-        f"ex. pour {joli(vague)} : {', '.join(exemples)}"
+        f"ex. pour {_echapper(joli(vague))} : "
+        f"{_echapper(', '.join(exemples))}"
         if exemples
         else "ex. précise la rue ou un repère"
     )
@@ -557,7 +655,7 @@ def _note_sens_inverse(match: dict) -> str:
     """
     if str(match.get("sens", "")).lower() != "inverse":
         return ""
-    sens_publie = f"{match.get('arrivee', '')} → {match.get('depart', '')}"
+    sens_publie = f"{_echapper(match.get('arrivee', ''))} → {_echapper(match.get('depart', ''))}"
     if match.get("compagnie") == "Tata AFTU":
         intro = f"L'AFTU publie cet itinéraire dans le sens {sens_publie}."
     else:
@@ -647,24 +745,26 @@ def _bloc_arrets(match: dict) -> str:
         quartier = quartiers.get(arret, "")
         affiche, note = _nom_arret(arret)
         suffixe = (
-            f" <span style='color:#6B7A72;font-weight:400;'>({quartier})</span>"
+            f" <span style='color:#6B7A72;font-weight:400;'>"
+            f"({_echapper(quartier)})</span>"
             if quartier
             else ""
         )
         note_html = (
             f" <span style='color:#6B7A72;font-size:12px;font-style:italic;'>"
-            f"{note}</span>"
+            f"{_echapper(note)}</span>"
             if note
             else ""
         )
         if i in (0, dernier):
             elements.append(
-                f"<li style='margin:2px 0;'><b style='color:#081F11;'>{affiche}</b>"
-                f"{suffixe}{note_html}</li>"
+                f"<li style='margin:2px 0;'><b style='color:#081F11;'>"
+                f"{_echapper(affiche)}</b>{suffixe}{note_html}</li>"
             )
         else:
             elements.append(
-                f"<li style='margin:2px 0;color:#2C4636;'>{affiche}{suffixe}{note_html}</li>"
+                f"<li style='margin:2px 0;color:#2C4636;'>"
+                f"{_echapper(affiche)}{suffixe}{note_html}</li>"
             )
     return (
         "<details style='margin-top:10px;'>"
@@ -693,32 +793,39 @@ def _une_carte(
     lisible en mode clair comme en mode sombre, quel que soit le thème Gradio.
     """
     numero = numero_de(match["ligne"])
-    affiche = re.sub(r"^Ligne\s*", "", str(match["ligne"]))
-    rappel = nombre_en_wolof(numero) if numero is not None else ""
-    entete = f"{etape} · {match['compagnie']}" if etape else match["compagnie"]
+    affiche = _echapper(re.sub(r"^Ligne\s*", "", str(match["ligne"])))
+    rappel = _echapper(nombre_en_wolof(numero) if numero is not None else "")
+    entete = (
+        f"{_echapper(etape)} · {_echapper(match['compagnie'])}"
+        if etape
+        else _echapper(match["compagnie"])
+    )
     trajet = ""
     if match.get("monte_a") and match.get("descend_a"):
         # Le lieu dit par l'utilisateur, avec l'arrêt conseillé le plus proche.
         monte_a, _ = _nom_arret(match["monte_a"])
         descend_a, _ = _nom_arret(match["descend_a"])
-        depart_texte = depart if depart else match["monte_a"]
-        arrivee_texte = arrivee if arrivee else match["descend_a"]
+        depart_texte = _echapper(depart if depart else match["monte_a"])
+        arrivee_texte = _echapper(arrivee if arrivee else match["descend_a"])
         fin = " pour changer de bus" if changement else ""
         trajet = (
             f"<div style='color:#11301C;font-size:22px;font-weight:800;"
             f"line-height:1.35;margin-top:8px;'>"
             f"Monte à <b style='color:#081F11;'>{depart_texte}</b> — arrêt conseillé : "
-            f"<b style='color:#081F11;'>{monte_a}</b> "
+            f"<b style='color:#081F11;'>{_echapper(monte_a)}</b> "
             f"<span style='font-weight:600;font-size:15px;color:#3D5A48;'>"
             f"(ou tout arrêt de la ligne {affiche} près de toi)</span><br>"
             f"Descends à <b style='color:#081F11;'>{arrivee_texte}</b> — arrêt conseillé : "
-            f"<b style='color:#081F11;'>{descend_a}</b>{fin}</div>"
+            f"<b style='color:#081F11;'>{_echapper(descend_a)}</b>{fin}</div>"
         )
     arrets = _bloc_arrets(match)
     # Les terminus de la ligne, en petit : le parcours réel du bus.
     ligne = (
         f"<div style='color:#6B7A72;font-size:13px;margin-top:6px;'>"
-        f"Ligne : {match['depart']} → {match['arrivee']}</div>"
+        f"Ligne : {_echapper(match['depart'])} → {_echapper(match['arrivee'])}</div>"
+    )
+    categorie = " · ".join(
+        x for x in (rappel, _echapper(match.get("categorie", ""))) if x
     )
     return f"""
 <div style="border:1px solid #D6E6DC;border-top:6px solid {VERT};
@@ -729,7 +836,7 @@ def _une_carte(
               margin:4px 0 6px 0;">{affiche}</div>
   {trajet}
   <div style="color:#6B7A72;font-size:13px;margin-top:6px;">
-    {" · ".join(x for x in (rappel, match.get("categorie", "")) if x)}</div>
+    {categorie}</div>
   {ligne}
   {arrets}
 </div>
@@ -779,14 +886,14 @@ def _carte(
             blocs.append(_une_carte(trajet["etape_1"], "1er bus", depart=depart, changement=True))
             blocs.append(
                 f"<div style='text-align:center;color:#6B7A72;margin:2px 0;'>"
-                f"🔁 Change à <b>{trajet['changement']}</b></div>"
+                f"🔁 Change à <b>{_echapper(trajet['changement'])}</b></div>"
             )
             blocs.append(_une_carte(trajet["etape_2"], "2e bus", arrivee=arrivee))
             blocs.append(bouton_partage(depart, arrivee, resultat, trajet))
         return "".join(blocs)
 
     inconnus = [
-        f"**« {lieu} »**"
+        f"**« {_echapper_markdown(lieu)} »**"
         for lieu, valide in ((depart, resultat["depart_valide"]), (arrivee, resultat["arrivee_valide"]))
         if not valide
     ]
@@ -798,8 +905,9 @@ def _carte(
         )
     return (
         "### 🗺 Pas de trajet trouvé\n\n"
-        f"Je connais **{depart}** et **{arrivee}**, mais aucune ligne ni aucun trajet "
-        "avec un seul changement ne les relie dans le jeu de données."
+        f"Je connais **{_echapper_markdown(depart)}** et **{_echapper_markdown(arrivee)}**, "
+        "mais aucune ligne ni aucun trajet avec un seul changement ne les relie "
+        "dans le jeu de données."
     )
 
 
@@ -807,14 +915,14 @@ def _mention(intent: dict, modele_asr: str = "") -> str:
     """Notes sous la réponse : modèle de transcription utilisé, extraction de secours."""
     notes = []
     if modele_asr:
-        notes.append(f"_Transcription : {modele_asr}_")
+        notes.append(f"_Transcription : {_echapper(modele_asr)}_")
     if intent.get("source") == "local":
         notes.append(
             "> ⚠️ **Extraction de secours (sans LLM)** — l'API NVIDIA était "
             "indisponible, la détection a été faite sur place."
         )
     elif intent.get("erreur"):
-        notes.append(f"> ⚠️ {intent['erreur']}")
+        notes.append(f"> ⚠️ {_echapper(intent['erreur'])}")
     return "\n\n".join(notes)
 
 
@@ -832,7 +940,7 @@ def _bandeau_autre_compagnie(compagnie: str, resultat: dict) -> str:
     return (
         "<div style='color:#7A5A00;background:#FFF7E0;border:1px solid #F0DFA8;"
         "border-radius:8px;padding:8px 12px;margin:10px 0;font-size:14px;font-weight:600;'>"
-        + message_autre_compagnie(compagnie, resultat)
+        + _echapper(message_autre_compagnie(compagnie, resultat))
         + "</div>\n\n"
     )
 
@@ -860,7 +968,7 @@ def _bandeau_compagnie(compagnie_voix: str, compagnie_bouton: str) -> str:
         "<div style='color:#0B6B37;background:#EAF6EF;border:1px solid #C7E6D4;"
         "border-radius:8px;padding:8px 12px;margin:10px 0;font-size:14px;"
         "font-weight:600;'>"
-        f"Compagnie : {nom} ({mention})</div>\n\n"
+        f"Compagnie : {_echapper(nom)} ({mention})</div>\n\n"
     )
 
 
@@ -869,20 +977,26 @@ def _bandeau_compagnie(compagnie_voix: str, compagnie_bouton: str) -> str:
 # --------------------------------------------------------------------------- #
 
 
-def _journal(modele_asr: str, duree_asr: float, phrase: str, depart: str, arrivee: str, resultat: dict, intent: dict) -> None:
-    """Une ligne par transcription dans les logs du Space (rien de personnel).
+def _journal(modele_asr: str, duree_asr: float, nombre_lignes: int, erreur: str = "") -> None:
+    """Une ligne de diagnostic, sans aucune donnée personnelle.
 
-    Heure, modèle ASR, durée, transcription, trajet, nombre de lignes, source de
-    l'extraction : tout ce qu'il faut pour débugger une démo sans avoir à écouter
-    les enregistrements. Printé avec flush, les logs du Space sont le stdout.
+    On ne journalise que le modèle ASR, la durée, le nombre de lignes trouvées
+    et un code d'erreur générique. Jamais la transcription, les lieux ni le
+    texte de l'utilisateur : les logs du Space sont visibles par les admins.
     """
     print(
-        f"[trajet] {time.strftime('%H:%M:%S')} ASR={modele_asr or 'texte'} "
-        f"durée={max(duree_asr, 0.0):.1f}s phrase={phrase!r} "
-        f"trajet={depart} → {arrivee} lignes={len(resultat['lignes'])} "
-        f"source={intent.get('source')}",
+        f"[trajet] ASR={modele_asr or 'texte'} "
+        f"durée={max(duree_asr, 0.0):.1f}s lignes={int(nombre_lignes)} "
+        f"erreur={erreur or '-'}",
         flush=True,
     )
+
+
+def _code_erreur(intent: dict) -> str:
+    """Un code d'erreur stable pour les logs, jamais le message brut."""
+    if not intent.get("erreur"):
+        return ""
+    return "extraction_locale" if intent.get("source") == "local" else "extraction_llm"
 
 
 def _pipeline(phrase: str, modele_asr: str, duree_asr: float, compagnie_choix: str = "") -> tuple:
@@ -893,8 +1007,9 @@ def _pipeline(phrase: str, modele_asr: str, duree_asr: float, compagnie_choix: s
     des sorties, suivi d'un booléen : un trajet a-t-il été trouvé ?
     """
     quint = ("", "", _carte({}, "", ""), None, "")
+    phrase = (phrase or "").strip()[:TEXTE_MAX]
     if not phrase:
-        _journal(modele_asr, duree_asr, "", "", "", {"lignes": []}, {})
+        _journal(modele_asr, duree_asr, 0, "phrase_vide")
         return quint, False
 
     # L'extraction gère elle-même son repli local : si l'API est saturée, elle
@@ -913,7 +1028,7 @@ def _pipeline(phrase: str, modele_asr: str, duree_asr: float, compagnie_choix: s
     depart, arrivee = intent.get("depart") or "", intent.get("arrivee") or ""
 
     if not depart or not arrivee:
-        _journal(modele_asr, duree_asr, phrase, depart, arrivee, {"lignes": []}, intent)
+        _journal(modele_asr, duree_asr, 0, "lieu_manquant")
         return (phrase, "", _carte({}, depart, arrivee), None, _mention(intent, modele_asr)), False
 
     resultat = MATCHER.find_line(depart, arrivee)
@@ -943,7 +1058,8 @@ def _pipeline(phrase: str, modele_asr: str, duree_asr: float, compagnie_choix: s
     bandeau_compagnie = _bandeau_compagnie(compagnie_voix, compagnie_choix)
     trouve = bool(resultat["found"] or resultat.get("correspondances"))
 
-    _journal(modele_asr, duree_asr, phrase, depart, arrivee, resultat, intent)
+    nombre_lignes = len(resultat["lignes"]) + len(resultat.get("correspondances") or [])
+    _journal(modele_asr, duree_asr, nombre_lignes, _code_erreur(intent))
 
     return (
         phrase,
@@ -968,8 +1084,16 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
     if audio:
         try:
             son = _decoder_audio(audio)
+        except AudioRefuse as exc:
+            return ("", "", f"### 🎤 {_echapper(str(exc))}", None, "")
         except Exception as exc:
-            return ("", "", f"### 🎤 Audio illisible\n\n{_court(exc)}", None, "")
+            return (
+                "",
+                "",
+                f"### 🎤 Audio illisible\n\n{_echapper(_court(exc))}",
+                None,
+                "",
+            )
         if son is None or len(son) < SAMPLE_RATE * 0.3:
             # Moins de 0,3 s : clic involontaire sur le micro, rien à chercher.
             return vide
@@ -981,13 +1105,19 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
                 _phrase_donne_un_trajet,
             )
         except Exception as exc:
-            return ("", "", f"### 🎤 Transcription impossible\n\n`{_court(exc)}`", None, "")
+            return (
+                "",
+                "",
+                f"### 🎤 Transcription impossible\n\n`{_echapper(_court(exc))}`",
+                None,
+                "",
+            )
         if not phrase:
             return vide
         quint, _ = _pipeline(phrase, modele_asr, duree_asr, compagnie_choix)
         return quint
 
-    phrase = (phrase_ecrite or "").strip()
+    phrase = (phrase_ecrite or "").strip()[:TEXTE_MAX]
     if not phrase:
         return vide
     quint, _ = _pipeline(phrase, "", 0.0, compagnie_choix)
@@ -1051,7 +1181,8 @@ def _echauffer_llm():
 # Thread détaché pour ne pas bloquer le démarrage du Space : le préchargement
 # whisper et l'échauffement de l'API avancent chacun de leur côté.
 _THREAD_CHAUFFE = threading.Thread(target=_echauffer_llm, name="echauffement-llm", daemon=True)
-_THREAD_CHAUFFE.start()
+if not MODE_TEST:
+    _THREAD_CHAUFFE.start()
 
 
 # --------------------------------------------------------------------------- #
@@ -1120,6 +1251,7 @@ def _construire():
                 label="Ton trajet en wolof",
                 placeholder=EXEMPLES_TEXTE[0],
                 lines=2,
+                max_length=TEXTE_MAX,
             )
             gr.Examples(
                 examples=[[phrase] for phrase in EXEMPLES_TEXTE],
@@ -1170,7 +1302,7 @@ def _construire():
     return interface
 
 
-demo = _construire()
+demo = None if MODE_TEST else _construire()
 
 
 if __name__ == "__main__":

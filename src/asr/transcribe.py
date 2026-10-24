@@ -25,10 +25,12 @@ import numpy as np
 # et scripts/evaluer_modele.py) : les trajets compris passent de 5/22 à 10/22
 # sur des voix jamais vues de l'entraînement.
 MODEL_WHISPER = "TIJAANI/whisper-small-wolof-dakar-essai3"
+REVISION_WHISPER = "17f81ad52653495b5953387ea1f87ffda7bf2f15"
 
 # Repli automatique, public : si le dépôt fine-tuné n'est pas accessible, la
 # transcription continue avec le modèle wolof de base plutôt que d'échouer.
 MODEL_WHISPER_SECOURS = "M9and2M/whisper-small-wolof"
+REVISION_WHISPER_SECOURS = "8cc20b3c6e77ecb490210103d3b4fd0b85c3d1d8"
 
 # Libellés affichés sous chaque résultat (« Transcription : … ») : le nom du
 # dépôt ne dit rien à l'utilisateur, on dit plutôt quel modèle a servi — et
@@ -57,6 +59,13 @@ TELECHARGEMENT_RACINE = ["*/*", "checkpoint-*"]
 # d'un compte ayant accepté ses conditions. Surchargeable par la variable
 # ASR_MODEL_GPU.
 MODEL_ASR_GPU = os.getenv("ASR_MODEL_GPU", "AIHubSN/Kiriku-Wolof-ASR")
+# Révision épinglée du modèle Kiriku. Si ASR_MODEL_GPU est remplacé par un autre
+# dépôt, fournir ASR_MODEL_GPU_REVISION : on ne charge jamais un dépôt mobile.
+REVISION_ASR_GPU = os.getenv("ASR_MODEL_GPU_REVISION") or (
+    "f036d8de2e56bee027d73171caba04289d9c7be4"
+    if MODEL_ASR_GPU == "AIHubSN/Kiriku-Wolof-ASR"
+    else None
+)
 
 # torch sur un portable : 4 cœurs au maximum, sans surcharger la machine.
 NB_THREADS = min(4, os.cpu_count() or 1)
@@ -70,16 +79,22 @@ SAMPLE_RATE = 16000
 MAX_NEW_TOKENS = 48
 
 
-def _telecharger_modele(depot: str, token: str | None = None) -> str:
+def _telecharger_modele(
+    depot: str,
+    token: str | None = None,
+    revision: str | None = None,
+) -> str:
     """Télécharge les seuls fichiers de la racine d'un dépôt ; renvoie le dossier local.
 
     Le token (secret HF_TOKEN) ne sert que pour les dépôts privés ou protégés ;
     sans lui, la bibliothèque essaie quand même le jeton déjà connecté en local.
+    `revision` est le SHA du commit : le modèle ne bouge pas sous nos pieds.
     """
     from huggingface_hub import snapshot_download
 
     return snapshot_download(
         repo_id=depot,
+        revision=revision,
         token=token,
         ignore_patterns=TELECHARGEMENT_RACINE,
     )
@@ -130,9 +145,15 @@ def load_model():
     # Secret d'un compte du dépôt TIJAANI ; vide ou absent, on reste anonyme et
     # la bibliothèque essaie quand même le jeton déjà connecté en local.
     token = os.getenv("HF_TOKEN", "").strip() or None
+    revisions = {
+        MODEL_WHISPER: REVISION_WHISPER,
+        MODEL_WHISPER_SECOURS: REVISION_WHISPER_SECOURS,
+    }
     for depot in (MODEL_WHISPER, MODEL_WHISPER_SECOURS):
         try:
-            modele = _charger_pipeline(_telecharger_modele(depot, token))
+            modele = _charger_pipeline(
+                _telecharger_modele(depot, token, revision=revisions[depot])
+            )
         except Exception as exc:
             if depot != MODEL_WHISPER:
                 raise RuntimeError(

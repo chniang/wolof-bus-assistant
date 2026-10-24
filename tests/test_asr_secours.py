@@ -52,10 +52,14 @@ def _charger_avec_bouchons(fuites: dict, depot_qui_lève: str | None = None):
     lève la RuntimeError indiquée. `depot_qui_lève` force l'échec du dépôt
     fine-tuné même si `fuites` est vide.
     """
-    depots: list[tuple[str, str | None]] = []
+    depots: list[tuple[str, str | None, str | None]] = []
 
-    def faux_telechargement(depot: str, token: str | None = None) -> str:
-        depots.append((depot, token))
+    def faux_telechargement(
+        depot: str,
+        token: str | None = None,
+        revision: str | None = None,
+    ) -> str:
+        depots.append((depot, token, revision))
         if depot in fuites or depot == depot_qui_lève:
             raise RuntimeError(fuites.get(depot, "Repository not found"))
         return f"/tmp/{depot}"
@@ -78,7 +82,14 @@ def cas_finetune_dabord() -> int:
     attendu = f"pipeline de /tmp/{transcribe.MODEL_WHISPER}"
     bon = (
         modele == attendu
-        and depots == [(transcribe.MODEL_WHISPER, os.getenv("HF_TOKEN"))]
+        and depots
+        == [
+            (
+                transcribe.MODEL_WHISPER,
+                os.getenv("HF_TOKEN"),
+                transcribe.REVISION_WHISPER,
+            )
+        ]
         and transcribe.MODEL_WHISPER_SECOURS not in journal
     )
     print(f"{'OK ' if bon else 'ÉCHEC'} | modèle fine-tuné chargé en premier ({depots})")
@@ -127,7 +138,7 @@ def cas_repli_sans_token() -> int:
     attendu = f"pipeline de /tmp/{transcribe.MODEL_WHISPER_SECOURS}"
     bon = (
         modele == attendu
-        and [d for d, _ in depots] == [transcribe.MODEL_WHISPER, transcribe.MODEL_WHISPER_SECOURS]
+        and [d for d, _, _ in depots] == [transcribe.MODEL_WHISPER, transcribe.MODEL_WHISPER_SECOURS]
         and "repli" in journal
         and transcribe.MODEL_WHISPER_SECOURS in journal
         and "HF_TOKEN" in journal
@@ -182,20 +193,42 @@ def cas_racine_seule() -> int:
     return not bool(bon)
 
 
+def cas_revisions_epinglees() -> int:
+    """Chaque modèle est demandé à un commit précis, jamais à la branche mobile."""
+    _, _, depots = _charger_avec_bouchons(
+        {}, depot_qui_lève=transcribe.MODEL_WHISPER
+    )
+    attendu = {
+        transcribe.MODEL_WHISPER: transcribe.REVISION_WHISPER,
+        transcribe.MODEL_WHISPER_SECOURS: transcribe.REVISION_WHISPER_SECOURS,
+    }
+    revisions = {depot: revision for depot, _, revision in depots}
+    bon = (
+        revisions == attendu
+        and all(revision and len(revision) == 40 for revision in revisions.values())
+        and transcribe.REVISION_ASR_GPU
+        and len(transcribe.REVISION_ASR_GPU) == 40
+    )
+    print(f"{'OK ' if bon else 'ÉCHEC'} | révisions épinglées ({revisions})")
+    return not bon
+
+
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     print("=== Test du chargement du Whisper CPU (fine-tuné + repli) ===\n")
     echecs = 0
-    for essai in (
+    essais = (
         cas_finetune_dabord,
         cas_libelle_du_modele_charge,
         cas_repli_sans_token,
         cas_repli_sur_erreur_reseau,
         cas_les_deux_echouent,
         cas_racine_seule,
-    ):
+        cas_revisions_epinglees,
+    )
+    for essai in essais:
         echecs += essai()
-    print(f"\n{6 - echecs}/6 réussis")
+    print(f"\n{len(essais) - echecs}/{len(essais)} réussis")
     sys.exit(1 if echecs else 0)
 
 

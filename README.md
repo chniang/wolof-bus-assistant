@@ -118,9 +118,15 @@ que si l'extraction locale ne trouve pas le trajet.
 
 ### Données collectées
 
-Aucune. Rien n'est enregistré, ni stocké, ni transmis à un service tiers, hormis
-la phrase envoyée à l'API NVIDIA quand l'extraction locale ne suffit pas. Pas de compte utilisateur, pas
-de cookie, pas de journalisation des requêtes.
+Aucune donnée personnelle n'est enregistrée. La phrase transcrite n'est envoyée
+à l'API NVIDIA Build que si l'extraction locale ne trouve pas le trajet. Les
+journaux techniques du Space ne contiennent ni transcription, ni lieux, ni texte
+utilisateur : seulement le modèle ASR, la durée, le nombre de lignes trouvées et
+un code d'erreur générique. Pas de compte utilisateur, pas de cookie.
+
+Les entrées sont bornées : texte à 300 caractères, audio à 10 Mo et 30 secondes.
+Les fichiers audio trop gros ou trop longs sont refusés avant transcription, et
+les WAV de réponse temporaires sont purgés.
 
 ### Plutôt qu'inventer
 
@@ -144,6 +150,9 @@ quartier, et n'annonce jamais une ligne qui ne relie pas les deux points.
   flou et la normalisation phonétique.
 - **Wolof uniquement** : ni le français, ni le multilingue ne sont pris en charge,
   et le numéro de ligne est énoncé en wolof, pas en chiffres.
+- **Pillow 12.3.0** : Gradio 6.30 exige `pillow<13.0`, donc la version corrigeant
+  les 37 CVE connues n'est pas installable. L'application n'utilise aucun
+  composant image ; la montée de version suivra celle de Gradio.
 
 ## Déploiement GPU
 

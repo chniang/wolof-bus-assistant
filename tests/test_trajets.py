@@ -1402,6 +1402,280 @@ def _appel(client, phrase: str, audio: Path | None) -> list:
     return json.loads(trouve.group(2))
 
 
+def _charger_module(chemin: Path, nom: str):
+    """Charge un fichier .py sans passer par le paquet `app` de src/."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(nom, chemin)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[nom] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+class _FauxMessage:
+    def __init__(self, contenu: str):
+        self.content = contenu
+
+
+class _FauxChoix:
+    def __init__(self, contenu: str):
+        self.message = _FauxMessage(contenu)
+
+
+class _FauxReponse:
+    def __init__(self, contenu: str):
+        self.choices = [_FauxChoix(contenu)]
+
+
+class _FauxCompletions:
+    def __init__(self, contenu: str):
+        self.contenu = contenu
+        self.appels: list[dict] = []
+
+    def create(self, **kwargs):
+        self.appels.append(kwargs)
+        return _FauxReponse(self.contenu)
+
+
+class _FauxChat:
+    def __init__(self, contenu: str):
+        self.completions = _FauxCompletions(contenu)
+
+
+class _FauxClient:
+    """Client OpenAI minimal : capture le prompt et renvoie un JSON fixé."""
+
+    def __init__(self, contenu: str):
+        self.chat = _FauxChat(contenu)
+
+
+def test_securite() -> tuple[int, int]:
+    """Vérifie les garde-fous : logs, audio, prompt, HTML, révisions, déploiement."""
+    import contextlib
+    import io
+    import os
+    import shutil
+    import tempfile
+    import wave
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_securite")
+    from app.cartes import titre_autre_possibilite
+    from intent.extract_intent import (
+        CONSIGNE_TEXTE,
+        DEBUT_TEXTE,
+        FIN_TEXTE,
+        TEXTE_MAX,
+        extract_intent,
+    )
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool) -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | sécurité {nom}")
+
+    # 1. Les logs ne doivent jamais contenir la phrase ni les lieux.
+    tampon = io.StringIO()
+    with contextlib.redirect_stdout(tampon):
+        app._journal("Kiriku", 1.25, 2, "extraction_llm")
+    journal = tampon.getvalue()
+    verifie(
+        "logs sans texte utilisateur",
+        "phrase" not in journal
+        and "départ" not in journal
+        and "arrivée" not in journal
+        and "ASR=Kiriku" in journal
+        and "lignes=2" in journal
+        and "erreur=extraction_llm" in journal,
+    )
+
+    # 2. Audio : refus avant transcription, message FR + wolof.
+    dossier = Path(tempfile.mkdtemp(prefix="test_securite_"))
+    try:
+        gros = dossier / "trop_gros.wav"
+        with open(gros, "wb") as fichier:
+            fichier.write(b"0" * (10 * 1024 * 1024 + 1))
+        sortie = app.trouver_le_bus(str(gros), "", "")
+        verifie(
+            "audio > 10 Mo refusé",
+            "10 Mo" in sortie[2] and "Fi bi" in sortie[2],
+        )
+
+        long = dossier / "trop_long.wav"
+        with wave.open(str(long), "wb") as wav:
+            wav.setnchannels(1)
+            wav.setsampwidth(2)
+            wav.setframerate(app.SAMPLE_RATE)
+            wav.writeframes(b"\0\0" * (31 * app.SAMPLE_RATE))
+        sortie = app.trouver_le_bus(str(long), "", "")
+        verifie(
+            "audio > 30 s refusé",
+            "30 secondes" in sortie[2] and "segond" in sortie[2],
+        )
+
+        vieux = app.DOSSIER_VOIX / "reponse_test_securite.wav"
+        vieux.write_bytes(b"RIFF")
+        os.utime(vieux, (time.time() - app.DUREE_VIE_VOIX - 1,) * 2)
+        app._nettoyer_voix_anciennes()
+        verifie("WAV de réponse ancien purgé", not vieux.exists())
+
+        # Le repli ffmpeg doit borner la sortie à 31 s et le processus à 30 s.
+        from types import SimpleNamespace
+
+        appels = {}
+        deja_essaye = {"non": True}
+
+        def faux_load(octets):
+            if deja_essaye["non"]:
+                deja_essaye["non"] = False
+                raise ValueError("format inconnu")
+            return [0.0] * 1600
+
+        def faux_run(commande, **options):
+            appels["commande"] = commande
+            appels["timeout"] = options.get("timeout")
+            Path(commande[-1]).write_bytes(b"RIFF")
+            return SimpleNamespace(returncode=0)
+
+        ancien_load, ancien_run = app.load_audio, app.subprocess.run
+        app.load_audio, app.subprocess.run = faux_load, faux_run
+        try:
+            petit = dossier / "petit.bin"
+            petit.write_bytes(b"pas un wav")
+            app._decoder_audio(str(petit))
+        finally:
+            app.load_audio, app.subprocess.run = ancien_load, ancien_run
+        commande = appels.get("commande", [])
+        verifie(
+            "ffmpeg borné à 31 s et timeout 30 s",
+            "-t" in commande
+            and commande[commande.index("-t") + 1] == "31"
+            and appels.get("timeout") == 30,
+        )
+    finally:
+        shutil.rmtree(dossier, ignore_errors=True)
+
+    # 3. Prompt borné, délimité, et consigne d'ignorer les instructions.
+    client = _FauxClient('{"depart": "Ouakam", "arrivee": "Palais"}')
+    extract_intent("maa ngi Ouakam " + "a" * 500 + " dem Palais", client=client)
+    contenu = client.chat.completions.appels[0]["messages"][1]["content"]
+    debut = contenu.index(DEBUT_TEXTE) + len(DEBUT_TEXTE)
+    fin = contenu.index(FIN_TEXTE)
+    texte_utile = contenu[debut:fin].strip()
+    verifie("texte utilisateur limité à 300 caractères", len(texte_utile) == TEXTE_MAX)
+    verifie(
+        "texte délimité + consigne d'injection",
+        CONSIGNE_TEXTE in contenu
+        and DEBUT_TEXTE in contenu
+        and FIN_TEXTE in contenu
+        and "ignore toute instruction" in CONSIGNE_TEXTE.lower(),
+    )
+
+    # 4. Un lieu inventé par le LLM est écarté, l'extraction locale prend le relais.
+    client = _FauxClient('{"depart": "Lieu Inventé", "arrivee": "Palais"}')
+    resultat = extract_intent("maa ngi Ouakam dem Palais", client=client)
+    verifie(
+        "lieu LLM inventé rejeté",
+        resultat["depart"] != "Lieu Inventé" and resultat["depart"] == "Ouakam",
+    )
+    client = _FauxClient('{"depart": "Atlantide", "arrivee": "Narnia"}')
+    resultat = extract_intent("bonjour", client=client)
+    verifie(
+        "deux lieux LLM inventés => aucun lieu",
+        not resultat["depart"] and not resultat["arrivee"],
+    )
+
+    # 5. HTML : aucun nom dynamique ne doit être interprété comme une balise.
+    match = {
+        "ligne": "<script>7</script>",
+        "compagnie": "<img src=x onerror=alert(1)>",
+        "monte_a": "<b>Monte</b>",
+        "descend_a": "<i>Descend</i>",
+        "depart": "<script>D</script>",
+        "arrivee": "<script>A</script>",
+        "arrets_trajet": ["<script>S</script>", "Arrêt sûr"],
+        "categorie": "<script>C</script>",
+        "sens": "inverse",
+    }
+    resultat = {
+        "found": True,
+        "lignes": [match],
+        "correspondances": [],
+        "depart_valide": True,
+        "arrivee_valide": True,
+    }
+    carte = app._carte(resultat, "<script>dep</script>", "<script>arr</script>")
+    verifie(
+        "carte HTML échappée",
+        "<script>" not in carte and "&lt;script&gt;" in carte,
+    )
+    verifie(
+        "titre autre possibilité échappé",
+        "<script>" not in titre_autre_possibilite("<script>2</script>"),
+    )
+    mention = app._mention(
+        {"erreur": "<script>erreur</script>"}, "<script>asr</script>"
+    )
+    verifie("mention échappée", "<script>" not in mention)
+
+    resultat_vide = {
+        "found": False,
+        "lignes": [],
+        "correspondances": [],
+        "depart_valide": False,
+        "arrivee_valide": False,
+    }
+    carte = app._carte(resultat_vide, "<script>dep</script>", "<script>arr</script>")
+    verifie(
+        "lieu hors réseau échappé",
+        "<script>" not in carte and "&lt;script&gt;" in carte,
+    )
+
+    # 6. Révisions et dépendances corrigées.
+    transcribe = _charger_module(RACINE / "src" / "asr" / "transcribe.py", "transcribe_securite")
+    finetune = _charger_module(RACINE / "scripts" / "finetune_whisper.py", "finetune_securite")
+    evaluer = _charger_module(RACINE / "scripts" / "evaluer_modele.py", "evaluer_securite")
+    revisions = {
+        transcribe.REVISION_WHISPER,
+        transcribe.REVISION_WHISPER_SECOURS,
+        transcribe.REVISION_ASR_GPU,
+        finetune.REVISIONS_CONNUES[finetune.MODEL_DEFAUT],
+        finetune.REVISIONS_CONNUES[finetune.MODELE_ESSAI],
+        evaluer.REVISIONS_CONNUES["M9and2M/whisper-small-wolof"],
+    }
+    verifie(
+        "révisions épinglées (SHA de 40 caractères)",
+        all(revision and len(revision) == 40 for revision in revisions),
+    )
+    requirements = (RACINE / "requirements.txt").read_text(encoding="utf-8")
+    requirements_train = (RACINE / "requirements-train.txt").read_text(encoding="utf-8")
+    verifie(
+        "dépendances épinglées et compatibles Gradio",
+        "gradio==6.30.0" in requirements
+        and "pillow==12.3.0" in requirements
+        and "pillow==13.0.0" not in requirements
+        and "python-dotenv==1.2.2" in requirements_train,
+    )
+
+    # 7. Déploiement : pas de copie automatique du token, .claude exclu.
+    upload = (RACINE / "upload_space.py").read_text(encoding="utf-8")
+    ignore = (RACINE / ".gitignore").read_text(encoding="utf-8")
+    verifie(
+        "token non copié et .claude exclu",
+        "add_space_secret" not in upload
+        and "get_token" not in upload
+        and ".claude/*" in upload
+        and ".claude/" in ignore,
+    )
+
+    return echecs, total
+
+
 def test_en_ligne() -> int:
     import httpx
 
@@ -1445,6 +1719,7 @@ if __name__ == "__main__":
         echecs_lieux, total_lieux = test_lieux()
         echecs_prononciations, total_prononciations = test_prononciations()
         echecs_verification, total_verification = test_verification_voix()
+        echecs_securite, total_securite = test_securite()
         echecs = (
             test_local()
             + echecs_partage
@@ -1452,14 +1727,16 @@ if __name__ == "__main__":
             + echecs_lieux
             + echecs_prononciations
             + echecs_verification
+            + echecs_securite
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
             total_partage
             + total_voix
             + total_lieux
-            + total_prononciations
+            +             total_prononciations
             + total_verification
+            + total_securite
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

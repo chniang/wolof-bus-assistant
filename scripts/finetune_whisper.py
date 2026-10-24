@@ -42,6 +42,28 @@ MODEL_DEFAUT = "M9and2M/whisper-small-wolof"
 MODELE_ESSAI = "openai/whisper-tiny"
 DEPOT_HUB = "TIJAANI/whisper-small-wolof-dakar"
 
+# Révisions épinglées (HfApi.model_info, sans télécharger les poids). Le dépôt
+# d'entraînement ne doit pas changer entre deux runs : sinon le WER n'est plus
+# comparable d'une exécution à l'autre.
+REVISIONS_CONNUES = {
+    MODEL_DEFAUT: "8cc20b3c6e77ecb490210103d3b4fd0b85c3d1d8",
+    MODELE_ESSAI: "169d4a4341b33bc18d8881c4b69c2e104e1cc0af",
+}
+
+
+def revision_pour(nom_modele: str, revision: str | None = None) -> str | None:
+    """Révision à charger : locale = None, Hub connu = SHA, Hub inconnu = erreur."""
+    if Path(nom_modele).exists():
+        return None
+    if revision:
+        return revision
+    if nom_modele in REVISIONS_CONNUES:
+        return REVISIONS_CONNUES[nom_modele]
+    raise ValueError(
+        f"révision inconnue pour {nom_modele} : passer --revision <sha> "
+        "pour ne pas charger une branche mobile."
+    )
+
 GRAINE = 1337
 LR = 1e-5
 
@@ -366,6 +388,7 @@ def executer(
     mettre_en_gros: bool = True,
     forcer_cpu: bool = False,
     locuteurs_test: list[str] | None = None,
+    revision: str | None = None,
 ) -> int:
     import torch
     from transformers import (
@@ -405,11 +428,17 @@ def executer(
     device = "cpu" if forcer_cpu else ("cuda" if torch.cuda.is_available() else "cpu")
     fp16 = device == "cuda"
     torch.set_num_threads(min(4, os.cpu_count() or 1))
-    print(f"Modèle : {nom_modele} | appareil : {device} | fp16 : {fp16}")
+    revision = revision_pour(nom_modele, revision)
+    print(
+        f"Modèle : {nom_modele} | révision : {revision or 'locale'} | "
+        f"appareil : {device} | fp16 : {fp16}"
+    )
 
     print("Chargement du processor et du modèle…")
-    processor = WhisperProcessor.from_pretrained(nom_modele)
-    model = WhisperForConditionalGeneration.from_pretrained(nom_modele).to(device)
+    processor = WhisperProcessor.from_pretrained(nom_modele, revision=revision)
+    model = WhisperForConditionalGeneration.from_pretrained(
+        nom_modele, revision=revision
+    ).to(device)
     # Mêmes réglages de décodage que l'app : tâche transcribe, pas de langue forcée.
     model.generation_config.task = TACHE
 
@@ -622,6 +651,7 @@ def essai_a_blanc() -> int:
             batch=2,
             mettre_en_gros=False,
             forcer_cpu=True,
+            revision=REVISIONS_CONNUES[MODELE_ESSAI],
         )
         if code == 0:
             print("\nESSAI À BLANC TERMINÉ : rien n'a été écrit dans data/ ni models/ de ton PC.")
@@ -641,6 +671,11 @@ def main(argv: list[str] | None = None) -> int:
     analyseur.add_argument("--epochs", type=int, default=8, help="Nombre d'époques (défaut : 8).")
     analyseur.add_argument("--degeler-encodeur", action="store_true", help="Entraîne aussi l'encodeur.")
     analyseur.add_argument("--pousser-hub", action="store_true", help="Envoie le modèle sur le Hub (privé).")
+    analyseur.add_argument(
+        "--revision",
+        default=None,
+        help="SHA du commit Hub à charger (obligatoire pour un modèle Hub inconnu).",
+    )
     analyseur.add_argument(
         "--locuteurs-test",
         nargs="+",
@@ -662,6 +697,7 @@ def main(argv: list[str] | None = None) -> int:
         degeler=args.degeler_encodeur,
         pousser_hub=args.pousser_hub,
         locuteurs_test=args.locuteurs_test,
+        revision=args.revision,
     )
 
 

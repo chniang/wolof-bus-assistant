@@ -40,6 +40,29 @@ import finetune_whisper as ft  # noqa: E402
 
 META_DEFAUT = RACINE / "data" / "collecte" / "metadata.csv"
 
+# Révisions des dépôts connus, épinglées via HfApi.model_info (sans télécharger
+# les poids). Pour un autre modèle Hub, passer --revision : on ne charge jamais
+# silencieusement une branche mobile.
+REVISIONS_CONNUES = {
+    "M9and2M/whisper-small-wolof": "8cc20b3c6e77ecb490210103d3b4fd0b85c3d1d8",
+    "openai/whisper-tiny": "169d4a4341b33bc18d8881c4b69c2e104e1cc0af",
+    "TIJAANI/whisper-small-wolof-dakar-essai3": "17f81ad52653495b5953387ea1f87ffda7bf2f15",
+}
+
+
+def revision_pour(nom_modele: str, revision: str | None = None) -> str | None:
+    """La révision à passer à from_pretrained : locale = None, Hub = SHA obligatoire."""
+    if Path(nom_modele).exists():
+        return None
+    if revision:
+        return revision
+    if nom_modele in REVISIONS_CONNUES:
+        return REVISIONS_CONNUES[nom_modele]
+    raise ValueError(
+        f"révision inconnue pour {nom_modele} : préciser --revision <sha> "
+        "pour ne pas charger une branche mobile."
+    )
+
 
 def charger_jeu_test(metadata_csv: Path, locuteurs: list[str]) -> list[dict]:
     """Vocaux « ok » des locuteurs demandés (par défaut, le jeu de TEST figé)."""
@@ -64,6 +87,7 @@ def evaluer_modele(
     exemples: list[dict],
     batch: int = 8,
     forcer_cpu: bool = False,
+    revision: str | None = None,
 ) -> dict:
     """Transcrit `exemples` avec `nom_modele` et renvoie WER + trajets compris.
 
@@ -78,9 +102,12 @@ def evaluer_modele(
         return {"n": 0, "wer": 0.0, "trajets_compris": 0, "transcriptions": []}
 
     device = "cpu" if forcer_cpu else ("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Modèle : {nom_modele} | appareil : {device}")
-    processor = WhisperProcessor.from_pretrained(nom_modele)
-    model = WhisperForConditionalGeneration.from_pretrained(nom_modele).to(device)
+    revision = revision_pour(nom_modele, revision)
+    print(f"Modèle : {nom_modele} | révision : {revision or 'locale'} | appareil : {device}")
+    processor = WhisperProcessor.from_pretrained(nom_modele, revision=revision)
+    model = WhisperForConditionalGeneration.from_pretrained(
+        nom_modele, revision=revision
+    ).to(device)
     model.generation_config.task = ft.TACHE
     model.eval()
 
@@ -117,6 +144,11 @@ def main(argv: list[str]) -> int:
     )
     analyseur.add_argument("--metadata", default=str(META_DEFAUT), help="chemin de metadata.csv.")
     analyseur.add_argument("--batch", type=int, default=8)
+    analyseur.add_argument(
+        "--revision",
+        default=None,
+        help="SHA du commit Hub à évaluer (obligatoire pour un modèle Hub inconnu).",
+    )
     analyseur.add_argument("--detail", action="store_true", help="affiche chaque transcription.")
     args = analyseur.parse_args(argv[1:])
 
@@ -127,7 +159,9 @@ def main(argv: list[str]) -> int:
         return 1
 
     debut = time.perf_counter()
-    resultat = evaluer_modele(args.modele, exemples, batch=args.batch)
+    resultat = evaluer_modele(
+        args.modele, exemples, batch=args.batch, revision=args.revision
+    )
     duree = time.perf_counter() - debut
 
     print(f"\n=== Évaluation sur {locuteurs_test} ({resultat['n']} vocaux) ===")

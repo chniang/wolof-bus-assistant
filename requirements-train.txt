@@ -19,4 +19,4 @@ huggingface_hub==1.32.0
 # extract_local), qui charge .env avec python-dotenv dès l'import : absent
 # d'ici, il manquait sur une machine GPU fraîche qui n'a que ce fichier
 # (requirements.txt, qui l'installe, est le fichier de l'inférence locale).
-python-dotenv==1.2.1
+python-dotenv==1.2.2
