@@ -1,4 +1,4 @@
-pandas
+﻿pandas
 numpy
 openai
 transformers
@@ -8,18 +8,17 @@ soundfile
 python-dotenv
 
 # Interface Gradio de app.py, celle qui tourne sur un Hugging Face Space. torch
-# n'est volontairement pas épinglé : sur Space, c'est l'image du Space qui fournit
+# n'est volontairement pas Ã©pinglÃ© : sur Space, c'est l'image du Space qui fournit
 # la version CUDA, et un torch CPU ici casserait le ZeroGPU.
-gradio==6.30.0
 spaces
 
 # Gradio 6.30 exige pillow<13.0 : Pillow 13.0.0, qui corrige 37 CVE, est donc
-# incompatible avec le runtime actuel. On épingle la dernière version acceptée
-# en attendant un Gradio qui relève sa contrainte. L'app n'a aucun composant
-# image, ce qui limite l'exposition, mais le risque résiduel est connu.
+# incompatible avec le runtime actuel. On Ã©pingle la derniÃ¨re version acceptÃ©e
+# en attendant un Gradio qui relÃ¨ve sa contrainte. L'app n'a aucun composant
+# image, ce qui limite l'exposition, mais le risque rÃ©siduel est connu.
 pillow==12.3.0
 
-# Géocodage Nominatim (src/matching/geo.py) : le repli en ligne pour un lieu absent
-# de data/lieux_geo.csv. Sans lui, seuls les lieux précalculés sont localisés.
+# GÃ©ocodage Nominatim (src/matching/geo.py) : le repli en ligne pour un lieu absent
+# de data/lieux_geo.csv. Sans lui, seuls les lieux prÃ©calculÃ©s sont localisÃ©s.
 requests
 
