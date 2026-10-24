@@ -1,11 +1,17 @@
 .venv/
 .env
+.env.*
+!.env.example
 __pycache__/
 *.pyc
 body*.json
 model_checkpoints/
 models/
 test_*.wav
+*.zip
+tts_cache_adia/
+data/tts_cache_avant_adia_*/
+.ipynb_checkpoints/
 
 # Voix de vraies personnes : jamais sur GitHub.
 data/collecte/

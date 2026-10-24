@@ -15,7 +15,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-try:  # import à plat (app.py, Streamlit) ou en paquet
+try:  # import à plat (app.py) ou en paquet
     from matching.geo import LieuxGeo, distance_metres
     from matching.lieux import VOIES, _jetons, jetons, joli, score
 except ImportError:  # pragma: no cover

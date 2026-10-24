@@ -807,6 +807,38 @@ def test_voix() -> tuple[int, int]:
             partiel,
         )
 
+    # La voix ne doit jamais retomber sur une synthèse directe : le cache Adia
+    # est la seule source, même incomplet.
+    import tts.speak as speak
+
+    interdits = ("load_tts", "synthetiser", "Tts", "MODEL_TTS", "VOCODEUR")
+    presents = [nom for nom in interdits if hasattr(speak, nom)]
+    verifie(
+        "aucune synthèse SpeechT5 dans le module de voix",
+        not presents,
+        presents,
+    )
+    source_app = (RACINE / "app.py").read_text(encoding="utf-8")
+    synthese_app = [
+        nom for nom in interdits if nom in source_app
+    ]
+    verifie(
+        "l'app ne contient aucun appel de synthèse directe",
+        not synthese_app,
+        synthese_app,
+    )
+    with tempfile.TemporaryDirectory() as dossier_temporaire:
+        dossier = Path(dossier_temporaire)
+        absent = voix_depuis_cache(
+            [{"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 1"}],
+            cache_dir=dossier,
+        )
+        verifie(
+            "segment manquant : aucun audio, aucune synthèse",
+            absent is None,
+            absent,
+        )
+
     return echecs, total
 
 

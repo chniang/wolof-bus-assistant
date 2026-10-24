@@ -1,31 +1,21 @@
-"""Synthèse vocale wolof : l'app répond aussi à l'oral.
+"""Voix wolof de l'app : assemble les segments Adia pré-générés.
 
-On utilise un finetuning de SpeechT5 entraîné sur du wolof
-(bilalfaye/speecht5_tts-wolof) : c'est le seul TTS wolof qui tourne sur CPU,
-en local et hors ligne. MMS de Meta ne couvre pas le wolof, et gTTS comme
-edge-tts n'ont pas de voix wolof.
+Les 637 réponses sont générées à l'avance avec Adia_TTS (CONCREE), puis
+assemblées ici en WAV. Aucun modèle TTS n'est chargé au runtime : si un segment
+manque, on joue les morceaux présents et on journalise le fichier à produire.
+Le plan des phrases est dans `scripts/phrases_voix.json`, les prononciations
+dans `scripts/prononciations_wolof.json` et la génération dans
+`notebooks/voix_adia_colab.ipynb`.
 
-Ce module ne dépend pas de Streamlit : l'app garde le modèle en mémoire, et on
-peut aussi le tester seul en ligne de commande :
-
-    python src/tts/speak.py "Jëlal bus bu Dakar Dem Dikk, numero juróom ñaar."
+Le module ne dépend d'aucune interface : on peut l'utiliser seul.
 """
 
 from __future__ import annotations
 
 import io
-import os
 import re
 import unicodedata
 from pathlib import Path
-from typing import NamedTuple
-
-MODEL_TTS = "bilalfaye/speecht5_tts-wolof"
-# Le vociseur est un modèle séparé, fourni par Microsoft.
-VOCODEUR = "microsoft/speecht5_hifigan"
-
-# torch sur un portable : 4 cœurs au maximum, sans surcharger la machine.
-NB_THREADS = min(4, os.cpu_count() or 1)
 
 # Le modèle lit les chiffres un peu n'importe comment, on les écrit donc en mots.
 UNITES = {
@@ -67,11 +57,11 @@ CENTAINES = {
 # Au-delà, on n'a pas de formulation : on lit les chiffres tels quels.
 MAX_ECRIT = 999
 
-# Audios pré-générés pour la démo (voir pregenerer.py). La synthèse est trop
-# lente pour être faite devant un jury, alors on la prépare une fois pour toutes.
+# Audios pré-générés avec Adia_TTS (CONCREE), versionnés pour que la démo n'ait
+# rien à télécharger ni à synthétiser.
 CACHE_DIR = Path(__file__).resolve().parents[2] / "data" / "tts_cache"
-# pregenerer.py n'écrit ce marqueur que si tous les fichiers sont là : l'app s'en
-# sert pour savoir si elle peut se passer de charger le modèle.
+# `scripts/installer_voix_adia.py` n'écrit ce marqueur que si les 637 fichiers
+# du plan sont là ; il documente l'état du cache, sans déclencher de synthèse.
 MARQUEUR = CACHE_DIR / "cache_complet.txt"
 AUCUNE_LIGNE = "aucune_ligne.wav"
 WALLA = "walla.wav"
@@ -92,14 +82,6 @@ SILENCE_ENTRE = 0.3
 # Entre le connecteur et le nom du lieu, la pause doit être plus courte : on dit
 # « nga wàcc Gadaye » d'un trait, pas avec un blanc de fin de phrase.
 PAUSE_LIEU = 0.1
-
-
-class Tts(NamedTuple):
-    """Le trio chargé une seule fois : tokenizer, modèle et vociseur."""
-
-    processor: object
-    modele: object
-    vocodeur: object
 
 
 def nombre_en_wolof(n: int) -> str:
@@ -388,7 +370,7 @@ def nom_cache_match(match: dict) -> str:
 
 
 def cache_complet() -> bool:
-    """Le cache disque est-il prêt ? C'est pregenerer.py qui décide."""
+    """Le cache disque est-il marqué complet par l'installateur Adia ?"""
     return MARQUEUR.is_file()
 
 
@@ -508,8 +490,7 @@ def voix_depuis_cache(
     """L'audio des lignes directes, dans l'ordre affiché, au plus 3.
 
     Un segment absent est sauté et signalé : on assemble ce qui existe plutôt
-    que de renvoyer None, car la synthèse en direct (ancienne voix) ne doit pas
-    remplacer les nouveaux morceaux Adia.
+    que de renvoyer None. Aucune synthèse en direct ne remplace un morceau Adia.
     """
     dossier = cache_dir or CACHE_DIR
     if not lignes:
@@ -541,7 +522,7 @@ def voix_correspondances_depuis_cache(
     Chaque possibilité : 1er bus, « nga wàcc », lieu de changement,
     « Ci ginnaaw, », 2e bus, « moo lay yóbbu ba », lieu de descente.
     « Walla, » sépare deux possibilités. Un morceau absent est sauté et
-    journalisé, jamais remplacé par la voix SpeechT5.
+    journalisé ; aucune synthèse en direct ne prend le relais.
     """
     dossier = cache_dir or CACHE_DIR
     morceaux: list[tuple[Path, float]] = []
@@ -554,68 +535,3 @@ def voix_correspondances_depuis_cache(
     fichiers = [chemin for chemin, _ in morceaux]
     pauses = [pause for _, pause in morceaux[:-1]]
     return assembler(fichiers, pauses)
-
-
-def load_tts() -> Tts:
-    """Charge SpeechT5 et son vociseur. Long au premier appel (~3 min de téléchargement)."""
-    import torch
-    from transformers import (
-        SpeechT5ForTextToSpeech,
-        SpeechT5HifiGan,
-        SpeechT5Processor,
-    )
-
-    torch.set_num_threads(NB_THREADS)
-
-    return Tts(
-        processor=SpeechT5Processor.from_pretrained(MODEL_TTS),
-        modele=SpeechT5ForTextToSpeech.from_pretrained(MODEL_TTS),
-        vocodeur=SpeechT5HifiGan.from_pretrained(VOCODEUR),
-    )
-
-
-def synthetiser(tts: Tts, texte: str) -> bytes:
-    """Synthétise le texte et renvoie un WAV en octets, prêt pour st.audio."""
-    import soundfile as sf
-    import torch
-
-    entrees = tts.processor(text=texte, return_tensors="pt")
-    # Le modèle est mono-locuteur : un vecteur à zéro suffit, et on évite le
-    # téléchargement du jeu de xvectors que suggère la fiche du modèle.
-    embedding = torch.zeros(1, tts.modele.config.speaker_embedding_dim)
-    with torch.no_grad():
-        audio = tts.modele.generate_speech(
-            input_ids=entrees.input_ids,
-            attention_mask=entrees.attention_mask,
-            speaker_embeddings=embedding,
-            vocoder=tts.vocodeur,
-        )
-
-    # C'est le vociseur qui porte la fréquence de sortie (16 kHz), pas le modèle.
-    frequence = tts.vocodeur.config.sampling_rate
-    tampon = io.BytesIO()
-    sf.write(
-        tampon,
-        audio.squeeze().detach().numpy().astype("float32"),
-        frequence,
-        format="WAV",
-        subtype="PCM_16",
-    )
-    return tampon.getvalue()
-
-
-if __name__ == "__main__":
-    # Petit test à la main : python src/tts/speak.py "Jëlal bus bu ..."
-    import sys
-    import time
-
-    if len(sys.argv) < 2:
-        print('Usage : python src/tts/speak.py "Jëlal bus bu ..."')
-        sys.exit(1)
-
-    tts = load_tts()
-    debut = time.perf_counter()
-    octets = synthetiser(tts, sys.argv[1])
-    with open("test_tts.wav", "wb") as fichier:
-        fichier.write(octets)
-    print(f"{sys.argv[1]!r} -> test_tts.wav ({time.perf_counter() - debut:.1f}s)")

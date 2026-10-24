@@ -1,4 +1,3 @@
-streamlit
 pandas
 numpy
 openai
@@ -7,10 +6,6 @@ torch
 torchaudio
 soundfile
 python-dotenv
-
-# Requis au runtime par le tokenizer SpeechT5 (src/tts/speak.py) : sans lui,
-# transformers refuse de charger le modèle de synthèse vocale.
-sentencepiece
 
 # Interface Gradio de app.py, celle qui tourne sur un Hugging Face Space. torch
 # n'est volontairement pas épinglé : sur Space, c'est l'image du Space qui fournit

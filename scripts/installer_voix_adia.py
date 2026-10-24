@@ -5,7 +5,7 @@
 
 1. vérifie que l'archive contient bien tous les fichiers attendus
    (la liste est dans scripts/phrases_voix.json) ;
-2. sauvegarde l'ancien cache (voix SpeechT5) dans un dossier horodaté ;
+2. sauvegarde l'ancien cache dans un dossier horodaté ;
 3. recopie les nouveaux WAV par-dessus ;
 4. réécrit le marqueur qui autorise l'app à se passer du modèle en direct.
 

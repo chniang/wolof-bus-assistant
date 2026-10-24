@@ -17,7 +17,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-try:  # import à plat (app.py, Streamlit) ou lancé depuis src/intent/
+try:  # import à plat (app.py) ou lancé depuis src/intent/
     from matching.lieux import lieux_reconnaissables
 except ImportError:  # pragma: no cover
     import sys

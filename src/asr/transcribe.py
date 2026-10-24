@@ -9,9 +9,8 @@ de base wolof, public. Réglages inchangés : CPU, quantification int8,
 décodage glouton. SpeechBrain reste écarté : wav2vec2-large ne tient pas dans
 les 8 Go de RAM du laptop.
 
-Ce module ne dépend pas de Streamlit : c'est l'app qui se charge de garder le
-modèle en mémoire (st.cache_resource), pour qu'on puisse aussi le tester seul
-en ligne de commande.
+Ce module ne dépend pas de l'interface : c'est l'app qui garde le modèle en
+mémoire, pour qu'on puisse aussi le tester seul en ligne de commande.
 """
 
 from __future__ import annotations

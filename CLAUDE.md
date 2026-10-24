@@ -11,8 +11,8 @@ montée, l'arrêt de descente, un éventuel changement, à l'écran et à voix h
 ## Règles absolues
 
 1. **Ne jamais redéployer** (`upload_space.py`) ni pousser (`git push`) sans demande explicite.
-2. **Ne jamais modifier** `data/itineraires_dakar.csv` ni `data/lignes_dakar.csv` (sources officielles).
-3. **Ne jamais toucher aux audios** de `data/collecte/` et `data/collecte_brut/` (voix privées, hors Git).
+2. **Ne jamais modifier** les CSV de `data/` (`lignes_dakar.csv`, `itineraires_dakar.csv`, `arrets_geo.csv`, `lieux_geo.csv`).
+3. **Ne jamais toucher aux audios** de `data/collecte/`, `data/collecte_brut/`, `data/sources/` et `data/demo_audio/`, ni aux **637 WAV du plan** dans `data/tts_cache/`.
 4. **Aucun secret** dans le code, les logs ou les messages (`.env` est exclu de Git et du Space).
 5. **Chaque correction = un test** dans `tests/test_trajets.py`, puis lancer les tests avant de conclure.
 6. **Mieux vaut ne rien répondre que répondre faux** : en cas de doute sur un lieu, laisser vide plutôt que deviner.
@@ -57,9 +57,12 @@ Astuce PowerShell : un script Python passé en « here-string » perd les accent
      « Département de X » compte seulement pour Guédiawaye, Pikine, Rufisque.
 4. **Réponse** (`app.py`)
    - Cartes HTML (montée, descente, arrêts du trajet, quartier si sûr, lien AFTU).
-   - Voix : Adia_TTS (CONCREE), **109 réponses pré-générées** dans `data/tts_cache/`.
+   - Voix : Adia_TTS (CONCREE), **637 réponses pré-générées** dans `data/tts_cache/`.
      À l'oral on dit « numero » (pas « ligne ») et « Tata » / « Dem Dikk ».
-     Pour régénérer : `scripts/phrases_voix.json` + `notebooks/voix_adia_colab.ipynb` (Colab GPU).
+     Pour régénérer : `scripts/phrases_voix.json` + `scripts/prononciations_wolof.json`
+     + `notebooks/voix_adia_colab.ipynb` (Colab GPU, 3 prises, meilleure choisie avec Whisper).
+     Installation : `scripts/installer_voix_adia.py`. Aucun modèle TTS n'est chargé au runtime :
+     un segment absent est sauté, jamais synthétisé en direct.
 
 ## Données
 
@@ -78,6 +81,7 @@ Astuce PowerShell : un script Python passé en « here-string » perd les accent
 - `scripts/nettoyer_transcriptions.py` : orthographe des lieux → colonne `transcription_propre`.
 - `scripts/transcrire_collecte.py` : transcrit les vocaux avec Whisper, **reprend où il s'est arrêté**.
 - `scripts/finetune_whisper.py` : fine-tuning de Whisper small (à lancer sur GPU Brev, pas en local).
+- `scripts/installer_voix_adia.py` : installe l'archive Adia dans `data/tts_cache/`.
 - `upload_space.py` : déploiement vers le Space (**uniquement sur demande**).
 
 ## Style

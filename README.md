@@ -19,11 +19,15 @@ avec le numéro de ligne énoncé en wolof plutôt qu'en chiffres.
 | 1. Transcription | `AIHubSN/Kiriku-Wolof-ASR` (en ligne, GPU) · `TIJAANI/whisper-small-wolof-dakar-essai3` (secours et local, CPU) | Transcrit la demande vocale wolof. Kiriku (AI Hub Sénégal) reconnaît bien mieux les noms d'arrêts (~9 sur 10 contre 1 sur 10 au banc d'essai micro, voir `kiriku_test/`). Quand le GPU gratuit de Hugging Face n'est pas attribué, l'app bascule seule sur notre whisper fine-tuné sur les voix collectées (WER 89,7 % → 74,1 % sur 22 vocaux de voix jamais vues), quantifié en int8 sur CPU, qui sert aussi en local (Kiriku, taille Whisper large, ne tient pas sur un laptop). Dépôt privé : il faut le secret `HF_TOKEN`, sinon l'app repart seule de `M9and2M/whisper-small-wolof`. |
 | 2. Extraction | extraction locale, puis `meta/llama-3.2-11b-vision-instruct` (NVIDIA Build) | Repère `depart` et `arrivee`. D'abord en local, par correspondance floue sur les lieux du réseau, en tenant compte des écritures phonétiques de l'ASR (« wakaam », « liberti sënk », « pale ») et des numéros dits en lettres ou en wolof. Le LLM n'intervient que si ce repérage ne donne pas de trajet complet ; son prompt contient la liste des lieux du réseau. |
 | 3. Correspondance | — | Recherche arrêt par arrêt sur 112 lignes : une ligne convient si elle passe par le départ puis par l'arrivée, pas seulement si ce sont ses terminus. Sans ligne directe, propose un trajet avec un changement. Tolère l'orthographe phonétique et les variantes (« wakaam » → Ouakam, « Liberté VI » → Liberté 6) ; Palais 1 et Palais 2 valent tous deux « Palais ». |
-| 4. Réponse | — | Affiche le trajet en texte **et** le fait dire en wolof (`bilalfaye/speecht5_tts-wolof`). |
+| 4. Réponse | Adia_TTS (CONCREE), pré-généré | Affiche le trajet en texte **et** joue les segments wolof déjà générés dans `data/tts_cache/`. |
 
-La voix des lignes historiques est pré-générée dans `data/tts_cache/` ; les
-autres réponses (nouvelles lignes, trajets avec changement) passent par le TTS
-direct. `python src/tts/pregenerer.py` régénère le cache pour toutes les lignes.
+La voix est entièrement pré-générée : **637 audios Adia_TTS (CONCREE)**, construits
+depuis `scripts/phrases_voix.json` et `scripts/prononciations_wolof.json`. La
+génération se fait dans `notebooks/voix_adia_colab.ipynb` : trois prises par
+segment, puis la meilleure est choisie avec un contrôle Whisper. Aucun modèle TTS
+n'est chargé au runtime ; si un segment manque, l'app joue les morceaux présents
+et laisse le reste silencieux. `scripts/installer_voix_adia.py` installe une
+archive complète dans `data/tts_cache/`.
 
 ## Données
 
@@ -36,8 +40,8 @@ direct. `python src/tts/pregenerer.py` régénère le cache pour toutes les lign
   `data/sources/` : itinéraires officiels AFTU, et arrêts DDD relevés dans
   OpenStreetMap (© contributeurs OpenStreetMap, ODbL). Les lignes DDD sans
   itinéraire publié ne sont connues que par leurs terminus.
-- `data/tts_cache/` — les 33 audios de réponse pré-générés (31 lignes + « aucune ligne »
-  + « walla »), versionnés pour que la démo n'ait rien à télécharger.
+- `data/tts_cache/` — les **637 audios Adia** de réponse pré-générés (112 lignes,
+  6 services, 519 lieux), versionnés pour que la démo n'ait rien à télécharger.
 - `data/demo_audio/` — enregistrements de secours, pour quand le micro de la
   salle ne coopère pas.
 
@@ -71,28 +75,25 @@ Version en ligne (Gradio, celle du Space Hugging Face) :
 python app.py
 ```
 
-Version locale historique (Streamlit) :
-
-```bash
-streamlit run src/app/app.py
-```
-
 Puis ouvrir l'URL affichée et dire son trajet en wolof, ou l'écrire.
 
-Le premier lancement télécharge les modèles (Whisper, SpeechT5) et peut prendre
-quelques minutes. Les suivants démarrent immédiatement.
+Le premier lancement télécharge les modèles de transcription (Whisper CPU et
+Kiriku GPU) et peut prendre quelques minutes. Les suivants démarrent
+immédiatement ; la voix Adia est déjà dans `data/tts_cache/`.
 
 ## Tests
 
-`tests/test_trajets.py` vérifie 10 trajets de référence (dont des phrases écrites
-comme l'ASR les transcrit : « liberti sënk… pale dë », « wakaam ») et les 2
-audios de démo :
+Les suites locales couvrent les trajets de référence, la collecte de voix, la
+seconde chance ASR et le repli Whisper CPU :
 
 ```bash
-# Local, quelques secondes : extraction des lieux + recherche de ligne
+# Local, sans télécharger ni charger de modèle
 python tests/test_trajets.py
+python tests/test_collecte.py
+python tests/test_seconde_chance.py
+python tests/test_asr_secours.py
 
-# App publiée, comme un visiteur : 10 phrases + 2 audios envoyés au Space
+# App publiée, comme un visiteur : trajets et audios envoyés au Space
 python tests/test_trajets.py --en-ligne
 ```
 
@@ -108,13 +109,12 @@ en ligne après chaque déploiement. Code de sortie 0 si tout passe.
 | `AIHubSN/Kiriku-Wolof-ASR` (transcription en ligne) | modèle protégé de l'AI Hub Sénégal : accès après acceptation de ses conditions |
 | `TIJAANI/whisper-small-wolof-dakar-essai3` (transcription de secours et locale) | fine-tuning de `M9and2M/whisper-small-wolof` (MIT), dépôt privé |
 | `M9and2M/whisper-small-wolof` (repli si le dépôt fine-tuné est inaccessible) | MIT |
-| `bilalfaye/speecht5_tts-wolof` (synthèse vocale) | MIT |
-| `microsoft/speecht5_hifigan` (vocodeur) | MIT |
 | `meta/llama-3.2-11b-vision-instruct` (extraction, en dernier recours) | Llama 3.2 Community License, servi par NVIDIA Build selon ses conditions d'utilisation |
 
-La transcription et la synthèse vocale tournent sur la machine qui héberge l'app
-(le Space Hugging Face en ligne, ou le PC en local). La phrase transcrite n'est
-envoyée à l'API NVIDIA Build que si l'extraction locale ne trouve pas le trajet.
+La transcription tourne sur la machine qui héberge l'app (le Space Hugging Face
+en ligne, ou le PC en local). La voix Adia est pré-générée : aucun modèle TTS
+n'est chargé au runtime. La phrase transcrite n'est envoyée à l'API NVIDIA Build
+que si l'extraction locale ne trouve pas le trajet.
 
 ### Données collectées
 

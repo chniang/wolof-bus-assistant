@@ -1,12 +1,10 @@
 """Interface Gradio de GuindiMa AI, pour un Hugging Face Space (ZeroGPU).
 
-Ce fichier ne réimplémente rien : il reprend les modules déjà validés du projet,
-dans le même ordre que src/app/app.py. Il n'y a donc qu'une différence avec
-l'application Streamlit : le rendu. Ici on ne gère pas de session, chaque
-exécution de Gradio est indépendante, ce qui simplifie la mise en cache.
+Ce fichier ne réimplémente rien : il reprend les modules déjà validés du projet.
+Chaque exécution de Gradio est indépendante, ce qui simplifie la mise en cache.
 
     audio -> transcrire() -> extract_intent() -> StopsMatcher.find_line()
-          -> phrase_reponse() + voix_depuis_cache()
+          -> carte HTML + voix_depuis_cache()
 
 Sur un Space, la seule partie qui demande le GPU est la transcription : le
 décorateur @spaces.GPU la réserve le temps du calcul puis le libère pour les autres visiteurs.
@@ -33,7 +31,7 @@ import numpy as np
 
 RACINE = Path(__file__).resolve().parent
 # Les modules du projet sont importés à plat (asr, intent, matching, tts) : il faut
-# que src/ soit dans le chemin, comme le fait src/app/app.py pour son propre lancement.
+# que src/ soit dans le chemin, y compris quand app.py est lancé depuis la racine.
 sys.path.insert(0, str(RACINE / "src"))
 
 from app.cartes import titre_autre_possibilite  # noqa: E402
@@ -59,13 +57,8 @@ from matching.lieux import AVANT_NUMERO, FAUX_AMIS, joli, sans_accents  # noqa: 
 from matching.stops_matcher import StopsMatcher  # noqa: E402
 from tts.speak import (  # noqa: E402
     MAX_POSSIBILITES,
-    cache_complet,
-    load_tts,
     nombre_en_wolof,
     numero_de,
-    phrase_correspondances,
-    phrase_reponse,
-    synthetiser,
     voix_correspondances_depuis_cache,
     voix_depuis_cache,
 )
@@ -165,18 +158,6 @@ _precharger_kiriku()
 LIBELLE_ASR = "Whisper wolof fine-tuné à Dakar + Kiriku-Wolof-ASR"
 # Voix des réponses pré-générées (voir scripts/phrases_voix.json).
 LIBELLE_VOIX = "Adia_TTS (CONCREE)"
-
-# Le TTS ne sert qu'en secours, quand le cache disque n'a pas l'audio du résultat.
-# Le charger à la volée évite de téléchargement 578 Mo pour rien sur un Space.
-_TTS = None
-
-
-def _tts():
-    global _TTS
-    if _TTS is None:
-        _TTS = load_tts()
-    return _TTS
-
 
 # --------------------------------------------------------------------------- #
 # Clients et objets reconstruits une fois
@@ -347,34 +328,21 @@ def _phrase_donne_un_trajet(phrase: str) -> bool:
 def _voix_wolof(lignes: list[dict], correspondances: list[dict] | None = None) -> str | None:
     """La réponse lue en wolof, sous forme de chemin de fichier.
 
-    Cache disque d'abord : à la démo, tout est déjà synthétisé et aucun modèle n'a
-    besoin d'être chargé. On dit TOUTES les possibilités affichées (trois au plus),
-    avec changement comme sans changement.
+    On assemble uniquement les segments Adia présents dans `data/tts_cache/` :
+    aucune synthèse en direct. Si le cache est incomplet, les morceaux présents
+    sont joués ; si aucun ne l'est, la réponse reste silencieuse.
     """
     correspondances = correspondances or []
     if not lignes and not correspondances:
         return None
-    complet = cache_complet()
-    if lignes:
-        octets = voix_depuis_cache(lignes) if complet else None
-    else:
-        octets = voix_correspondances_depuis_cache(correspondances) if complet else None
+    octets = (
+        voix_depuis_cache(lignes)
+        if lignes
+        else voix_correspondances_depuis_cache(correspondances)
+    )
     if octets is None:
-        if complet:
-            # Tous les segments manquent : mieux vaut le silence qu'une ancienne
-            # voix qui ne correspond plus au cache Adia.
-            print("[voix] aucun segment disponible, réponse laissée sans voix", flush=True)
-            return None
-        phrase = (
-            phrase_reponse(lignes)
-            if lignes
-            else phrase_correspondances(correspondances)
-        )
-        try:
-            octets = synthetiser(_tts(), phrase)
-        except Exception as exc:
-            print(f"Voix de synthèse indisponible ({exc}), la réponse reste en texte.")
-            return None
+        print("[voix] aucun segment disponible, réponse laissée sans voix", flush=True)
+        return None
     chemin = DOSSIER_VOIX / f"reponse_{next(_COMPTEUR)}.wav"
     chemin.write_bytes(octets)
     return str(chemin)
@@ -987,7 +955,7 @@ def _pipeline(phrase: str, modele_asr: str, duree_asr: float, compagnie_choix: s
 
 
 def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str = "") -> tuple:
-    """Le pipeline complet, dans l'ordre de src/app/app.py.
+    """Le pipeline complet, du micro ou du texte jusqu'à la réponse.
 
     Le micro l'emporte sur le texte : si un enregistrement arrive, on le transcrit
     (Kiriku sur GPU, whisper CPU en secours, et une seconde chance avec l'autre
@@ -1029,11 +997,6 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
 def _court(exc: Exception, longueur: int = 160) -> str:
     """Un message d'erreur court : les exceptions techniques font plusieurs lignes."""
     return f"{type(exc).__name__} : {exc}"[:longueur]
-
-
-def trouver_le_bus_vocal(audio: str | None) -> tuple:
-    """Raccourci pour les exemples audio : on part du micro, le texte est vide."""
-    return trouver_le_bus(audio, "", "")
 
 
 def trouver_le_bus_texte(phrase: str) -> tuple:
