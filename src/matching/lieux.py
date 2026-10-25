@@ -57,7 +57,12 @@ ALIAS = {
     "pattesd oie": "patte d oie",
     "lat dior": "lat dior",
     # Formes parlées entendues dans la collecte, ramenées au nom d'arrêt.
-    "sam": "sam notaire",
+    # Sahm (Fass/Colobane) : l'arrêt s'écrit Sahm, SAHM ou SHAM selon la ligne.
+    # « sam notaire », lui, reste l'arrêt de Guédiawaye (la clé complète ne
+    # contient pas seulement « sam »).
+    "sam": "sahm",
+    "saam": "sahm",
+    "sham": "sahm",
     "dalale diame": "hopital dalal diam",
     "dalal diam": "hopital dalal diam",
     # « Yoff Tonghor » est un quartier de Yoff : les lignes de Yoff conviennent.

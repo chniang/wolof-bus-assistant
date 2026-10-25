@@ -1,3 +1,10 @@
+---
+title: GuindiMa AI
+sdk: gradio
+sdk_version: 6.30.0
+app_file: app.py
+---
+
 # GuindiMa AI
 
 **Assistant vocal en wolof pour trouver sa ligne de bus à Dakar.**
@@ -150,9 +157,10 @@ quartier, et n'annonce jamais une ligne qui ne relie pas les deux points.
   flou et la normalisation phonétique.
 - **Wolof uniquement** : ni le français, ni le multilingue ne sont pris en charge,
   et le numéro de ligne est énoncé en wolof, pas en chiffres.
-- **Pillow 12.3.0** : Gradio 6.30 exige `pillow<13.0`, donc la version corrigeant
-  les 37 CVE connues n'est pas installable. L'application n'utilise aucun
-  composant image ; la montée de version suivra celle de Gradio.
+- **Pillow 12.3.0** : Gradio 6.30 (fixé par `sdk_version` dans l'en-tête du
+  README du Space, jamais par `requirements.txt`) exige `pillow<13.0`, donc la
+  version corrigeant les 37 CVE connues n'est pas installable. L'application
+  n'utilise aucun composant image ; la montée de version suivra celle de Gradio.
 
 ## Déploiement GPU
 

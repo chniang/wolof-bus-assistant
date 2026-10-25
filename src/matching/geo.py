@@ -41,6 +41,10 @@ USER_AGENT = "GuindiMa-AI/1.0 (cheikhniang159@gmail.com)"
 DELAI_SECONDES = 1.0
 TIMEOUT = 15
 RAYON_METRES = 800.0
+# Marche à pied : une distance à vol d'oiseau sous 1 km est assez courte pour
+# être dite à l'oral, à la vitesse moyenne de 5 km/h.
+VITESSE_PIETON_KMH = 5.0
+DISTANCE_PIETON_MAX = 1000.0
 # Le nom passe avant la position : une note géographique reste sous 0.75, donc
 # toujours sous un arrêt trouvé par son nom (score 1.0, ou ≥ 0.85 après marge).
 SCORE_QUARTIER = 0.7
@@ -388,6 +392,42 @@ class LieuxGeo:
     def point_arret(self, arret: str) -> tuple[float, float] | None:
         info = self._arrets.get(arret)
         return info["point"] if info else None
+
+    def point_connu(self, lieu: str) -> tuple[float, float] | None:
+        """Point d'un lieu déjà présent dans les CSV, sans géocodage réseau.
+
+        Les tests et l'affichage ne doivent jamais déclencher un appel Nominatim :
+        seuls `lieux_geo.csv` et les arrêts de confiance non « douteuse » sont lus.
+        """
+        if not lieu:
+            return None
+        cle = normaliser(lieu)
+        if not cle:
+            return None
+        if cle in self._lieux:
+            return self._lieux[cle]
+        for arret, info in self._arrets.items():
+            if (
+                info["point"] is not None
+                and info["confiance"] not in CONFIANCE_IGNOREE
+                and normaliser(arret) == cle
+            ):
+                return info["point"]
+        return None
+
+    def minutes_a_pied(self, depart: str, arrivee: str) -> int | None:
+        """Minutes de marche entre deux lieux, si moins de 1 km ; sinon None.
+
+        Distance à vol d'oiseau à 5 km/h, arrondie à la minute (au moins 1).
+        """
+        point_depart = self.point_connu(depart)
+        point_arrivee = self.point_connu(arrivee)
+        if point_depart is None or point_arrivee is None:
+            return None
+        distance = distance_metres(point_depart, point_arrivee)
+        if distance >= DISTANCE_PIETON_MAX:
+            return None
+        return max(1, round(distance / 1000 / VITESSE_PIETON_KMH * 60))
 
     def scores_lieu(self, lieu: str, proximite: bool = True) -> dict[str, float]:
         """Arrêt -> note, pour les arrêts qui se trouvent au lieu dit.

@@ -843,6 +843,22 @@ def _une_carte(
 """
 
 
+def _note_distance_pied(depart: str, arrivee: str) -> str:
+    """« C'est tout près » quand les deux lieux sont à moins d'un km.
+
+    Texte seulement : la voix reste celle des segments pré-générés, sans nouvelle
+    prise. Les bus proposés restent affichés tels quels.
+    """
+    minutes = MATCHER.geo.minutes_a_pied(depart, arrivee)
+    if not minutes:
+        return ""
+    return (
+        "<div style='color:#0B6B37;background:#EAF7EF;border:1px solid #C6E3D2;"
+        "border-radius:8px;padding:8px 12px;margin-top:10px;font-size:14px;'>"
+        f"C'est tout près : environ {minutes} min à pied</div>"
+    )
+
+
 def _carte(
     resultat: dict,
     depart: str,
@@ -864,7 +880,7 @@ def _carte(
         )
 
     astuce = _astuce_quartier(depart, arrivee)
-    entete = bandeau_compagnie + avertissement + astuce
+    entete = bandeau_compagnie + avertissement + astuce + _note_distance_pied(depart, arrivee)
     if resultat["found"]:
         return (
             entete

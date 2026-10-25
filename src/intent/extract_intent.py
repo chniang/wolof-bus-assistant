@@ -71,18 +71,14 @@ INTENT_JSON_SCHEMA = {
     "required": ["depart", "arrivee"],
 }
 
-def _charger_lieux() -> list[str]:
-    """Lieux du réseau, triés : la seule référence de noms qu'on accepte du LLM.
-
-    Construits à partir des arrêts de toutes les lignes DDD et AFTU
-    (data/itineraires_dakar.csv), sans les rues ni les routes.
-    """
+def _charger_arrets() -> list[str]:
+    """Tous les noms d'arrêts des itinéraires, sans doublon."""
     with open(ITINERAIRES_CSV, newline="", encoding="utf-8") as fichier:
-        arrets = sorted({rangee["arret"] for rangee in csv.DictReader(fichier)})
-    return lieux_reconnaissables(arrets)
+        return sorted({rangee["arret"] for rangee in csv.DictReader(fichier)})
 
 
-LIEUX = _charger_lieux()
+ARRETS = _charger_arrets()
+LIEUX = lieux_reconnaissables(ARRETS)
 
 
 def _build_system_prompt() -> str:
@@ -373,6 +369,11 @@ REPLACEMENTS_PHRASE = (
     # « ker ma saar » contient « ma », un mot de la phrase (MOTS_DE_LA_PHRASE) :
     # sans cette réécriture en un seul lieu, le n-gramme est ignoré d'office.
     (r"\bker\s+ma\s+saar\b", " keur massar "),
+    # Sahm (Fass/Colobane) : l'ASR écrit « sahm », « sam », « saam » ou « sham ».
+    # Sans unité, « saam » ne donnait aucun départ et « sam » tombait sur
+    # « Sam Notaire », un arrêt de Guédiawaye à 10 km. « sam notaire » reste
+    # protégé : c'est un autre arrêt, réellement demandé.
+    (r"\b(?:sahm|saam|sham|sam)\b(?!\s+not)", " sahm "),
     # (?<!faas )(?<!fas ) protège « Fass Mbao » : sans ces gardes, « faas
     # mbaaw »/« fas mbaaw » deviendrait juste « Mbao ».
     (r"(?<!faas\s)(?<!fas\s)\bmbaaw\b", " mbao "),
@@ -490,15 +491,65 @@ MOTS_DE_LA_PHRASE = {
     "ban",
 }
 # Premiers mots de nombreux arrêts : seuls, ils ne désignent aucun lieu
-# (« marché liberté cinq » ne doit pas devenir « Marché aux Poissons »).
+# (« marché liberté cinq » ne doit pas devenir « Marché aux Poissons »). Un
+# n-gramme composé UNIQUEMENT de ces mots ne vaut rien non plus : « rond point »
+# ne doit jamais se faire passer pour « Rond-Point École Mariste ».
 MOTS_TROP_VAGUES = {
     "marche", "cite", "lycee", "hopital", "police", "poste", "ecole", "stade", "gare",
-    "rond", "point", "station", "grand", "route", "place", "croisement", "terminus",
-    "pont", "eglise", "college", "arret", "village", "quartier", "camp", "keur",
+    "rond", "point", "rondpoint", "station", "grand", "route", "rte", "rue", "avenue",
+    "boulevard", "place", "croisement", "carrefour", "giratoire", "echangeur",
+    "terminus", "garage", "pont", "eglise", "college", "arret", "village", "quartier",
+    "camp", "keur",
     # « sicap » est un sigle générique (SICAP) : seul, il ne désigne aucun lieu
     # (« Sicap Baobab » n'est pas « SICAP Mbao »). « SICAP Mbao » entier reste.
     "sicap",
 }
+
+
+def _nom_a_prefixe_generique(nom: str) -> bool:
+    """Vrai si le nom commence par un mot générique et porte un mot distinctif.
+
+    « Rond-Point Colobane », « Station Keur Massar », « Marché Tilène » : le
+    préfixe seul ne suffit pas, mais le nom complet doit être préféré à l'arrêt
+    réduit (« Colobane », « Keur Massar »).
+    """
+    mots = _cible(nom).split()
+    return (
+        len(mots) > 1
+        and mots[0] in MOTS_TROP_VAGUES
+        and any(mot not in MOTS_TROP_VAGUES for mot in mots)
+    )
+
+
+def _charger_lieux_complets() -> list[tuple[str, str]]:
+    """Noms complets des arrêts à préfixe générique, pour un match exact.
+
+    Les noms réduits de LIEUX (« Colobane », « Keur Massar ») restent utiles
+    quand l'utilisateur ne dit que le nom. Ici on garde la version complète
+    (« Rond-Point Colobane », « Station Keur Massar ») pour la préférer quand
+    la phrase la prononce en entier.
+    """
+    vus: dict[str, str] = {}
+
+    def ajouter(nom: str) -> None:
+        nom = nom.strip(" ()-–:")
+        if not _nom_a_prefixe_generique(nom):
+            return
+        cle = _cible(nom)
+        if cle not in vus or len(nom) < len(vus[cle]):
+            vus[cle] = nom
+
+    for arret in ARRETS:
+        principal = re.sub(r"\(.*?\)", "", arret).strip()
+        ajouter(principal)
+        for precision in re.findall(r"\((.*?)\)", arret):
+            for morceau in precision.split("/"):
+                ajouter(morceau)
+    return [(cle, nom) for cle, nom in vus.items()]
+
+
+_CIBLES_COMPLETES = _charger_lieux_complets()
+_CIBLES_EXACTES |= {cible for cible, _ in _CIBLES_COMPLETES}
 
 # Mots qui n'apparaissent dans le nom d'AUCUN arrêt : un n-gramme qui en contient
 # un ne peut pas viser un lieu, quelle que soit sa longueur. « baobab » (quartier
@@ -559,6 +610,16 @@ def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
     Renvoie (début, fin, nom exact du CSV) triés par position dans la phrase.
     """
     candidats: list[tuple[float, int, int, str]] = []
+    # 1. Noms complets dits en entier : « rond point colobane » doit donner
+    # « Rond-Point Colobane », pas seulement « Colobane ». Le nom complet est
+    # plus long et à score égal il passe avant le nom réduit.
+    for cible, lieu_exact in _CIBLES_COMPLETES:
+        sequence = cible.split()
+        taille = len(sequence)
+        for debut in range(len(mots) - taille + 1):
+            if mots[debut : debut + taille] == sequence:
+                candidats.append((1.0, debut, debut + taille, lieu_exact))
+    # 2. N-grammes de 1 à 3 mots, par ressemblance.
     for taille in range(1, TAILLE_NGRAMMES + 1):
         for debut in range(len(mots) - taille + 1):
             morceau = mots[debut : debut + taille]
@@ -577,7 +638,10 @@ def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
                 mot in MOTS_DE_LA_PHRASE or mot in MOTS_CHIFFRES for mot in morceau
             ):
                 continue
-            if taille == 1 and morceau[0] in MOTS_TROP_VAGUES:
+            # Un n-gramme fait uniquement de mots génériques (« rond point »,
+            # « poste de police ») ne désigne aucun lieu : c'est le nom qui suit
+            # qui décide (« rond point sahm » -> Sahm).
+            if all(mot in MOTS_TROP_VAGUES for mot in morceau):
                 continue
             if len(gramme) < LONGUEUR_MIN and not exact:
                 continue

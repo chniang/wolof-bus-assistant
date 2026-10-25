@@ -224,6 +224,32 @@ TRAJETS_ASR = [
     ("maa ngi Keur Mbaye Fall dama bëgg dem Rufisque", "Keur Mbaye Fall", "Rufisque"),
 ]
 
+# Mots génériques (rond-point, marché, croisement, station, poste…) suivis d'un
+# nom : c'est le nom qui doit choisir le lieu. Le générique seul ne vaut rien, et
+# quand un lieu complet existe avec ce nom (« Rond-Point Colobane »), il passe
+# avant l'arrêt réduit au nom seul (« Colobane »).
+# (phrase, départs acceptés, arrivée attendue).
+TRAJETS_MOTS_GENERIQUES = [
+    # Bug réel : « rond point » se rapprochait de « Rond-Point École Mariste »
+    # et passait avant Sahm, pourtant nommé juste après.
+    ("dama nekk rond point sahm ma bëgg dem colobane", {"Sahm", "SAHM", "SHAM"}, "Colobane"),
+    ("maa ngi rond point colobane dama bëgg dem palais", {"Rond-Point Colobane"}, "Palais"),
+    ("maa ngi rond point liberté six dama bëgg dem palais", {"Rond-Point Liberté 6"}, "Palais"),
+    ("maa ngi marché tilène dama bëgg dem palais", {"Marché Tilène"}, "Palais"),
+    ("maa ngi croisement keur massar dama bëgg dem palais", {"Croisement Keur Massar"}, "Palais"),
+    ("maa ngi station keur massar dama bëgg dem palais", {"Station Keur Massar"}, "Palais"),
+    ("maa ngi cité assurance dama bëgg dem palais", {"Cité Assurance"}, "Palais"),
+    ("maa ngi poste thiaroye dama bëgg dem palais", {"Poste Thiaroye"}, "Palais"),
+    # Non-régression : un lieu complet dit en entier reste reconnu tel quel.
+    ("maa ngi rond point école mariste dama bëgg dem palais", {"Rond-Point École Mariste"}, "Palais"),
+    ("maa ngi rond point almadies dama bëgg dem palais", {"Rond-Point Almadies"}, "Palais"),
+    # Variantes ASR de Sahm, toutes ramenées au même arrêt.
+    ("maa ngi sahm dama bëgg dem palais", {"Sahm", "SAHM", "SHAM"}, "Palais"),
+    ("maa ngi sam dama bëgg dem palais", {"Sahm", "SAHM", "SHAM"}, "Palais"),
+    ("maa ngi saam dama bëgg dem palais", {"Sahm", "SAHM", "SHAM"}, "Palais"),
+    ("maa ngi sham dama bëgg dem palais", {"Sahm", "SAHM", "SHAM"}, "Palais"),
+]
+
 # Phrases texte envoyées en plus à l'app publiée (--en-ligne) : elles traversent
 # la vraie extraction (NVIDIA) et la carte affichée, pas seulement l'extraction locale.
 TRAJETS_EN_LIGNE = [
@@ -516,6 +542,126 @@ def test_local() -> int:
             f"      montées : {sorted(montees)}"
         )
     return echecs
+
+
+def test_mots_generiques() -> tuple[int, int]:
+    """Un mot générique ne choisit jamais le lieu : le nom qui suit décide.
+
+    Reproduit le bug réel « dama nekk rond point sahm ma bëgg dem colobane »,
+    où « rond point » s'accrochait à « Rond-Point École Mariste » au lieu de
+    laisser Sahm (nommé juste après) devenir le départ. Vérifie l'extraction
+    locale et le chemin LLM (réponse correcte, puis repli local si le LLM ne
+    rend aucun lieu).
+    """
+    from intent.extract_intent import extract_intent, extract_local
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | génériques {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    for phrase, departs, arrivee in TRAJETS_MOTS_GENERIQUES:
+        lieux = extract_local(phrase)
+        bon = lieux.get("depart") in departs and lieux.get("arrivee") == arrivee
+        verifie(
+            phrase,
+            bon,
+            f"{lieux.get('depart')!r} -> {lieux.get('arrivee')!r}",
+        )
+
+    phrase = "dama nekk rond point sahm ma bëgg dem colobane"
+    attendus = {"Sahm", "SAHM", "SHAM"}
+    for contenu, source in (
+        ('{"depart": "Sahm", "arrivee": "Colobane"}', "llm"),
+        ('{"depart": "", "arrivee": ""}', "llm+local"),
+    ):
+        resultat = extract_intent(phrase, client=_FauxClient(contenu))
+        bon = (
+            resultat.get("depart") in attendus
+            and resultat.get("arrivee") == "Colobane"
+            and resultat.get("source") == source
+        )
+        verifie(
+            f"chemin LLM simulé ({source})",
+            bon,
+            f"{resultat.get('depart')!r} -> {resultat.get('arrivee')!r} "
+            f"(source={resultat.get('source')!r})",
+        )
+    return echecs, total
+
+
+def test_distance_courte() -> tuple[int, int]:
+    """La mention à pied sous 1 km, sans retirer les bus proposés.
+
+    Les points viennent uniquement des CSV (jamais de géocodage réseau pendant
+    les tests). Cas réel demandé : Sahm → Colobane mesure en fait ~1,42 km à vol
+    d'oiseau, donc la mention ne doit PAS apparaître ; Médina → Marché Tilène
+    (~125 m) la fait apparaître, avec les bus toujours affichés.
+    """
+    import os
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_distance")
+    from matching.geo import distance_metres
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | distance {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    geo = app.MATCHER.geo
+
+    # Cas demandé : Sahm → Colobane. La distance réelle dépasse 1 km, donc pas
+    # de mention à pied ; les bus, eux, restent proposés.
+    points = geo.point_connu("Sahm"), geo.point_connu("Colobane")
+    distance = distance_metres(*points) if all(points) else None
+    verifie(
+        "Sahm → Colobane : 1,42 km, pas de mention sous 1 km",
+        distance is not None
+        and 1400 < distance < 1450
+        and geo.minutes_a_pied("Sahm", "Colobane") is None,
+        (distance, geo.minutes_a_pied("Sahm", "Colobane")),
+    )
+    resultat = app.MATCHER.find_line("Sahm", "Colobane")
+    carte = app._carte(resultat, "Sahm", "Colobane")
+    verifie(
+        "Sahm → Colobane : bus conservés sans mention à pied",
+        bool(resultat["found"] or resultat["correspondances"])
+        and "C'est tout près" not in carte,
+        carte[:200],
+    )
+
+    # Cas court positif : la mention apparaît en plus de la carte du bus.
+    depart, arrivee = "Médina", "Marché Tilène"
+    minutes = geo.minutes_a_pied(depart, arrivee)
+    resultat = app.MATCHER.find_line(depart, arrivee)
+    carte = app._carte(resultat, depart, arrivee)
+    mention = (
+        f"C'est tout près : environ {minutes} min à pied" if minutes else ""
+    )
+    verifie(
+        "Médina → Marché Tilène : environ 2 min à pied",
+        minutes == 2 and mention in carte,
+        (minutes, carte[:300]),
+    )
+    verifie(
+        "la mention à pied ne retire pas le bus",
+        bool(resultat["found"]) and "Monte à" in carte,
+        carte[:300],
+    )
+    return echecs, total
 
 
 def test_partage() -> tuple[int, int]:
@@ -1654,9 +1800,19 @@ def test_securite() -> tuple[int, int]:
     )
     requirements = (RACINE / "requirements.txt").read_text(encoding="utf-8")
     requirements_train = (RACINE / "requirements-train.txt").read_text(encoding="utf-8")
+    readme = (RACINE / "README.md").read_text(encoding="utf-8")
+    # Le README du Space porte sa configuration : Gradio y est fixé par
+    # sdk_version, pas par requirements.txt (une ligne gradio== cassait le build).
+    paquets = [
+        ligne.split("#", 1)[0].strip()
+        for ligne in requirements.splitlines()
+        if ligne.split("#", 1)[0].strip()
+    ]
+    entete_readme = readme.split("---", 2)[1] if readme.startswith("---") else ""
     verifie(
-        "dépendances épinglées et compatibles Gradio",
-        "gradio==6.30.0" in requirements
+        "dépendances épinglées, Gradio via sdk_version",
+        not any(re.match(r"(?i)^gradio(?:\s|[<>=!~]|$)", paquet) for paquet in paquets)
+        and re.search(r"(?m)^sdk_version\s*:", entete_readme) is not None
         and "pillow==12.3.0" in requirements
         and "pillow==13.0.0" not in requirements
         and "python-dotenv==1.2.2" in requirements_train,
@@ -1719,6 +1875,8 @@ if __name__ == "__main__":
         echecs_lieux, total_lieux = test_lieux()
         echecs_prononciations, total_prononciations = test_prononciations()
         echecs_verification, total_verification = test_verification_voix()
+        echecs_generiques, total_generiques = test_mots_generiques()
+        echecs_distance, total_distance = test_distance_courte()
         echecs_securite, total_securite = test_securite()
         echecs = (
             test_local()
@@ -1727,6 +1885,8 @@ if __name__ == "__main__":
             + echecs_lieux
             + echecs_prononciations
             + echecs_verification
+            + echecs_generiques
+            + echecs_distance
             + echecs_securite
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
@@ -1736,6 +1896,8 @@ if __name__ == "__main__":
             + total_lieux
             +             total_prononciations
             + total_verification
+            + total_generiques
+            + total_distance
             + total_securite
             + (
                 len(TRAJETS)
