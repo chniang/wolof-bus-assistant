@@ -38,6 +38,9 @@ TRAJETS = [
     ("Maa ngi Thiaroye, bëgg naa dem Ouakam", {"Ligne 217"}),
     ("Maa ngi Pikine, dama bëgg dem Colobane", {"Ligne 48", "Ligne 50", "Ligne 75"}),
     ("Maa ngi Keur Massar, dama bëgg dem UCAD", {"Ligne 54", "Ligne 71"}),
+    # Tata 62 passe désormais par Sahm, entre UCAD et Penc Mi : le trajet est
+    # direct, sans correspondance à UCAD.
+    ("Rond-Point Sahm, bëgg naa dem Colobane", {"Ligne 62"}),
     # Ligne 78 : Liberté 5 -> Golf (Guédiawaye), DIRECT. « Département de
     # Guédiawaye » compte pour Guédiawaye quand l'utilisateur dit « Guédiawaye »
     # (jamais « Dakar »), et une ligne directe passe avant une correspondance.
@@ -49,6 +52,7 @@ TRAJETS = [
 # phrase -> ligne directe attendue.
 TRAJETS_DIRECTS = {
     "Maa ngi Liberté 5, dama bëgg dem Guédiawaye": "Ligne 78",
+    "Rond-Point Sahm, bëgg naa dem Colobane": "Ligne 62",
 }
 
 # Arrêts qui ne doivent jamais servir (montée ni descente) sur un trajet :
@@ -664,6 +668,96 @@ def test_distance_courte() -> tuple[int, int]:
     return echecs, total
 
 
+def test_sahm_ligne_62() -> tuple[int, int]:
+    """Tata 62 passe par Sahm, et la recherche préfère le trajet direct.
+
+    La correction terrain ajoute Sahm entre UCAD (17) et Penc Mi (19) sur la
+    ligne 62. Sahm doit être reconnu comme sur les lignes 7, 23, 32 et 38, et
+    Rond-Point Sahm -> Colobane doit sortir Tata 62 sans correspondance.
+    """
+    import csv
+
+    from matching.lieux import score
+    from matching.stops_matcher import StopsMatcher
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | Sahm/Tata 62 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    with open(
+        RACINE / "data" / "itineraires_dakar.csv", newline="", encoding="utf-8"
+    ) as fichier:
+        rangees = list(csv.DictReader(fichier))
+    ligne62 = [
+        rangee
+        for rangee in rangees
+        if rangee["compagnie"] == "Tata AFTU" and rangee["ligne"] == "Ligne 62"
+    ]
+    ordres = {rangee["arret"]: int(rangee["ordre"]) for rangee in ligne62}
+    verifie(
+        "Sahm inséré entre UCAD et Penc Mi",
+        ordres.get("UCAD") == 17
+        and ordres.get("Sahm") == 18
+        and ordres.get("Penc Mi (Gueule Tapée)") == 19,
+        ordres,
+    )
+
+    matcher = StopsMatcher()
+    for compagnie, ligne in (
+        ("Dakar Dem Dikk", "Ligne 7"),
+        ("Dakar Dem Dikk", "Ligne 23"),
+        ("Tata AFTU", "Ligne 32"),
+        ("Tata AFTU", "Ligne 38"),
+        ("Tata AFTU", "Ligne 62"),
+    ):
+        arrets = matcher.arrets[(compagnie, ligne)]
+        verifie(
+            f"{ligne} reconnaît Sahm",
+            any(score("Sahm", arret) == 1.0 for arret in arrets),
+            [arret for arret in arrets if "sahm" in arret.lower()],
+        )
+
+    verifie(
+        "Rond-Point Sahm se résout comme Sahm",
+        score("Rond-Point Sahm", "Sahm") == 1.0,
+        score("Rond-Point Sahm", "Sahm"),
+    )
+
+    # Aucun appel réseau pendant les tests : on limite la géolocalisation aux
+    # points déjà présents dans les CSV, comme le fait l'affichage.
+    ancien_point = matcher.geo.point
+    matcher.geo.point = matcher.geo.point_connu
+    try:
+        resultat = matcher.find_line("Rond-Point Sahm", "Colobane")
+    finally:
+        matcher.geo.point = ancien_point
+    directes = [
+        ligne
+        for ligne in resultat["lignes"]
+        if ligne["compagnie"] == "Tata AFTU" and ligne["ligne"] == "Ligne 62"
+    ]
+    verifie(
+        "Rond-Point Sahm -> Colobane : Tata 62 direct, sans correspondance",
+        resultat["found"]
+        and not resultat["correspondances"]
+        and bool(directes)
+        and directes[0]["monte_a"] in {"Sahm", "SAHM"}
+        and directes[0]["descend_a"] == "Colobane",
+        (
+            resultat["lignes"],
+            resultat["correspondances"],
+        ),
+    )
+    return echecs, total
+
+
 def test_partage() -> tuple[int, int]:
     """Le message WhatsApp : trajet direct, avec changement, aucun trajet, encodage.
 
@@ -820,10 +914,10 @@ def test_voix() -> tuple[int, int]:
     )
     entrees = {entree["fichier"]: entree for entree in plan["phrases"]}
     verifie(
-        "221 écrit en wolof, sans point final, et hors de cette séance",
+        "221 écrit en wolof, sans point final, et à régénérer avec Oolel",
         entrees["dakar_dem_dikk_221.wav"]["phrase"]
         == "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn"
-        and entrees["dakar_dem_dikk_221.wav"].get("a_regenerer") is False,
+        and entrees["dakar_dem_dikk_221.wav"].get("a_regenerer") is True,
         entrees["dakar_dem_dikk_221.wav"],
     )
 
@@ -1171,7 +1265,7 @@ def test_lieux() -> tuple[int, int]:
 
 
 def test_prononciations() -> tuple[int, int]:
-    """Le plan porte le texte exact préparé pour une seule génération Adia."""
+    """Le plan porte le texte exact préparé pour la génération Oolel-Voices."""
     import json
 
     plan = json.loads(
@@ -1264,11 +1358,11 @@ def test_prononciations() -> tuple[int, int]:
         if entree["fichier"] in marquees and entree["type"] == "ligne"
     ]
     verifie(
-        "104 entrées à régénérer, exactement la liste fournie",
-        len(liste_a_regenerer) == 104
+        "les 637 entrées sont à régénérer, exactement la liste fournie",
+        len(liste_a_regenerer) == 637
         and marquees == set(liste_a_regenerer)
-        and len(marquees_lieux) == 102
-        and len(marquees_lignes) == 2,
+        and len(marquees_lieux) == 519
+        and len(marquees_lignes) == 112,
         {
             "liste": len(liste_a_regenerer),
             "marquees": len(marquees),
@@ -1278,23 +1372,24 @@ def test_prononciations() -> tuple[int, int]:
         },
     )
     verifie(
-        "aucun service de cette séance n'est régénéré",
+        "les 6 services sont régénérés",
         all(
-            entree.get("a_regenerer") is False
+            entree.get("a_regenerer") is True
             for entree in plan["phrases"]
             if entree["type"] == "service"
-        ),
+        )
+        and sum(1 for entree in plan["phrases"] if entree["type"] == "service") == 6,
         [
             entree["fichier"]
             for entree in plan["phrases"]
-            if entree["type"] == "service" and entree.get("a_regenerer") is True
+            if entree["type"] == "service" and entree.get("a_regenerer") is not True
         ],
     )
 
     entrees = {entree["fichier"]: entree for entree in plan["phrases"]}
     lignes = [entree for entree in plan["phrases"] if entree["type"] == "ligne"]
     lignes_tata = [
-        entree for entree in lignes if "bus bu Tàtaa" in entree["phrase"]
+        entree for entree in lignes if "bus bu Tataa" in entree["phrase"]
     ]
     verifie(
         "aucune ligne ne dit encore « bus bu Tata, »",
@@ -1315,34 +1410,34 @@ def test_prononciations() -> tuple[int, int]:
         ],
     )
     verifie(
-        "les 72 lignes Tata disent Tàtaa",
+        "les 72 lignes Tata disent Tataa",
         len(lignes_tata) == 72
-        and all("bus bu Tàtaa" in entree["phrase"] for entree in lignes_tata),
+        and all("bus bu Tataa" in entree["phrase"] for entree in lignes_tata),
         [entree["fichier"] for entree in lignes_tata],
     )
 
     nga = entrees.get("nga_wacc.wav")
     verifie(
-        "nga_wacc vaut nga wathie et reste hors de cette séance",
+        "nga_wacc vaut nga wàcc et est régénéré",
         nga is not None
-        and nga["phrase"] == "nga wathie"
-        and nga.get("a_regenerer") is False,
+        and nga["phrase"] == "nga wàcc"
+        and nga.get("a_regenerer") is True,
         nga,
     )
     moo = entrees.get("moo_lay_yobbu_ba.wav")
     verifie(
-        "moo_lay_yobbu_ba reste inchangé et hors séance",
+        "moo_lay_yobbu_ba garde sa phrase et est régénéré",
         moo is not None
         and moo["phrase"] == "moo lay yóbbu ba"
-        and moo.get("a_regenerer") is False,
+        and moo.get("a_regenerer") is True,
         moo,
     )
     taf = entrees.get("dakar_dem_dikk_taf_taf.wav")
     verifie(
-        "TAF TAF devient Tàf Tàf et reste hors de cette séance",
+        "TAF TAF devient Taf Taf et est régénéré",
         taf is not None
-        and taf["phrase"] == "Jëlal bus bu Dem Dikk, Tàf Tàf."
-        and taf.get("a_regenerer") is False,
+        and taf["phrase"] == "Jëlal bus bu Dem Dikk, Taf Taf."
+        and taf.get("a_regenerer") is True,
         taf,
     )
     bene = [
@@ -1353,8 +1448,8 @@ def test_prononciations() -> tuple[int, int]:
         "Bene Baraque et Yeumbeul Bene Baraque gardent leur phrase",
         all(
             entree is not None
-            and entree["phrase"] in ("Benn baraak", "Yembël Benn baraak")
-            and entree.get("a_regenerer") is False
+            and entree["phrase"] in ("Bene Baraque", "Yeumbeul Bene Baraque")
+            and entree.get("a_regenerer") is True
             for entree in bene
         ),
         bene,
@@ -1379,7 +1474,7 @@ def test_verification_voix() -> tuple[int, int]:
             print(f"      {detail!r}")
 
     notebook = json.loads(
-        (RACINE / "notebooks" / "voix_adia_colab.ipynb").read_text(encoding="utf-8")
+        (RACINE / "notebooks" / "voix_oolel_colab.ipynb").read_text(encoding="utf-8")
     )
     source = None
     for cellule in notebook["cells"]:
@@ -1483,12 +1578,35 @@ def test_verification_voix() -> tuple[int, int]:
         if entree.get("a_regenerer") is True
     }
     verifie(
-        "le plan marque exactement les 104 fichiers de a_regenerer.txt",
-        len(liste_a_regenerer) == 104 and marquees == set(liste_a_regenerer),
+        "le plan marque exactement les 637 fichiers de a_regenerer.txt",
+        len(liste_a_regenerer) == 637 and marquees == set(liste_a_regenerer),
         {
             "liste": len(liste_a_regenerer),
             "marquees": len(marquees),
             "ecart": sorted(marquees.symmetric_difference(set(liste_a_regenerer))),
+        },
+    )
+
+    import contextlib
+    import io
+
+    cellule_plan = next(
+        "".join(cellule["source"])
+        for cellule in notebook["cells"]
+        if "# HELPERS_VERIFICATION_VOIX" not in "".join(cellule["source"])
+        and "PLAN = {" in "".join(cellule["source"])
+    )
+    espace_plan: dict[str, object] = {}
+    with contextlib.redirect_stdout(io.StringIO()):
+        exec(compile(cellule_plan, "<plan notebook>", "exec"), espace_plan)
+    verifie(
+        "le plan du notebook Oolel est celui du dépôt",
+        espace_plan["PLAN"] == plan,
+        {
+            "modele_notebook": espace_plan["PLAN"].get("modele")
+            if isinstance(espace_plan["PLAN"], dict)
+            else None,
+            "modele_plan": plan.get("modele"),
         },
     )
 
@@ -1877,6 +1995,7 @@ if __name__ == "__main__":
         echecs_verification, total_verification = test_verification_voix()
         echecs_generiques, total_generiques = test_mots_generiques()
         echecs_distance, total_distance = test_distance_courte()
+        echecs_sahm, total_sahm = test_sahm_ligne_62()
         echecs_securite, total_securite = test_securite()
         echecs = (
             test_local()
@@ -1887,6 +2006,7 @@ if __name__ == "__main__":
             + echecs_verification
             + echecs_generiques
             + echecs_distance
+            + echecs_sahm
             + echecs_securite
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
@@ -1898,6 +2018,7 @@ if __name__ == "__main__":
             + total_verification
             + total_generiques
             + total_distance
+            + total_sahm
             + total_securite
             + (
                 len(TRAJETS)

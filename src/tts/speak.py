@@ -1,11 +1,12 @@
-"""Voix wolof de l'app : assemble les segments Adia pré-générés.
+"""Voix wolof de l'app : assemble les segments Oolel-Voices pré-générés.
 
-Les 637 réponses sont générées à l'avance avec Adia_TTS (CONCREE), puis
+Les 637 réponses sont générées à l'avance avec Oolel-Voices (soynade-research),
+qui clone la voix d'Adia_TTS (CONCREE) à partir de `aucune_ligne.wav`, puis
 assemblées ici en WAV. Aucun modèle TTS n'est chargé au runtime : si un segment
 manque, on joue les morceaux présents et on journalise le fichier à produire.
 Le plan des phrases est dans `scripts/phrases_voix.json`, les prononciations
 dans `scripts/prononciations_wolof.json` et la génération dans
-`notebooks/voix_adia_colab.ipynb`.
+`notebooks/voix_oolel_colab.ipynb`.
 
 Le module ne dépend d'aucune interface : on peut l'utiliser seul.
 """
@@ -57,8 +58,8 @@ CENTAINES = {
 # Au-delà, on n'a pas de formulation : on lit les chiffres tels quels.
 MAX_ECRIT = 999
 
-# Audios pré-générés avec Adia_TTS (CONCREE), versionnés pour que la démo n'ait
-# rien à télécharger ni à synthétiser.
+# Audios pré-générés avec Oolel-Voices (voix Adia, CONCREE), versionnés pour que
+# la démo n'ait rien à télécharger ni à synthétiser.
 CACHE_DIR = Path(__file__).resolve().parents[2] / "data" / "tts_cache"
 # `scripts/installer_voix_adia.py` n'écrit ce marqueur que si les 637 fichiers
 # du plan sont là ; il documente l'état du cache, sans déclencher de synthèse.
@@ -370,7 +371,7 @@ def nom_cache_match(match: dict) -> str:
 
 
 def cache_complet() -> bool:
-    """Le cache disque est-il marqué complet par l'installateur Adia ?"""
+    """Le cache disque est-il marqué complet par l'installateur de la voix ?"""
     return MARQUEUR.is_file()
 
 
@@ -408,9 +409,12 @@ def _segment_manquant(nom: str) -> None:
 
     On saute le segment : la voix perd un mot, mais l'usager n'attend pas une
     synthèse de plusieurs secondes et l'app ne plante pas. Le journal du Space
-    dit quel fichier générer avec Adia.
+    dit quel fichier générer avec Oolel-Voices.
     """
-    print(f"[voix] segment manquant : {nom} (ignoré, à générer avec Adia)", flush=True)
+    print(
+        f"[voix] segment manquant : {nom} (ignoré, à générer avec Oolel-Voices)",
+        flush=True,
+    )
 
 
 def _separateur(dossier: Path, nom: str) -> list[Path]:
@@ -490,7 +494,8 @@ def voix_depuis_cache(
     """L'audio des lignes directes, dans l'ordre affiché, au plus 3.
 
     Un segment absent est sauté et signalé : on assemble ce qui existe plutôt
-    que de renvoyer None. Aucune synthèse en direct ne remplace un morceau Adia.
+    que de renvoyer None. Aucune synthèse en direct ne remplace un morceau
+    Oolel-Voices.
     """
     dossier = cache_dir or CACHE_DIR
     if not lignes:

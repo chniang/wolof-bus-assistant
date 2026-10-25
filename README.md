@@ -26,15 +26,19 @@ avec le numéro de ligne énoncé en wolof plutôt qu'en chiffres.
 | 1. Transcription | `AIHubSN/Kiriku-Wolof-ASR` (en ligne, GPU) · `TIJAANI/whisper-small-wolof-dakar-essai3` (secours et local, CPU) | Transcrit la demande vocale wolof. Kiriku (AI Hub Sénégal) reconnaît bien mieux les noms d'arrêts (~9 sur 10 contre 1 sur 10 au banc d'essai micro, voir `kiriku_test/`). Quand le GPU gratuit de Hugging Face n'est pas attribué, l'app bascule seule sur notre whisper fine-tuné sur les voix collectées (WER 89,7 % → 74,1 % sur 22 vocaux de voix jamais vues), quantifié en int8 sur CPU, qui sert aussi en local (Kiriku, taille Whisper large, ne tient pas sur un laptop). Dépôt privé : il faut le secret `HF_TOKEN`, sinon l'app repart seule de `M9and2M/whisper-small-wolof`. |
 | 2. Extraction | extraction locale, puis `meta/llama-3.2-11b-vision-instruct` (NVIDIA Build) | Repère `depart` et `arrivee`. D'abord en local, par correspondance floue sur les lieux du réseau, en tenant compte des écritures phonétiques de l'ASR (« wakaam », « liberti sënk », « pale ») et des numéros dits en lettres ou en wolof. Le LLM n'intervient que si ce repérage ne donne pas de trajet complet ; son prompt contient la liste des lieux du réseau. |
 | 3. Correspondance | — | Recherche arrêt par arrêt sur 112 lignes : une ligne convient si elle passe par le départ puis par l'arrivée, pas seulement si ce sont ses terminus. Sans ligne directe, propose un trajet avec un changement. Tolère l'orthographe phonétique et les variantes (« wakaam » → Ouakam, « Liberté VI » → Liberté 6) ; Palais 1 et Palais 2 valent tous deux « Palais ». |
-| 4. Réponse | Adia_TTS (CONCREE), pré-généré | Affiche le trajet en texte **et** joue les segments wolof déjà générés dans `data/tts_cache/`. |
+| 4. Réponse | Oolel-Voices (voix Adia, CONCREE), pré-généré | Affiche le trajet en texte **et** joue les segments wolof déjà générés dans `data/tts_cache/`. |
 
-La voix est entièrement pré-générée : **637 audios Adia_TTS (CONCREE)**, construits
+La voix est entièrement pré-générée : **637 audios Oolel-Voices**, construits
 depuis `scripts/phrases_voix.json` et `scripts/prononciations_wolof.json`. La
-génération se fait dans `notebooks/voix_adia_colab.ipynb` : trois prises par
+génération se fait dans `notebooks/voix_oolel_colab.ipynb` : trois prises par
 segment, puis la meilleure est choisie avec un contrôle Whisper. Aucun modèle TTS
 n'est chargé au runtime ; si un segment manque, l'app joue les morceaux présents
-et laisse le reste silencieux. `scripts/installer_voix_adia.py` installe une
-archive complète dans `data/tts_cache/`.
+et laisse le reste silencieux. `scripts/installer_voix_adia.py tts_cache_oolel.zip`
+installe l'archive complète dans `data/tts_cache/`.
+
+Crédits voix : **Oolel-Voices par soynade-research (AGPL-3.0), utilisé hors ligne
+pour pré-générer les audios** ; la **voix de référence CONCREE/Adia_TTS
+(Apache 2.0)** est clonée à partir de `data/tts_cache/aucune_ligne.wav`.
 
 ## Données
 
@@ -47,7 +51,7 @@ archive complète dans `data/tts_cache/`.
   `data/sources/` : itinéraires officiels AFTU, et arrêts DDD relevés dans
   OpenStreetMap (© contributeurs OpenStreetMap, ODbL). Les lignes DDD sans
   itinéraire publié ne sont connues que par leurs terminus.
-- `data/tts_cache/` — les **637 audios Adia** de réponse pré-générés (112 lignes,
+- `data/tts_cache/` — les **637 audios Oolel-Voices** de réponse pré-générés (112 lignes,
   6 services, 519 lieux), versionnés pour que la démo n'ait rien à télécharger.
 - `data/demo_audio/` — enregistrements de secours, pour quand le micro de la
   salle ne coopère pas.
@@ -86,7 +90,7 @@ Puis ouvrir l'URL affichée et dire son trajet en wolof, ou l'écrire.
 
 Le premier lancement télécharge les modèles de transcription (Whisper CPU et
 Kiriku GPU) et peut prendre quelques minutes. Les suivants démarrent
-immédiatement ; la voix Adia est déjà dans `data/tts_cache/`.
+immédiatement ; la voix Oolel-Voices est déjà dans `data/tts_cache/`.
 
 ## Tests
 
@@ -116,10 +120,12 @@ en ligne après chaque déploiement. Code de sortie 0 si tout passe.
 | `AIHubSN/Kiriku-Wolof-ASR` (transcription en ligne) | modèle protégé de l'AI Hub Sénégal : accès après acceptation de ses conditions |
 | `TIJAANI/whisper-small-wolof-dakar-essai3` (transcription de secours et locale) | fine-tuning de `M9and2M/whisper-small-wolof` (MIT), dépôt privé |
 | `M9and2M/whisper-small-wolof` (repli si le dépôt fine-tuné est inaccessible) | MIT |
+| `soynade-research/Oolel-Voices` (voix, génération hors ligne) | AGPL-3.0 |
+| `CONCREE/Adia_TTS` (voix de référence clonée) | Apache 2.0 |
 | `meta/llama-3.2-11b-vision-instruct` (extraction, en dernier recours) | Llama 3.2 Community License, servi par NVIDIA Build selon ses conditions d'utilisation |
 
 La transcription tourne sur la machine qui héberge l'app (le Space Hugging Face
-en ligne, ou le PC en local). La voix Adia est pré-générée : aucun modèle TTS
+en ligne, ou le PC en local). La voix Oolel-Voices est pré-générée : aucun modèle TTS
 n'est chargé au runtime. La phrase transcrite n'est envoyée à l'API NVIDIA Build
 que si l'extraction locale ne trouve pas le trajet.
 

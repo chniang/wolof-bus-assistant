@@ -181,7 +181,7 @@ if not MODE_TEST:
 # sur GPU, avec repli sur le même whisper quand ZeroGPU refuse la carte.
 LIBELLE_ASR = "Whisper wolof fine-tuné à Dakar + Kiriku-Wolof-ASR"
 # Voix des réponses pré-générées (voir scripts/phrases_voix.json).
-LIBELLE_VOIX = "Adia_TTS (CONCREE)"
+LIBELLE_VOIX = "Oolel-Voices (voix Adia, CONCREE)"
 
 # --------------------------------------------------------------------------- #
 # Clients et objets reconstruits une fois
@@ -409,7 +409,7 @@ def _phrase_donne_un_trajet(phrase: str) -> bool:
 def _voix_wolof(lignes: list[dict], correspondances: list[dict] | None = None) -> str | None:
     """La réponse lue en wolof, sous forme de chemin de fichier.
 
-    On assemble uniquement les segments Adia présents dans `data/tts_cache/` :
+    On assemble uniquement les segments Oolel-Voices présents dans `data/tts_cache/` :
     aucune synthèse en direct. Si le cache est incomplet, les morceaux présents
     sont joués ; si aucun ne l'est, la réponse reste silencieuse.
     """
@@ -1229,7 +1229,7 @@ EXEMPLES_TEXTE = [
 
 def _construire():
     with gr.Blocks(title="GuindiMa AI 🚌") as interface:
-        gr.Markdown("# GuindiMa AI 🚌\n### Wax ma fu nga jëm, ma won la bus bi")
+        gr.Markdown("# GuindiMa AI 🚌\n### Wax ma fi nga jëm, ma won la bus bi")
         gr.Markdown(
             "Dis-moi où tu vas, je te montre le bus. "
             "Parle ou écris ton trajet en wolof, à Dakar."

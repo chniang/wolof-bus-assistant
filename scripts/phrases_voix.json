@@ -1,206 +1,205 @@
 {
-  "modele": "CONCREE/Adia_TTS",
-  "description": "A warm and natural voice, with a conversational flow",
+  "modele": "soynade-research/Oolel-Voices",
+  "voix_reference": "aucune_ligne.wav (Adia_TTS, CONCREE)",
   "graine": 1234,
-  "frequence": 24000,
   "phrases": [
     {
       "fichier": "dakar_dem_dikk_1.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_2.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_4.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_5.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero juróom.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_6.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero juróom benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_7.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero juróom ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_8.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero juróom ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_9.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero juróom ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_10.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero fukk.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_11.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_12.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_13.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_15a.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak juróom A.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_15b.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak juróom B.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_16a.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak juróom benn A.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_16b.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak juróom benn B.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_18.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero fukk ak juróom ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_20.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaar fukk.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_23.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaar fukk ak ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_121.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero téeméer ak ñaar fukk ak benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_208.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak juróom ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_213.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_217.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_218.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_219.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_220.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_221.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_227.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak juróom ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_228.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak juróom ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_232.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_233.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_234.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_501.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero juróomi téeméer ak benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_502a.wav",
@@ -212,25 +211,25 @@
       "fichier": "dakar_dem_dikk_502b.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñaar B.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_503a.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñett A.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_503b.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñett B.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_504a.wav",
       "phrase": "Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñeent A.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_504b.wav",
@@ -240,1021 +239,1021 @@
     },
     {
       "fichier": "tata_aftu_1.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero benn.",
+      "phrase": "Jëlal bus bu Tataa, numero benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_2.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñaar.",
+      "phrase": "Jëlal bus bu Tataa, numero ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_3.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñett.",
+      "phrase": "Jëlal bus bu Tataa, numero ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_4.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_5.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_24.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñaar fukk ak ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero ñaar fukk ak ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_25.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñaar fukk ak juróom.",
+      "phrase": "Jëlal bus bu Tataa, numero ñaar fukk ak juróom.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_26.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñaar fukk ak juróom benn.",
+      "phrase": "Jëlal bus bu Tataa, numero ñaar fukk ak juróom benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_27.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñaar fukk ak juróom ñaar.",
+      "phrase": "Jëlal bus bu Tataa, numero ñaar fukk ak juróom ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_28.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñaar fukk ak juróom ñett.",
+      "phrase": "Jëlal bus bu Tataa, numero ñaar fukk ak juróom ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_29.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñaar fukk ak juróom ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero ñaar fukk ak juróom ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_30.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero fanweer.",
+      "phrase": "Jëlal bus bu Tataa, numero fanweer.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_31.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero fanweer ak benn.",
+      "phrase": "Jëlal bus bu Tataa, numero fanweer ak benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_32.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero fanweer ak ñaar.",
+      "phrase": "Jëlal bus bu Tataa, numero fanweer ak ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_33.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero fanweer ak ñett.",
+      "phrase": "Jëlal bus bu Tataa, numero fanweer ak ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_34.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero fanweer ak ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero fanweer ak ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_35.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero fanweer ak juróom.",
+      "phrase": "Jëlal bus bu Tataa, numero fanweer ak juróom.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_36.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero fanweer ak juróom benn.",
+      "phrase": "Jëlal bus bu Tataa, numero fanweer ak juróom benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_37.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero fanweer ak juróom ñaar.",
+      "phrase": "Jëlal bus bu Tataa, numero fanweer ak juróom ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_38.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero fanweer ak juróom ñett.",
+      "phrase": "Jëlal bus bu Tataa, numero fanweer ak juróom ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_39.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero fanweer ak juróom ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero fanweer ak juróom ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_40.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñeent fukk.",
+      "phrase": "Jëlal bus bu Tataa, numero ñeent fukk.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_41.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñeent fukk ak benn.",
+      "phrase": "Jëlal bus bu Tataa, numero ñeent fukk ak benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_42.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñeent fukk ak ñaar.",
+      "phrase": "Jëlal bus bu Tataa, numero ñeent fukk ak ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_43.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñeent fukk ak ñett.",
+      "phrase": "Jëlal bus bu Tataa, numero ñeent fukk ak ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_44.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñeent fukk ak ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero ñeent fukk ak ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_45.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñeent fukk ak juróom.",
+      "phrase": "Jëlal bus bu Tataa, numero ñeent fukk ak juróom.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_46.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñeent fukk ak juróom benn.",
+      "phrase": "Jëlal bus bu Tataa, numero ñeent fukk ak juróom benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_47.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñeent fukk ak juróom ñaar.",
+      "phrase": "Jëlal bus bu Tataa, numero ñeent fukk ak juróom ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_48.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñeent fukk ak juróom ñett.",
+      "phrase": "Jëlal bus bu Tataa, numero ñeent fukk ak juróom ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_49.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero ñeent fukk ak juróom ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero ñeent fukk ak juróom ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_50.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom fukk.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom fukk.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_51.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom fukk ak benn.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom fukk ak benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_52.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom fukk ak ñaar.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom fukk ak ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_53.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom fukk ak ñett.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom fukk ak ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_54.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom fukk ak ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom fukk ak ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_55.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom fukk ak juróom.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom fukk ak juróom.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_56.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom fukk ak juróom benn.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom fukk ak juróom benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_57.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom fukk ak juróom ñaar.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom fukk ak juróom ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_58.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom fukk ak juróom ñett.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom fukk ak juróom ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_59.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom fukk ak juróom ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom fukk ak juróom ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_60.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom benn fukk.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom benn fukk.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_61.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom benn fukk ak benn.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom benn fukk ak benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_62.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom benn fukk ak ñaar.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom benn fukk ak ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_63.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom benn fukk ak ñett.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom benn fukk ak ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_64.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom benn fukk ak ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom benn fukk ak ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_65.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom benn fukk ak juróom.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom benn fukk ak juróom.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_66.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom benn fukk ak juróom benn.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom benn fukk ak juróom benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_67.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom benn fukk ak juróom ñaar.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom benn fukk ak juróom ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_68.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom benn fukk ak juróom ñett.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom benn fukk ak juróom ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_69.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom benn fukk ak juróom ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom benn fukk ak juróom ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_70.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñaar fukk.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñaar fukk.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_71.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñaar fukk ak benn.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñaar fukk ak benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_72.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñaar fukk ak ñaar.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñaar fukk ak ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_73.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñaar fukk ak ñett.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñaar fukk ak ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_74.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñaar fukk ak ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñaar fukk ak ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_75.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñaar fukk ak juróom.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_76.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñaar fukk ak juróom benn.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_77.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñaar fukk ak juróom ñaar.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_78.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñaar fukk ak juróom ñett.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_79.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñaar fukk ak juróom ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_80.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñett fukk.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñett fukk.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_81.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñett fukk ak benn.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñett fukk ak benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_82.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñett fukk ak ñaar.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñett fukk ak ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_83.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñett fukk ak ñett.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñett fukk ak ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_84.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñett fukk ak ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñett fukk ak ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_85.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñett fukk ak juróom.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_86.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñett fukk ak juróom benn.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_87.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñett fukk ak juróom ñaar.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom ñaar.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_88.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñett fukk ak juróom ñett.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom ñett.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_89.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñett fukk ak juróom ñeent.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom ñeent.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "tata_aftu_91.wav",
-      "phrase": "Jëlal bus bu Tàtaa, numero juróom ñeent fukk ak benn.",
+      "phrase": "Jëlal bus bu Tataa, numero juróom ñeent fukk ak benn.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "aucune_ligne.wav",
       "phrase": "Baal ma, gisuma bus bu dem fa.",
       "type": "service",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "walla.wav",
       "phrase": "walla",
       "type": "service",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "walla_autre.wav",
       "phrase": "walla",
       "type": "service",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "correspondance_liaison.wav",
       "phrase": "Ci ginnaaw,",
       "type": "service",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "moo_lay_yobbu_ba.wav",
       "phrase": "moo lay yóbbu ba",
       "type": "service",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "nga_wacc.wav",
-      "phrase": "nga wathie",
+      "phrase": "nga wàcc",
       "type": "service",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "dakar_dem_dikk_taf_taf.wav",
-      "phrase": "Jëlal bus bu Dem Dikk, Tàf Tàf.",
+      "phrase": "Jëlal bus bu Dem Dikk, Taf Taf.",
       "type": "ligne",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_aeroport.wav",
-      "phrase": "Aydapoor",
+      "phrase": "Aéroport",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_aeroport_l_s_senghor.wav",
-      "phrase": "Aydapoor Lewpool Sedaar Sengoor",
+      "phrase": "Aéroport Léopold Sédar Senghor",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_aeroport_lss.wav",
-      "phrase": "Aydapoor Lewpool Sedaar Sengoor",
+      "phrase": "Aéroport Léopold Sédar Senghor",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_aibd.wav",
-      "phrase": "Aydapoor bu Jas",
+      "phrase": "AIBD",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_allees_ababacar_sy.wav",
-      "phrase": "Alé Abaabakar Si",
+      "phrase": "Allées Ababacar Sy",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_allees_cheikh_sidaty_aidara.wav",
-      "phrase": "Alé Seex Sidaati Aydara",
+      "phrase": "Allées Cheikh Sidaty Aïdara",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_allees_cherif_macky_sall.wav",
-      "phrase": "Alé seriif Maki Sàll",
+      "phrase": "Allées Cherif Macky Sall",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_allees_medina_zac.wav",
-      "phrase": "Alé Médina sak",
+      "phrase": "Allées Médina Zac",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_allees_papa_gueye_fall.wav",
-      "phrase": "Alé Pàppa Gey Faal",
+      "phrase": "Allées Papa Gueye Fall",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_almadies.wav",
-      "phrase": "Almadi",
+      "phrase": "Almadies",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_ancienne_piste.wav",
-      "phrase": "Ancien Piste",
+      "phrase": "Ancienne Piste",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_ancienne_piste_d_envol.wav",
-      "phrase": "Piste d'Envol",
+      "phrase": "Ancienne Piste d'Envol",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_apix.wav",
-      "phrase": "Apiksë",
+      "phrase": "Apix",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_arafat.wav",
-      "phrase": "Arafaat",
+      "phrase": "Arafat",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_arret_cherif.wav",
-      "phrase": "Are seriif",
+      "phrase": "Arrêt Chérif",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_auchan_keur_massar.wav",
-      "phrase": "Ochan Kër Masaar",
+      "phrase": "Auchan Keur Massar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_auto_route.wav",
-      "phrase": "Oto ruut",
+      "phrase": "Auto Route",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_autoroute.wav",
-      "phrase": "Otoruut",
+      "phrase": "Autoroute",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_autoroute_a_peage.wav",
-      "phrase": "Otoruut aa peyaas",
+      "phrase": "Autoroute A Péage",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_autoroute_seydina_l.wav",
-      "phrase": "Otoruut Seydinaa Limaamu Laay",
+      "phrase": "Autoroute Seydina Limamou Laye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_autoroute_seydina_limamoulaye.wav",
-      "phrase": "Otoruut Seydinaa Limaamu Laay",
+      "phrase": "Autoroute Seydina Limamoulaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_autoroute_seydinalimamoulaye.wav",
-      "phrase": "Otoruut Seydinaa Limaamu Laay",
+      "phrase": "Autoroute Seydinalimamoulaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_avenue_blaise_diagne.wav",
-      "phrase": "Awenii Blees Jaañ",
+      "phrase": "Avenue Blaise Diagne",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_avenue_bourguiba.wav",
-      "phrase": "Awënii Burguiba",
+      "phrase": "Avenue Bourguiba",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_avenue_cardinal_hyacinthe_thiandoum.wav",
-      "phrase": "Awënii kardinaal yasent Càndum",
+      "phrase": "Avenue Cardinal Hyacinthe Thiandoum",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_avenue_cheikh_ahmadou_bamba.wav",
-      "phrase": "Awënii Seex Axmadu Bàmba",
+      "phrase": "Avenue Cheikh Ahmadou Bamba",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_avenue_cheikh_amadou_bamba.wav",
-      "phrase": "Awënii Seex Axmadu Bàmba",
+      "phrase": "Avenue Cheikh Amadou Bamba",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_avenue_cheikh_amadou_bamba_mbacke.wav",
-      "phrase": "Awënii Seex Axmadu Bàmba Mbàkke",
+      "phrase": "Avenue Cheikh Amadou Bamba Mbacke",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_avenue_cheikh_anta_diop.wav",
-      "phrase": "Awënii Seex Anta Joob",
+      "phrase": "Avenue Cheikh Anta Diop",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_avenue_cheikh_antadiop.wav",
-      "phrase": "Awënii Seex Anta Joob",
+      "phrase": "Avenue Cheikh Antadiop",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_avenue_emile_badiane.wav",
-      "phrase": "Awënii emil Bajaan",
+      "phrase": "Avenue Emile Badiane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_avenue_hyacinthe_thiandom.wav",
-      "phrase": "Awënii yasent Càndum",
+      "phrase": "Avenue Hyacinthe Thiandom",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_avenue_hyacinthe_thiandoum.wav",
-      "phrase": "Awënii yasent Càndum",
+      "phrase": "Avenue Hyacinthe Thiandoum",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_avenue_malick_sy.wav",
-      "phrase": "Awënii Maalik Si",
+      "phrase": "Avenue Malick Sy",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_avenue_malicksy.wav",
-      "phrase": "Awënii Maalik Si",
+      "phrase": "Avenue Malicksy",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_avenue_oumar_foutiyou_tall.wav",
-      "phrase": "Awënii Omar Fuutiyu Taal",
+      "phrase": "Avenue Oumar Foutiyou Tall",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_bambilor.wav",
-      "phrase": "Bàmbiloor",
+      "phrase": "Bambilor",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_banoba.wav",
       "phrase": "Banoba",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_bargny.wav",
-      "phrase": "Barñi",
+      "phrase": "Bargny",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_baux_maraichers.wav",
-      "phrase": "Boo maresee",
+      "phrase": "Baux Maraîchers",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_bayakh.wav",
-      "phrase": "Bayaax",
+      "phrase": "Bayakh",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_baye_laye.wav",
-      "phrase": "Baay Laay",
+      "phrase": "Baye Laye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_beaux_maraichers.wav",
-      "phrase": "Boo maresee",
+      "phrase": "Beaux Maraîchers",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_bene_baraque.wav",
-      "phrase": "Benn baraak",
+      "phrase": "Bene Baraque",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_bene_tally.wav",
-      "phrase": "Benn Tali",
+      "phrase": "Bène Tally",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_bld_centenaire_de_la_commune_de_dakar.wav",
-      "phrase": "Bulwaar santëneer dë laa Commune dë Dakar",
+      "phrase": "Boulevard Centenaire de la Commune de Dakar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_bld_des_martyrs.wav",
-      "phrase": "Bulwaar dee martiir",
+      "phrase": "Boulevard des Martyrs",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_bld_du_centenaire_de_la_commune_de_dakar.wav",
-      "phrase": "Bulwaar dii santeneer dë laa Commune dë Dakar",
+      "phrase": "Boulevard du Centenaire de la Commune de Dakar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_bld_maurice_gueye.wav",
-      "phrase": "Bulwaar moriis Gey",
+      "phrase": "Boulevard Maurice Gueye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_boulevard_de_la_gueule_tapee.wav",
-      "phrase": "Bulwaar dë laa gël tàppé",
+      "phrase": "Boulevard de la Gueule Tapée",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_boulevard_dial_diop.wav",
-      "phrase": "Bulwaar Jal Joob",
+      "phrase": "Boulevard Dial Diop",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_boulevard_du_centenaire_de_la_commune_de_dakar.wav",
-      "phrase": "Bulwaar dii santeneer dë laa Commune dë Dakar",
+      "phrase": "Boulevard du Centenaire de la Commune de Dakar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_boulevard_du_general_de_gaulle.wav",
-      "phrase": "Bulwaar dii Général dë gool",
+      "phrase": "Boulevard du Général de Gaulle",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_boulevard_maurice_gueye.wav",
-      "phrase": "Bulwaar moris Gey",
+      "phrase": "Boulevard Maurice Gueye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_boune.wav",
       "phrase": "Boune",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_bountou_pikine.wav",
-      "phrase": "Buntu Pikine",
+      "phrase": "Bountou Pikine",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_bourguiba.wav",
-      "phrase": "Burguiba",
+      "phrase": "Bourguiba",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_boutikou_diallo.wav",
-      "phrase": "Butik Jàllo",
+      "phrase": "Boutikou Diallo",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_boutique_diallo.wav",
-      "phrase": "Butik Jàllo",
+      "phrase": "Boutique Diallo",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_branche_est_autoroute.wav",
       "phrase": "Branche Est Autoroute",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_cafeteria.wav",
-      "phrase": "Kafeteriyaa",
+      "phrase": "Cafeteria",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_camberene.wav",
-      "phrase": "Kàmberéen",
+      "phrase": "Cambérène",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_camberene_deux.wav",
-      "phrase": "Kàmberéen deux",
+      "phrase": "Cambérène deux",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_camp_marchand.wav",
       "phrase": "Camp Marchand",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_camp_marchand_rufisque.wav",
-      "phrase": "Camp Marchand Rifiskë",
+      "phrase": "Camp Marchand Rufisque",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_canada.wav",
-      "phrase": "Kanadaa",
+      "phrase": "Canada",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_canal_de_la_gueule_tapee.wav",
-      "phrase": "Kanaal dë laa gël tàppé",
+      "phrase": "Canal de la Gueule Tapée",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_canal_quatre.wav",
-      "phrase": "Kanaal quatre",
+      "phrase": "Canal quatre",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_cap_des_biches.wav",
-      "phrase": "Kap dee biis",
+      "phrase": "Cap des Biches",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_capa.wav",
-      "phrase": "Kàppaa",
+      "phrase": "Capa",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_carrefour_hlm_gd_medine_diamalaye.wav",
-      "phrase": "Karfuur aselem garaŋ Medin Jàmmalaay",
+      "phrase": "Carrefour HLM Grand Médine Diamalaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_carrefour_serigne_assane.wav",
-      "phrase": "Karfuur Seriñ Asan",
+      "phrase": "Carrefour Serigne Assane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_carrefour_seydou_n_tall.wav",
-      "phrase": "Karfuur Seydu Nuuru Taal",
+      "phrase": "Carrefour Seydou Nourou Tall",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_case_ba.wav",
-      "phrase": "Kaas Ba",
+      "phrase": "Case Ba",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_case_de_camberene.wav",
-      "phrase": "Kaas dë Kàmberéen",
+      "phrase": "Case de Cambérène",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_caserne_sapeurs_pompiers.wav",
-      "phrase": "Kaseern sapëer poŋpiye",
+      "phrase": "Caserne Sapeurs Pompiers",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_caserne_sapeurs_pompiers_parcelles.wav",
-      "phrase": "Kaseern sapëer poŋpiye parsel",
+      "phrase": "Caserne Sapeurs Pompiers Parcelles",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_castors.wav",
-      "phrase": "Kastoor",
+      "phrase": "Castors",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_centre_aere_de_la_bceao.wav",
-      "phrase": "Centre ayre dë laa beseyaawo",
+      "phrase": "Centre Aéré de la BCEAO",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_centre_de_jaxaay.wav",
-      "phrase": "Centre dë Jaxaay",
+      "phrase": "Centre de Jaxaay",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_centre_ville.wav",
-      "phrase": "Centre wiil",
+      "phrase": "Centre-Ville",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_cheikh_sidatyaidara.wav",
-      "phrase": "Seex Sidaati Aydara",
+      "phrase": "Cheikh Sidatyaidara",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_cinema_parcelles.wav",
-      "phrase": "Sinema parsel",
+      "phrase": "Cinéma Parcelles",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_ainoumady.wav",
-      "phrase": "Site Aynu Maadi",
+      "phrase": "Cité Ainoumady",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_apix.wav",
-      "phrase": "Site Apiksë",
+      "phrase": "Cité Apix",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_asecna.wav",
-      "phrase": "Site asekna",
+      "phrase": "Cité Asecna",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_assurance.wav",
-      "phrase": "Site Assurance",
+      "phrase": "Cité Assurance",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_avion.wav",
-      "phrase": "Site awyoŋ",
+      "phrase": "Cité Avion",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_baba_guisse.wav",
-      "phrase": "Site Baba Gis",
+      "phrase": "Cité Baba Guisse",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_capec.wav",
-      "phrase": "Site kapek",
+      "phrase": "Cité Capec",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_cocehas.wav",
-      "phrase": "Site kokewas",
+      "phrase": "Cité Cocéhas",
       "type": "lieu",
       "a_regenerer": true
     },
@@ -1272,1117 +1271,1117 @@
     },
     {
       "fichier": "lieu_cite_enseignants.wav",
-      "phrase": "Site aŋseñaŋ",
+      "phrase": "Cité Enseignants",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_fadia.wav",
-      "phrase": "Site Fajaa",
+      "phrase": "Cité Fadia",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_gendarmerie.wav",
-      "phrase": "Site saŋdarmëri",
+      "phrase": "Cité Gendarmerie",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_lobatt_fall.wav",
-      "phrase": "Site Lobat Faal",
+      "phrase": "Cité Lobatt Fall",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_lobattfall.wav",
-      "phrase": "Site Lobat Faal",
+      "phrase": "Cité Lobattfall",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_mame_dior.wav",
-      "phrase": "Site Maam Joor",
+      "phrase": "Cité Mame Dior",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_nations_unies.wav",
-      "phrase": "Site nasyoŋ ini",
+      "phrase": "Cité Nations Unies",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_safco.wav",
-      "phrase": "Site safko",
+      "phrase": "Cité Safco",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_sagef.wav",
-      "phrase": "Site saseef",
+      "phrase": "Cité Sagef",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_serigne_mansour.wav",
-      "phrase": "Site Seriñ Mansuur",
+      "phrase": "Cité Serigne Mansour",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_socabeg.wav",
-      "phrase": "Site sokabeg",
+      "phrase": "Cité Socabeg",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_sotrac.wav",
-      "phrase": "Site sotarak",
+      "phrase": "Cité Sotrac",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_cite_yacine_diop.wav",
-      "phrase": "Site Yasin Joob",
+      "phrase": "Cité Yacine Diop",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_claudel.wav",
-      "phrase": "Kolodel",
+      "phrase": "Claudel",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_college_la_liberte.wav",
-      "phrase": "Kolees la liberte",
+      "phrase": "Collège la Liberté",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_colobane.wav",
-      "phrase": "Kolobaan",
+      "phrase": "Colobane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_colobane_rufisque.wav",
-      "phrase": "Kolobaan Rifiskë",
+      "phrase": "Colobane Rufisque",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_comico_yeumbeul.wav",
-      "phrase": "Komiko Yembël",
+      "phrase": "Comico Yeumbeul",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_corniche.wav",
-      "phrase": "Korniis",
+      "phrase": "Corniche",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_corniche_fadia.wav",
-      "phrase": "Korniis Fajaa",
+      "phrase": "Corniche Fadia",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_corniche_guediawaye.wav",
-      "phrase": "Korniis Gejawaay",
+      "phrase": "Corniche Guédiawaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_bethio.wav",
-      "phrase": "Kurwaasmaa Becco",
+      "phrase": "Croisement Bethio",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_camberene.wav",
-      "phrase": "Kurwaasmaa Kàmberéen",
+      "phrase": "Croisement Cambérène",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_cheikh_bethio.wav",
-      "phrase": "Kurwaasmaa Seex Becco",
+      "phrase": "Croisement Cheikh Bethio",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_dial_mbaye.wav",
-      "phrase": "Kurwaasmaa Jaal Mbay",
+      "phrase": "Croisement Dial Mbaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_dior.wav",
-      "phrase": "Kurwaasmaa Joor",
+      "phrase": "Croisement Dior",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_gadaye.wav",
-      "phrase": "Kurwaasmaa Gàddaay",
+      "phrase": "Croisement Gaddaay",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_grand_mbao.wav",
-      "phrase": "Kurwaasmaa garaŋ Mbaaw",
+      "phrase": "Croisement Grand Mbao",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_keur_massar.wav",
-      "phrase": "Kurwaasmaa Kër Masaar",
+      "phrase": "Croisement Keur Massar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_keurmassar.wav",
-      "phrase": "Kurwaasmaa Kër Masaar",
+      "phrase": "Croisement Keurmassar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_mame_abdou.wav",
-      "phrase": "Kurwaasmaa Maam Abdu",
+      "phrase": "Croisement Mame Abdou",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_niague.wav",
-      "phrase": "Kurwaasmaa Ñaag",
+      "phrase": "Croisement Niague",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_niagues.wav",
-      "phrase": "Kurwaasmaa Ñaag",
+      "phrase": "Croisement Niagues",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_pai.wav",
-      "phrase": "Kurwaasmaa peyi",
+      "phrase": "Croisement PAI",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_tally_diallo.wav",
-      "phrase": "Kurwaasmaa Tali Jàllo",
+      "phrase": "Croisement Tally Diallo",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_tivaouane_peulh.wav",
-      "phrase": "Kurwaasmaa Tiwaawan Pël",
+      "phrase": "Croisement Tivaouane Peulh",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_vingt_deux.wav",
-      "phrase": "Kurwaasmaa vingt deux",
+      "phrase": "Croisement vingt-deux",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_yeumbeul.wav",
-      "phrase": "Kurwaasmaa Yembël",
+      "phrase": "Croisement Yeumbeul",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_croisement_zac_mbao.wav",
-      "phrase": "Kurwaasmaa sak Mbaaw",
+      "phrase": "Croisement Zac Mbao",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_cto.wav",
-      "phrase": "Setewo",
+      "phrase": "CTO",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_dangou.wav",
-      "phrase": "Dangu",
+      "phrase": "Dangou",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_darou_missel.wav",
-      "phrase": "Daaru Misel",
+      "phrase": "Darou Missel",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_darou_thioub.wav",
-      "phrase": "Daaru Cuub",
+      "phrase": "Darou Thioub",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_daroukhane.wav",
-      "phrase": "Daaru Xaan",
+      "phrase": "Daroukhane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_daroukhane_keur_serigne_assane.wav",
-      "phrase": "Daaru Xaan Kër Seriñ Asan",
+      "phrase": "Daroukhane Keur Serigne Assane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_derkle.wav",
-      "phrase": "Derkle",
+      "phrase": "Derklé",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_deux_voies_de_liberte_six.wav",
-      "phrase": "Deux wuwaa dë liberte six",
+      "phrase": "Deux Voies de Liberté six",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_deux_voies_liberte_six.wav",
-      "phrase": "Deux wuwaa liberte six",
+      "phrase": "Deux Voies Liberté six",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_deux_voies_notaire.wav",
-      "phrase": "Deux wuwaa noteer",
+      "phrase": "Deux Voies Notaire",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_dial_mbaay.wav",
-      "phrase": "Jaal Mbay",
+      "phrase": "Dial Mbaay",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_dial_mbaye.wav",
-      "phrase": "Jaal Mbay",
+      "phrase": "Dial Mbaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_diamaguene.wav",
-      "phrase": "Jàmmagën",
+      "phrase": "Diamaguène",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_diamalaye.wav",
-      "phrase": "Jàmmalaay",
+      "phrase": "Diamalaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_diamniadio.wav",
-      "phrase": "Jamñaajo",
+      "phrase": "Diamniadio",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_dieuppeul.wav",
-      "phrase": "Jëppël",
+      "phrase": "Dieuppeul",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_dior.wav",
-      "phrase": "Joor",
+      "phrase": "Dior",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_dioutyba.wav",
-      "phrase": "Juuti Ba",
+      "phrase": "Dioutyba",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_dispensaire_nabil_choucair.wav",
-      "phrase": "Dispaŋseer nabiil Sukeer",
+      "phrase": "Dispensaire Nabil Choucair",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_djiddah_thiaroye_kao.wav",
-      "phrase": "Jidda Tiaroy Kaaw",
+      "phrase": "Djiddah Thiaroye Kao",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_dougar.wav",
-      "phrase": "Dugaar",
+      "phrase": "Dougar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_echangeur_cyrnos.wav",
-      "phrase": "Échangeur sirnos",
+      "phrase": "Echangeur Cyrnos",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_echangeur_de_hann.wav",
-      "phrase": "Échangeur dë Han",
+      "phrase": "Echangeur de Hann",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_echangeur_de_la_foire.wav",
-      "phrase": "Échangeur dë laa fuwaar",
+      "phrase": "Echangeur de la Foire",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_echangeur_hann.wav",
-      "phrase": "Échangeur Han",
+      "phrase": "Echangeur Hann",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_echangeur_patte_d_oie.wav",
-      "phrase": "Échangeur Patte d'Oie",
+      "phrase": "Echangeur Patte d'Oie",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_echangeur_rufisque_ouest.wav",
-      "phrase": "Échangeur Rifiskë wést",
+      "phrase": "Echangeur Rufisque-Ouest",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_ecobank.wav",
-      "phrase": "Ekobaŋk",
+      "phrase": "Ecobank",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_ecole_dior.wav",
-      "phrase": "Ekool Joor",
+      "phrase": "École Dior",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_ecole_japonaise.wav",
-      "phrase": "Ekool saponees",
+      "phrase": "École Japonaise",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_ecole_normale.wav",
-      "phrase": "Ekool normaal",
+      "phrase": "École Normale",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_ecole_police.wav",
-      "phrase": "Ekool Police",
+      "phrase": "École Police",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_eglise.wav",
-      "phrase": "Egliis",
+      "phrase": "Église",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_eglise_parcelles.wav",
-      "phrase": "Egliis parsel",
+      "phrase": "Église Parcelles",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_eglise_saint_joseph.wav",
-      "phrase": "Egliis seŋ soseef",
+      "phrase": "Église Saint-Joseph",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_entree_ouakam.wav",
-      "phrase": "Aŋtere Wakaam",
+      "phrase": "Entrée Ouakam",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_espace_hlm_gd_medine.wav",
-      "phrase": "Espace Aselem garaŋ Medin",
+      "phrase": "Espace HLM Grand Médine",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_etage_madiale.wav",
-      "phrase": "Etaas Majaal",
+      "phrase": "Étage Madiale",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_fadia.wav",
-      "phrase": "Fajaa",
+      "phrase": "Fadia",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_fass.wav",
-      "phrase": "Faas",
+      "phrase": "Fass",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_fass_mbao.wav",
-      "phrase": "Faas Mbaaw",
+      "phrase": "Fass Mbao",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_fass_rufisque.wav",
-      "phrase": "Faas Rifiskë",
+      "phrase": "Fass Rufisque",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_fassmbao.wav",
-      "phrase": "Faas Mbaaw",
+      "phrase": "Fassmbao",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_foire.wav",
-      "phrase": "Fuwaar",
+      "phrase": "Foire",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_front_de_terre.wav",
-      "phrase": "Fëroŋ dë teer",
+      "phrase": "Front de Terre",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_g_dakar.wav",
-      "phrase": "Garaŋ Dakaar",
+      "phrase": "Grand Dakar",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_gadaye.wav",
-      "phrase": "Gàddaay",
+      "phrase": "Gaddaay",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_garage_guediawaye.wav",
-      "phrase": "Garaas Gejawaay",
+      "phrase": "Garage Guédiawaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_gare_de_colobane.wav",
-      "phrase": "Gaar dë Kolobaan",
+      "phrase": "Gare de Colobane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_gare_de_dakar.wav",
-      "phrase": "Gaar dë Dakar",
+      "phrase": "Gare de Dakar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_gare_de_diamniadio.wav",
-      "phrase": "Gaar dë Jamñaajo",
+      "phrase": "Gare de Diamniadio",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_gare_de_petersen.wav",
-      "phrase": "Gaar dë Peterseen",
+      "phrase": "Gare de Petersen",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_gare_des_baux_maraichers.wav",
-      "phrase": "Gaar dee boo maresee",
+      "phrase": "Gare des Baux Maraîchers",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_gare_des_parcelles_assainies.wav",
-      "phrase": "Gaar dee parsel aseni",
+      "phrase": "Gare des Parcelles Assainies",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_gare_lat_dior.wav",
-      "phrase": "Gaar Latt Joor",
+      "phrase": "Gare Lat Dior",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_gare_petersen.wav",
-      "phrase": "Gaar Peterseen",
+      "phrase": "Gare Petersen",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_gare_routiere_de_colobane.wav",
-      "phrase": "Gaar rutiyeer dë Kolobaan",
+      "phrase": "Gare routière de Colobane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_giratoire_de_liberte_six.wav",
-      "phrase": "Siratuwaar dë liberte six",
+      "phrase": "Giratoire de Liberté six",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_giratoire_liberte_six.wav",
-      "phrase": "Siratuwaar liberte six",
+      "phrase": "Giratoire Liberté six",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_golf.wav",
       "phrase": "Golf",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_golf_fadia.wav",
-      "phrase": "Golf Fajaa",
+      "phrase": "Golf Fadia",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_gorom_deux.wav",
       "phrase": "Gorom deux",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_gorom_un.wav",
       "phrase": "Gorom un",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_grand_dakar.wav",
-      "phrase": "Garaŋ Dakar",
+      "phrase": "Grand Dakar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_grand_mbao.wav",
-      "phrase": "Garaŋ Mbaaw",
+      "phrase": "Grand Mbao",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_grand_yoff.wav",
-      "phrase": "Garaŋ Yoof",
+      "phrase": "Grand Yoff",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_groupement_national_des_sapeurs_pompiers.wav",
-      "phrase": "Groupement National dee sapëer poŋpiye",
+      "phrase": "Groupement National des Sapeurs-Pompiers",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_guediawaye.wav",
-      "phrase": "Gejawaay",
+      "phrase": "Guédiawaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_guediawaye_cite_des_enseignants.wav",
-      "phrase": "Gejawaay site dee aŋseñaŋ",
+      "phrase": "Guédiawaye Cité des Enseignants",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_gueule_tapee.wav",
-      "phrase": "Gël tàppé",
+      "phrase": "Gueule Tapée",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_gueule_tapee_claudel.wav",
-      "phrase": "Gël tàppé Kolodel",
+      "phrase": "Gueule Tapée Claudel",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_hamo_cinq_six.wav",
-      "phrase": "Amo cinq six",
+      "phrase": "Hamo cinq six",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_hamo_quatre.wav",
-      "phrase": "Amo quatre",
+      "phrase": "Hamo quatre",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_hamo_six.wav",
-      "phrase": "Amo six",
+      "phrase": "Hamo six",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_hamo_trois.wav",
-      "phrase": "Amo trois",
+      "phrase": "Hamo trois",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_hlm.wav",
-      "phrase": "Aselem",
+      "phrase": "HLM",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_hlm_grand_yoff.wav",
-      "phrase": "Aselem garaŋ Yoof",
+      "phrase": "HLM Grand Yoff",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_hlm_guediawaye.wav",
-      "phrase": "Aselem Gejawaay",
+      "phrase": "HLM Guédiawaye",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_hlm_rufisque.wav",
-      "phrase": "Aselem Rifiskë",
+      "phrase": "HLM Rufisque",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_hopital_abass_ndao.wav",
-      "phrase": "Opitaal Abas Ndaw",
+      "phrase": "Hôpital Abass Ndao",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_hopital_keur_massar.wav",
-      "phrase": "Opitaal Kër Masaar",
+      "phrase": "Hôpital Keur Massar",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_hopital_principal.wav",
-      "phrase": "Opitaal pareŋsipaal",
+      "phrase": "Hôpital Principal",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_hopital_roi_baudouin.wav",
-      "phrase": "Opitaal ruwaa bodweŋ",
+      "phrase": "Hôpital Roi Baudouin",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_hopital_youssou_mbargane.wav",
-      "phrase": "Opitaal Yusu Mbargaan",
+      "phrase": "Hôpital Youssou Mbargane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_hopital_youssou_mbargane_diop.wav",
-      "phrase": "Opitaal Yusu Mbargaan Joob",
+      "phrase": "Hôpital Youssou Mbargane Diop",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_hotel_de_ville.wav",
-      "phrase": "Otel dë wiil",
+      "phrase": "Hôtel de Ville",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_hydrocarbures.wav",
-      "phrase": "Idrokarbiir",
+      "phrase": "Hydrocarbures",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_imprimerie_nationale.wav",
-      "phrase": "Eŋprimëri Nationale",
+      "phrase": "Imprimerie Nationale",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_jaxaay.wav",
       "phrase": "Jaxaay",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_jaxaay_deux.wav",
       "phrase": "Jaxaay deux",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_jaxaay_un.wav",
       "phrase": "Jaxaay un",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_jvc.wav",
-      "phrase": "Siwese",
+      "phrase": "JVC",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_keur_daouda_sarr.wav",
-      "phrase": "Kër Dawda Saar",
+      "phrase": "Keur Daouda Sarr",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_keur_massar.wav",
-      "phrase": "Kër Masaar",
+      "phrase": "Keur Massar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_keur_massar_extension.wav",
-      "phrase": "Kër Masaar ekstaŋsyoŋ",
+      "phrase": "Keur Massar Extension",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_keur_mbaye_fall.wav",
-      "phrase": "Kër Mbay Faal",
+      "phrase": "Keur Mbaye Fall",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_keur_ndiaye_lo.wav",
-      "phrase": "Kër Njaay Lo",
+      "phrase": "Keur Ndiaye Lo",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_keur_ngoor.wav",
-      "phrase": "Kër Ngoor",
+      "phrase": "Keur Ngoor",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_keurmassar.wav",
-      "phrase": "Kër Masaar",
+      "phrase": "Keurmassar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_keurmbaye_fall.wav",
-      "phrase": "Kër Mbay Faal",
+      "phrase": "Keurmbaye Fall",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_khaar.wav",
-      "phrase": "Xaar",
+      "phrase": "Khaar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_khar_yalla.wav",
-      "phrase": "Xar Yàlla",
+      "phrase": "Khar Yalla",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_kharyalla.wav",
-      "phrase": "Xar Yàlla",
+      "phrase": "Kharyalla",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_khourounar.wav",
-      "phrase": "Xurunaar",
+      "phrase": "Khourounar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_kounoune.wav",
-      "phrase": "Kunuun",
+      "phrase": "Kounoune",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_kounoune_cite_assurance.wav",
-      "phrase": "Kunuun site Assurance",
+      "phrase": "Kounoune Cité Assurance",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_kounoune_ngalam.wav",
-      "phrase": "Kunuun Ngalam",
+      "phrase": "Kounoune Ngalam",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_lac_rose.wav",
-      "phrase": "Laak roos",
+      "phrase": "Lac Rose",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_lat_dior.wav",
-      "phrase": "Latt Joor",
+      "phrase": "Lat Dior",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_les_mamelles.wav",
-      "phrase": "Les Mamel",
+      "phrase": "Les Mamelles",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_liberte_cinq.wav",
       "phrase": "Liberté cinq",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_liberte_six.wav",
-      "phrase": "Liberte six",
+      "phrase": "Liberté six",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_lobatt_fall.wav",
-      "phrase": "Lobat Faal",
+      "phrase": "Lobatt Fall",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_lycee_canada.wav",
-      "phrase": "Lise Kanadaa",
+      "phrase": "Lycée Canada",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_lycee_jaxaay.wav",
-      "phrase": "Lise Jaxaay",
+      "phrase": "Lycée Jaxaay",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_lycee_kennedy.wav",
-      "phrase": "Lise keneddi",
+      "phrase": "Lycée Kennedy",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_lycee_limamou_laye.wav",
-      "phrase": "Lise Limaamu Laay",
+      "phrase": "Lycée Limamou Laye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_lycee_limamoulaye.wav",
-      "phrase": "Lise Limaamu Laay",
+      "phrase": "Lycée Limamoulaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_maison_du_parti.wav",
-      "phrase": "Meesoŋ dii parti",
+      "phrase": "Maison du Parti",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_malika.wav",
       "phrase": "Malika",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_malika_cimetiere.wav",
-      "phrase": "Malika simtiyeer",
+      "phrase": "Malika Cimetière",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_malika_montagne.wav",
-      "phrase": "Malika moŋtañ",
+      "phrase": "Malika Montagne",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_malika_plage.wav",
-      "phrase": "Malika palaas",
+      "phrase": "Malika Plage",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_malika_terminus.wav",
-      "phrase": "Malika terminis",
+      "phrase": "Malika Terminus",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_mamelles.wav",
-      "phrase": "Mamel",
+      "phrase": "Mamelles",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_marche_aux_poissons.wav",
-      "phrase": "Marché o puwasoŋ",
+      "phrase": "Marché aux Poissons",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_marche_boubess.wav",
-      "phrase": "Marché Bubes",
+      "phrase": "Marché Boubess",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_marche_camberene.wav",
-      "phrase": "Marché Kàmberéen",
+      "phrase": "Marché Cambérène",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_marche_chavanel.wav",
-      "phrase": "Marché Sawanel",
+      "phrase": "Marché Chavanel",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_marche_colobane_rufisque.wav",
-      "phrase": "Marché Kolobaan Rifiskë",
+      "phrase": "Marché Colobane Rufisque",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_marche_grand_yoff.wav",
-      "phrase": "Marché garaŋ Yoof",
+      "phrase": "Marché Grand Yoff",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_marche_jeudi.wav",
-      "phrase": "Marché sëdi",
+      "phrase": "Marché Jeudi",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_marche_khelcom.wav",
-      "phrase": "Marché xelkom",
+      "phrase": "Marché Khelcom",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_marche_mardi.wav",
-      "phrase": "Marché mardi",
+      "phrase": "Marché Mardi",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_marche_ndiareme.wav",
-      "phrase": "Marché njareem",
+      "phrase": "Marché Ndiarème",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_marche_tilene.wav",
-      "phrase": "Marché tileen",
+      "phrase": "Marché Tilène",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_marine_francaise.wav",
-      "phrase": "Mariin faraŋsees",
+      "phrase": "Marine Française",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_maristes.wav",
-      "phrase": "Marist",
+      "phrase": "Maristes",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_mbedou_fass.wav",
-      "phrase": "Mbedu Faas",
+      "phrase": "Mbédou Fass",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_medina.wav",
-      "phrase": "Madina",
+      "phrase": "Médina",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_mermoz.wav",
-      "phrase": "Mermoos",
+      "phrase": "Mermoz",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_mermoz_rond_point_cheikh_bethio.wav",
-      "phrase": "Mermoos roŋ Point Seex Becco",
+      "phrase": "Mermoz Rond-Point Cheikh Bethio",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_mole_dix.wav",
-      "phrase": "Mool dix",
+      "phrase": "Môle dix",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_mole_huit.wav",
-      "phrase": "Mool huit",
+      "phrase": "Môle huit",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_monument_serigne_saliou.wav",
-      "phrase": "Moniimaŋ Seriñ Saliw",
+      "phrase": "Monument Serigne Saliou",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_mosquee_massalikoul_djinane.wav",
-      "phrase": "Jumaa Masaalikul Jinaan",
+      "phrase": "Mosquée Massalikoul Djinane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_mtoa.wav",
-      "phrase": "Emtowaa",
+      "phrase": "MTOA",
       "type": "lieu",
       "a_regenerer": true
     },
@@ -2390,193 +2389,193 @@
       "fichier": "lieu_namora.wav",
       "phrase": "Namora",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_ndiakhirate.wav",
-      "phrase": "Njaxirat",
+      "phrase": "Ndiakhirate",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_ngor.wav",
-      "phrase": "Ngoor",
+      "phrase": "Ngor",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_niacourab.wav",
-      "phrase": "Ñaakurab",
+      "phrase": "Niacourab",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_niakourab.wav",
-      "phrase": "Ñaakurab",
+      "phrase": "Niakourab",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_niary_tally.wav",
-      "phrase": "Ñaari Tali",
+      "phrase": "Niary Tally",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_nord_foire.wav",
-      "phrase": "Noor fuwaar",
+      "phrase": "Nord Foire",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_notaire.wav",
-      "phrase": "Noteer",
+      "phrase": "Notaire",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_ouakam.wav",
-      "phrase": "Wakaam",
+      "phrase": "Ouakam",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_ouakam_baye.wav",
-      "phrase": "Wakaam Baay",
+      "phrase": "Ouakam Baye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_p_onze.wav",
-      "phrase": "Pe oŋs",
+      "phrase": "P onze",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_p_onze_keur_massar.wav",
-      "phrase": "Pe oŋs Kër Masaar",
+      "phrase": "P onze Keur Massar",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_pai.wav",
-      "phrase": "Peyi",
+      "phrase": "PAI",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_palais_deux.wav",
-      "phrase": "Palé deux",
+      "phrase": "Palais deux",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_palais_un.wav",
-      "phrase": "Palé un",
+      "phrase": "Palais un",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_parc_lambaye.wav",
-      "phrase": "Park Lambaay",
+      "phrase": "Parc Lambaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_parcelles_assainies.wav",
-      "phrase": "Parsel aseni",
+      "phrase": "Parcelles Assainies",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_parcelles_dior.wav",
-      "phrase": "Parsel Joor",
+      "phrase": "Parcelles Dior",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_parcelles_eglise.wav",
-      "phrase": "Parsel egliis",
+      "phrase": "Parcelles Église",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_passage_a_niveau.wav",
-      "phrase": "Pasaas aa Niveau",
+      "phrase": "Passage A Niveau",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_patte_d_oie.wav",
-      "phrase": "Pat duwaa",
+      "phrase": "Patte d'Oie",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_pattesd_oie.wav",
-      "phrase": "Pat Dwaa",
+      "phrase": "Pattesd'oie",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_peage.wav",
-      "phrase": "Peyaas",
+      "phrase": "Péage",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_penc_mi.wav",
-      "phrase": "Pénc Mi",
+      "phrase": "Penc Mi",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_petersen.wav",
-      "phrase": "Peterseen",
+      "phrase": "Petersen",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_petit_mbao.wav",
-      "phrase": "Pëti Mbaaw",
+      "phrase": "Petit Mbao",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_pharmacie_golf.wav",
-      "phrase": "Farmasi golf",
+      "phrase": "Pharmacie Golf",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_pharmicie_abdourahmane.wav",
-      "phrase": "Farmasi Abdu Raxmaan",
+      "phrase": "Pharmicie Abdourahmane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_pikine_rue_dix.wav",
-      "phrase": "Pikine rii dix",
+      "phrase": "Pikine Rue dix",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_pikine_texaco.wav",
-      "phrase": "Pikine teksako",
+      "phrase": "Pikine Texaco",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_piste_d_envol.wav",
-      "phrase": "Pist daŋwol",
+      "phrase": "Piste d'Envol",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_place_bakou.wav",
-      "phrase": "Place Baku",
+      "phrase": "Place Bakou",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_place_de_l_independance.wav",
@@ -2586,519 +2585,519 @@
     },
     {
       "fichier": "lieu_place_de_l_obelisque.wav",
-      "phrase": "Place dë lobelisk",
+      "phrase": "Place de l'Obélisque",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_place_leclerc.wav",
-      "phrase": "Place lëkleer",
+      "phrase": "Place Leclerc",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_police_des_parcelles_assainies.wav",
-      "phrase": "Police dee parsel aseni",
+      "phrase": "Police des Parcelles Assainies",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_police_guediawaye.wav",
-      "phrase": "Police Gejawaay",
+      "phrase": "Police Guédiawaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_police_parcelles.wav",
-      "phrase": "Police parsel",
+      "phrase": "Police Parcelles",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_police_thiaroye.wav",
-      "phrase": "Police Tiaroy",
+      "phrase": "Police Thiaroye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_police_wakhinane.wav",
-      "phrase": "Police Waxinaan",
+      "phrase": "Police Wakhinane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_pont_dangou.wav",
-      "phrase": "Pont Dangu",
+      "phrase": "Pont Dangou",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_pont_de_colobane.wav",
-      "phrase": "Pont dë Kolobaan",
+      "phrase": "Pont de Colobane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_pont_de_l_emergence.wav",
       "phrase": "Pont de l'Émergence",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_pont_hann.wav",
-      "phrase": "Pont Han",
+      "phrase": "Pont Hann",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_pont_stade_lss.wav",
-      "phrase": "Pont estaad Lewpool Sedaar Sengoor",
+      "phrase": "Pont Stade Léopold Sédar Senghor",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_port.wav",
-      "phrase": "Poor",
+      "phrase": "Port",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_port_de_dakar.wav",
-      "phrase": "Poor dë Dakar",
+      "phrase": "Port de Dakar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_poste_courant.wav",
-      "phrase": "Poste kuraŋ",
+      "phrase": "Poste Courant",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_poste_de_guediawaye.wav",
-      "phrase": "Poste dë Gejawaay",
+      "phrase": "Poste de Guédiawaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_poste_de_police_thiaroye.wav",
-      "phrase": "Poste dë Police Tiaroy",
+      "phrase": "Poste de Police Thiaroye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_poste_fann.wav",
-      "phrase": "Poste Fan",
+      "phrase": "Poste Fann",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_poste_medina.wav",
-      "phrase": "Poste Madina",
+      "phrase": "Poste Médina",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_poste_medine.wav",
-      "phrase": "Poste Medin",
+      "phrase": "Poste Médine",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_poste_thiaroye.wav",
-      "phrase": "Poste Tiaroy",
+      "phrase": "Poste Thiaroye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_prefecture.wav",
-      "phrase": "Prefektiir",
+      "phrase": "Préfecture",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_prefecture_guediawaye.wav",
-      "phrase": "Prefektiir Gejawaay",
+      "phrase": "Préfecture Guédiawaye",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_prolongement_rue_dix.wav",
-      "phrase": "Prolonsmaŋ rii dix",
+      "phrase": "Prolongement Rue dix",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_quarante_neuf.wav",
-      "phrase": "Quarante neuf",
+      "phrase": "Quarante-neuf",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_quartier_cheikh_wade.wav",
-      "phrase": "Kartiye Seex Wad",
+      "phrase": "Quartier Cheikh Wade",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rd_point_seydou_n_tall.wav",
-      "phrase": "Roŋ Point Seydu Nuuru Taal",
+      "phrase": "Rond-Point Seydou Nourou Tall",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_retour_rue_dix_sept.wav",
-      "phrase": "Rëtuur rii dix sept",
+      "phrase": "Retour Rue dix-sept",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_retour_rue_trente_sept.wav",
-      "phrase": "Rëtuur rii trente sept",
+      "phrase": "Retour Rue trente-sept",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rocade_fann_bel_air.wav",
-      "phrase": "Rokaad Fan Beleer",
+      "phrase": "Rocade Fann Bel Air",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rocade_fannbel_air.wav",
-      "phrase": "Rokaad Fan Beleer",
+      "phrase": "Rocade Fannbel-Air",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_almadies.wav",
-      "phrase": "Roŋ Point Almadi",
+      "phrase": "Rond-Point Almadies",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_arafat.wav",
-      "phrase": "Roŋ Point Arafaat",
+      "phrase": "Rond-Point Arafat",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_caisse_de_securite_sociale.wav",
-      "phrase": "Roŋ Point kees dë sekirite sosyaal",
+      "phrase": "Rond-Point Caisse de Sécurité Sociale",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_camberene.wav",
-      "phrase": "Roŋ Point Kàmberéen",
+      "phrase": "Rond-Point Cambérène",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_case_bi.wav",
-      "phrase": "Roŋ Point kaas Bi",
+      "phrase": "Rond-Point Case Bi",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_cite_penitence.wav",
-      "phrase": "Roŋ Point site penitaŋs",
+      "phrase": "Rond-Point Cité Pénitence",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_colobane.wav",
-      "phrase": "Roŋ Point Kolobaan",
+      "phrase": "Rond-Point Colobane",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_de_camberene.wav",
-      "phrase": "Roŋ Point dë Kàmberéen",
+      "phrase": "Rond-Point de Cambérène",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_dial_mbaay.wav",
-      "phrase": "Roŋ Point Jaal Mbay",
+      "phrase": "Rond-Point Dial Mbaay",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_dioutyba.wav",
-      "phrase": "Roŋ Point Juuti Ba",
+      "phrase": "Rond-Point Dioutyba",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_djouti_ba_rufisque.wav",
-      "phrase": "Roŋ Point Juuti Ba Rifiskë",
+      "phrase": "Rond-Point Djouti Ba Rufisque",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_fann.wav",
-      "phrase": "Roŋ Point Fan",
+      "phrase": "Rond-Point Fann",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_jet_d_eau.wav",
-      "phrase": "Roŋ Point jet d'Eau",
+      "phrase": "Rond-Point Jet d'Eau",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_keur_massar.wav",
-      "phrase": "Roŋ Point Kër Masaar",
+      "phrase": "Rond-Point Keur Massar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_le_virage.wav",
-      "phrase": "Roŋ Point le wiraas",
+      "phrase": "Rond-Point le Virage",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_liberte_six.wav",
-      "phrase": "Roŋ Point liberte six",
+      "phrase": "Rond-Point Liberté six",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_malibu.wav",
-      "phrase": "Roŋ Point malibu",
+      "phrase": "Rond-Point Malibu",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_mole_huit.wav",
-      "phrase": "Roŋ Point mool huit",
+      "phrase": "Rond-Point Môle huit",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_scoa.wav",
-      "phrase": "Roŋ Point skowa",
+      "phrase": "Rond-Point Scoa",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_seven_up.wav",
-      "phrase": "Roŋ Point Sewen Ap",
+      "phrase": "Rond-Point Seven Up",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_shell_keur_massar.wav",
-      "phrase": "Roŋ Point seel Kër Masaar",
+      "phrase": "Rond-Point Shell Keur Massar",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rond_point_station_shell_keur_massar.wav",
-      "phrase": "Roŋ Point Station seel Kër Masaar",
+      "phrase": "Rond-Point Station Shell Keur Massar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_boune.wav",
-      "phrase": "Ruut dë Buun",
+      "phrase": "Route de Boune",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_front_de_terre.wav",
-      "phrase": "Ruut dë Front dë Terre",
+      "phrase": "Route de Front de Terre",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_hann.wav",
-      "phrase": "Ruut dë Han",
+      "phrase": "Route de Hann",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_jaxaay.wav",
-      "phrase": "Ruut dë Jaxaay",
+      "phrase": "Route de Jaxaay",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_jaxxay.wav",
-      "phrase": "Ruut dë Jaxaay",
+      "phrase": "Route de Jaxxay",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_l_aeroport.wav",
-      "phrase": "Ruut dë l'Aéroport",
+      "phrase": "Route de l'Aéroport",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_l_eglise.wav",
-      "phrase": "Ruut dë legliis",
+      "phrase": "Route de l'Église",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_l_hopital_general_de_gd_yoff.wav",
-      "phrase": "Ruut dë lopitaal Général dë garaŋ Yoof",
+      "phrase": "Route de l'Hôpital Général de Grand Yoff",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_malika.wav",
-      "phrase": "Ruut dë Malika",
+      "phrase": "Route de Malika",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_ngor.wav",
-      "phrase": "Ruut dë Ngoor",
+      "phrase": "Route de Ngor",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_ouakam.wav",
-      "phrase": "Ruut dë Wakaam",
+      "phrase": "Route de Ouakam",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_rufisque.wav",
-      "phrase": "Ruut dë Rifiskë",
+      "phrase": "Route de Rufisque",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_sangalkam.wav",
-      "phrase": "Ruut dë Saŋalkam",
+      "phrase": "Route de Sangalkam",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_yarakh.wav",
-      "phrase": "Ruut dë Yaraax",
+      "phrase": "Route de Yarakh",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_de_yeumbeul.wav",
-      "phrase": "Ruut dë Yembël",
+      "phrase": "Route de Yeumbeul",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_des_hlm_rufisque.wav",
-      "phrase": "Ruut dee Aselem Rifiskë",
+      "phrase": "Route des HLM Rufisque",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_des_niayes.wav",
-      "phrase": "Ruut dee Ñaay",
+      "phrase": "Route des Niayes",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_des_niayes_prolongee.wav",
-      "phrase": "Ruut dee Ñaay prolonse",
+      "phrase": "Route des Niayes Prolongée",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_du_college_sacre_c_ur.wav",
-      "phrase": "Ruut dii kolees sakre kër",
+      "phrase": "Route du Collège Sacré Cœur",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_du_front_de_terre.wav",
-      "phrase": "Route de Front de Terre",
+      "phrase": "Route du Front de Terre",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_du_marche_des_parcelles_assainies.wav",
-      "phrase": "Ruut dii Marché dee parsel aseni",
+      "phrase": "Route du Marché des Parcelles Assainies",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_du_stade.wav",
-      "phrase": "Ruut dii estaad",
+      "phrase": "Route du Stade",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_du_stade_lss.wav",
-      "phrase": "Ruut dii estaad Lewpool Sedaar Sengoor",
+      "phrase": "Route du Stade Léopold Sédar Senghor",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_hlm_grand_medine.wav",
-      "phrase": "Ruut Aselem garaŋ Medin",
+      "phrase": "Route HLM Grand Médine",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_route_nationale.wav",
-      "phrase": "Ruut Nationale",
+      "phrase": "Route Nationale",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_nationale_n_un.wav",
-      "phrase": "Ruut Nationale nimero un",
+      "phrase": "Route Nationale numéro un",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_nationale_un.wav",
-      "phrase": "Ruut Nationale un",
+      "phrase": "Route Nationale un",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_principale_de_grand_yoff.wav",
-      "phrase": "Ruut pareŋsipaal dë garaŋ Yoof",
+      "phrase": "Route Principale de Grand Yoff",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_principale_de_ouakam.wav",
-      "phrase": "Ruut pareŋsipaal dë Wakaam",
+      "phrase": "Route Principale de Ouakam",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_route_principale_des_parcelles_assainies.wav",
-      "phrase": "Ruut pareŋsipaal dee parsel aseni",
+      "phrase": "Route Principale des Parcelles Assainies",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rte_corniche_de_hlm_gd_medine.wav",
-      "phrase": "Ruut korniis dë Aselem garaŋ Medin",
+      "phrase": "Route Corniche de HLM Grand Médine",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rte_des_niayes.wav",
-      "phrase": "Ruut dee Ñaay",
+      "phrase": "Route des Niayes",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rte_des_niayes_prolongee.wav",
-      "phrase": "Ruut dee Ñaay prolonse",
+      "phrase": "Route des Niayes Prolongée",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rts.wav",
@@ -3108,27 +3107,27 @@
     },
     {
       "fichier": "lieu_rue_abebebikila.wav",
-      "phrase": "Rii abebe bikila",
+      "phrase": "Rue Abebebikila",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_cheik_ahmadou_bamba_prolongee.wav",
-      "phrase": "Rii Seex Axmadu Bàmba prolonse",
+      "phrase": "Rue Cheik Ahmadou Bamba Prolongée",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_cheikh_wade.wav",
-      "phrase": "Rii Seex Wad",
+      "phrase": "Rue Cheikh Wade",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_de_la_somme.wav",
-      "phrase": "Rii dë laa som",
+      "phrase": "Rue de la Somme",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_de_reims_prolongee.wav",
@@ -3138,331 +3137,331 @@
     },
     {
       "fichier": "lieu_rue_des_dardanelles.wav",
-      "phrase": "Rii dee dardanel",
+      "phrase": "Rue des Dardanelles",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_dix.wav",
-      "phrase": "Rii dix",
+      "phrase": "Rue dix",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_dix_grand_dakar.wav",
-      "phrase": "Rii dix garaŋ Dakar",
+      "phrase": "Rue dix Grand Dakar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_dix_pikine.wav",
-      "phrase": "Rii dix Pikine",
+      "phrase": "Rue dix Pikine",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_dix_pikine_ouest.wav",
-      "phrase": "Rii dix Pikine wést",
+      "phrase": "Rue dix Pikine Ouest",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_dix_prolongee.wav",
-      "phrase": "Rii dix prolonse",
+      "phrase": "Rue dix Prolongée",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_el_hadj_amadou_malick_gaye.wav",
-      "phrase": "Rii El Aj Axmadu Maalik Gaye",
+      "phrase": "Rue El Hadj Amadou Malick Gaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_mangin.wav",
-      "phrase": "Rii maŋseŋ",
+      "phrase": "Rue Mangin",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_marsat.wav",
-      "phrase": "Rii marsaat",
+      "phrase": "Rue Marsat",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_neuf.wav",
-      "phrase": "Rii neuf",
+      "phrase": "Rue neuf",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_neuf_bis.wav",
-      "phrase": "Rii neuf biis",
+      "phrase": "Rue neuf bis",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_onze.wav",
-      "phrase": "Rii oŋs",
+      "phrase": "Rue onze",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_p.wav",
-      "phrase": "Rii pe",
+      "phrase": "Rue P",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_sandiniery.wav",
-      "phrase": "Rii saŋdiniyeri",
+      "phrase": "Rue Sandiniery",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_six.wav",
-      "phrase": "Rii six",
+      "phrase": "Rue six",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_trente_neuf.wav",
-      "phrase": "Rii trente neuf",
+      "phrase": "Rue trente-neuf",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_trente_quatre.wav",
-      "phrase": "Rii trente quatre",
+      "phrase": "Rue trente-quatre",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_trente_sept.wav",
-      "phrase": "Rii trente sept",
+      "phrase": "Rue trente-sept",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_un_pikine_ouest.wav",
-      "phrase": "Rii un Pikine wést",
+      "phrase": "Rue un Pikine Ouest",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_vingt_cinq.wav",
-      "phrase": "Rii vingt cinq",
+      "phrase": "Rue vingt-cinq",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rue_vingt_deux.wav",
-      "phrase": "Rii vingt deux",
+      "phrase": "Rue vingt-deux",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rues_sept_cent_cinquante_quatre_et_sept_cent_cinquante_neuf.wav",
-      "phrase": "Rii sept cent cinquante quatre et sept cent cinquante neuf",
+      "phrase": "Rues sept cent cinquante-quatre et sept cent cinquante-neuf",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_rufisque.wav",
-      "phrase": "Rifiskë",
+      "phrase": "Rufisque",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rufisque_arafat.wav",
-      "phrase": "Rifiskë Arafaat",
+      "phrase": "Rufisque Arafat",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rufisque_cite_tacco.wav",
-      "phrase": "Rifiskë site Tako",
+      "phrase": "Rufisque Cité Tacco",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rufisque_gouye_mouride.wav",
-      "phrase": "Rifiskë Guy Murid",
+      "phrase": "Rufisque Gouye Mouride",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rufisque_nord_soixante_treize.wav",
-      "phrase": "Rifiskë Noor soixante tërees",
+      "phrase": "Rufisque Nord soixante-treize",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_rufisque_sonadis.wav",
-      "phrase": "Rifiskë sonadis",
+      "phrase": "Rufisque Sonadis",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sacre_c_ur.wav",
-      "phrase": "Sakre kër",
+      "phrase": "Sacré Cœur",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_safco.wav",
-      "phrase": "Safko",
+      "phrase": "Safco",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sahm.wav",
-      "phrase": "Saam",
+      "phrase": "Sahm",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sam_notaire.wav",
-      "phrase": "Sam noteer",
+      "phrase": "Sam Notaire",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sangalkam.wav",
-      "phrase": "Saŋalkam",
+      "phrase": "Sangalkam",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sapeurs_pompiers_de_gw.wav",
-      "phrase": "Sapëer Poŋpiye dë Gejawaay",
+      "phrase": "Sapeurs-Pompiers de Guédiawaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sapeurs_pompiers_parcelles.wav",
-      "phrase": "Sapëer poŋpiye parsel",
+      "phrase": "Sapeurs-Pompiers Parcelles",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_scat_urbam.wav",
-      "phrase": "Skaat irbam",
+      "phrase": "Scat Urbam",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_scoa.wav",
-      "phrase": "Skowa",
+      "phrase": "Scoa",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_score_liberte.wav",
-      "phrase": "Skoor liberte",
+      "phrase": "Score Liberté",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_sde_guediawaye.wav",
-      "phrase": "Esdë Gejawaay",
+      "phrase": "SDE Guédiawaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sde_serigne_assane.wav",
-      "phrase": "Esdë Seriñ Asan",
+      "phrase": "SDE Serigne Assane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sebikotane.wav",
-      "phrase": "Sebikotaan",
+      "phrase": "Sébikotane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sedima.wav",
-      "phrase": "Sedima",
+      "phrase": "Sédima",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_seras.wav",
-      "phrase": "Seras",
+      "phrase": "Séras",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_serigne_assane.wav",
-      "phrase": "Seriñ Asan",
+      "phrase": "Serigne Assane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_serigneassane.wav",
-      "phrase": "Seriñ Asan",
+      "phrase": "Serigneassane",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_service_d_hygiene.wav",
-      "phrase": "Service disyeen",
+      "phrase": "Service d'Hygiène",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sham.wav",
-      "phrase": "Saam",
+      "phrase": "Sam",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_shell_sedima.wav",
-      "phrase": "Seel sedima",
+      "phrase": "Shell Sédima",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sicap_mbao.wav",
-      "phrase": "Sikap Mbaaw",
+      "phrase": "Sicap Mbao",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_siege_expresso_ouakam.wav",
-      "phrase": "Siyees ekspereso Wakaam",
+      "phrase": "Siège Expresso Ouakam",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sipres.wav",
       "phrase": "Sipres",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sips.wav",
       "phrase": "Sips",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sococim.wav",
-      "phrase": "Sokosim",
+      "phrase": "Sococim",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_soixante_douze.wav",
-      "phrase": "Soixante duus",
+      "phrase": "Soixante-douze",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_soixante_trois.wav",
-      "phrase": "Soixante trois",
+      "phrase": "Soixante-trois",
       "type": "lieu",
       "a_regenerer": true
     },
@@ -3470,139 +3469,139 @@
       "fichier": "lieu_sonadis.wav",
       "phrase": "Sonadis",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sonadis_rufisque.wav",
-      "phrase": "Sonadis Rifiskë",
+      "phrase": "Sonadis Rufisque",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sortie_pikine.wav",
-      "phrase": "Sorti Pikine",
+      "phrase": "Sortie Pikine",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_sphere_ministerielle.wav",
-      "phrase": "Sfeer ministeriyel",
+      "phrase": "Sphère ministérielle",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_stade_amadou_barry.wav",
-      "phrase": "Estaad Axmadu Bari",
+      "phrase": "Stade Amadou Barry",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_stade_de_rufisque.wav",
-      "phrase": "Estaad dë Rifiskë",
+      "phrase": "Stade de Rufisque",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_stade_dembadiop.wav",
-      "phrase": "Estaad Demba Joob",
+      "phrase": "Stade Dembadiop",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_stade_l_s_s.wav",
-      "phrase": "Estaad Lewpool Sedaar Sengoor",
+      "phrase": "Stade Léopold Sédar Senghor",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_station_keur_massar.wav",
-      "phrase": "Station Kër Masaar",
+      "phrase": "Station Keur Massar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_station_keurmassar.wav",
-      "phrase": "Station Kër Masaar",
+      "phrase": "Station Keurmassar",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_station_mtoa.wav",
-      "phrase": "Station emtowaa",
+      "phrase": "Station MTOA",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_station_toure.wav",
-      "phrase": "Station Ture",
+      "phrase": "Station Toure",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_station_yeumbeul.wav",
-      "phrase": "Station Yembël",
+      "phrase": "Station Yeumbeul",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_tableau_ferrailles.wav",
-      "phrase": "Tablo feraay",
+      "phrase": "Tableau Ferrailles",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_tally_bou_bess.wav",
-      "phrase": "Tali bu Bes",
+      "phrase": "Tally Bou Bess",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_tally_boubess.wav",
-      "phrase": "Tali Bubes",
+      "phrase": "Tally Boubess",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_tally_boumack.wav",
-      "phrase": "Tali Bumak",
+      "phrase": "Tally Boumack",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_tally_diallo.wav",
-      "phrase": "Tali Jàllo",
+      "phrase": "Tally Diallo",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_tally_icotaf.wav",
-      "phrase": "Tali Ikotaf",
+      "phrase": "Tally Icotaf",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_tally_icotaf_dix_rte_des_niayes.wav",
-      "phrase": "Tali Ikotaf dix ruut dee Ñaay",
+      "phrase": "Tally Icotaf dix Route des Niayes",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_tally_icotaf_pikine.wav",
-      "phrase": "Tali Ikotaf Pikine",
+      "phrase": "Tally Icotaf Pikine",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_tallyboumack.wav",
-      "phrase": "Tali Bumak",
+      "phrase": "Tallyboumack",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_tallyicotaf.wav",
-      "phrase": "Tali Ikotaf",
+      "phrase": "Tallyicotaf",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_tawfeex.wav",
@@ -3612,105 +3611,105 @@
     },
     {
       "fichier": "lieu_technopole.wav",
-      "phrase": "Teknopol",
+      "phrase": "Technopole",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_tenn_bi.wav",
-      "phrase": "Ten Bi",
+      "phrase": "Tenn Bi",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_thiaroye.wav",
-      "phrase": "Tiaroy",
+      "phrase": "Thiaroye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_thiawlene.wav",
-      "phrase": "Cawleen",
+      "phrase": "Thiawlène",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_thierno_ndiaye.wav",
-      "phrase": "Ceerno Njaay",
+      "phrase": "Thierno Ndiaye",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_tivaouane_peul.wav",
-      "phrase": "Tiwaawan Pël",
+      "phrase": "Tivaouane Peul",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_tivaouane_peulh.wav",
-      "phrase": "Tiwaawan Pël",
+      "phrase": "Tivaouane Peulh",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_toubab_dialaw.wav",
-      "phrase": "Tubaab Jalaw",
+      "phrase": "Toubab Dialaw",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_tournal_boune.wav",
-      "phrase": "Turnaal Buun",
+      "phrase": "Tournal Boune",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_trente_et_quarante_deux.wav",
-      "phrase": "Trente et quarante deux",
+      "phrase": "Trente et quarante-deux",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_tribunal_de_pikine.wav",
-      "phrase": "Tiribinaal dë Pikine",
+      "phrase": "Tribunal de Pikine",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_ucad.wav",
-      "phrase": "Université Seex Anta Joob",
+      "phrase": "Ucad",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_ue_zero_deux.wav",
-      "phrase": "Ië seero deux",
+      "phrase": "UE zéro deux",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_unite_quinze.wav",
-      "phrase": "Unité kaŋs",
+      "phrase": "Unité quinze",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_unite_trois_cinema.wav",
-      "phrase": "Unité trois sinema",
+      "phrase": "Unité trois Cinéma",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_unites_cinq.wav",
-      "phrase": "Inite cinq",
+      "phrase": "Unités cinq",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_unites_de_voisinage_dix.wav",
-      "phrase": "Inite dë wuwasinaas dix",
+      "phrase": "Unités de Voisinage : dix",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_universite.wav",
@@ -3720,111 +3719,111 @@
     },
     {
       "fichier": "lieu_universite_cheikh_anta_diop.wav",
-      "phrase": "Université Seex Anta Joob",
+      "phrase": "Université Cheikh Anta Diop",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_vdn.wav",
-      "phrase": "Wé Dé Ene",
+      "phrase": "VDN",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_vdn_prolongee.wav",
-      "phrase": "Wé Dé Ene prolonse",
+      "phrase": "VDN Prolongée",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_vdn_trois.wav",
-      "phrase": "Wé Dé Ene trois",
+      "phrase": "VDN trois",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_village_de_ngor.wav",
-      "phrase": "Wilaas dë Ngoor",
+      "phrase": "Village de Ngor",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_village_de_ouakam.wav",
-      "phrase": "Wilaas dë Wakaam",
+      "phrase": "Village de Ouakam",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_virage_gauche_torino.wav",
-      "phrase": "Wiraas goos torino",
+      "phrase": "Virage Gauche Torino",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_voie_de_degagement_nord.wav",
-      "phrase": "Wuwaa dë degaasmaŋ noor",
+      "phrase": "Voie de Dégagement Nord",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_wakhinanenimzatt.wav",
-      "phrase": "Waxinaan Nimsat",
+      "phrase": "Wakhinanenimzatt",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_yenne.wav",
-      "phrase": "Yen",
+      "phrase": "Yenne",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_yeumbeul.wav",
-      "phrase": "Yembël",
+      "phrase": "Yeumbeul",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_yeumbeul_bene_baraque.wav",
-      "phrase": "Yembël Benn baraak",
+      "phrase": "Yeumbeul Bene Baraque",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_yoff.wav",
-      "phrase": "Yoof",
+      "phrase": "Yoff",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_yoff_village.wav",
-      "phrase": "Yoof wilaas",
+      "phrase": "Yoff Village",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_zac_mbao.wav",
-      "phrase": "Sak Mbaaw",
+      "phrase": "Zac Mbao",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_zac_trois_bis_kounoune.wav",
-      "phrase": "Sak trois biis Kunuun",
+      "phrase": "Zac trois Bis Kounoune",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     },
     {
       "fichier": "lieu_zone_b.wav",
-      "phrase": "Zone be",
+      "phrase": "Zone B",
       "type": "lieu",
       "a_regenerer": true
     },
     {
       "fichier": "lieu_zone_de_captage.wav",
-      "phrase": "Zone dë kaptaas",
+      "phrase": "Zone de Captage",
       "type": "lieu",
-      "a_regenerer": false
+      "a_regenerer": true
     }
   ]
 }

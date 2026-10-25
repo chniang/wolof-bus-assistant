@@ -1,7 +1,7 @@
-"""Installe la voix Adia_TTS dans data/tts_cache/.
+"""Installe la voix Oolel-Voices (voix Adia, CONCREE) dans data/tts_cache/.
 
-À lancer en local, une fois `tts_cache_adia.zip` récupéré depuis le notebook
-`notebooks/voix_adia_colab.ipynb`. Le script :
+À lancer en local, une fois `tts_cache_oolel.zip` récupéré depuis le notebook
+`notebooks/voix_oolel_colab.ipynb`. Le script :
 
 1. vérifie que l'archive contient bien tous les fichiers attendus
    (la liste est dans scripts/phrases_voix.json) ;
@@ -11,7 +11,7 @@
 
 Il ne lance rien tout seul : c'est un outil qu'on exécute à la main.
 
-    python scripts/installer_voix_adia.py tts_cache_adia.zip
+    python scripts/installer_voix_adia.py tts_cache_oolel.zip
 """
 
 from __future__ import annotations
@@ -37,11 +37,13 @@ def fichiers_attendus() -> list[str]:
 
 
 def main() -> int:
-    parseur = argparse.ArgumentParser(description="Installe la voix Adia_TTS dans le cache TTS.")
+    parseur = argparse.ArgumentParser(
+        description="Installe la voix Oolel-Voices (voix Adia, CONCREE) dans le cache TTS."
+    )
     parseur.add_argument(
         "archive",
         nargs="?",
-        default=str(RACINE / "tts_cache_adia.zip"),
+        default=str(RACINE / "tts_cache_oolel.zip"),
         help="archive .zip produite par le notebook Colab",
     )
     parseur.add_argument(
@@ -65,7 +67,7 @@ def main() -> int:
             return 1
 
         if not args.sans_sauvegarde and CACHE.exists():
-            sauvegarde = RACINE / "data" / f"tts_cache_avant_adia_{time.strftime('%Y%m%d_%H%M%S')}"
+            sauvegarde = RACINE / "data" / f"tts_cache_avant_oolel_{time.strftime('%Y%m%d_%H%M%S')}"
             shutil.copytree(CACHE, sauvegarde)
             print(f"ancien cache sauvegardé : {sauvegarde}")
 
@@ -78,7 +80,7 @@ def main() -> int:
                 shutil.copyfileobj(source, cible)
 
     MARQUEUR.write_text(
-        f"{len(attendus)} audios prêts, voix Adia_TTS (CONCREE), "
+        f"{len(attendus)} audios prêts, voix Oolel-Voices (voix Adia, CONCREE), "
         f"installés le {time.strftime('%Y-%m-%d %H:%M')}\n",
         encoding="utf-8",
     )
