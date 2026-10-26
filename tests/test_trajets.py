@@ -2080,7 +2080,37 @@ def test_interface_micro() -> tuple[int, int]:
         "#micro_guindima .stop-button" in css
         and "width: 25%" in css
         and "min-width: 120px" in css
+        and "margin-top: 14px !important" in css
         and "margin: 0 auto !important" in css,
+    )
+    verifie(
+        "espace entre les boutons et consigne forcée en mode sombre",
+        "margin-top: 14px !important" in css
+        and all(
+            selecteur in css
+            for selecteur in (
+                "#consigne_micro p",
+                "#consigne_micro strong",
+                "#consigne_micro span",
+                ".dark #consigne_micro",
+                ".dark #consigne_micro p",
+                ".dark #consigne_micro strong",
+                ".dark #consigne_micro span",
+            )
+        )
+        and all(
+            css.count(f"{variable}: #064E2B !important;") >= 2
+            for variable in (
+                "--body-text-color",
+                "--block-label-text-color",
+                "--link-text-color",
+            )
+        )
+        and ".dark #consigne_micro {" in css
+        and "#consigne_micro *" in css
+        and ".dark #consigne_micro *" in css
+        and "color: #064E2B !important" in css
+        and "background: #E8F5EE !important" in css,
     )
     verifie(
         "croix d'effacement du micro masquée",

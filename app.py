@@ -1368,17 +1368,40 @@ def _theme():
 # #micro_guindima pour ne pas toucher les autres composants Audio.
 CSS_GUINDIMA = r"""
 #consigne_micro {
-    background: #E8F5EE;
+    --body-text-color: #064E2B !important;
+    --block-label-text-color: #064E2B !important;
+    --link-text-color: #064E2B !important;
+    background: #E8F5EE !important;
     border: 1px solid #C7E6D4;
     border-left: 5px solid #00853F;
     border-right: 5px solid #00853F;
     border-radius: 10px;
-    color: #064E2B;
     font-size: 18px;
     font-weight: 700;
     line-height: 1.35;
     margin: 0 0 10px 0;
     padding: 12px 14px;
+}
+.dark #consigne_micro {
+    --body-text-color: #064E2B !important;
+    --block-label-text-color: #064E2B !important;
+    --link-text-color: #064E2B !important;
+}
+#consigne_micro,
+#consigne_micro p,
+#consigne_micro strong,
+#consigne_micro span,
+.dark #consigne_micro,
+.dark #consigne_micro p,
+.dark #consigne_micro strong,
+.dark #consigne_micro span {
+    color: #064E2B !important;
+}
+#consigne_micro,
+#consigne_micro *,
+.dark #consigne_micro,
+.dark #consigne_micro * {
+    color: #064E2B !important;
 }
 #consigne_micro p { margin: 0; }
 
@@ -1431,6 +1454,7 @@ CSS_GUINDIMA = r"""
     align-self: center;
     flex: 0 0 25%;
     margin: 0 auto !important;
+    margin-top: 14px !important;
     min-width: 120px;
     width: 25%;
 }
