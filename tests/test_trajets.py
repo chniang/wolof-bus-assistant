@@ -2188,22 +2188,24 @@ def test_interface_micro() -> tuple[int, int]:
         libelles[:3],
     )
     dropdown_id = dropdowns[0]["id"] if len(dropdowns) == 1 else None
-    recherches = [
-        composant
-        for composant in composants
-        if composant.get("props", {}).get("label") == "Chercher un trajet fréquent"
-    ]
-    recherche_id = recherches[0]["id"] if len(recherches) == 1 else None
     verifie(
-        "recherche maison, insensible aux accents, câblée",
-        len(recherches) == 1
-        and recherches[0]["props"].get("placeholder") == "Malika, Médina, UCAD…"
-        and any(
-            recherche_id in dependance.get("inputs", [])
-            and dropdown_id in dependance.get("outputs", [])
-            for dependance in config["dependencies"]
-        ),
-        recherches,
+        "plus de champ Chercher un trajet fréquent",
+        not any(
+            composant.get("props", {}).get("label") == "Chercher un trajet fréquent"
+            for composant in composants
+        )
+        and "recherche_trajets" not in texte_config
+        and not hasattr(app, "filtrer_trajets_frequents"),
+        [
+            composant.get("props", {}).get("label")
+            for composant in composants
+            if composant.get("type") == "textbox"
+        ],
+    )
+    verifie(
+        "le choix « mal » contient Malika",
+        any("mal" in libelle.lower() for libelle in libelles),
+        libelles,
     )
     evenements_frequents = [
         dependance
@@ -2211,11 +2213,10 @@ def test_interface_micro() -> tuple[int, int]:
         if dropdown_id in dependance.get("inputs", [])
     ]
     verifie(
-        "trajet fréquent : vidage du micro, de la liste et du filtre câblés",
+        "trajet fréquent : vidage du micro et de la liste câblés",
         len(evenements_frequents) == 1
         and micro_id in evenements_frequents[0].get("outputs", [])
-        and dropdown_id in evenements_frequents[0].get("outputs", [])
-        and recherche_id in evenements_frequents[0].get("outputs", []),
+        and dropdown_id in evenements_frequents[0].get("outputs", []),
         evenements_frequents,
     )
 
@@ -2402,14 +2403,13 @@ def test_micro_vidage() -> tuple[int, int]:
         sortie = app.choisir_trajet_frequent("Ouakam → Palais", "")
         verifie(
             "trajet fréquent : texte rempli, recherche lancée, liste vidée",
-            len(sortie) == 10
+            len(sortie) == 9
             and sortie[0] == phrase
             and sortie[2] == "Ouakam → Palais"
             and "Dakar Dem Dikk" in sortie[3]
             and sortie[6] is None
             and sortie[7] == {"phrase": phrase, "mode": "texte"}
-            and sortie[8] is None
-            and sortie[9] == "",
+            and sortie[8] is None,
             sortie,
         )
 
@@ -2427,37 +2427,10 @@ def test_micro_vidage() -> tuple[int, int]:
             app.traiter_demande = ancien_reponse
         verifie(
             "liste vidée : silence, pas de boucle",
-            len(vides) == 10
+            len(vides) == 9
             and all(valeur == app.gr.skip() for valeur in vides)
             and not appels,
             vides,
-        )
-
-        filtre = app.filtrer_trajets_frequents("mal")
-        trouves = list(filtre.get("choices") or [])
-        verifie(
-            "le filtre « mal » trouve Malika",
-            any("Malika" in libelle for libelle in trouves),
-            trouves,
-        )
-        filtre = app.filtrer_trajets_frequents("MEDINA")
-        trouves = list(filtre.get("choices") or [])
-        verifie(
-            "le filtre est insensible aux accents et à la casse",
-            any("Médina" in libelle for libelle in trouves),
-            trouves,
-        )
-        filtre = app.filtrer_trajets_frequents("ucad")
-        trouves = list(filtre.get("choices") or [])
-        verifie(
-            "le filtre cherche aussi dans l'arrivée",
-            any(libelle.endswith("→ UCAD") for libelle in trouves),
-            trouves,
-        )
-        filtre = app.filtrer_trajets_frequents("")
-        verifie(
-            "filtre vide : les 33 trajets reviennent",
-            len(list(filtre.get("choices") or [])) == len(app.TRAJETS_FREQUENTS),
         )
 
         phrase_compagnie = "Maa ngi Parcelles Assainies, bëgg naa dem UCAD"

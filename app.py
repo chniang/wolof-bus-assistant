@@ -1225,16 +1225,16 @@ def repondre_et_vider_micro(
 def choisir_trajet_frequent(choix: str | None, compagnie_choix: str = "") -> tuple:
     """Remplir la phrase wolof, lancer la recherche, puis vider la liste.
 
-    Les dix sorties sont : la phrase, les sept résultats (dont l'état), la liste
-    remise à None et la recherche vidée. Vider la liste émet un change ; il est
-    ignoré par le garde du début, donc aucun second calcul.
+    Les neuf sorties sont : la phrase, les sept résultats (dont l'état) et la
+    liste remise à None. Vider la liste émet un change ; il est ignoré par le
+    garde du début, donc aucun second calcul.
     """
     if not isinstance(choix, str) or choix not in CHOIX_TRAJETS_FREQUENTS:
-        return tuple(gr.skip() for _ in range(10))
+        return tuple(gr.skip() for _ in range(9))
     trajet = CHOIX_TRAJETS_FREQUENTS[choix]
     phrase = f"Maa ngi {trajet['depart']}, bëgg naa dem {trajet['arrivee']}"
     resultat = traiter_demande(None, phrase, compagnie_choix, None, True)
-    return (phrase, *resultat, None, "")
+    return (phrase, *resultat, None)
 
 
 # Un même geste peut déclencher plusieurs événements Gradio : arrêter le micro
@@ -1345,26 +1345,6 @@ TRAJETS_FREQUENTS = _charger_trajets_frequents()
 CHOIX_TRAJETS_FREQUENTS = {
     _libelle_trajet_frequent(trajet): trajet for trajet in TRAJETS_FREQUENTS
 }
-
-
-def filtrer_trajets_frequents(recherche: str):
-    """La recherche maison, insensible aux accents.
-
-    Le filtre natif de Gradio 6.30.0 compare les libellés en minuscules sans
-    retirer les accents : « medina » n'y trouve pas « Médina ». Dès qu'une
-    requête est tapée, on filtre donc les choix avec `sans_accents`, sur toutes
-    les parties du libellé (départ comme arrivée).
-    """
-    requete = sans_accents(recherche or "").strip()
-    if not requete:
-        return gr.update(choices=list(CHOIX_TRAJETS_FREQUENTS), value=None)
-    mots = requete.split()
-    choix = [
-        libelle
-        for libelle in CHOIX_TRAJETS_FREQUENTS
-        if all(mot in sans_accents(libelle) for mot in mots)
-    ]
-    return gr.update(choices=choix, value=None)
 
 
 def _theme():
@@ -1551,12 +1531,6 @@ def _construire():
                 lines=2,
                 max_length=TEXTE_MAX,
             )
-            recherche_trajets = gr.Textbox(
-                label="Chercher un trajet fréquent",
-                placeholder="Malika, Médina, UCAD…",
-                lines=1,
-                elem_id="recherche_trajets",
-            )
             trajets_in = gr.Dropdown(
                 choices=list(CHOIX_TRAJETS_FREQUENTS),
                 value=None,
@@ -1620,15 +1594,7 @@ def _construire():
         trajets_in.change(
             choisir_trajet_frequent,
             inputs=[trajets_in, compagnie_in],
-            outputs=[texte_in, *sorties_avec_micro, demande_state, trajets_in, recherche_trajets],
-        )
-
-        # Le filtre natif ne retire pas les accents ; cette recherche maison
-        # réduit les choix avant la sélection, sans toucher aux 33 trajets.
-        recherche_trajets.input(
-            filtrer_trajets_frequents,
-            inputs=[recherche_trajets],
-            outputs=[trajets_in],
+            outputs=[texte_in, *sorties_avec_micro, demande_state, trajets_in],
         )
 
         # Recherche automatique, sans bouton : au relâchement du micro
