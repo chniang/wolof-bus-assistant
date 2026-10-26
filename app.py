@@ -18,6 +18,7 @@ import atexit
 import csv
 import html
 import itertools
+import json
 import re
 import os
 import shutil
@@ -75,7 +76,6 @@ from tts.speak import (  # noqa: E402
 )
 
 VERT = "#00853F"  # vert du Sénégal, celui du thème et des cartes
-DEMO_AUDIO_DIR = RACINE / "data" / "demo_audio"
 
 # --------------------------------------------------------------------------- #
 # GPU
@@ -964,22 +964,27 @@ def _bandeau_autre_compagnie(compagnie: str, resultat: dict) -> str:
 NOMS_COMPAGNIES = {"Tata AFTU": "Tata", "Dakar Dem Dikk": "Dem Dikk"}
 
 
-def _bandeau_compagnie(compagnie_voix: str, compagnie_bouton: str) -> str:
-    """Rappelle d'où vient la compagnie, au-dessus des cartes.
+def _bandeau_compagnie(
+    compagnie_voix: str, compagnie_bouton: str, mode: str = "texte"
+) -> str:
+    """Rappelle la compagnie réellement utilisée, au-dessus des cartes.
 
-    La voix l'emporte sur le bouton (comme dans la recherche) : si elle a nommé
-    une compagnie, on le dit ; sinon on signale le choix du bouton. Rien si ni
-    l'une ni l'autre n'a été dite. Fond et texte fixes : lisible dans les deux
-    thèmes.
+    La compagnie dite à la voix l'emporte sur le bouton. En mode texte, une
+    compagnie explicitement écrite dans la phrase l'emporte aussi (comportement
+    historique des phrases « ... ak Tata »). Sinon on affiche le bouton tel
+    qu'il est au moment de la recherche, y compris « Tous » : après un passage
+    de Tata à Dem Dikk, l'étiquette ne doit jamais rester sur l'ancien choix.
     """
     if compagnie_voix:
         nom = NOMS_COMPAGNIES.get(compagnie_voix, compagnie_voix)
-        mention = "dite à la voix, prioritaire sur le bouton"
-    elif compagnie_bouton:
-        nom = NOMS_COMPAGNIES.get(compagnie_bouton, compagnie_bouton)
-        mention = "choisie avec le bouton"
+        mention = (
+            "dite à la voix, prioritaire sur le bouton"
+            if mode == "voix"
+            else "indiquée dans ton texte"
+        )
     else:
-        return ""
+        nom = NOMS_COMPAGNIES.get(compagnie_bouton, compagnie_bouton) or "Tous"
+        mention = "choisie avec le bouton"
     return (
         "<div style='color:#0B6B37;background:#EAF6EF;border:1px solid #C7E6D4;"
         "border-radius:8px;padding:8px 12px;margin:10px 0;font-size:14px;"
@@ -1015,12 +1020,20 @@ def _code_erreur(intent: dict) -> str:
     return "extraction_locale" if intent.get("source") == "local" else "extraction_llm"
 
 
-def _pipeline(phrase: str, modele_asr: str, duree_asr: float, compagnie_choix: str = "") -> tuple:
+def _pipeline(
+    phrase: str,
+    modele_asr: str,
+    duree_asr: float,
+    compagnie_choix: str = "",
+    mode: str = "texte",
+) -> tuple:
     """À partir d'une phrase transcrite : extraction, recherche, réponse.
 
     C'est ce que trouver_le_bus faisait après la transcription, isolé pour pouvoir
-    rejouer tout le traitement sur la seconde transcription. Renvoie le quintuplet
-    des sorties, suivi d'un booléen : un trajet a-t-il été trouvé ?
+    rejouer tout le traitement sur la seconde transcription. `mode` distingue une
+    demande tapée d'une demande vocale : il ne change pas la recherche, seulement
+    la façon dont le bandeau explique d'où vient la compagnie. Renvoie le
+    quintuplet des sorties, suivi d'un booléen : un trajet a-t-il été trouvé ?
     """
     quint = ("", "", _carte({}, "", ""), None, "")
     phrase = (phrase or "").strip()[:TEXTE_MAX]
@@ -1071,7 +1084,7 @@ def _pipeline(phrase: str, modele_asr: str, duree_asr: float, compagnie_choix: s
         resultat, exacte = MATCHER.find_line_compagnie(depart, arrivee, compagnie)
         if not exacte and (resultat["found"] or resultat.get("correspondances")):
             avertissement = _bandeau_autre_compagnie(compagnie, resultat)
-    bandeau_compagnie = _bandeau_compagnie(compagnie_voix, compagnie_choix)
+    bandeau_compagnie = _bandeau_compagnie(compagnie_voix, compagnie_choix, mode=mode)
     trouve = bool(resultat["found"] or resultat.get("correspondances"))
 
     nombre_lignes = len(resultat["lignes"]) + len(resultat.get("correspondances") or [])
@@ -1130,13 +1143,15 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
             )
         if not phrase:
             return vide
-        quint, _ = _pipeline(phrase, modele_asr, duree_asr, compagnie_choix)
+        quint, _ = _pipeline(
+            phrase, modele_asr, duree_asr, compagnie_choix, mode="voix"
+        )
         return quint
 
     phrase = (phrase_ecrite or "").strip()[:TEXTE_MAX]
     if not phrase:
         return vide
-    quint, _ = _pipeline(phrase, "", 0.0, compagnie_choix)
+    quint, _ = _pipeline(phrase, "", 0.0, compagnie_choix, mode="texte")
     return quint
 
 
@@ -1145,9 +1160,81 @@ def _court(exc: Exception, longueur: int = 160) -> str:
     return f"{type(exc).__name__} : {exc}"[:longueur]
 
 
-def trouver_le_bus_texte(phrase: str) -> tuple:
-    """Raccourci pour les exemples texte : le micro est vide."""
-    return trouver_le_bus(None, phrase, "")
+MESSAGE_DEMANDE_VIDE = "Écris ton trajet ou choisis un trajet fréquent"
+
+
+def _sortie_demande_vide() -> tuple:
+    """Le quintuplet affiché quand ni le micro ni le texte ne portent une demande."""
+    carte = "### ✍️ À toi de jouer\n\n" + MESSAGE_DEMANDE_VIDE
+    return ("", "", carte, None, "")
+
+
+def traiter_demande(
+    audio: str | None,
+    phrase_ecrite: str,
+    compagnie_choix: str = "",
+    etat: dict | None = None,
+    nouvelle_demande: bool = True,
+) -> tuple:
+    """Le seul handler du bouton, du micro et du changement de compagnie.
+
+    Les sept sorties sont : les cinq résultats, le micro d'entrée et l'état de la
+    dernière demande. Une nouvelle demande vient du micro (mode « voix ») ou du
+    texte (mode « texte »). Un changement de compagnie relit cet état sans
+    retranscrire l'audio : la phrase et son mode suffisent, et le bouton courant
+    est utilisé pour la recherche et le bandeau.
+    """
+    compagnie_choix = compagnie_choix or ""
+
+    if not nouvelle_demande:
+        if not isinstance(etat, dict):
+            return tuple(gr.skip() for _ in range(7))
+        phrase = (etat.get("phrase") or "").strip()
+        if not phrase:
+            return tuple(gr.skip() for _ in range(7))
+        mode = etat.get("mode") or "texte"
+        quint, _ = _pipeline(phrase, "", 0.0, compagnie_choix, mode=mode)
+        # Le micro et la demande restent tels quels : on ne retranscrit rien.
+        return (*quint, gr.skip(), etat)
+
+    if audio:
+        quint = trouver_le_bus(audio, phrase_ecrite, compagnie_choix)
+        if not quint[0]:
+            return (*quint, None, None)
+        return (*quint, None, {"phrase": quint[0], "mode": "voix"})
+
+    phrase = (phrase_ecrite or "").strip()[:TEXTE_MAX]
+    if not phrase:
+        return (*_sortie_demande_vide(), None, None)
+    quint = trouver_le_bus(None, phrase, compagnie_choix)
+    return (*quint, None, {"phrase": phrase, "mode": "texte"})
+
+
+def repondre_et_vider_micro(
+    audio: str | None, phrase_ecrite: str, compagnie_choix: str = ""
+) -> tuple:
+    """Version à six sorties conservée pour l'API et les anciens tests.
+
+    L'interface utilise `traiter_demande`, qui ajoute l'état nécessaire au
+    changement de compagnie. Le sixième retour remet le micro à None pour
+    l'enregistrement suivant, sans toucher aux cartes ni à la voix.
+    """
+    return traiter_demande(audio, phrase_ecrite, compagnie_choix, None, True)[:6]
+
+
+def choisir_trajet_frequent(choix: str | None, compagnie_choix: str = "") -> tuple:
+    """Remplir la phrase wolof, lancer la recherche, puis vider la liste.
+
+    Les dix sorties sont : la phrase, les sept résultats (dont l'état), la liste
+    remise à None et la recherche vidée. Vider la liste émet un change ; il est
+    ignoré par le garde du début, donc aucun second calcul.
+    """
+    if not isinstance(choix, str) or choix not in CHOIX_TRAJETS_FREQUENTS:
+        return tuple(gr.skip() for _ in range(10))
+    trajet = CHOIX_TRAJETS_FREQUENTS[choix]
+    phrase = f"Maa ngi {trajet['depart']}, bëgg naa dem {trajet['arrivee']}"
+    resultat = traiter_demande(None, phrase, compagnie_choix, None, True)
+    return (phrase, *resultat, None, "")
 
 
 # Un même geste peut déclencher plusieurs événements Gradio : arrêter le micro
@@ -1157,14 +1244,23 @@ _DERNIERE_RECHERCHE: tuple | None = None
 _FENETRE_DOUBLON = 2.0
 
 
-def rechercher_une_fois(audio: str | None, phrase_ecrite: str, compagnie_choix: str = "") -> tuple:
-    """Lance trouver_le_bus, mais une seule fois par audio donné.
+def rechercher_une_fois(
+    audio: str | None,
+    phrase_ecrite: str,
+    compagnie_choix: str = "",
+    etat: dict | None = None,
+) -> tuple:
+    """Lancer une demande une seule fois par audio, jamais sur un micro vidé.
 
-    Renvoie gr.skip() pour les événements en double : les sorties déjà calculées
-    restent affichées. C'est ce qui permet de brancher stop_recording, change et
-    le choix d'un exemple sur le même pipeline sans la déclencher deux fois.
+    Le vidage automatique remet le composant à None et émet un change : sans ce
+    garde, la phrase encore dans la zone texte relancerait une recherche et
+    effacerait le résultat qu'on vient d'afficher. Un micro vide est donc ignoré
+    silencieusement. Les doublons d'un même geste renvoient gr.skip() pour garder
+    les cartes déjà calculées.
     """
     global _DERNIERE_RECHERCHE
+    if not audio:
+        return tuple(gr.skip() for _ in range(7))
     cle = (audio, (phrase_ecrite or "").strip(), compagnie_choix or "")
     maintenant = time.monotonic()
     if (
@@ -1172,9 +1268,9 @@ def rechercher_une_fois(audio: str | None, phrase_ecrite: str, compagnie_choix: 
         and _DERNIERE_RECHERCHE[0] == cle
         and maintenant - _DERNIERE_RECHERCHE[1] < _FENETRE_DOUBLON
     ):
-        return tuple(gr.skip() for _ in range(5))
+        return tuple(gr.skip() for _ in range(7))
     _DERNIERE_RECHERCHE = (cle, maintenant)
-    return trouver_le_bus(audio, phrase_ecrite, compagnie_choix)
+    return traiter_demande(audio, phrase_ecrite, compagnie_choix, etat, True)
 
 
 def _echauffer_llm():
@@ -1205,6 +1301,71 @@ if not MODE_TEST:
 # Interface
 # --------------------------------------------------------------------------- #
 
+TRAJETS_FREQUENTS_FICHIER = RACINE / "data" / "trajets_frequents.json"
+MICRO_ELEM_ID = "micro_guindima"
+
+
+def _charger_trajets_frequents(
+    chemin: Path = TRAJETS_FREQUENTS_FICHIER,
+) -> list[dict[str, str]]:
+    """Charge et valide la liste proposée dans l'onglet « Écrire ».
+
+    Le fichier est petit et lu une seule fois au démarrage. On refuse les clés
+    inconnues et les doublons : une faute de frappe doit se voir au lancement,
+    pas se traduire par un choix qui ne fait rien sur le téléphone.
+    """
+    with open(chemin, encoding="utf-8") as fichier:
+        donnees = json.load(fichier)
+    if not isinstance(donnees, list):
+        raise ValueError("data/trajets_frequents.json doit contenir une liste")
+
+    trajets: list[dict[str, str]] = []
+    deja_vus: set[tuple[str, str]] = set()
+    for entree in donnees:
+        if not isinstance(entree, dict) or set(entree) != {"depart", "arrivee"}:
+            raise ValueError(f"trajet fréquent invalide : {entree!r}")
+        depart = str(entree["depart"]).strip()
+        arrivee = str(entree["arrivee"]).strip()
+        if not depart or not arrivee:
+            raise ValueError(f"trajet fréquent vide : {entree!r}")
+        cle = (depart, arrivee)
+        if cle in deja_vus:
+            raise ValueError(f"trajet fréquent en double : {depart} → {arrivee}")
+        deja_vus.add(cle)
+        trajets.append({"depart": depart, "arrivee": arrivee})
+    print(f"[trajets fréquents] {len(trajets)} trajets chargés", flush=True)
+    return trajets
+
+
+def _libelle_trajet_frequent(trajet: dict[str, str]) -> str:
+    return f"{trajet['depart']} → {trajet['arrivee']}"
+
+
+TRAJETS_FREQUENTS = _charger_trajets_frequents()
+CHOIX_TRAJETS_FREQUENTS = {
+    _libelle_trajet_frequent(trajet): trajet for trajet in TRAJETS_FREQUENTS
+}
+
+
+def filtrer_trajets_frequents(recherche: str):
+    """La recherche maison, insensible aux accents.
+
+    Le filtre natif de Gradio 6.30.0 compare les libellés en minuscules sans
+    retirer les accents : « medina » n'y trouve pas « Médina ». Dès qu'une
+    requête est tapée, on filtre donc les choix avec `sans_accents`, sur toutes
+    les parties du libellé (départ comme arrivée).
+    """
+    requete = sans_accents(recherche or "").strip()
+    if not requete:
+        return gr.update(choices=list(CHOIX_TRAJETS_FREQUENTS), value=None)
+    mots = requete.split()
+    choix = [
+        libelle
+        for libelle in CHOIX_TRAJETS_FREQUENTS
+        if all(mot in sans_accents(libelle) for mot in mots)
+    ]
+    return gr.update(choices=choix, value=None)
+
 
 def _theme():
     """Thème vert Sénégal.
@@ -1221,10 +1382,136 @@ def _theme():
         return gr.themes.Soft(primary_hue="green")
 
 
-EXEMPLES_TEXTE = [
-    "maa ngi Ouakam, bëgg naa dem Palais 2",
-    "maa ngi ci Liberté 5, bëgg naa dem Palais 2",
-]
+# Les classes .record-button, .stop-button et .mic-select viennent du frontend
+# Gradio 6.30.0 installé (assets/audio-*.css), pas d'une supposition : les
+# boutons du micro changent de nom entre les versions. Tout est limité à
+# #micro_guindima pour ne pas toucher les autres composants Audio.
+CSS_GUINDIMA = r"""
+#consigne_micro {
+    background: #E8F5EE;
+    border: 1px solid #C7E6D4;
+    border-left: 5px solid #00853F;
+    border-right: 5px solid #00853F;
+    border-radius: 10px;
+    color: #064E2B;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin: 0 0 10px 0;
+    padding: 12px 14px;
+}
+#consigne_micro p { margin: 0; }
+
+#micro_guindima .mic-wrap,
+#micro_guindima .controls,
+#micro_guindima .wrapper {
+    width: 100%;
+}
+#micro_guindima .mic-wrap { margin: 0; }
+#micro_guindima .controls { justify-content: center; }
+#micro_guindima .wrapper { justify-content: center; }
+
+#micro_guindima .record-button,
+#micro_guindima .stop-button {
+    align-items: center;
+    border: 0 !important;
+    border-radius: 14px;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    cursor: pointer;
+    display: flex;
+    font-size: 20px;
+    font-weight: 800;
+    justify-content: center;
+    line-height: 1.1;
+    min-height: 64px;
+    padding: 0 20px;
+    touch-action: manipulation;
+}
+#micro_guindima .record-button {
+    background: #00853F;
+    box-shadow: 0 4px 14px rgba(0, 133, 63, 0.35);
+    flex: 1 1 100%;
+    width: 100%;
+}
+#micro_guindima .record-button::before {
+    background: none;
+    border-radius: 0;
+    content: "🎙️";
+    height: auto;
+    margin: 0 10px 0 0;
+    width: auto;
+}
+#micro_guindima .record-button:active { transform: translateY(1px); }
+#micro_guindima .record-icon { display: none !important; }
+
+#micro_guindima .stop-button {
+    background: #D62828;
+    animation: guindima-pulse 1.2s ease-in-out infinite;
+    align-self: center;
+    flex: 0 0 25%;
+    margin: 0 auto !important;
+    min-width: 120px;
+    width: 25%;
+}
+#micro_guindima .stop-button::before {
+    background: none;
+    border-radius: 0;
+    content: "⏹️";
+    height: auto;
+    margin: 0 10px 0 0;
+    width: auto;
+}
+#micro_guindima .stop-button-paused { background: #D62828; color: #FFFFFF; }
+
+#micro_guindima .mic-select { display: none !important; }
+
+/* La croix du composant Audio efface l'enregistrement avant qu'il soit traité.
+   Le DOM Gradio 6.30.0 la rend en <button class="icon-button" aria-label="Effacer">. */
+#micro_guindima .icon-button-wrapper.top-panel button[aria-label="Effacer"],
+#micro_guindima .icon-button-wrapper.top-panel button[aria-label="Clear"] {
+    display: none !important;
+}
+
+/* Toute la ligne d'une option est cliquable. Les options sont parfois portées
+   hors de #trajets_frequents (position:fixed) : on cible aussi .options, sachant
+   qu'il n'y a qu'un seul Dropdown dans cette interface. */
+#trajets_frequents .item,
+.options .item {
+    align-items: center;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: flex;
+    justify-content: flex-start;
+    min-height: 44px;
+    padding: 10px 12px;
+    width: 100%;
+}
+#trajets_frequents .item:hover,
+.options .item:hover,
+#trajets_frequents .item.selected,
+.options .item.selected {
+    background: #E8F5EE;
+    color: #064E2B;
+}
+
+@keyframes guindima-pulse {
+    0%, 100% { box-shadow: 0 4px 14px rgba(214, 40, 40, 0.35); }
+    50% { box-shadow: 0 4px 24px rgba(214, 40, 40, 0.75); }
+}
+@media (prefers-reduced-motion: reduce) {
+    #micro_guindima .stop-button { animation: none; }
+}
+"""
+
+I18N_GUINDIMA = (
+    gr.I18n(
+        fr={"audio.record": "Appuie et parle", "audio.stop": "Arrête"},
+        en={"audio.record": "Appuie et parle", "audio.stop": "Arrête"},
+    )
+    if gr is not None
+    else None
+)
 
 
 def _construire():
@@ -1235,9 +1522,8 @@ def _construire():
             "Parle ou écris ton trajet en wolof, à Dakar."
         )
 
-        # Les exemples ont besoin des sorties avant qu'elles soient affichées.
-        # On les crée donc « hors écran » (render=False), et on les place plus bas,
-        # sous le bouton, avec .render().
+        # Les sorties sont créées hors écran : elles servent au bouton, au micro
+        # et à la liste de trajets avant d'être affichées plus bas.
         transcription_out = gr.Textbox(label="Transcription", interactive=False, render=False)
         trajet_out = gr.Textbox(label="Départ → arrivée", interactive=False, render=False)
         mention_out = gr.Markdown(render=False)
@@ -1246,36 +1532,39 @@ def _construire():
         sorties = [transcription_out, trajet_out, carte_out, audio_out, mention_out]
 
         with gr.Tab("Parler"):
+            gr.Markdown(
+                "**Appuie sur le bouton vert, dis ton trajet, puis appuie sur Arrête**",
+                elem_id="consigne_micro",
+            )
             audio_in = gr.Audio(
                 sources=["microphone", "upload"],
                 type="filepath",
-                label="Dis ton trajet en wolof",
+                show_label=False,
+                elem_id=MICRO_ELEM_ID,
             )
-            audios_demo = sorted(DEMO_AUDIO_DIR.glob("*.wav"))
-            if audios_demo:
-                # Pas de fn : choisir un exemple remplit audio_in, dont le change
-                # déclenche la recherche automatique (avec la compagnie choisie).
-                gr.Examples(
-                    examples=[[str(chemin)] for chemin in audios_demo],
-                    inputs=[audio_in],
-                    cache_examples=False,
-                    label="Ou alors, rejoue un enregistrement déjà prêt",
-                )
 
         with gr.Tab("Écrire"):
             texte_in = gr.Textbox(
+                value="",
                 label="Ton trajet en wolof",
-                placeholder=EXEMPLES_TEXTE[0],
+                placeholder="Ex. : Maa ngi Parcelles Assainies, bëgg naa dem UCAD",
                 lines=2,
                 max_length=TEXTE_MAX,
             )
-            gr.Examples(
-                examples=[[phrase] for phrase in EXEMPLES_TEXTE],
-                inputs=[texte_in],
-                fn=trouver_le_bus_texte,
-                outputs=sorties,
-                cache_examples=False,
-                label="Quelques phrases qui marchent",
+            recherche_trajets = gr.Textbox(
+                label="Chercher un trajet fréquent",
+                placeholder="Malika, Médina, UCAD…",
+                lines=1,
+                elem_id="recherche_trajets",
+            )
+            trajets_in = gr.Dropdown(
+                choices=list(CHOIX_TRAJETS_FREQUENTS),
+                value=None,
+                label="🚌 Trajets fréquents à Dakar",
+                info="Tape le nom d'un quartier, par ex. Malika",
+                filterable=True,
+                allow_custom_value=False,
+                elem_id="trajets_frequents",
             )
 
         compagnie_in = gr.Radio(
@@ -1301,20 +1590,68 @@ def _construire():
             "</div>"
         )
 
-        # Le branchement du bouton doit rester dans le bloc « with gr.Blocks ».
-        bouton.click(trouver_le_bus, inputs=[audio_in, texte_in, compagnie_in], outputs=sorties)
+        sorties_avec_micro = [*sorties, audio_in]
+        demande_state = gr.State(None)
+        nouvelle_demande = gr.State(True)
+        relancer_compagnie = gr.State(False)
+
+        # Point d'entrée API conservé : les scripts et les tests en ligne
+        # appellent encore `repondre_et_vider_micro` avec trois champs. Il ne
+        # conserve pas d'état, contrairement à l'interface.
+        api_bouton = gr.Button("API", visible=False, elem_id="api_repondre")
+        api_bouton.click(
+            repondre_et_vider_micro,
+            inputs=[audio_in, texte_in, compagnie_in],
+            outputs=sorties_avec_micro,
+        )
+
+        # Le bouton et la compagnie passent par le même handler. Le booléen
+        # distingue une nouvelle demande (bouton/micro) d'un simple changement de
+        # compagnie, qui relit l'état sans retranscrire l'audio.
+        bouton.click(
+            traiter_demande,
+            inputs=[audio_in, texte_in, compagnie_in, demande_state, nouvelle_demande],
+            outputs=[*sorties_avec_micro, demande_state],
+        )
+
+        # Un trajet fréquent remplit le texte, lance la recherche avec la
+        # compagnie choisie, vide le micro puis remet la liste à vide. Le change
+        # provoqué par ce dernier None est ignoré : pas de seconde recherche.
+        trajets_in.change(
+            choisir_trajet_frequent,
+            inputs=[trajets_in, compagnie_in],
+            outputs=[texte_in, *sorties_avec_micro, demande_state, trajets_in, recherche_trajets],
+        )
+
+        # Le filtre natif ne retire pas les accents ; cette recherche maison
+        # réduit les choix avant la sélection, sans toucher aux 33 trajets.
+        recherche_trajets.input(
+            filtrer_trajets_frequents,
+            inputs=[recherche_trajets],
+            outputs=[trajets_in],
+        )
 
         # Recherche automatique, sans bouton : au relâchement du micro
-        # (stop_recording), au dépôt d'un fichier et au choix d'un exemple
-        # (change). La compagnie choisie est passée comme au clic du bouton ;
+        # (stop_recording), au dépôt d'un fichier (change) et au vidage du micro.
+        # La compagnie choisie est passée comme au clic du bouton ;
         # rechercher_une_fois absorbe l'événement en double que produit un même
-        # geste. Le bouton reste là pour relancer l'onglet « Écrire » ou au besoin.
+        # geste et ignore le change dû au vidage.
         for evenement in (audio_in.stop_recording, audio_in.change):
             evenement(
                 rechercher_une_fois,
-                inputs=[audio_in, texte_in, compagnie_in],
-                outputs=sorties,
+                inputs=[audio_in, texte_in, compagnie_in, demande_state],
+                outputs=[*sorties_avec_micro, demande_state],
             )
+
+        # Changer Tata/Dem Dikk/Tous rejoue la dernière demande avec la nouvelle
+        # valeur. On lit le bouton dans l'événement, jamais dans une copie gardée
+        # en mémoire : l'étiquette et les lignes suivent donc toujours le choix
+        # affiché.
+        compagnie_in.change(
+            traiter_demande,
+            inputs=[audio_in, texte_in, compagnie_in, demande_state, relancer_compagnie],
+            outputs=[*sorties_avec_micro, demande_state],
+        )
     return interface
 
 
@@ -1325,5 +1662,6 @@ if __name__ == "__main__":
     # queue() est obligatoire pour ZeroGPU : la réservation du GPU ne fonctionne que
     # si les exécutions passent par la file. Sur un Space, Gradio règle tout seul
     # l'hôte et le port à lancer.
-    # Depuis Gradio 6, le thème se passe au lancement et non plus au constructeur.
-    demo.queue().launch(theme=_theme())
+    # Depuis Gradio 6, le thème et le CSS se passent au lancement, plus au
+    # constructeur. i18n remplace les libellés anglais du micro.
+    demo.queue().launch(theme=_theme(), css=CSS_GUINDIMA, i18n=I18N_GUINDIMA)

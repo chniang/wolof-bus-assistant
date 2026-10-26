@@ -5,11 +5,10 @@ Deux modes :
     .\.venv\Scripts\python.exe tests\test_trajets.py            (local, quelques secondes)
     .\.venv\Scripts\python.exe tests\test_trajets.py --en-ligne (l'app publiée sur Hugging Face)
 
-- local : extraction des lieux + recherche de ligne, sans micro ni GPU ni LLM.
-  À lancer après chaque modification du code ou des données.
-- en ligne : envoie les phrases ET les deux audios de démo à l'app publiée,
-  exactement comme un visiteur. À lancer après chaque déploiement, avant de
-  partager le lien.
+- local : extraction des lieux, recherche de ligne, interface Gradio et vidage
+  du micro, sans modèle ni GPU ni LLM. À lancer après chaque modification.
+- en ligne : envoie les phrases à l'app publiée, exactement comme un visiteur.
+  À lancer après chaque déploiement, avant de partager le lien.
 
 Code de sortie : 0 si tout passe, 1 sinon.
 """
@@ -260,12 +259,6 @@ TRAJETS_EN_LIGNE = [
     ("Maa ngi Liberté 6, dama bëgg dem Médina ak Tata", {"Ligne 1"}),
     ("Maa ngi Sandaga, dama bëgg dem Pikine", {"Ligne 27", "Ligne 41", "Ligne 50", "Ligne 55", "Ligne 56"}),
 ]
-
-AUDIOS = [
-    ("data/demo_audio/trajet ouakam_palais.wav", {"Ligne 7"}),
-    ("data/demo_audio/trajet liberte5_palais2.wav", {"Ligne 10", "Ligne 13"}),
-]
-
 
 def _ok(trouvees: set[str], attendues: set[str], exclues: set[str] = frozenset()) -> bool:
     return bool(trouvees & attendues) and not (trouvees & exclues)
@@ -755,6 +748,91 @@ def test_sahm_ligne_62() -> tuple[int, int]:
             resultat["correspondances"],
         ),
     )
+    return echecs, total
+
+
+def test_trajets_frequents() -> tuple[int, int]:
+    """Chaque choix de l'onglet « Écrire » mène vraiment à un bus.
+
+    Le test relit le JSON, refuse les doublons et rejoue le vrai pipeline local
+    (extraction + StopsMatcher) sans géocodage réseau. Un lieu mal reconnu ou un
+    trajet sans ligne doit être retiré du fichier, pas proposé à l'usager.
+    """
+    import json
+
+    from intent.extract_intent import extract_local
+    from matching.lieux import sans_accents
+    from matching.stops_matcher import StopsMatcher
+
+    def normalise(nom: str) -> str:
+        return " ".join(re.findall(r"[a-z0-9]+", sans_accents(nom or "").lower()))
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | trajets fréquents {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    chemin = RACINE / "data" / "trajets_frequents.json"
+    trajets = json.loads(chemin.read_text(encoding="utf-8"))
+    verifie(
+        "fichier JSON valide, 33 trajets",
+        isinstance(trajets, list) and len(trajets) == 33,
+        len(trajets) if isinstance(trajets, list) else type(trajets),
+    )
+    verifie(
+        "schéma depart/arrivee uniquement",
+        isinstance(trajets, list)
+        and all(
+            isinstance(trajet, dict)
+            and set(trajet) == {"depart", "arrivee"}
+            and all(isinstance(trajet[cle], str) and trajet[cle].strip() for cle in trajet)
+            for trajet in trajets
+        ),
+        trajets[:2],
+    )
+    cles = [(trajet.get("depart"), trajet.get("arrivee")) for trajet in trajets]
+    verifie("aucun doublon", len(cles) == len(set(cles)), len(cles) - len(set(cles)))
+
+    matcher = StopsMatcher()
+    ancien_point = matcher.geo.point
+    matcher.geo.point = matcher.geo.point_connu
+    try:
+        for trajet in trajets:
+            depart, arrivee = trajet["depart"], trajet["arrivee"]
+            phrase = f"Maa ngi {depart}, bëgg naa dem {arrivee}"
+            lieux = extract_local(phrase)
+            dep, arr = lieux.get("depart") or "", lieux.get("arrivee") or ""
+            resultat = matcher.find_line(dep, arr)
+            directes = bool(resultat["found"])
+            correspondances = bool(resultat.get("correspondances"))
+            bon = (
+                resultat["depart_valide"]
+                and resultat["arrivee_valide"]
+                and normalise(dep) == normalise(depart)
+                and normalise(arr) == normalise(arrivee)
+                and (directes or correspondances)
+            )
+            verifie(
+                f"{depart} → {arrivee}",
+                bon,
+                {
+                    "reconnu": f"{dep} → {arr}",
+                    "lignes": _detail(resultat),
+                },
+            )
+            print(
+                f"      reconnu : {dep} → {arr} | "
+                f"{_detail(resultat)}"
+            )
+    finally:
+        matcher.geo.point = ancien_point
+
     return echecs, total
 
 
@@ -1636,28 +1714,23 @@ def _lignes_dans(carte: str) -> set[str]:
 URL_APP = "https://tijaani-guindima-ai.hf.space"
 
 
-def _appel(client, phrase: str, audio: Path | None) -> list:
+def _appel(client, phrase: str) -> list:
     """Appelle l'API Gradio de l'app, comme le fait le navigateur.
 
     httpx est déjà installé (dépendance de huggingface_hub) : pas besoin de
-    gradio_client.
+    gradio_client. Le premier champ est le micro, toujours vide pour un test
+    texte ; le 3e est le bouton Compagnie, vide pour « Tous ».
     """
     import json
 
-    fichier = None
-    if audio:
-        with open(audio, "rb") as f:
-            envoi = client.post(f"{URL_APP}/gradio_api/upload", files={"files": (audio.name, f, "audio/wav")})
-        envoi.raise_for_status()
-        fichier = {"path": envoi.json()[0], "meta": {"_type": "gradio.FileData"}}
-    # 3e entrée = bouton Compagnie : vide pour « Tous ». Sans elle, l'app Gradio
-    # reçoit moins d'entrées que de paramètres et l'appel échoue.
     reponse = client.post(
-        f"{URL_APP}/gradio_api/call/trouver_le_bus",
-        json={"data": [fichier, phrase or "", ""]},
+        f"{URL_APP}/gradio_api/call/repondre_et_vider_micro",
+        json={"data": [None, phrase or "", ""]},
     )
     reponse.raise_for_status()
-    flux = client.get(f"{URL_APP}/gradio_api/call/trouver_le_bus/{reponse.json()['event_id']}").text
+    flux = client.get(
+        f"{URL_APP}/gradio_api/call/repondre_et_vider_micro/{reponse.json()['event_id']}"
+    ).text
     trouve = re.search(r"event: (complete|error)\ndata: (.*)", flux)
     if not trouve:
         raise RuntimeError(f"réponse inattendue : {flux[:200]}")
@@ -1950,30 +2023,547 @@ def test_securite() -> tuple[int, int]:
     return echecs, total
 
 
+def test_interface_micro() -> tuple[int, int]:
+    """Le micro est évident, sans choix de périphérique, et sans démos audio."""
+    import json
+    import os
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_interface")
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | interface {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    css = app.CSS_GUINDIMA
+    verifie(
+        "bouton d'enregistrement vert, large et lisible",
+        all(
+            morceau in css
+            for morceau in (
+                "#micro_guindima .record-button",
+                "#00853F",
+                "width: 100%",
+                "min-height: 64px",
+                "font-size: 20px",
+                "border-radius: 14px",
+                "#FFFFFF",
+            )
+        ),
+        css[:400],
+    )
+    verifie(
+        "bouton Arrêter rouge et pulsation",
+        "#micro_guindima .record-button,\n#micro_guindima .stop-button" in css
+        and "#D62828" in css
+        and "@keyframes guindima-pulse" in css
+        and "animation: guindima-pulse" in css,
+    )
+    verifie(
+        "sélecteur de périphérique masqué dans le micro",
+        "#micro_guindima .mic-select" in css and "display: none !important" in css,
+    )
+    verifie(
+        "consigne bordée en vert à gauche et à droite",
+        "border-left: 5px solid #00853F" in css
+        and "border-right: 5px solid #00853F" in css,
+    )
+    verifie(
+        "bouton Arrête à 25 %, centré, avec largeur minimale",
+        "#micro_guindima .stop-button" in css
+        and "width: 25%" in css
+        and "min-width: 120px" in css
+        and "margin: 0 auto !important" in css,
+    )
+    verifie(
+        "croix d'effacement du micro masquée",
+        'button[aria-label="Effacer"]' in css
+        and 'button[aria-label="Clear"]' in css
+        and "display: none !important" in css,
+    )
+    verifie(
+        "chaque option de trajet fréquent est cliquable sur toute la ligne",
+        "#trajets_frequents .item" in css
+        and "min-height: 44px" in css
+        and "width: 100%" in css,
+    )
+    verifie(
+        "libellés du micro en français",
+        app.I18N_GUINDIMA is not None
+        and app.I18N_GUINDIMA.translations["fr"]["audio.record"] == "Appuie et parle"
+        and app.I18N_GUINDIMA.translations["fr"]["audio.stop"] == "Arrête",
+    )
+
+    interface = app._construire()
+    config = interface.get_config_file()
+    composants = config["components"]
+    texte_config = json.dumps(config, ensure_ascii=False, default=str)
+    source_app = (RACINE / "app.py").read_text(encoding="utf-8")
+    verifie(
+        "plus de démos audio ni de gr.Examples",
+        "demo_audio" not in texte_config
+        and "rejoue un enregistrement" not in texte_config
+        and "rejoue un enregistrement" not in source_app
+        and "DEMO_AUDIO" not in source_app
+        and "gr.Examples" not in source_app,
+    )
+
+    micros = [
+        composant
+        for composant in composants
+        if composant.get("type") == "audio"
+        and composant.get("props", {}).get("elem_id") == app.MICRO_ELEM_ID
+    ]
+    verifie(
+        "consigne simple au-dessus du micro",
+        "Appuie sur le bouton vert, dis ton trajet, puis appuie sur Arrête"
+        in source_app
+        and "css=CSS_GUINDIMA" in source_app
+        and "i18n=I18N_GUINDIMA" in source_app,
+    )
+    verifie(
+        "composant micro ciblé par elem_id",
+        len(micros) == 1
+        and micros[0]["props"].get("sources") == ["microphone", "upload"]
+        and micros[0]["props"].get("show_label") is False,
+        micros,
+    )
+    micro_id = micros[0]["id"] if micros else None
+    evenements_micro = [
+        dependance
+        for dependance in config["dependencies"]
+        if micro_id in dependance.get("inputs", [])
+    ]
+    verifie(
+        "micro vidé par le bouton, l'arrêt et le change",
+        len(evenements_micro) >= 3
+        and all(micro_id in dependance.get("outputs", []) for dependance in evenements_micro),
+        evenements_micro,
+    )
+
+    textboxs = [
+        composant
+        for composant in composants
+        if composant.get("props", {}).get("label") == "Ton trajet en wolof"
+    ]
+    verifie(
+        "zone Écrire vide avec le bon exemple",
+        len(textboxs) == 1
+        and textboxs[0]["props"].get("value") == ""
+        and textboxs[0]["props"].get("placeholder")
+        == "Ex. : Maa ngi Parcelles Assainies, bëgg naa dem UCAD",
+        textboxs,
+    )
+
+    dropdowns = [
+        composant
+        for composant in composants
+        if composant.get("props", {}).get("elem_id") == "trajets_frequents"
+    ]
+    props = dropdowns[0]["props"] if len(dropdowns) == 1 else {}
+    choix = props.get("choices") or []
+    libelles = [choix_item[0] for choix_item in choix if isinstance(choix_item, (list, tuple))]
+    verifie(
+        "liste des trajets fréquents, avec recherche",
+        len(dropdowns) == 1
+        and props.get("filterable") is True
+        and props.get("allow_custom_value") is False
+        and props.get("label") == "🚌 Trajets fréquents à Dakar"
+        and props.get("info") == "Tape le nom d'un quartier, par ex. Malika"
+        and props.get("value") is None
+        and len(choix) == len(app.TRAJETS_FREQUENTS)
+        and all(" → " in libelle for libelle in libelles),
+        props,
+    )
+    verifie(
+        "plus de faux choix dans la liste",
+        not any("Cherche" in libelle or "choisis" in libelle.lower() for libelle in libelles),
+        libelles[:3],
+    )
+    dropdown_id = dropdowns[0]["id"] if len(dropdowns) == 1 else None
+    recherches = [
+        composant
+        for composant in composants
+        if composant.get("props", {}).get("label") == "Chercher un trajet fréquent"
+    ]
+    recherche_id = recherches[0]["id"] if len(recherches) == 1 else None
+    verifie(
+        "recherche maison, insensible aux accents, câblée",
+        len(recherches) == 1
+        and recherches[0]["props"].get("placeholder") == "Malika, Médina, UCAD…"
+        and any(
+            recherche_id in dependance.get("inputs", [])
+            and dropdown_id in dependance.get("outputs", [])
+            for dependance in config["dependencies"]
+        ),
+        recherches,
+    )
+    evenements_frequents = [
+        dependance
+        for dependance in config["dependencies"]
+        if dropdown_id in dependance.get("inputs", [])
+    ]
+    verifie(
+        "trajet fréquent : vidage du micro, de la liste et du filtre câblés",
+        len(evenements_frequents) == 1
+        and micro_id in evenements_frequents[0].get("outputs", [])
+        and dropdown_id in evenements_frequents[0].get("outputs", [])
+        and recherche_id in evenements_frequents[0].get("outputs", []),
+        evenements_frequents,
+    )
+
+    states = [
+        composant
+        for composant in composants
+        if composant.get("type") == "state"
+    ]
+    state_ids = {composant["id"] for composant in states}
+    compagnies = [
+        composant
+        for composant in composants
+        if composant.get("props", {}).get("label") == "Compagnie"
+    ]
+    compagnie_id = compagnies[0]["id"] if len(compagnies) == 1 else None
+    evenements_compagnie = [
+        dependance
+        for dependance in config["dependencies"]
+        if any(
+            cible[0] == compagnie_id and cible[1] == "change"
+            for cible in dependance.get("targets", [])
+        )
+    ]
+    verifie(
+        "changement de compagnie relié à l'état de la dernière demande",
+        len(evenements_compagnie) == 1
+        and compagnie_id in evenements_compagnie[0].get("inputs", [])
+        and micro_id in evenements_compagnie[0].get("outputs", [])
+        and len(evenements_compagnie[0].get("outputs", [])) == 7
+        and bool(state_ids & set(evenements_compagnie[0].get("inputs", [])))
+        and bool(state_ids & set(evenements_compagnie[0].get("outputs", []))),
+        evenements_compagnie,
+    )
+
+    api_boutons = [
+        composant
+        for composant in composants
+        if composant.get("props", {}).get("elem_id") == "api_repondre"
+    ]
+    api_id = api_boutons[0]["id"] if len(api_boutons) == 1 else None
+    evenements_api = [
+        dependance
+        for dependance in config["dependencies"]
+        if any(cible[0] == api_id for cible in dependance.get("targets", []))
+    ]
+    verifie(
+        "point d'entrée API repondre_et_vider_micro conservé",
+        len(api_boutons) == 1
+        and api_boutons[0]["props"].get("visible") is False
+        and len(evenements_api) == 1
+        and evenements_api[0].get("api_name") == "repondre_et_vider_micro"
+        and micro_id in evenements_api[0].get("outputs", [])
+        and len(evenements_api[0].get("outputs", [])) == 6,
+        (api_boutons, evenements_api),
+    )
+
+    readme = (RACINE / "README.md").read_text(encoding="utf-8")
+    verifie(
+        "README sans démos audio",
+        "demo_audio" not in readme and "rejoue un enregistrement" not in readme,
+    )
+    # upload_space.py est volontairement exclu de Git (réglages locaux) : on le
+    # vérifie quand il est là, sans rendre la suite impossible sur un clone nu.
+    upload = RACINE / "upload_space.py"
+    if upload.exists():
+        contenu = upload.read_text(encoding="utf-8")
+        verifie(
+            "démos exclues du Space",
+            "data/demo_audio/*" in contenu
+            and "data/demo_audio/trajet liberte5_palais2.wav" in contenu
+            and "data/demo_audio/trajet ouakam_palais.wav" in contenu,
+        )
+    else:
+        print("IGNORÉ | upload_space.py absent (fichier local exclu de Git)")
+
+    return echecs, total
+
+
+def test_micro_vidage() -> tuple[int, int]:
+    """Chaque résultat vide le micro ; un micro vide ne relance aucun calcul."""
+    import os
+    import shutil
+    import tempfile
+    import wave
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_micro")
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | micro {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    dossier = Path(tempfile.mkdtemp(prefix="test_micro_"))
+    try:
+        phrase = "Maa ngi Ouakam, bëgg naa dem Palais"
+        sortie = app.repondre_et_vider_micro(None, phrase, "")
+        verifie(
+            "résultat texte : micro vidé, carte et voix gardées",
+            len(sortie) == 6
+            and sortie[1] == "Ouakam → Palais"
+            and "Dakar Dem Dikk" in sortie[2]
+            and sortie[3] is not None
+            and sortie[5] is None,
+            sortie,
+        )
+
+        sortie = app.repondre_et_vider_micro(None, "Bonjour", "")
+        verifie(
+            "aucun trajet : micro vidé, explication affichée",
+            sortie[5] is None
+            and sortie[1] == ""
+            and "Lieu non détecté" in sortie[2]
+            and sortie[3] is None,
+            sortie,
+        )
+
+        sortie = app.repondre_et_vider_micro(None, "", "")
+        verifie(
+            "demande vide : message d'aide, micro vidé",
+            sortie[5] is None
+            and app.MESSAGE_DEMANDE_VIDE in sortie[2]
+            and sortie[1] == "",
+            sortie,
+        )
+
+        court = dossier / "court.wav"
+        with wave.open(str(court), "wb") as wav:
+            wav.setnchannels(1)
+            wav.setsampwidth(2)
+            wav.setframerate(app.SAMPLE_RATE)
+            wav.writeframes(b"\0\0" * int(app.SAMPLE_RATE * 0.1))
+        sortie = app.repondre_et_vider_micro(str(court), "", "")
+        verifie(
+            "audio vide : micro vidé, pas d'erreur",
+            sortie[5] is None
+            and sortie[0] == ""
+            and sortie[1] == ""
+            and sortie[3] is None
+            and "illisible" not in sortie[2].lower()
+            and "impossible" not in sortie[2].lower(),
+            sortie,
+        )
+
+        long = dossier / "long.wav"
+        with wave.open(str(long), "wb") as wav:
+            wav.setnchannels(1)
+            wav.setsampwidth(2)
+            wav.setframerate(app.SAMPLE_RATE)
+            wav.writeframes(b"\0\0" * (31 * app.SAMPLE_RATE))
+        sortie = app.repondre_et_vider_micro(str(long), "", "")
+        verifie(
+            "audio trop long : micro vidé, erreur affichée",
+            sortie[5] is None and "30 secondes" in sortie[2],
+            sortie,
+        )
+
+        appels = []
+        ancien_bus = app.trouver_le_bus
+
+        def interdit(*args, **kwargs):
+            appels.append((args, kwargs))
+            raise AssertionError("le vidage du micro ne doit pas relancer le pipeline")
+
+        app.trouver_le_bus = interdit
+        try:
+            vides = app.rechercher_une_fois(None, phrase, "")
+        finally:
+            app.trouver_le_bus = ancien_bus
+        verifie(
+            "micro None : silence, résultats conservés",
+            len(vides) == 7
+            and all(valeur == app.gr.skip() for valeur in vides)
+            and not appels,
+            vides,
+        )
+
+        sortie = app.choisir_trajet_frequent("Ouakam → Palais", "")
+        verifie(
+            "trajet fréquent : texte rempli, recherche lancée, liste vidée",
+            len(sortie) == 10
+            and sortie[0] == phrase
+            and sortie[2] == "Ouakam → Palais"
+            and "Dakar Dem Dikk" in sortie[3]
+            and sortie[6] is None
+            and sortie[7] == {"phrase": phrase, "mode": "texte"}
+            and sortie[8] is None
+            and sortie[9] == "",
+            sortie,
+        )
+
+        appels = []
+        ancien_reponse = app.traiter_demande
+
+        def interdit_reponse(*args, **kwargs):
+            appels.append((args, kwargs))
+            raise AssertionError("la liste vidée ne doit rien relancer")
+
+        app.traiter_demande = interdit_reponse
+        try:
+            vides = app.choisir_trajet_frequent(None, "")
+        finally:
+            app.traiter_demande = ancien_reponse
+        verifie(
+            "liste vidée : silence, pas de boucle",
+            len(vides) == 10
+            and all(valeur == app.gr.skip() for valeur in vides)
+            and not appels,
+            vides,
+        )
+
+        filtre = app.filtrer_trajets_frequents("mal")
+        trouves = list(filtre.get("choices") or [])
+        verifie(
+            "le filtre « mal » trouve Malika",
+            any("Malika" in libelle for libelle in trouves),
+            trouves,
+        )
+        filtre = app.filtrer_trajets_frequents("MEDINA")
+        trouves = list(filtre.get("choices") or [])
+        verifie(
+            "le filtre est insensible aux accents et à la casse",
+            any("Médina" in libelle for libelle in trouves),
+            trouves,
+        )
+        filtre = app.filtrer_trajets_frequents("ucad")
+        trouves = list(filtre.get("choices") or [])
+        verifie(
+            "le filtre cherche aussi dans l'arrivée",
+            any(libelle.endswith("→ UCAD") for libelle in trouves),
+            trouves,
+        )
+        filtre = app.filtrer_trajets_frequents("")
+        verifie(
+            "filtre vide : les 33 trajets reviennent",
+            len(list(filtre.get("choices") or [])) == len(app.TRAJETS_FREQUENTS),
+        )
+
+        phrase_compagnie = "Maa ngi Parcelles Assainies, bëgg naa dem UCAD"
+        sortie = app.traiter_demande(None, phrase_compagnie, "", None, True)
+        etat = sortie[6]
+        verifie(
+            "demande initiale : état texte enregistré",
+            sortie[1] == "Parcelles Assainies → UCAD"
+            and isinstance(etat, dict)
+            and etat.get("phrase") == phrase_compagnie
+            and etat.get("mode") == "texte",
+            sortie,
+        )
+
+        appels = []
+        ancien_trouver = app.trouver_le_bus
+
+        def interdit_trouver(*args, **kwargs):
+            appels.append((args, kwargs))
+            raise AssertionError("un changement de compagnie ne retranscrit pas")
+
+        app.trouver_le_bus = interdit_trouver
+        try:
+            cas_compagnies = [
+                ("", "Dakar Dem Dikk", None, "Tous"),
+                ("Dakar Dem Dikk", "Dakar Dem Dikk", "Tata AFTU", "Dem Dikk"),
+                ("Tata AFTU", "Tata AFTU", "Dakar Dem Dikk", "Tata"),
+                ("", "Dakar Dem Dikk", None, "Tous"),
+            ]
+            for compagnie, attendue, interdite, etiquette in cas_compagnies:
+                resultat = app.traiter_demande(None, "IGNORE", compagnie, etat, False)
+                carte = resultat[2]
+                condition = (
+                    attendue in carte
+                    and (interdite is None or interdite not in carte)
+                    and f"Compagnie : {etiquette} (choisie avec le bouton)" in carte
+                    and resultat[1] == "Parcelles Assainies → UCAD"
+                    and resultat[5] == app.gr.skip()
+                    and resultat[6] == etat
+                )
+                verifie(
+                    f"compagnie {etiquette} : lignes et étiquette cohérentes",
+                    condition,
+                    resultat,
+                )
+
+            etat_voix = {
+                "phrase": phrase_compagnie + " ak Tata",
+                "mode": "voix",
+            }
+            resultat = app.traiter_demande(
+                None, "IGNORE", "Dakar Dem Dikk", etat_voix, False
+            )
+            carte = resultat[2]
+            verifie(
+                "compagnie dite à la voix : elle l'emporte sur le bouton",
+                "Tata AFTU" in carte
+                and "Dakar Dem Dikk" not in carte
+                and "dite à la voix, prioritaire sur le bouton" in carte,
+                resultat,
+            )
+        finally:
+            app.trouver_le_bus = ancien_trouver
+        verifie(
+            "changement de compagnie sans retranscription",
+            not appels,
+            appels,
+        )
+
+        source_app = (RACINE / "app.py").read_text(encoding="utf-8")
+        verifie(
+            "tutoiement dans l'interface",
+            "précisez" not in source_app.lower()
+            and not re.search(r"\b(vous|votre|vos)\b", source_app, re.I)
+            and "Astuce : précise ton lieu" in source_app,
+        )
+    finally:
+        shutil.rmtree(dossier, ignore_errors=True)
+
+    return echecs, total
+
+
 def test_en_ligne() -> int:
     import httpx
 
     echecs = 0
-    cas = (
-        [(p, None, a) for p, a in TRAJETS]
-        + [(None, RACINE / f, a) for f, a in AUDIOS]
-        + [(p, None, a) for p, a in TRAJETS_EN_LIGNE]
-    )
+    cas = [(p, a) for p, a in TRAJETS] + [(p, a) for p, a in TRAJETS_EN_LIGNE]
     with httpx.Client(timeout=180) as client:
-        for phrase, audio, attendues in cas:
-            nom = phrase or f"[audio] {audio.name}"
+        for phrase, attendues in cas:
+            nom = phrase
             debut = time.perf_counter()
             try:
-                transcription, trajet, carte, _voix, mention = _appel(client, phrase, audio)
+                sortie = _appel(client, phrase)
+                transcription, trajet, carte, _voix, mention = sortie[:5]
+                # Le micro doit revenir vide dans la réponse de l'app publiée.
+                micro = sortie[5] if len(sortie) > 5 else None
             except Exception as exc:
                 echecs += 1
                 print(f"ÉCHEC | {nom} : {exc}")
                 continue
             trouvees = _lignes_dans(str(carte))
             bon = _ok(trouvees, attendues, TRAJETS_EXCLUS.get(phrase or "", frozenset()))
+            bon = bon and micro is None
             echecs += not bon
             print(f"{'OK ' if bon else 'ÉCHEC'} | {nom}  ({time.perf_counter() - debut:.0f} s)")
-            print(f"      entendu : {transcription!r} | {trajet} | {sorted(trouvees) or 'rien'}")
+            print(f"      entendu : {transcription!r} | {trajet} | {sorted(trouvees) or 'rien'} | micro={micro!r}")
             if mention:
                 print(f"      {str(mention).splitlines()[0]}")
     return echecs
@@ -1986,7 +2576,7 @@ if __name__ == "__main__":
     print(f"=== Test {'de l app en ligne (' + SPACE + ')' if en_ligne else 'local'} ===\n")
     if en_ligne:
         echecs = test_en_ligne()
-        total = len(TRAJETS) + len(AUDIOS) + len(TRAJETS_EN_LIGNE)
+        total = len(TRAJETS) + len(TRAJETS_EN_LIGNE)
     else:
         echecs_partage, total_partage = test_partage()
         echecs_voix, total_voix = test_voix()
@@ -1996,6 +2586,9 @@ if __name__ == "__main__":
         echecs_generiques, total_generiques = test_mots_generiques()
         echecs_distance, total_distance = test_distance_courte()
         echecs_sahm, total_sahm = test_sahm_ligne_62()
+        echecs_frequents, total_frequents = test_trajets_frequents()
+        echecs_interface, total_interface = test_interface_micro()
+        echecs_micro, total_micro = test_micro_vidage()
         echecs_securite, total_securite = test_securite()
         echecs = (
             test_local()
@@ -2007,6 +2600,9 @@ if __name__ == "__main__":
             + echecs_generiques
             + echecs_distance
             + echecs_sahm
+            + echecs_frequents
+            + echecs_interface
+            + echecs_micro
             + echecs_securite
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
@@ -2014,11 +2610,14 @@ if __name__ == "__main__":
             total_partage
             + total_voix
             + total_lieux
-            +             total_prononciations
+            + total_prononciations
             + total_verification
             + total_generiques
             + total_distance
             + total_sahm
+            + total_frequents
+            + total_interface
+            + total_micro
             + total_securite
             + (
                 len(TRAJETS)

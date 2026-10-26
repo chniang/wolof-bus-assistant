@@ -9,7 +9,7 @@ app_file: app.py
 
 **Assistant vocal en wolof pour trouver sa ligne de bus à Dakar.**
 
-🚀 **Démo en ligne :** [huggingface.co/spaces/TIJAANI/guindima-ai](https://huggingface.co/spaces/TIJAANI/guindima-ai) (parlez ou écrivez votre trajet en wolof)
+🚀 **Démo en ligne :** [huggingface.co/spaces/TIJAANI/guindima-ai](https://huggingface.co/spaces/TIJAANI/guindima-ai) (parle ou écris ton trajet en wolof)
 
 On lui parle, il répond en wolof. GuindiMa AI écoute une demande de trajet
 parlée en wolof, la transcrit, en extrait le départ et l'arrivée, puis indique
@@ -53,8 +53,8 @@ pour pré-générer les audios** ; la **voix de référence CONCREE/Adia_TTS
   itinéraire publié ne sont connues que par leurs terminus.
 - `data/tts_cache/` — les **637 audios Oolel-Voices** de réponse pré-générés (112 lignes,
   6 services, 519 lieux), versionnés pour que la démo n'ait rien à télécharger.
-- `data/demo_audio/` — enregistrements de secours, pour quand le micro de la
-  salle ne coopère pas.
+- `data/trajets_frequents.json` — les trajets proposés dans la liste avec
+  recherche de l'onglet « Écrire ».
 
 ## Installation
 
