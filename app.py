@@ -73,6 +73,7 @@ from tts.speak import (  # noqa: E402
     numero_de,
     voix_correspondances_depuis_cache,
     voix_depuis_cache,
+    voix_trajets_2_depuis_cache,
 )
 
 VERT = "#00853F"  # vert du Sénégal, celui du thème et des cartes
@@ -187,7 +188,32 @@ LIBELLE_VOIX = "Oolel-Voices (voix Adia, CONCREE)"
 # Clients et objets reconstruits une fois
 # --------------------------------------------------------------------------- #
 
-MATCHER = StopsMatcher()
+# Moteur de recherche : « v2 » (nouveau moteur d'itinéraires) par défaut,
+# « v1 » pour revenir à l'ancien sans toucher au code. Le moteur v2 est enveloppé
+# pour garder exactement l'interface de StopsMatcher et retomber sur v1 s'il ne
+# trouve rien ou s'il échoue.
+MOTEUR = os.getenv("GUINDIMA_MOTEUR", "v2").strip().lower()
+if MOTEUR not in {"v1", "v2"}:
+    MOTEUR = "v2"
+
+
+def _construire_matcher():
+    if MOTEUR == "v1":
+        return StopsMatcher()
+    try:
+        from routing.adapter import MoteurV2
+
+        print("[moteur] v2 actif", flush=True)
+        return MoteurV2(StopsMatcher())
+    except Exception as exc:
+        # Un souci d'import (dépendance manquante sur le Space) ne doit jamais
+        # empêcher l'app de démarrer : on garde l'ancien moteur.
+        message = f"{type(exc).__name__} : {exc}"[:160]
+        print(f"[moteur] v2 indisponible ({message}), repli v1", flush=True)
+        return StopsMatcher()
+
+
+MATCHER = _construire_matcher()
 
 _CLIENT = None
 _CLIENT_TENTE = False
@@ -406,21 +432,32 @@ def _phrase_donne_un_trajet(phrase: str) -> bool:
     return bool(essai["found"] or essai["correspondances"])
 
 
-def _voix_wolof(lignes: list[dict], correspondances: list[dict] | None = None) -> str | None:
+def _voix_wolof(
+    lignes: list[dict],
+    correspondances: list[dict] | None = None,
+    trajets_2: list[dict] | None = None,
+) -> str | None:
     """La réponse lue en wolof, sous forme de chemin de fichier.
 
     On assemble uniquement les segments Oolel-Voices présents dans `data/tts_cache/` :
     aucune synthèse en direct. Si le cache est incomplet, les morceaux présents
-    sont joués ; si aucun ne l'est, la réponse reste silencieuse.
+    sont joués ; si aucun ne l'est, la réponse reste silencieuse. Un trajet à
+    deux changements, lui, n'est lu que si tous ses segments sont là ; la marche
+    seule reste sans voix.
     """
     correspondances = correspondances or []
-    if not lignes and not correspondances:
+    trajets_2 = trajets_2 or []
+    if not lignes and not correspondances and not trajets_2:
         return None
-    octets = (
-        voix_depuis_cache(lignes)
-        if lignes
-        else voix_correspondances_depuis_cache(correspondances)
-    )
+    if lignes:
+        octets = voix_depuis_cache(lignes)
+    elif correspondances:
+        octets = voix_correspondances_depuis_cache(correspondances)
+    else:
+        # Deux changements : on enchaîne les mêmes segments qu'une
+        # correspondance, avec un bus et un lieu de plus. Aucune synthèse en
+        # direct ; si un segment manque, la réponse reste silencieuse.
+        octets = voix_trajets_2_depuis_cache(trajets_2)
     if octets is None:
         print("[voix] aucun segment disponible, réponse laissée sans voix", flush=True)
         return None
@@ -824,8 +861,14 @@ def _une_carte(
         f"<div style='color:#6B7A72;font-size:13px;margin-top:6px;'>"
         f"Ligne : {_echapper(match['depart'])} → {_echapper(match['arrivee'])}</div>"
     )
+    duree = (
+        f"<span style='color:#0B6B37;font-weight:700;'>"
+        f"~{int(round(float(match['minutes'])))} min</span>"
+        if match.get("minutes") is not None
+        else ""
+    )
     categorie = " · ".join(
-        x for x in (rappel, _echapper(match.get("categorie", ""))) if x
+        x for x in (rappel, _echapper(match.get("categorie", "")), duree) if x
     )
     return f"""
 <div style="border:1px solid #D6E6DC;border-top:6px solid {VERT};
@@ -859,6 +902,30 @@ def _note_distance_pied(depart: str, arrivee: str) -> str:
     )
 
 
+def _carte_a_pied(a_pied: dict) -> str:
+    """La carte de la marche seule, en tête des autres propositions."""
+
+    minutes = int(round(float(a_pied.get("minutes") or 0)))
+    distance = int(round(float(a_pied.get("distance_m") or 0)))
+    duree = f"environ {minutes} min"
+    distance_html = (
+        f"<div style='color:#6B7A72;font-size:14px;margin-top:6px;'>"
+        f"{distance} m environ</div>"
+        if distance
+        else ""
+    )
+    return f"""
+<div style="border:1px solid #D6E6DC;border-top:6px solid {VERT};
+            border-radius:12px;padding:16px 20px;margin:8px 0;background:#F6FBF8;">
+  <div style="color:{VERT};font-size:12px;font-weight:700;letter-spacing:.14em;
+              text-transform:uppercase;">À PIED</div>
+  <div style="color:{VERT};font-size:28px;font-weight:800;line-height:1.1;
+              margin:6px 0 4px 0;">À pied — {duree}</div>
+  {distance_html}
+</div>
+"""
+
+
 def _carte(
     resultat: dict,
     depart: str,
@@ -881,19 +948,25 @@ def _carte(
 
     astuce = _astuce_quartier(depart, arrivee)
     entete = bandeau_compagnie + avertissement + astuce + _note_distance_pied(depart, arrivee)
-    if resultat["found"]:
-        return (
-            entete
-            + "".join(
-                _une_carte(match, depart=depart, arrivee=arrivee)
-                for match in resultat["lignes"][:MAX_POSSIBILITES]
-            )
-            + bouton_partage(depart, arrivee, resultat)
-        )
-
+    lignes = resultat.get("lignes") or []
     correspondances = resultat.get("correspondances") or []
+    trajets_2 = resultat.get("trajets_2") or []
+    a_pied = resultat.get("a_pied")
+
+    blocs = [entete]
+    if a_pied:
+        blocs.append(_carte_a_pied(a_pied))
+
+    if lignes:
+        blocs.extend(
+            _une_carte(match, depart=depart, arrivee=arrivee)
+            for match in lignes[:MAX_POSSIBILITES]
+        )
+        blocs.append(bouton_partage(depart, arrivee, resultat))
+        return "".join(blocs)
+
     if correspondances:
-        blocs = [entete, "### 🔁 Pas de bus direct : un changement suffit\n"]
+        blocs.append("### 🔁 Pas de bus direct : un changement suffit\n")
         for numero, trajet in enumerate(
             correspondances[:MAX_POSSIBILITES], start=1
         ):
@@ -906,6 +979,39 @@ def _carte(
             )
             blocs.append(_une_carte(trajet["etape_2"], "2e bus", arrivee=arrivee))
             blocs.append(bouton_partage(depart, arrivee, resultat, trajet))
+
+    if trajets_2:
+        blocs.append("### 🔁 Avec deux changements\n")
+        for numero, trajet in enumerate(
+            trajets_2[:MAX_POSSIBILITES], start=1
+        ):
+            if numero > 1:
+                blocs.append(titre_autre_possibilite(numero))
+            etapes = trajet.get("etapes") or []
+            changements = trajet.get("changements") or []
+            for index, etape in enumerate(etapes):
+                if index:
+                    changement = (
+                        changements[index - 1]
+                        if index - 1 < len(changements)
+                        else ""
+                    )
+                    blocs.append(
+                        f"<div style='text-align:center;color:#6B7A72;margin:2px 0;'>"
+                        f"🔁 Change à <b>{_echapper(changement)}</b></div>"
+                    )
+                blocs.append(
+                    _une_carte(
+                        etape,
+                        f"{index + 1}er bus" if index == 0 else f"{index + 1}e bus",
+                        depart=depart if index == 0 else "",
+                        arrivee=arrivee if index == len(etapes) - 1 else "",
+                        changement=index < len(etapes) - 1,
+                    )
+                )
+            blocs.append(bouton_partage(depart, arrivee, resultat, trajet))
+
+    if lignes or correspondances or trajets_2 or a_pied:
         return "".join(blocs)
 
     inconnus = [
@@ -922,8 +1028,8 @@ def _carte(
     return (
         "### 🗺 Pas de trajet trouvé\n\n"
         f"Je connais **{_echapper_markdown(depart)}** et **{_echapper_markdown(arrivee)}**, "
-        "mais aucune ligne ni aucun trajet avec un seul changement ne les relie "
-        "dans le jeu de données."
+        "mais aucune ligne ni aucun trajet avec un ou deux changements ne les "
+        "relie dans le jeu de données."
     )
 
 
@@ -1085,16 +1191,30 @@ def _pipeline(
         if not exacte and (resultat["found"] or resultat.get("correspondances")):
             avertissement = _bandeau_autre_compagnie(compagnie, resultat)
     bandeau_compagnie = _bandeau_compagnie(compagnie_voix, compagnie_choix, mode=mode)
-    trouve = bool(resultat["found"] or resultat.get("correspondances"))
+    trajets_2 = resultat.get("trajets_2") or []
+    trouve = bool(
+        resultat["found"]
+        or resultat.get("correspondances")
+        or trajets_2
+        or resultat.get("a_pied")
+    )
 
-    nombre_lignes = len(resultat["lignes"]) + len(resultat.get("correspondances") or [])
+    nombre_lignes = (
+        len(resultat["lignes"])
+        + len(resultat.get("correspondances") or [])
+        + len(trajets_2)
+    )
     _journal(modele_asr, duree_asr, nombre_lignes, _code_erreur(intent))
 
     return (
         phrase,
         f"{depart} → {arrivee}",
         _carte(resultat, depart, arrivee, avertissement, bandeau_compagnie),
-        _voix_wolof(resultat["lignes"], resultat.get("correspondances")),
+        _voix_wolof(
+            resultat["lignes"],
+            resultat.get("correspondances"),
+            trajets_2,
+        ),
         _mention(intent, modele_asr),
     ), trouve
 

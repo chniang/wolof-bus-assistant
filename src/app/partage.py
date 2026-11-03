@@ -35,10 +35,12 @@ def texte_partage(
     """
     lignes = resultat.get("lignes") or []
     correspondances = resultat.get("correspondances") or []
+    trajets_2 = resultat.get("trajets_2") or []
     if trajet is not None:
+        etapes = trajet.get("etapes") or (trajet["etape_1"], trajet["etape_2"])
         morceaux = [
             f"{i}. {_phrase_bus(etape)}"
-            for i, etape in enumerate((trajet["etape_1"], trajet["etape_2"]), start=1)
+            for i, etape in enumerate(etapes, start=1)
         ]
     elif lignes:
         morceaux = [_phrase_bus(ligne) for ligne in lignes]
@@ -47,6 +49,11 @@ def texte_partage(
         morceaux = [
             f"{i}. {_phrase_bus(etape)}"
             for i, etape in enumerate((etapes["etape_1"], etapes["etape_2"]), start=1)
+        ]
+    elif trajets_2:
+        morceaux = [
+            f"{i}. {_phrase_bus(etape)}"
+            for i, etape in enumerate(trajets_2[0]["etapes"], start=1)
         ]
     else:
         return ""

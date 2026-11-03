@@ -299,12 +299,30 @@ def _detail(resultat: dict) -> str:
     return "  ;  ".join(morceaux) or "rien"
 
 
+def _matcher():
+    """Le moteur choisi par GUINDIMA_MOTEUR (v1, ou v2 avec repli sur v1).
+
+    Les attentes des tests ne changent pas : on vérifie seulement ce que l'app
+    répond réellement, avec le moteur actif.
+    """
+    import os
+
+    from matching.stops_matcher import StopsMatcher
+
+    repli = StopsMatcher()
+    if os.getenv("GUINDIMA_MOTEUR", "v2").strip().lower() == "v1":
+        return repli
+    from routing.adapter import MoteurV2
+
+    return MoteurV2(repli)
+
+
 def test_local() -> int:
     from intent.extract_intent import extract_local
     from matching.compagnie import message_autre_compagnie
     from matching.stops_matcher import StopsMatcher
 
-    matcher = StopsMatcher()
+    matcher = _matcher()
     echecs = 0
     for phrase, attendues in TRAJETS:
         lieux = extract_local(phrase)
@@ -702,7 +720,7 @@ def test_sahm_ligne_62() -> tuple[int, int]:
         ordres,
     )
 
-    matcher = StopsMatcher()
+    matcher = _matcher()
     for compagnie, ligne in (
         ("Dakar Dem Dikk", "Ligne 7"),
         ("Dakar Dem Dikk", "Ligne 23"),
@@ -799,7 +817,7 @@ def test_trajets_frequents() -> tuple[int, int]:
     cles = [(trajet.get("depart"), trajet.get("arrivee")) for trajet in trajets]
     verifie("aucun doublon", len(cles) == len(set(cles)), len(cles) - len(set(cles)))
 
-    matcher = StopsMatcher()
+    matcher = _matcher()
     ancien_point = matcher.geo.point
     matcher.geo.point = matcher.geo.point_connu
     try:
@@ -846,7 +864,7 @@ def test_partage() -> tuple[int, int]:
     from app.partage import LIEN_APP, bouton_partage, lien_partage, texte_partage
     from matching.stops_matcher import StopsMatcher
 
-    matcher = StopsMatcher()
+    matcher = _matcher()
     echecs = 0
     total = 0
 
@@ -943,7 +961,7 @@ def test_voix() -> tuple[int, int]:
         voix_depuis_cache,
     )
 
-    matcher = StopsMatcher()
+    matcher = _matcher()
     echecs = 0
     total = 0
 

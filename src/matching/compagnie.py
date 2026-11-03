@@ -29,6 +29,9 @@ def autre_compagnie(resultat: dict) -> str:
     for trajet in resultat.get("correspondances") or []:
         ajouter(trajet["etape_1"].get("compagnie", ""))
         ajouter(trajet["etape_2"].get("compagnie", ""))
+    for trajet in resultat.get("trajets_2") or []:
+        for etape in trajet.get("etapes") or []:
+            ajouter(etape.get("compagnie", ""))
     return " et ".join(libelle_compagnie(nom) for nom in noms) or "autres compagnies"
 
 

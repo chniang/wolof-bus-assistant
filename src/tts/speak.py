@@ -519,6 +519,98 @@ def voix_depuis_cache(
     return assembler(fichiers)
 
 
+def _lieu_du_plan(
+    dossier: Path, connecteur: str, arret: object
+) -> list[tuple[Path, float]]:
+    """Les deux morceaux « connecteur + lieu », même absents du cache.
+
+    On les liste sans vérifier leur présence : l'appelant décide s'il peut
+    assembler ou s'il doit laisser la réponse silencieuse.
+    """
+
+    if not str(arret if arret is not None else "").strip():
+        return []
+    return [
+        (dossier / connecteur, PAUSE_LIEU),
+        (dossier / nom_fichier_lieu(arret), SILENCE_ENTRE),
+    ]
+
+
+def plan_trajet_2(
+    trajet: dict, cache_dir: Path | None = None
+) -> list[tuple[Path, float]]:
+    """Les morceaux d'un trajet à deux changements, dans l'ordre à dire.
+
+    Même logique qu'une correspondance, avec un bus et un lieu de plus :
+    « 1er bus, nga wàcc X, Ci ginnaaw, 2e bus, nga wàcc Y, Ci ginnaaw,
+    3e bus, moo lay yóbbu ba Z ». Les fichiers ne sont pas encore vérifiés.
+    """
+
+    dossier = cache_dir or CACHE_DIR
+    etapes = trajet.get("etapes") or []
+    changements = trajet.get("changements") or []
+
+    morceaux: list[tuple[Path, float]] = []
+    for index, etape in enumerate(etapes):
+        _ajoute_segment_plan(morceaux, dossier, nom_cache_match(etape))
+        if index < len(etapes) - 1:
+            changement = (
+                changements[index]
+                if index < len(changements)
+                else etape.get("descend_a")
+            )
+            morceaux.extend(_lieu_du_plan(dossier, NGA_WACC, changement))
+            _ajoute_segment_plan(morceaux, dossier, LIAISON_CORRESPONDANCE)
+        else:
+            morceaux.extend(
+                _lieu_du_plan(dossier, MOO_LAY_YOBBU_BA, etape.get("descend_a"))
+            )
+    return morceaux
+
+
+def _ajoute_segment_plan(
+    morceaux: list[tuple[Path, float]], dossier: Path, nom: str
+) -> None:
+    """Ajoute un WAV au plan sans vérifier le disque."""
+
+    morceaux.append((dossier / nom, SILENCE_ENTRE))
+
+
+def voix_trajets_2_depuis_cache(
+    trajets_2: list[dict], cache_dir: Path | None = None
+) -> bytes | None:
+    """L'audio d'un trajet à deux changements, ou None si un segment manque.
+
+    Contrairement aux correspondances, on ne saute pas un morceau absent : la
+    phrase à trois bus serait incompréhensible. On rend alors None, et l'app
+    affiche le texte sans voix. Aucun WAV n'est synthétisé ici.
+    """
+
+    dossier = cache_dir or CACHE_DIR
+    morceaux: list[tuple[Path, float]] = []
+
+    for trajet in trajets_2[:MAX_POSSIBILITES]:
+        plan = plan_trajet_2(trajet, dossier)
+        manquants = [chemin for chemin, _ in plan if not chemin.is_file()]
+        if manquants:
+            for chemin in manquants:
+                _segment_manquant(chemin.name)
+            return None
+        if morceaux:
+            separateur = dossier / WALLA_AUTRE
+            if not separateur.is_file():
+                _segment_manquant(WALLA_AUTRE)
+                return None
+            morceaux.append((separateur, SILENCE_ENTRE))
+        morceaux.extend(plan)
+
+    if not morceaux:
+        return None
+    fichiers = [chemin for chemin, _ in morceaux]
+    pauses = [pause for _, pause in morceaux[:-1]]
+    return assembler(fichiers, pauses)
+
+
 def voix_correspondances_depuis_cache(
     correspondances: list[dict], cache_dir: Path | None = None
 ) -> bytes | None:

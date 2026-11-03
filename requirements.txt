@@ -1,5 +1,7 @@
 ﻿pandas
 numpy
+# Similarite des noms d'arrets pour le moteur d'itineraires v2 (src/routing).
+rapidfuzz
 openai
 transformers
 torch
