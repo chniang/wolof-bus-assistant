@@ -21,6 +21,10 @@ from .places import normalize_name
 # Modeling constants.  They are deliberately simple and easy to tune.
 BUS_SPEED_M_PER_MIN = 250.0       # about 15 km/h in Dakar traffic
 FIXED_MINUTES_PER_SEGMENT = 3.0    # fallback when a stop has no coordinates
+# Une ligne réduite à ses deux terminus, dont l'un sans position, n'a aucun
+# arrêt pour borner la distance : Dem Dikk 11 (Keur Massar -> Lat Dior) coûtait
+# 3 min et devenait une téléportation à travers toute la ville.
+UNKNOWN_TWO_STOP_RIDE_MINUTES = 35.0
 TRANSFER_PENALTY_MIN = 6.0        # waiting / walking to the next line
 WALK_SPEED_M_PER_MIN = 80.0
 MAX_TRANSFER_WALK_M = 500.0
@@ -62,6 +66,7 @@ class Edge:
     walk_minutes: float = 0.0
     walk_distance_m: float | None = None
     transfer_penalty: float = 0.0
+    estimated: bool = False        # durée forfaitaire, pas de distance connue
 
 
 def _number(value: object) -> float | None:
@@ -243,10 +248,13 @@ class Network:
         self,
         from_stop: str,
         to_stop: str,
+        stops_on_line: int = 0,
     ) -> tuple[float, float | None]:
         start = self.coords(from_stop)
         end = self.coords(to_stop)
         if start is None or end is None:
+            if stops_on_line == 2:
+                return UNKNOWN_TWO_STOP_RIDE_MINUTES, None
             return FIXED_MINUTES_PER_SEGMENT, None
 
         distance = haversine_m(start, end)
@@ -266,7 +274,7 @@ class Network:
                     source = Node(line.key, direction, index)
                     target = Node(line.key, direction, index + 1)
                     minutes, distance = self._ride_estimate(
-                        sequence[index], sequence[index + 1]
+                        sequence[index], sequence[index + 1], len(sequence)
                     )
                     adjacency[source].append(
                         Edge(
@@ -274,6 +282,7 @@ class Network:
                             kind="ride",
                             minutes=minutes,
                             distance_m=distance,
+                            estimated=distance is None and len(sequence) == 2,
                         )
                     )
 

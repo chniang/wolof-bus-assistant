@@ -13,23 +13,28 @@ from __future__ import annotations
 
 from .data import load_data
 from .network import Network
-from .places import (
-    MATCH_THRESHOLD,
-    PlaceIndex,
-    prefer_exact_matches,
-)
+from functools import lru_cache
+
+from .corrections import STOP_NAME_ALIASES
+from .places import PlaceIndex, normalize_name
 from .router import (
     Leg,
     NoRouteFoundError,
     PlaceNotFoundError,
+    ResolvedPlace,
     RouteEngine,
     Trip,
+    keep_sensible_trips,
+    rank_trips,
+    remove_dominated_trips,
 )
 
 try:  # import à plat (app.py) ou en paquet
-    from matching.lieux import joli
+    from matching.lieux import joli, score
+    from matching.stops_matcher import MIN_SCORE, TOLERANCE
 except ImportError:  # pragma: no cover
-    from ..matching.lieux import joli
+    from ..matching.lieux import joli, score
+    from ..matching.stops_matcher import MIN_SCORE, TOLERANCE
 
 # Les mêmes plafonds que l'affichage v1 : trois lignes directes, deux
 # correspondances.  Pour un trajet à deux changements, deux possibilités
@@ -101,6 +106,16 @@ def _troncon(leg: Leg) -> dict:
         "descend_a": joli(leg.alight_stop),
         "arrets_trajet": [joli(arret) for arret in parcours],
         "minutes": int(round(leg.minutes)),
+        "estimee": leg.estimated,
+    }
+
+
+def _direct(trip: Trip) -> dict:
+    """Un bus direct : la carte montre la durée totale du trajet, plancher compris."""
+
+    return {
+        **_troncon(trip.legs[0]),
+        "minutes": int(round(trip.total_minutes)),
     }
 
 
@@ -138,33 +153,136 @@ def _a_pied(trip: Trip) -> dict:
     }
 
 
-def _endpoint(query: str) -> tuple[str, float, bool]:
-    """Le meilleur arrêt connu pour un lieu, son score v1 (0 à 1), sa validité."""
+def _arrets_du_reseau(arret: str) -> list[str]:
+    """Le nom de cet arrêt v1 dans le réseau v2, qui unifie certaines orthographes.
 
-    texte = query or ""
-    candidats = prefer_exact_matches(_ENGINE.place_index.match(texte), texte)
-    if candidats:
-        return candidats[0].name, round(candidats[0].score / 100.0, 3), True
-    suggestions = _ENGINE.place_index.suggestions(texte, limit=1)
-    if suggestions:
-        nom, score = suggestions[0]
-        return nom, round(score / 100.0, 3), score >= MATCH_THRESHOLD
-    return "", 0.0, False
+    « SAHM » devient « Sahm », et « Pattesd'oie » devient « Patte d'Oie ».
+    """
+
+    normalise = normalize_name(arret)
+    noms = _NETWORK.stops_for_normalized(normalise)
+    if noms:
+        return list(noms)
+    canonique = STOP_NAME_ALIASES.get(normalise)
+    return list(_NETWORK.stops_for_normalized(normalize_name(canonique or "")))
 
 
-def _resultat_vide(depart: str, arrivee: str) -> dict:
-    depart_arret, depart_score, depart_valide = _endpoint(depart)
-    arrivee_arret, arrivee_score, arrivee_valide = _endpoint(arrivee)
+@lru_cache(maxsize=4)
+def _arrets_surs(matcher) -> frozenset[str]:
+    """Les arrêts v2 que les règles de geo.py permettent de situer."""
+
+    return frozenset(
+        nom
+        for arret in matcher.tous_les_arrets
+        if matcher.geo.position_sure(arret)
+        for nom in _arrets_du_reseau(arret)
+    )
+
+
+def _vers_reseau(arrets: list[str]) -> tuple[str, ...]:
+    """Noms v1 -> noms v2, sans doublon et dans le même ordre."""
+
+    noms: list[str] = []
+    for arret in arrets:
+        for nom in _arrets_du_reseau(arret):
+            if nom not in noms:
+                noms.append(nom)
+    return tuple(noms)
+
+
+def _resoudre(matcher, lieu: str) -> dict:
+    """Résout un lieu exactement comme ``StopsMatcher.find_line``.
+
+    Le nom passe avant la position (« Liberté 5 » ne ramène pas « Liberté 6 »).
+    ALIAS, FAUX_AMIS et règles géo sont ceux de v1 : on les appelle.  ``place``
+    garde les arrêts à moins de TOLERANCE du meilleur, ``large`` tous les arrêts
+    valides, et ``notes`` la note de chacun, sous son nom dans le réseau v2.
+    """
+
+    _, par_nom = matcher._reconnu(lieu)
+    geo_scores = matcher.geo.scores_lieu(lieu, proximite=par_nom < MIN_SCORE)
+    meilleur, note = matcher._reconnu(lieu, geo_scores)
+
+    notes_v1 = {
+        arret: max(score(lieu, arret), geo_scores.get(arret, 0.0))
+        for arret in matcher.tous_les_arrets
+    }
+    tries = sorted(notes_v1, key=lambda arret: -notes_v1[arret])
+    notes: dict[str, float] = {}
+    for arret in tries:
+        for nom in _arrets_du_reseau(arret):
+            notes.setdefault(nom, notes_v1[arret])
+    # Le point connu des CSV seulement : il sert à mesurer le vol d'oiseau, jamais
+    # à décider où monter, et ne doit pas dépendre du réseau.
+    point = matcher.geo.point_connu(lieu)
+
+    def place(seuil: float) -> ResolvedPlace:
+        return ResolvedPlace(
+            stops=_vers_reseau([a for a in tries if notes_v1[a] >= seuil]),
+            coords=point,
+        )
+
+    return {
+        "arret": meilleur,
+        "score": round(note, 3),
+        "valide": note >= MIN_SCORE,
+        "place": place(max(MIN_SCORE, note - TOLERANCE)),
+        "large": place(MIN_SCORE),
+        "notes": notes,
+    }
+
+
+def _directs_comme_v1(trips: list[Trip], dep: dict, arr: dict) -> list[Trip]:
+    """Le filtre de ``find_line`` : la note d'une ligne est celle de son moins bon
+    arrêt, et on garde les lignes à moins de TOLERANCE de la meilleure.
+
+    Aucune ligne ne relie Liberté 5 à un arrêt nommé Guédiawaye, mais Tata 78 va à
+    Golf, dans ce département.  Et « Yoff » exact écarte les lignes de Grand Yoff.
+    """
+
+    def note(trip: Trip) -> float:
+        leg = trip.legs[0]
+        return min(
+            dep["notes"].get(leg.board_stop, 0.0),
+            arr["notes"].get(leg.alight_stop, 0.0),
+        )
+
+    def somme(trip: Trip) -> float:
+        leg = trip.legs[0]
+        return dep["notes"].get(leg.board_stop, 0.0) + arr["notes"].get(
+            leg.alight_stop, 0.0
+        )
+
+    bus = [trip for trip in trips if trip.legs]
+    if not bus:
+        return []
+    # Sur chaque ligne, le meilleur arrêt seulement (``_meilleur`` de v1), jamais
+    # le plus rapide : Tata 62 va à Colobane, on ne descend pas à Fass parce que
+    # c'est plus tôt sur le parcours.
+    meilleure_somme: dict = {}
+    for trip in bus:
+        meilleure_somme[trip.line_combo] = max(
+            meilleure_somme.get(trip.line_combo, 0.0), somme(trip)
+        )
+    bus = [
+        trip for trip in bus if somme(trip) >= meilleure_somme[trip.line_combo]
+    ]
+    seuil = max(note(trip) for trip in bus) - TOLERANCE
+    gardes = keep_sensible_trips([trip for trip in bus if note(trip) >= seuil])
+    return remove_dominated_trips(rank_trips(gardes), _NETWORK)
+
+
+def _resultat_vide(depart: str, arrivee: str, dep: dict, arr: dict) -> dict:
     return {
         "found": False,
         "depart": depart,
-        "depart_matched": depart_arret,
-        "depart_score": depart_score,
-        "depart_valide": depart_valide,
+        "depart_matched": dep["arret"],
+        "depart_score": dep["score"],
+        "depart_valide": dep["valide"],
         "arrivee": arrivee,
-        "arrivee_matched": arrivee_arret,
-        "arrivee_score": arrivee_score,
-        "arrivee_valide": arrivee_valide,
+        "arrivee_matched": arr["arret"],
+        "arrivee_score": arr["score"],
+        "arrivee_valide": arr["valide"],
         "lignes": [],
         "correspondances": [],
         "trajets_2": [],
@@ -173,24 +291,27 @@ def _resultat_vide(depart: str, arrivee: str) -> dict:
 
 
 def chercher_v2(
+    matcher,
     depart: str,
     arrivee: str,
     compagnies: set[str] | None = None,
 ) -> dict:
     """Le trajet au format de ``StopsMatcher.find_line``, calculé par v2.
 
-    Les trajets directs vont dans ``lignes``, ceux à un changement dans
-    ``correspondances``, ceux à deux changements dans ``trajets_2``, et la
+    ``matcher`` (le ``StopsMatcher`` de v1) résout les lieux ; v2 ne cherche que
+    le chemin.  Les trajets directs vont dans ``lignes``, ceux à un changement
+    dans ``correspondances``, ceux à deux changements dans ``trajets_2``, et la
     marche seule dans ``a_pied``.  Chaque ligne et chaque trajet portent aussi
     ``minutes`` (total arrondi).
     """
 
     depart, arrivee = depart or "", arrivee or ""
-    depart_arret, depart_score, depart_valide = _endpoint(depart)
-    arrivee_arret, arrivee_score, arrivee_valide = _endpoint(arrivee)
-    resultat = _resultat_vide(depart, arrivee)
+    dep = _resoudre(matcher, depart)
+    arr = _resoudre(matcher, arrivee)
+    resultat = _resultat_vide(depart, arrivee, dep, arr)
 
-    if not depart or not arrivee:
+    # Lieu non reconnu par GuindiMa : on ne devine pas, MoteurV2 rendra v1.
+    if not dep["valide"] or not arr["valide"]:
         return resultat
 
     operateur = (
@@ -198,18 +319,36 @@ def chercher_v2(
         if compagnies is not None and len(compagnies) == 1
         else None
     )
-    try:
-        trips = _ENGINE.find_trips(
-            depart,
-            arrivee,
-            max_trips=MAX_TRIPS,
-            operator=operateur,
-        )
-    except (PlaceNotFoundError, NoRouteFoundError):
-        return resultat
-    except Exception:
-        # Le repli v1 se fait dans app.py ; ici on garde le contrat de retour.
-        return resultat
+    surs = _arrets_surs(matcher)
+
+    def chercher(cle: str, direct_only: bool = False) -> list[Trip]:
+        # En direct seul, tous les bus : c'est _directs_comme_v1 qui les trie.
+        # Toute autre erreur remonte à MoteurV2.find_line, qui la journalise avant
+        # le repli v1.  L'avaler ici ferait passer un moteur cassé pour un moteur
+        # juste : avec v2 en panne, les tests affichaient 274/274 grâce au repli.
+        try:
+            return _ENGINE.find_trips(
+                depart,
+                arrivee,
+                max_trips=100_000 if direct_only else MAX_TRIPS,
+                operator=operateur,
+                origin_place=dep[cle],
+                destination_place=arr[cle],
+                nearby_stop_ok=surs.__contains__,
+                direct_only=direct_only,
+            )
+        except (PlaceNotFoundError, NoRouteFoundError):
+            return []
+
+    # Comme v1 : une ligne directe entre arrêts valides passe avant un changement.
+    # Le trajet à pied, lui, n'est proposé que s'il bat le bus (voir find_trips).
+    larges = chercher("large", direct_only=True)
+    directs = _directs_comme_v1(larges, dep, arr)
+    trips = (
+        [trip for trip in larges if not trip.legs][:1] + directs
+        if directs
+        else chercher("place")
+    )
 
     if compagnies is not None:
         trips = [
@@ -229,7 +368,7 @@ def chercher_v2(
         if not trip.legs:
             a_pied = _a_pied(trip)
         elif len(trip.legs) == 1:
-            lignes.append(_troncon(trip.legs[0]))
+            lignes.append(_direct(trip))
         elif len(trip.legs) == 2:
             correspondances.append(_correspondance(trip))
         elif len(trip.legs) == 3:
@@ -242,14 +381,8 @@ def chercher_v2(
     resultat.update(
         {
             "found": bool(lignes or correspondances or trajets_2 or a_pied),
-            "depart_matched": lignes[0]["monte_a"] if lignes else depart_arret,
-            "depart_score": depart_score,
-            "depart_valide": depart_valide,
-            "arrivee_matched": (
-                lignes[0]["descend_a"] if lignes else arrivee_arret
-            ),
-            "arrivee_score": arrivee_score,
-            "arrivee_valide": arrivee_valide,
+            "depart_matched": lignes[0]["monte_a"] if lignes else dep["arret"],
+            "arrivee_matched": lignes[0]["descend_a"] if lignes else arr["arret"],
             "lignes": lignes,
             "correspondances": correspondances,
             "trajets_2": trajets_2,
@@ -291,7 +424,7 @@ class MoteurV2:
         self, depart: str, arrivee: str, compagnies: set[str] | None = None
     ) -> dict:
         try:
-            resultat = chercher_v2(depart, arrivee, compagnies)
+            resultat = chercher_v2(self._repli, depart, arrivee, compagnies)
         except Exception as exc:  # pragma: no cover - garde-fou de production
             print(
                 f"[moteur] v2 indisponible ({type(exc).__name__}), repli v1",

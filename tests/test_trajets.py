@@ -769,6 +769,123 @@ def test_sahm_ligne_62() -> tuple[int, int]:
     return echecs, total
 
 
+def test_moteur_v2() -> tuple[int, int]:
+    """Moteur v2 : lieux résolus comme v1, pas de téléportation, pas de repli caché.
+
+    Ces cas n'ont de sens que pour v2 : sous v1 ils ne comptent pas, le total
+    reste celui du moteur historique.
+    """
+    import os
+
+    if os.getenv("GUINDIMA_MOTEUR", "v2").strip().lower() == "v1":
+        return 0, 0
+
+    from matching.stops_matcher import StopsMatcher
+    from routing import adapter
+    from routing.network import BUS_SPEED_M_PER_MIN, TRANSFER_PENALTY_MIN
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | moteur v2 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    repli = StopsMatcher()
+    repli.geo.point = repli.geo.point_connu
+    moteur = adapter.MoteurV2(repli)
+
+    # chercher_v2 est appelé en direct : une exception ferait échouer le test, au
+    # lieu de passer inaperçue derrière le repli v1 (un v2 cassé affichait 274/274).
+    ucad = adapter.chercher_v2(repli, "Keur Massar", "UCAD")
+    verifie(
+        "UCAD atteint « Université Cheikh Anta Diop » sur Tata 54",
+        any(
+            ligne["ligne"] == "Ligne 54"
+            and ligne["descend_a"] == "Université Cheikh Anta Diop"
+            for ligne in ucad["lignes"]
+        ),
+        ucad["lignes"],
+    )
+    verifie(
+        "Keur Massar -> UCAD : direct, sans Dem Dikk 11 ni changement",
+        ucad["lignes"]
+        and not ucad["correspondances"]
+        and not ucad["trajets_2"]
+        and all(ligne["ligne"] != "Ligne 11" for ligne in ucad["lignes"]),
+        ucad,
+    )
+    verifie(
+        "Sandaga est reconnu (par sa position, comme v1)",
+        adapter._resoudre(repli, "Sandaga")["valide"],
+    )
+    mariste = adapter.chercher_v2(repli, "Rond-Point École Mariste", "Palais")
+    premier = mariste["correspondances"][0]["etape_1"] if mariste["correspondances"] else {}
+    verifie(
+        "Rond-Point École Mariste monte à Keur Ngoor, pas à École Normale ni UCAD",
+        premier.get("monte_a") == "Keur Ngoor (Rond-Point École Mariste)",
+        mariste["correspondances"],
+    )
+    verifie(
+        "lieu inconnu de GuindiMa : le résultat exact de v1",
+        moteur.find_line("Zzzqwx", "Colobane") == repli.find_line("Zzzqwx", "Colobane"),
+    )
+
+    # Dem Dikk 11 : deux arrêts, et Lat Dior sans position.
+    reseau = adapter._NETWORK
+    cle = ("Dakar Dem Dikk", "Ligne 11")
+    troncon = next(
+        arete
+        for noeud, aretes in reseau.adjacency.items()
+        if noeud.line == cle
+        for arete in aretes
+        if arete.kind == "ride"
+    )
+    verifie(
+        "ligne à 2 arrêts sans position : 35 min, marquée estimée",
+        troncon.minutes == 35.0 and troncon.estimated,
+        troncon,
+    )
+    dep = adapter._resoudre(repli, "Keur Massar")
+    arr = adapter._resoudre(repli, "UCAD")
+    trajets = adapter._ENGINE.find_trips(
+        "Keur Massar",
+        "UCAD",
+        max_trips=4,
+        first_line=cle,
+        origin_place=dep["place"],
+        destination_place=arr["place"],
+    )
+    verifie(
+        "plancher : aucun trajet plus rapide que le vol d'oiseau en bus",
+        trajets
+        and all(
+            trajet.straight_line_m
+            and trajet.total_minutes
+            >= trajet.straight_line_m * 1.25 / BUS_SPEED_M_PER_MIN
+            + TRANSFER_PENALTY_MIN * trajet.transfers
+            for trajet in trajets
+        ),
+        [trajet.total_minutes for trajet in trajets],
+    )
+    verifie(
+        "Trip.estimated vrai quand Dem Dikk 11 est utilisée",
+        bool(trajets) and all(trajet.estimated for trajet in trajets),
+    )
+    lat_dior = adapter.chercher_v2(repli, "Keur Massar", "Lat Dior", {"Dakar Dem Dikk"})
+    verifie(
+        "la durée estimée arrive jusqu'à la carte",
+        any(ligne.get("estimee") for ligne in lat_dior["lignes"])
+        and "durée estimée" in (RACINE / "app.py").read_text(encoding="utf-8"),
+        lat_dior["lignes"],
+    )
+    return echecs, total
+
+
 def test_trajets_frequents() -> tuple[int, int]:
     """Chaque choix de l'onglet « Écrire » mène vraiment à un bus.
 
@@ -2607,6 +2724,7 @@ if __name__ == "__main__":
         echecs_generiques, total_generiques = test_mots_generiques()
         echecs_distance, total_distance = test_distance_courte()
         echecs_sahm, total_sahm = test_sahm_ligne_62()
+        echecs_moteur, total_moteur = test_moteur_v2()
         echecs_frequents, total_frequents = test_trajets_frequents()
         echecs_interface, total_interface = test_interface_micro()
         echecs_micro, total_micro = test_micro_vidage()
@@ -2621,6 +2739,7 @@ if __name__ == "__main__":
             + echecs_generiques
             + echecs_distance
             + echecs_sahm
+            + echecs_moteur
             + echecs_frequents
             + echecs_interface
             + echecs_micro
@@ -2636,6 +2755,7 @@ if __name__ == "__main__":
             + total_generiques
             + total_distance
             + total_sahm
+            + total_moteur
             + total_frequents
             + total_interface
             + total_micro

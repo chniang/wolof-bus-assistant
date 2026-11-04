@@ -12,8 +12,11 @@ import heapq
 import itertools
 from collections import defaultdict
 from dataclasses import dataclass
+from typing import Callable
 
 from .network import (
+    BUS_SPEED_M_PER_MIN,
+    TRANSFER_PENALTY_MIN,
     WALK_SPEED_M_PER_MIN,
     Edge,
     LineKey,
@@ -50,6 +53,8 @@ MAX_WALK_ONLY_MINUTES = 40.0
 # alternative.  This also catches routes with missing coordinates that
 # escape the distance-based detour check.
 MAX_TIME_VS_BEST = 3.0
+# Détour minimal de la route par rapport au vol d'oiseau, pour le plancher de durée.
+STRAIGHT_LINE_ROAD_FACTOR = 1.25
 
 
 def walking_minutes(
@@ -121,6 +126,7 @@ class Leg:
     num_stops: int
     minutes: float
     distance_m: float | None = None
+    estimated: bool = False
 
 
 @dataclass(frozen=True)
@@ -137,6 +143,10 @@ class Trip:
     detour: bool
     via_downtown: bool
     ridden_stops: tuple[str, ...]
+    estimated: bool = False
+    # Durée avant le plancher.  Le plancher met à égalité tous les trajets courts
+    # sur le papier : c'est elle qui les départage et qui borne la recherche.
+    raw_minutes: float = 0.0
 
     @property
     def walked_minutes(self) -> float:
@@ -148,18 +158,26 @@ class Trip:
 
 
 @dataclass(frozen=True)
+class ResolvedPlace:
+    """Un lieu déjà résolu en arrêts du réseau (par GuindiMa, pas par v2)."""
+
+    stops: tuple[str, ...]
+    coords: tuple[float, float] | None = None
+
+
+@dataclass(frozen=True)
 class AccessPoint:
     stop: str
     walk: Walk
 
 
-def _rank_key(trip: Trip) -> tuple[float, int, float, float]:
+def _rank_key(trip: Trip) -> tuple[float, float, float, float, int]:
     distance = (
         trip.total_distance_m
         if trip.total_distance_m is not None
         else float("inf")
     )
-    return trip.score, trip.total_minutes, distance, trip.transfers
+    return trip.score, trip.raw_minutes, trip.total_minutes, distance, trip.transfers
 
 
 def rank_trips(trips: list[Trip], max_trips: int | None = None) -> list[Trip]:
@@ -170,10 +188,16 @@ def rank_trips(trips: list[Trip], max_trips: int | None = None) -> list[Trip]:
     avoiding a transfer is worth a short wait.
     """
 
+    # Sur une même ligne, l'arrêt demandé passe avant un voisin à pied : Tata 62
+    # dessert Sahm, on ne fait pas marcher l'usager jusqu'à Fass pour gagner une
+    # minute sur le papier.
+    def preference(trip: Trip) -> tuple:
+        return (_has_endpoint_walk(trip), *_rank_key(trip))
+
     unique: dict[tuple[LineKey, ...], Trip] = {}
     for trip in trips:
         current = unique.get(trip.line_combo)
-        if current is None or _rank_key(trip) < _rank_key(current):
+        if current is None or preference(trip) < preference(current):
             unique[trip.line_combo] = trip
 
     ordered = sorted(unique.values(), key=_rank_key)
@@ -191,6 +215,29 @@ def rank_trips(trips: list[Trip], max_trips: int | None = None) -> list[Trip]:
     rest = [trip for trip in ordered if trip.line_combo not in direct_keys]
     ranked = direct + rest
     return ranked if max_trips is None else ranked[:max_trips]
+
+
+def keep_sensible_trips(trips: list[Trip]) -> list[Trip]:
+    """Écarte les détours par le centre et les trajets absurdement lents."""
+
+    # Extra guard for this network: do not cross downtown just to
+    # connect two outer neighbourhoods.
+    non_downtown = [trip for trip in trips if not trip.via_downtown]
+    if non_downtown:
+        trips = non_downtown
+
+    # Do not offer an absurdly slow "alternative" just because it has
+    # fewer transfers.  If every remaining trip is slow, keep them.
+    if trips:
+        fastest = min(trip.total_minutes for trip in trips)
+        sane = [
+            trip
+            for trip in trips
+            if trip.total_minutes <= fastest * MAX_TIME_VS_BEST
+        ]
+        if sane:
+            trips = sane
+    return trips
 
 
 def _has_walkable_one_stop_leg(trip: Trip, network: Network) -> bool:
@@ -258,6 +305,7 @@ class _Step:
     walk_minutes: float = 0.0
     walk_distance_m: float | None = None
     transfer_penalty: float = 0.0
+    estimated: bool = False
 
 
 @dataclass(frozen=True)
@@ -283,6 +331,7 @@ class RouteEngine:
         candidate: PlaceCandidate,
         kind: str,
         include_nearby: bool = True,
+        nearby_stop_ok: Callable[[str], bool] | None = None,
     ) -> list[AccessPoint]:
         """Stops the user can reach from this place, with the walk."""
 
@@ -307,15 +356,21 @@ class RouteEngine:
         # Exact stops also open every stop within a short walk.  This lets a
         # neighbourhood such as Médina use a nearby avenue without losing the
         # exact stop itself.  The exact stop keeps its zero-minute walk.
+        # Un arrêt à la position incertaine n'ouvre rien et n'est proposé à
+        # personne : « Malika Terminus », mal placé, amenait Almadies -> Malika à
+        # Gadaye « à 4 min à pied », à 4 km de là.
         exact_coords = [
             coords
             for stop in exact_stops
             if (coords := self.network.coords(stop)) is not None
+            and (nearby_stop_ok is None or nearby_stop_ok(stop))
         ]
         if exact_coords and include_nearby:
             nearby: list[tuple[float, str]] = []
             for stop in self.network.stop_names:
                 if stop in points:
+                    continue
+                if nearby_stop_ok is not None and not nearby_stop_ok(stop):
                     continue
                 stop_coords = self.network.coords(stop)
                 if stop_coords is None:
@@ -373,15 +428,42 @@ class RouteEngine:
 
         return list(points.values())
 
+    def _candidates_for(self, place: ResolvedPlace) -> list[PlaceCandidate]:
+        """Les arrêts résolus, sous la forme que le reste du moteur connaît.
+
+        Chacun est un arrêt exact : montée sans marche, et les arrêts proches
+        restent ouverts par l'élargissement habituel de ``_access_points``.
+        """
+
+        candidats = []
+        for stop in place.stops:
+            coords = self.network.coords(stop)
+            candidats.append(
+                PlaceCandidate(
+                    name=stop,
+                    normalized=normalize_name(stop),
+                    score=100.0,
+                    lat=coords[0] if coords else None,
+                    lon=coords[1] if coords else None,
+                    is_stop=True,
+                    is_place=False,
+                    stop_names=(stop,),
+                )
+            )
+        return candidats
+
     def _endpoint_map(
         self,
         candidates: list[PlaceCandidate],
         kind: str,
         include_nearby: bool = True,
+        nearby_stop_ok: Callable[[str], bool] | None = None,
     ) -> dict[str, AccessPoint]:
         result: dict[str, AccessPoint] = {}
         for candidate in candidates:
-            for point in self._access_points(candidate, kind, include_nearby):
+            for point in self._access_points(
+                candidate, kind, include_nearby, nearby_stop_ok
+            ):
                 current = result.get(point.stop)
                 if current is None or point.walk.minutes < current.walk.minutes:
                     result[point.stop] = point
@@ -409,18 +491,32 @@ class RouteEngine:
         max_trips: int = 3,
         operator: str | None = None,
         first_line: LineKey | None = None,
+        origin_place: ResolvedPlace | None = None,
+        destination_place: ResolvedPlace | None = None,
+        nearby_stop_ok: Callable[[str], bool] | None = None,
+        direct_only: bool = False,
     ) -> list[Trip]:
+        """Les meilleurs trajets.  ``origin_place`` et ``destination_place``
+        remplacent la recherche par nom quand l'appelant a déjà résolu le lieu ;
+        ``nearby_stop_ok`` dit quels arrêts peuvent servir d'arrêt « proche » ;
+        ``direct_only`` se limite aux bus directs entre les arrêts demandés.
+        """
+
         max_trips = max(1, max_trips)
-        origin_matches = prefer_exact_matches(
-            self.place_index.match(origin),
-            origin,
+        origin_matches = (
+            self._candidates_for(origin_place)
+            if origin_place is not None
+            else prefer_exact_matches(self.place_index.match(origin), origin)
         )
         if not origin_matches:
             raise PlaceNotFoundError(origin, self.place_index.suggestions(origin))
 
-        destination_matches = prefer_exact_matches(
-            self.place_index.match(destination),
-            destination,
+        destination_matches = (
+            self._candidates_for(destination_place)
+            if destination_place is not None
+            else prefer_exact_matches(
+                self.place_index.match(destination), destination
+            )
         )
         if not destination_matches:
             raise PlaceNotFoundError(
@@ -433,9 +529,11 @@ class RouteEngine:
         destination_points = self._endpoint_map(
             destination_matches, "egress", include_nearby=False
         )
-        expanded_origin_points = self._endpoint_map(origin_matches, "access")
+        expanded_origin_points = self._endpoint_map(
+            origin_matches, "access", nearby_stop_ok=nearby_stop_ok
+        )
         expanded_destination_points = self._endpoint_map(
-            destination_matches, "egress"
+            destination_matches, "egress", nearby_stop_ok=nearby_stop_ok
         )
         if not expanded_origin_points:
             raise PlaceNotFoundError(origin, self.place_index.suggestions(origin))
@@ -444,8 +542,12 @@ class RouteEngine:
                 destination, self.place_index.suggestions(destination)
             )
 
-        origin_coords = representative_coordinates(origin_matches)
-        destination_coords = representative_coordinates(destination_matches)
+        origin_coords = (origin_place and origin_place.coords) or (
+            representative_coordinates(origin_matches)
+        )
+        destination_coords = (destination_place and destination_place.coords) or (
+            representative_coordinates(destination_matches)
+        )
 
         # La marche peut battre le bus sur les courtes distances.  On garde
         # ce trajet à part : il ne remplace le bus que s'il est plus rapide.
@@ -505,32 +607,43 @@ class RouteEngine:
                 first_line=first_line,
             )
 
-        trips = search(origin_points, destination_points)
-        if (
-            expanded_origin_points != origin_points
-            or expanded_destination_points != destination_points
-        ):
-            trips += search(
-                expanded_origin_points,
-                expanded_destination_points,
-            )
-        # Extra guard for this network: do not cross downtown just to
-        # connect two outer neighbourhoods.
-        non_downtown = [trip for trip in trips if not trip.via_downtown]
-        if non_downtown:
-            trips = non_downtown
+        # Comme v1 : le trajet direct d'abord.  S'il existe, inutile de chercher
+        # des changements que l'affichage ne proposera pas.
+        trips = self._direct_trips(
+            origin_points,
+            destination_points,
+            operator,
+            first_line,
+            origin_name=origin,
+            destination_name=destination,
+            origin_coords=origin_coords,
+            destination_coords=destination_coords,
+            origin_is_downtown=origin_is_downtown,
+            destination_is_downtown=destination_is_downtown,
+        )
+        if not trips and not direct_only:
+            trips = search(origin_points, destination_points)
+            if (
+                expanded_origin_points != origin_points
+                or expanded_destination_points != destination_points
+            ):
+                trips += search(
+                    expanded_origin_points,
+                    expanded_destination_points,
+                )
+        # L'appelant de ``direct_only`` trie d'abord les arrêts selon ses règles :
+        # c'est lui qui applique ensuite ce filtre, sinon un arrêt qu'il écartera
+        # pourrait disqualifier les bons.
+        if not direct_only:
+            trips = keep_sensible_trips(trips)
 
-        # Do not offer an absurdly slow "alternative" just because it has
-        # fewer transfers.  If every remaining trip is slow, keep them.
-        if trips:
-            fastest = min(trip.total_minutes for trip in trips)
-            sane = [
-                trip
-                for trip in trips
-                if trip.total_minutes <= fastest * MAX_TIME_VS_BEST
-            ]
-            if sane:
-                trips = sane
+        # Un bus direct depuis l'arrêt demandé jusqu'à l'arrêt demandé : aucun
+        # voisin à pied ne le remplace.  Les arrêts proches ne servent que s'il
+        # n'y en a pas.
+        if any(
+            trip.transfers == 0 and not _has_endpoint_walk(trip) for trip in trips
+        ):
+            trips = [trip for trip in trips if not _has_endpoint_walk(trip)]
 
         # The exact stop remains the primary choice.  A nearby stop may add a
         # direct option, but it must not replace a normal exact-stop route
@@ -542,8 +655,13 @@ class RouteEngine:
                 if trip.transfers == 0 or not _has_endpoint_walk(trip)
             ]
 
-        ranked = rank_trips(trips)
-        result = remove_dominated_trips(ranked, self.network)[:max_trips]
+        # ``rank_trips`` ne garde que le plus court par ligne : en direct seul, le
+        # choix de l'arrêt sur chaque ligne revient à l'appelant.
+        result = (
+            list(trips)
+            if direct_only
+            else remove_dominated_trips(rank_trips(trips), self.network)[:max_trips]
+        )
 
         if walk_trip is not None:
             fastest_bus = min(
@@ -562,6 +680,75 @@ class RouteEngine:
     # ------------------------------------------------------------------
     # Search.
     # ------------------------------------------------------------------
+    @staticmethod
+    def _start_label(stop: str, access: AccessPoint, node: Node) -> _Label:
+        access_step = _Step(
+            kind="access",
+            from_stop=access.walk.from_place,
+            to_stop=stop,
+            minutes=access.walk.minutes,
+            line=node.line,
+            direction=node.direction,
+            from_index=None,
+            to_index=node.index,
+            walk_minutes=access.walk.minutes,
+            walk_distance_m=access.walk.distance_m,
+        )
+        return _Label(
+            node=node,
+            transfers=0,
+            cost=access.walk.minutes,
+            combo=(node.line,),
+            steps=(access_step,),
+            rode_since_transfer=False,
+        )
+
+    def _direct_trips(
+        self,
+        origin_points: dict[str, AccessPoint],
+        destination_points: dict[str, AccessPoint],
+        operator: str | None,
+        first_line: LineKey | None,
+        **contexte,
+    ) -> list[Trip]:
+        """Tous les bus directs entre ces arrêts, en suivant simplement chaque ligne.
+
+        À part de la recherche par score : un direct lent ne doit pas être perdu
+        derrière des trajets à changements.  Tata 54 fait Keur Massar -> UCAD sans
+        changement, et l'usager le préfère à trois bus plus courts sur la carte.
+        """
+
+        trips: list[Trip] = []
+        for stop, access in origin_points.items():
+            for node in self.network.nodes_at_stop(stop):
+                if first_line is not None and node.line != first_line:
+                    continue
+                if operator is not None and node.line[0] != operator:
+                    continue
+                label = self._start_label(stop, access, node)
+                while True:
+                    ride = next(
+                        (
+                            edge
+                            for edge in self.network.adjacency[label.node]
+                            if edge.kind == "ride"
+                        ),
+                        None,
+                    )
+                    if ride is None:
+                        break
+                    label = self._advance_ride(label, ride)
+                    destination = destination_points.get(
+                        self.network.stop_for(label.node)
+                    )
+                    if destination is not None:
+                        trips.append(
+                            self._build_trip(
+                                label=label, destination=destination, **contexte
+                            )
+                        )
+        return trips
+
     def _search(
         self,
         origin_points: dict[str, AccessPoint],
@@ -588,27 +775,7 @@ class RouteEngine:
                     continue
                 if operator is not None and node.line[0] != operator:
                     continue
-                access_step = _Step(
-                    kind="access",
-                    from_stop=access.walk.from_place,
-                    to_stop=stop,
-                    minutes=access.walk.minutes,
-                    line=node.line,
-                    direction=node.direction,
-                    from_index=None,
-                    to_index=node.index,
-                    walk_minutes=access.walk.minutes,
-                    walk_distance_m=access.walk.distance_m,
-                )
-                label = _Label(
-                    node=node,
-                    transfers=0,
-                    cost=access.walk.minutes,
-                    combo=(node.line,),
-                    steps=(access_step,),
-                    rode_since_transfer=False,
-                )
-                self._push(queue, best, counter, label)
+                self._push(queue, best, counter, self._start_label(stop, access, node))
 
         expansions = 0
         while queue:
@@ -623,7 +790,12 @@ class RouteEngine:
 
             # Queue order is score order, so this lower bound is final.
             if len(accepted) >= max_trips:
-                worst_score = max(trip.score for trip in accepted)
+                # La durée brute, pas le total : un plancher élevé rendrait la
+                # borne inutile (26 s et 250 000 expansions pour Keur Massar -> UCAD).
+                worst_score = max(
+                    trip.raw_minutes + TRANSFER_SCORE_MINUTES * trip.transfers
+                    for trip in accepted
+                )
                 if score_so_far >= worst_score:
                     break
 
@@ -677,15 +849,16 @@ class RouteEngine:
     @staticmethod
     def _trip_rank(
         trip: Trip,
-    ) -> tuple[bool, bool, float, int, float, float]:
+    ) -> tuple[bool, bool, float, int, float, float, float]:
         # Prefer a clean trip over a detour, and a non-downtown trip over a
         # downtown shortcut, even if the clean version is slightly slower.
-        score, minutes, distance, transfers = _rank_key(trip)
+        score, raw, minutes, distance, transfers = _rank_key(trip)
         return (
             trip.detour,
             trip.via_downtown,
             score,
             transfers,
+            raw,
             minutes,
             distance,
         )
@@ -758,6 +931,7 @@ class RouteEngine:
             from_index=label.node.index,
             to_index=edge.target.index,
             distance_m=edge.distance_m,
+            estimated=edge.estimated,
         )
         return _Label(
             node=edge.target,
@@ -847,6 +1021,7 @@ class RouteEngine:
                     ),
                     minutes=billed_minutes,
                     distance_m=current["distance"],
+                    estimated=current["estimated"],
                 )
             )
             current = None
@@ -880,11 +1055,13 @@ class RouteEngine:
                         "end_index": step.to_index,
                         "minutes": step.minutes,
                         "distance": step.distance_m,
+                        "estimated": step.estimated,
                     }
                 else:
                     current["alight_stop"] = step.to_stop
                     current["end_index"] = step.to_index
                     current["minutes"] += step.minutes
+                    current["estimated"] = current["estimated"] or step.estimated
                     if (
                         current["distance"] is None
                         or step.distance_m is None
@@ -925,6 +1102,7 @@ class RouteEngine:
         finish_leg()
 
         total_minutes = sum(step.minutes for step in steps) + minimum_leg_extra
+        raw_minutes = total_minutes
 
         total_distance: float | None = 0.0
         for step in steps:
@@ -939,6 +1117,14 @@ class RouteEngine:
         straight_line: float | None = None
         if origin_coords is not None and destination_coords is not None:
             straight_line = haversine_m(origin_coords, destination_coords)
+            # Pas de téléportation : quelles que soient les données d'une ligne,
+            # un bus ne couvre pas la distance réelle plus vite que le trafic.
+            # Keur Massar -> UCAD affichait 25 min par Dem Dikk 11, à 18 km.
+            total_minutes = max(
+                total_minutes,
+                straight_line * STRAIGHT_LINE_ROAD_FACTOR / BUS_SPEED_M_PER_MIN
+                + TRANSFER_PENALTY_MIN * label.transfers,
+            )
 
         detour = bool(
             total_distance is not None
@@ -964,6 +1150,8 @@ class RouteEngine:
             detour=detour,
             via_downtown=via_downtown,
             ridden_stops=tuple(ridden_stops),
+            estimated=any(step.estimated for step in steps),
+            raw_minutes=raw_minutes,
         )
 
     def _passes_downtown(

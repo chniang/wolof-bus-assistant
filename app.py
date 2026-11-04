@@ -863,7 +863,9 @@ def _une_carte(
     )
     duree = (
         f"<span style='color:#0B6B37;font-weight:700;'>"
-        f"~{int(round(float(match['minutes'])))} min</span>"
+        f"~{int(round(float(match['minutes'])))} min"
+        # Dem Dikk 11 : un terminus sans position, la durée est un forfait.
+        f"{' (durée estimée)' if match.get('estimee') else ''}</span>"
         if match.get("minutes") is not None
         else ""
     )

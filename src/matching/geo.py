@@ -393,6 +393,20 @@ class LieuxGeo:
         info = self._arrets.get(arret)
         return info["point"] if info else None
 
+    def position_sure(self, arret: str) -> bool:
+        """Vrai si l'on peut situer cet arrêt : confiance « bonne », pas de faux ami.
+
+        Les rues numérotées et les noms génériques sont déjà passés en
+        « douteuse » au chargement (voir `_non_fiables`).
+        """
+        info = self._arrets.get(arret)
+        return bool(
+            info
+            and info["point"] is not None
+            and info["confiance"] in CONFIANCE_PROXIMITE
+            and normaliser(arret) not in FAUX_AMIS
+        )
+
     def point_connu(self, lieu: str) -> tuple[float, float] | None:
         """Point d'un lieu déjà présent dans les CSV, sans géocodage réseau.
 
