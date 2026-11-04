@@ -30,9 +30,11 @@ from .router import (
 )
 
 try:  # import à plat (app.py) ou en paquet
+    from matching.geo import nom_generique, nom_rue_numerotee
     from matching.lieux import joli, score
     from matching.stops_matcher import MIN_SCORE, TOLERANCE
 except ImportError:  # pragma: no cover
+    from ..matching.geo import nom_generique, nom_rue_numerotee
     from ..matching.lieux import joli, score
     from ..matching.stops_matcher import MIN_SCORE, TOLERANCE
 
@@ -66,10 +68,13 @@ def _troncon(leg: Leg) -> dict:
 
     ligne = _NETWORK.lines[(leg.operator, leg.line)]
     arrets = ligne.stops
-    if arrets and arrets[-1] == leg.direction:
+    # Une boucle (Dem Dikk 502 : Gare Colobane -> Gare Colobane) a le même terminus
+    # aux deux bouts : seul l'ordre des arrêts peut trancher le sens.
+    boucle = bool(arrets) and arrets[0] == arrets[-1]
+    if arrets and not boucle and arrets[-1] == leg.direction:
         direct = True
         ordre = arrets
-    elif arrets and arrets[0] == leg.direction:
+    elif arrets and not boucle and arrets[0] == leg.direction:
         direct = False
         ordre = tuple(reversed(arrets))
     else:
@@ -86,7 +91,10 @@ def _troncon(leg: Leg) -> dict:
     except ValueError:
         parcours = [leg.board_stop, leg.alight_stop]
     else:
-        parcours = list(ordre[i_dep : i_arr + 1])
+        parcours = list(ordre[i_dep : i_arr + 1]) or [
+            leg.board_stop,
+            leg.alight_stop,
+        ]
 
     if direct:
         depart = ligne.terminus_a or (arrets[0] if arrets else "")
@@ -171,11 +179,30 @@ def _arrets_du_reseau(arret: str) -> list[str]:
 def _arrets_surs(matcher) -> frozenset[str]:
     """Les arrêts v2 que les règles de geo.py permettent de situer."""
 
-    return frozenset(
+    surs = {
         nom
         for arret in matcher.tous_les_arrets
         if matcher.geo.position_sure(arret)
         for nom in _arrets_du_reseau(arret)
+    }
+    # Les noms officiels de Dem Dikk : mêmes règles que geo.py.
+    surs.update(
+        nom
+        for nom in _arrets_nouveaux(matcher)
+        if _NETWORK.stop_confidence.get(nom) == "bonne"
+        and not nom_generique(nom)
+        and not nom_rue_numerotee(nom)
+    )
+    return frozenset(surs)
+
+
+@lru_cache(maxsize=4)
+def _arrets_nouveaux(matcher) -> tuple[str, ...]:
+    """Les arrêts du réseau v2 que v1 ne connaît pas (noms officiels de Dem Dikk)."""
+
+    connus = {normalize_name(arret) for arret in matcher.tous_les_arrets}
+    return tuple(
+        nom for nom in _NETWORK.stop_names if normalize_name(nom) not in connus
     )
 
 
@@ -197,21 +224,33 @@ def _resoudre(matcher, lieu: str) -> dict:
     ALIAS, FAUX_AMIS et règles géo sont ceux de v1 : on les appelle.  ``place``
     garde les arrêts à moins de TOLERANCE du meilleur, ``large`` tous les arrêts
     valides, et ``notes`` la note de chacun, sous son nom dans le réseau v2.
+
+    Les noms officiels de Dem Dikk s'y ajoutent.  La position reste décidée sur les
+    arrêts de v1 : « Sandaga » est désormais un arrêt, mais Petersen, à côté, doit
+    rester proposé, comme avant (Tata 41).  Un arrêt sorti du réseau v2 ne compte plus.
     """
 
     _, par_nom = matcher._reconnu(lieu)
     geo_scores = matcher.geo.scores_lieu(lieu, proximite=par_nom < MIN_SCORE)
-    meilleur, note = matcher._reconnu(lieu, geo_scores)
 
     notes_v1 = {
         arret: max(score(lieu, arret), geo_scores.get(arret, 0.0))
         for arret in matcher.tous_les_arrets
+        if _arrets_du_reseau(arret)
     }
+    notes_v1.update(
+        (arret, score(lieu, arret)) for arret in _arrets_nouveaux(matcher)
+    )
     tries = sorted(notes_v1, key=lambda arret: -notes_v1[arret])
+    meilleur = tries[0] if tries and notes_v1[tries[0]] > 0 else ""
+    note = notes_v1[meilleur] if meilleur else 0.0
     notes: dict[str, float] = {}
+    par_son_nom: set[str] = set()
     for arret in tries:
         for nom in _arrets_du_reseau(arret):
             notes.setdefault(nom, notes_v1[arret])
+            if score(lieu, arret) >= MIN_SCORE:
+                par_son_nom.add(nom)
     # Le point connu des CSV seulement : il sert à mesurer le vol d'oiseau, jamais
     # à décider où monter, et ne doit pas dépendre du réseau.
     point = matcher.geo.point_connu(lieu)
@@ -229,6 +268,7 @@ def _resoudre(matcher, lieu: str) -> dict:
         "place": place(max(MIN_SCORE, note - TOLERANCE)),
         "large": place(MIN_SCORE),
         "notes": notes,
+        "par_son_nom": par_son_nom,
     }
 
 
@@ -269,7 +309,17 @@ def _directs_comme_v1(trips: list[Trip], dep: dict, arr: dict) -> list[Trip]:
     ]
     seuil = max(note(trip) for trip in bus) - TOLERANCE
     gardes = keep_sensible_trips([trip for trip in bus if note(trip) >= seuil])
-    return remove_dominated_trips(rank_trips(gardes), _NETWORK)
+    # Règle 1 de v1 : une ligne trouvée par le nom du lieu passe avant une ligne
+    # trouvée seulement par la position, puis la plus rapide.  Sinon le « Stade Amadou
+    # Barry », voisin de Guédiawaye, passait devant les arrêts qui portent ce nom.
+    def par_nom(trip: Trip) -> int:
+        leg = trip.legs[0]
+        return int(leg.board_stop in dep["par_son_nom"]) + int(
+            leg.alight_stop in arr["par_son_nom"]
+        )
+
+    classes = sorted(rank_trips(gardes), key=lambda trip: -par_nom(trip))
+    return remove_dominated_trips(classes, _NETWORK)
 
 
 def _resultat_vide(depart: str, arrivee: str, dep: dict, arr: dict) -> dict:

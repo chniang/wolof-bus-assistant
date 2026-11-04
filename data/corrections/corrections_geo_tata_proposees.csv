@@ -1,0 +1,531 @@
+compagnie,ligne,ordre,arret,lat,lon,source,statut_avant,ecart_avant_m
+Tata AFTU,Ligne 1,1,Gare Lat Dior,14.668988,-17.441086,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 1,2,Rue Sandiniery,14.669967,-17.442216,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 1,3,Rue de la Somme,14.670432,-17.442803,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 1,4,Rue de Reims Prolongée,14.670887,-17.442594,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 1,7,Boulevard de la Gueule Tapée,14.680814,-17.449634,projection_sur_trace,suspect,510
+Tata AFTU,Ligne 1,8,Rue 34,14.690697,-17.450286,projection_sur_trace,suspect,853
+Tata AFTU,Ligne 1,11,Rue 9,14.709310,-17.458194,projection_sur_trace,suspect,759
+Tata AFTU,Ligne 1,12,Rue Abebebikila (Rue 11 Prolongée),14.709310,-17.458194,projection_sur_trace,suspect,809
+Tata AFTU,Ligne 1,13,Cheikh Sidatyaidara (Niarytally),14.709310,-17.458194,projection_sur_trace,suspect,809
+Tata AFTU,Ligne 1,14,Avenue Bourguiba,14.701996,-17.455795,projection_sur_trace,suspect,840
+Tata AFTU,Ligne 1,17,2 Voies de Liberté VI,14.737002,-17.464315,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 1,18,VDN,14.741537,-17.471399,interpolation_sur_trace,faux,7431
+Tata AFTU,Ligne 1,19,Rte Corniche de HLM Gd Médine,14.747308,-17.464567,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 1,20,Espace HLM Gd Médine (Face Autoroute),14.745099,-17.455267,projection_sur_trace,suspect,417
+Tata AFTU,Ligne 2,5,Route des Niayes,14.760030,-17.439094,projection_sur_trace,suspect,918
+Tata AFTU,Ligne 2,7,Avenue Cardinal Hyacinthe Thiandoum,14.736835,-17.455371,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 2,9,Route du Front de Terre,14.722815,-17.453122,interpolation_sur_trace,faux,1244
+Tata AFTU,Ligne 2,10,Rue P,14.696181,-17.452374,projection_sur_trace,suspect,494
+Tata AFTU,Ligne 2,11,Avenue Cheikh Amadou Bamba (Rue 13 des HLM),14.695918,-17.452627,projection_sur_trace,suspect,492
+Tata AFTU,Ligne 2,12,Boulevard du Général de Gaulle,14.695918,-17.452627,projection_sur_trace,suspect,492
+Tata AFTU,Ligne 2,13,Rue 39 (Retour Par Rue 17),14.695918,-17.452627,projection_sur_trace,suspect,492
+Tata AFTU,Ligne 2,14,Rue 22,14.695222,-17.453383,projection_sur_trace,suspect,486
+Tata AFTU,Ligne 3,1,Yoff-Village,14.756024,-17.475492,terminus_officiel_aftu,faux,1358
+Tata AFTU,Ligne 3,2,Autoroute Seydinalimamoulaye,14.749572,-17.491623,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 3,3,Aéroport L S Senghor,14.751779,-17.501025,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 3,5,Village de Ngor,14.749863,-17.491790,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 3,7,Les Mamelles (Monument Renaissance),14.753853,-17.494308,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 3,8,Cité ASECNA,14.723393,-17.493597,projection_sur_trace,suspect,867
+Tata AFTU,Ligne 3,9,Village de Ouakam,14.718729,-17.488725,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 4,1,Yoff-Village,14.754531,-17.468589,projection_sur_trace,suspect,881
+Tata AFTU,Ligne 4,2,Autoroute Seydina Limamoulaye,14.740423,-17.471539,interpolation_sur_trace,faux,2404
+Tata AFTU,Ligne 4,3,Echangeur de la Foire,14.727218,-17.472135,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 4,4,Voie de Dégagement Nord (VDN),14.713647,-17.471890,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 4,5,Carrefour Seydou N Tall,14.700302,-17.468792,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 4,6,Avenue Cheikh Anta Diop,14.690640,-17.459148,interpolation_sur_trace,faux,2122
+Tata AFTU,Ligne 5,1,Gare des Parcelles Assainies,14.759157,-17.436505,projection_sur_trace,suspect,767
+Tata AFTU,Ligne 5,2,Route de l'Église,14.756003,-17.435788,projection_sur_trace,suspect,422
+Tata AFTU,Ligne 5,4,Pont Stade LSS,14.749263,-17.443123,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 5,5,Autoroute Seydina L,14.709600,-17.449151,projection_sur_trace,suspect,949
+Tata AFTU,Ligne 5,6,Route Principale de Grand Yoff (Par Bassin Retention),14.713670,-17.446321,projection_sur_trace,suspect,865
+Tata AFTU,Ligne 5,7,Route de l'Hôpital Général de Gd Yoff (Hoggy),14.713670,-17.446321,projection_sur_trace,suspect,865
+Tata AFTU,Ligne 5,8,Route du Front de Terre,14.728126,-17.446480,interpolation_sur_trace,faux,1219
+Tata AFTU,Ligne 5,9,Avenue Bourguiba,14.697239,-17.456929,projection_sur_trace,suspect,978
+Tata AFTU,Ligne 5,10,Avenue Cheikh Amadou Bamba Mbacke (Rue 13),14.713708,-17.446871,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 5,11,Rue 39,14.750287,-17.441211,projection_sur_trace,suspect,587
+Tata AFTU,Ligne 5,12,Retour Rue 17,14.705631,-17.453598,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 5,14,Rue 25,14.682685,-17.451601,projection_sur_trace,suspect,835
+Tata AFTU,Ligne 5,15,Retour Rue 37,14.681673,-17.450510,projection_sur_trace,suspect,413
+Tata AFTU,Ligne 24,1,Université Cheikh Anta Diop,14.692520,-17.461659,projection_sur_trace,suspect,655
+Tata AFTU,Ligne 24,2,Avenue Cheikh Anta Diop,14.697701,-17.467592,interpolation_sur_trace,faux,3399
+Tata AFTU,Ligne 24,3,Rd Point Seydou N Tall,14.700104,-17.466396,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 24,5,Route du Front de Terre,14.726205,-17.440776,projection_sur_trace,suspect,894
+Tata AFTU,Ligne 24,6,Echangeur de Hann,14.739621,-17.439088,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 24,7,Autoroute,14.746245,-17.416439,interpolation_sur_trace,faux,21286
+Tata AFTU,Ligne 24,8,Branche Est Autoroute,14.751753,-17.396095,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 24,11,Route des Niayes,14.762106,-17.388223,interpolation_sur_trace,faux,1110
+Tata AFTU,Ligne 24,12,Prolongement Rue 10,14.765541,-17.393586,interpolation_sur_trace,faux,1496
+Tata AFTU,Ligne 24,13,Sapeurs-Pompiers de Gw,14.769240,-17.395442,interpolation_sur_trace,faux,1496
+Tata AFTU,Ligne 24,14,Notaire (Guédiawaye),14.774114,-17.389406,terminus_officiel_aftu,faux,1961
+Tata AFTU,Ligne 25,1,Gare des Parcelles Assainies,14.760215,-17.438390,projection_sur_trace,suspect,955
+Tata AFTU,Ligne 25,4,Carrefour HLM Gd Medine/diamalaye,14.751396,-17.456880,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 25,5,VDN Prolongée,14.744124,-17.469587,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 25,6,Echangeur de la Foire,14.730402,-17.473071,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 25,7,Voie de Dégagement Nord (VDN),14.716114,-17.471678,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 25,8,Carrefour Seydou N Tall,14.701831,-17.469382,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 25,9,Avenue Cheikh Anta Diop,14.691162,-17.459754,interpolation_sur_trace,faux,2124
+Tata AFTU,Ligne 27,1,Marché Boubess,14.772428,-17.387216,terminus_officiel_aftu,faux,1389
+Tata AFTU,Ligne 27,4,UE 02,14.762915,-17.384759,interpolation_sur_trace,faux,19787
+Tata AFTU,Ligne 27,5,Rue Cheik Ahmadou Bamba Prolongée,14.756367,-17.392600,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 27,9,Cité Lobatt Fall,14.750351,-17.405849,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 27,10,Route Nationale 1,14.745969,-17.418868,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 27,11,Croisement Cambérène,14.742740,-17.433481,interpolation_sur_trace,faux,2814
+Tata AFTU,Ligne 27,12,Branche Est-Autoroute,14.730856,-17.440172,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 27,13,Echangeur Patte d'Oie,14.715445,-17.441203,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 27,14,Rocade Fann Bel Air,14.700037,-17.442294,interpolation_sur_trace,faux,1862
+Tata AFTU,Ligne 27,15,SCOA,14.692374,-17.437361,interpolation_sur_trace,faux,1020
+Tata AFTU,Ligne 28,2,Hamo IV,14.780645,-17.388987,interpolation_sur_trace,faux,1964
+Tata AFTU,Ligne 28,5,Cité Enseignants,14.775377,-17.405477,interpolation_sur_trace,faux,4318
+Tata AFTU,Ligne 28,6,Hamo III,14.773953,-17.408519,interpolation_sur_trace,faux,1964
+Tata AFTU,Ligne 28,7,Croisement Cheikh Bethio,14.769820,-17.410026,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 28,12,Croisement Cambérène,14.764223,-17.421245,projection_sur_trace,suspect,795
+Tata AFTU,Ligne 28,13,Branche Est Autoroute,14.728638,-17.440345,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 28,14,Echangeur Patte d'Oie,14.710411,-17.441551,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 28,15,Autoroute,14.692174,-17.442702,interpolation_sur_trace,faux,21507
+Tata AFTU,Ligne 29,1,Cité Nations Unies (Cambérène),14.773418,-17.418261,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 29,2,Golf,14.769185,-17.416136,projection_sur_trace,suspect,350
+Tata AFTU,Ligne 29,3,Cinéma Parcelles,14.759084,-17.427351,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 29,4,Rte des Niayes (Police Parcelles),14.754279,-17.432926,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 29,5,Rond-Point de Cambérène (Casebi),14.750854,-17.439669,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 29,6,Rte des Niayes Prolongée (Police Parcelles),14.746560,-17.445627,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 29,7,Pont Stade LSS,14.741660,-17.451267,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 29,8,Avenue Hyacinthe Thiandoum,14.735790,-17.455764,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 29,10,Piste d'Envol,14.720647,-17.464487,projection_sur_trace,suspect,489
+Tata AFTU,Ligne 29,11,Route du Collège Sacré Cœur,14.720647,-17.464487,projection_sur_trace,suspect,489
+Tata AFTU,Ligne 29,13,Carrefour Seydou N Tall,14.696125,-17.465756,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 29,14,Avenue Cheikh Anta Diop,14.688691,-17.457463,interpolation_sur_trace,faux,2660
+Tata AFTU,Ligne 30,1,Gadaye (Guédiawaye),14.772594,-17.387409,terminus_officiel_aftu,faux,1433
+Tata AFTU,Ligne 30,2,Wakhinanenimzatt (Rue 212),14.780434,-17.380634,projection_sur_trace,suspect,619
+Tata AFTU,Ligne 30,5,Sam Notaire,14.774150,-17.390027,projection_sur_trace,suspect,392
+Tata AFTU,Ligne 30,7,Lycée Canada,14.771672,-17.399716,projection_sur_trace,suspect,369
+Tata AFTU,Ligne 30,9,Rond-Point de Cambérène (Casebi),14.749518,-17.442701,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 30,10,Route des Niayes Prolongée (Police des P Assainies),14.743304,-17.448959,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 30,11,Avenue Hyacinthe Thiandoum,14.737058,-17.455237,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 30,13,Allées Ababacar Sy (Dieuppeul/derklé),14.722127,-17.457917,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 30,14,Allées Cheikh Sidaty Aïdara (Niaritalli),14.713983,-17.455126,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 30,15,Rue El Hadj Amadou Malick Gaye (Bopp),14.705878,-17.452389,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 31,3,Sortie Pikine,14.747739,-17.397461,interpolation_sur_trace,faux,1344
+Tata AFTU,Ligne 31,4,Khourounar,14.746815,-17.406818,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 31,5,Cité Lobattfall,14.745847,-17.417087,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 31,6,Branche Est Autoroute,14.744037,-17.427810,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 31,7,Echangeur Patte d'Oie,14.742107,-17.438505,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 31,8,Pont Stade LSS,14.744348,-17.448861,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 31,9,Avenue Hyacinthe Thiandom,14.738602,-17.454227,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 31,11,Piste d'Envol,14.720598,-17.464493,projection_sur_trace,suspect,486
+Tata AFTU,Ligne 31,12,Route du Collège Sacré Cœur,14.720598,-17.464493,projection_sur_trace,suspect,486
+Tata AFTU,Ligne 31,14,Canal de la Gueule Tapée,14.701581,-17.455514,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 31,15,Hôpital Abass Ndao,14.685401,-17.453209,projection_sur_trace,suspect,809
+Tata AFTU,Ligne 32,5,Autoroute,14.735725,-17.439709,interpolation_sur_trace,faux,21065
+Tata AFTU,Ligne 32,6,Croisement Cambérène,14.744449,-17.426946,interpolation_sur_trace,faux,2124
+Tata AFTU,Ligne 32,8,Tally Boumack,14.745471,-17.421545,projection_sur_trace,suspect,491
+Tata AFTU,Ligne 32,9,Route des Niayes,14.764531,-17.390708,interpolation_sur_trace,faux,1118
+Tata AFTU,Ligne 32,10,Canada,14.772282,-17.400461,interpolation_sur_trace,faux,8824
+Tata AFTU,Ligne 32,11,Corniche,14.776656,-17.395467,interpolation_sur_trace,faux,4781
+Tata AFTU,Ligne 32,13,Serigne Assane,14.684892,-17.453091,projection_sur_trace,suspect,581
+Tata AFTU,Ligne 33,5,Front de Terre,14.717795,-17.446038,interpolation_sur_trace,faux,1324
+Tata AFTU,Ligne 33,8,HLM Grand Yoff,14.739533,-17.453439,projection_sur_trace,suspect,331
+Tata AFTU,Ligne 33,13,PAI,14.771663,-17.399737,projection_sur_trace,suspect,367
+Tata AFTU,Ligne 33,14,Lycée Canada,14.771663,-17.399737,projection_sur_trace,suspect,367
+Tata AFTU,Ligne 33,18,Serigne Assane,14.785046,-17.372795,terminus_officiel_aftu,faux,1655
+Tata AFTU,Ligne 34,3,VDN,14.736787,-17.464056,interpolation_sur_trace,faux,6498
+Tata AFTU,Ligne 34,4,2 Voies Liberté 6,14.727036,-17.458622,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 34,5,Sacré Cœur,14.713745,-17.465733,projection_sur_trace,suspect,422
+Tata AFTU,Ligne 34,11,Lat Dior,14.669008,-17.441104,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 35,2,Aéroport,14.748798,-17.514505,interpolation_sur_trace,faux,1463
+Tata AFTU,Ligne 35,3,Yoff,14.755211,-17.469739,projection_sur_trace,suspect,594
+Tata AFTU,Ligne 35,4,Patte d'Oie,14.742787,-17.441807,projection_sur_trace,suspect,426
+Tata AFTU,Ligne 35,5,Croisement Cambérène,14.748861,-17.514503,interpolation_sur_trace,faux,2812
+Tata AFTU,Ligne 35,6,Route Nationale,14.748882,-17.514502,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 35,7,Cité Lobatt Fall,14.748903,-17.514502,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 35,8,Khourounar,14.748923,-17.514501,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 35,9,Tally Boumack,14.745615,-17.421750,projection_sur_trace,suspect,473
+Tata AFTU,Ligne 35,10,Pikine Texaco,14.748986,-17.514499,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 36,2,Parc Lambaye,14.776318,-17.382270,interpolation_sur_trace,faux,2828
+Tata AFTU,Ligne 36,3,Quartier Cheikh Wade,14.773036,-17.384324,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 36,4,2 Voies Notaire,14.772378,-17.387796,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 36,6,Cité Enseignants,14.775603,-17.402510,interpolation_sur_trace,faux,4678
+Tata AFTU,Ligne 36,12,Église,14.760192,-17.441611,interpolation_sur_trace,faux,10501
+Tata AFTU,Ligne 36,13,Caserne Sapeurs Pompiers,14.759606,-17.444471,interpolation_sur_trace,faux,8246
+Tata AFTU,Ligne 36,17,Aéroport,14.749420,-17.489502,interpolation_sur_trace,faux,1465
+Tata AFTU,Ligne 37,1,Cité Apix,14.803808,-17.287952,projection_sur_trace,suspect,357
+Tata AFTU,Ligne 37,3,Cité SOTRAC,14.786238,-17.298844,interpolation_sur_trace,faux,3309
+Tata AFTU,Ligne 37,6,Ecobank,14.783067,-17.323368,interpolation_sur_trace,faux,3518
+Tata AFTU,Ligne 37,8,Malika Montagne,14.793758,-17.335899,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 37,9,Malika Terminus,14.804395,-17.343542,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 37,10,VDN,14.779586,-17.390861,projection_sur_trace,suspect,594
+Tata AFTU,Ligne 37,12,49,14.740522,-17.408624,interpolation_sur_trace,faux,2698
+Tata AFTU,Ligne 37,14,Monument Serigne Saliou,14.710171,-17.441542,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 37,15,Police Wakhinane,14.785465,-17.373382,projection_sur_trace,suspect,410
+Tata AFTU,Ligne 37,16,Hamo VI,14.738093,-17.423089,interpolation_sur_trace,faux,2425
+Tata AFTU,Ligne 37,17,Rond-Point Dial Mbaay,14.740431,-17.407113,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 37,18,Allées Cherif Macky Sall,14.759417,-17.401953,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 37,21,Technopole,14.751123,-17.408048,projection_sur_trace,suspect,339
+Tata AFTU,Ligne 37,22,Croisement Cambérène,14.748801,-17.408851,interpolation_sur_trace,faux,2630
+Tata AFTU,Ligne 37,23,Maristes (Par Station Titan),14.738774,-17.407196,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 37,24,Pharmicie Abdourahmane,14.733884,-17.418962,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 37,26,Keur Ngoor (Rond-Point École Mariste),14.729976,-17.435736,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 37,27,Pont Hann,14.721510,-17.440772,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 37,28,Autoroute,14.706270,-17.441832,interpolation_sur_trace,faux,13359
+Tata AFTU,Ligne 37,31,Fass,14.686795,-17.452376,projection_sur_trace,suspect,361
+Tata AFTU,Ligne 37,33,Hôpital Abass Ndao,14.683193,-17.460484,projection_sur_trace,suspect,713
+Tata AFTU,Ligne 37,34,Rond-Point Fann,14.680555,-17.460497,interpolation_sur_trace,faux,1281
+Tata AFTU,Ligne 38,1,Cité des Enseignants,14.775530,-17.402902,terminus_officiel_aftu,faux,1671
+Tata AFTU,Ligne 38,2,PAI,14.770825,-17.408261,projection_sur_trace,suspect,719
+Tata AFTU,Ligne 38,3,Golf Fadia,14.763420,-17.423155,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 38,11,Rond-Point Fann,14.694153,-17.463377,projection_sur_trace,suspect,307
+Tata AFTU,Ligne 39,1,Lat Dior,14.668804,-17.441117,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 39,2,Poste Médine,14.682349,-17.456720,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 39,3,Rue 6,14.701849,-17.464773,projection_sur_trace,suspect,361
+Tata AFTU,Ligne 39,8,Liberté 6,14.728675,-17.456943,projection_sur_trace,suspect,442
+Tata AFTU,Ligne 39,11,Police Parcelles,14.748807,-17.443603,projection_sur_trace,suspect,319
+Tata AFTU,Ligne 39,12,Croisement 22,14.751739,-17.446301,interpolation_sur_trace,faux,1253
+Tata AFTU,Ligne 39,13,Dior,14.758228,-17.447647,interpolation_sur_trace,faux,1254
+Tata AFTU,Ligne 40,2,Route Nationale 1,14.746953,-17.321682,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 40,3,Fass Mbao,14.749438,-17.341763,projection_sur_trace,suspect,802
+Tata AFTU,Ligne 40,5,Route de Yarakh,14.742712,-17.396282,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 40,6,Cafeteria,14.698336,-17.447432,projection_sur_trace,suspect,901
+Tata AFTU,Ligne 40,7,Maristes,14.726629,-17.429036,interpolation_sur_trace,faux,1494
+Tata AFTU,Ligne 40,8,Echangeur Hann,14.727182,-17.428744,projection_sur_trace,suspect,713
+Tata AFTU,Ligne 40,9,Autoroute,14.708751,-17.441635,interpolation_sur_trace,faux,12574
+Tata AFTU,Ligne 41,3,Avenue Malicksy,14.683624,-17.438323,projection_sur_trace,suspect,313
+Tata AFTU,Ligne 41,5,Môle 10,14.688165,-17.435604,projection_sur_trace,suspect,571
+Tata AFTU,Ligne 41,6,Rond-Point Môle 8,14.696078,-17.434135,interpolation_sur_trace,faux,1209
+Tata AFTU,Ligne 41,7,Rond-Point SCOA,14.690326,-17.433993,projection_sur_trace,suspect,410
+Tata AFTU,Ligne 41,8,Boulevard du Centenaire de la Commune de Dakar,14.689575,-17.434553,projection_sur_trace,suspect,389
+Tata AFTU,Ligne 41,12,Tallyboumack,14.751205,-17.400725,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 41,13,Route des Niayes,14.757974,-17.395615,interpolation_sur_trace,faux,2693
+Tata AFTU,Ligne 41,14,Rue 10 Prolongée,14.764789,-17.391042,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 41,16,Station Toure,14.773335,-17.384081,interpolation_sur_trace,faux,1264
+Tata AFTU,Ligne 41,17,Quartier Cheikh Wade,14.776484,-17.382347,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 41,20,Daroukhane,14.781839,-17.375251,projection_sur_trace,suspect,343
+Tata AFTU,Ligne 42,3,Cité des Enseignants,14.710127,-17.481399,projection_sur_trace,suspect,385
+Tata AFTU,Ligne 42,8,Route du Stade LSS (Taliboubess),14.750153,-17.459056,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 42,9,VDN,14.779428,-17.391004,projection_sur_trace,suspect,601
+Tata AFTU,Ligne 42,10,Ancienne Piste d'Envol,14.718789,-17.471441,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 42,12,Route Principale de Ouakam (Marché),14.717985,-17.486830,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 42,13,Boutikou Diallo,14.723101,-17.487750,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 42,14,Ouakam Baye,14.729690,-17.492586,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 43,1,Ouakam,14.724238,-17.487986,projection_sur_trace,suspect,319
+Tata AFTU,Ligne 43,2,Siège Expresso Ouakam,14.706723,-17.479442,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 43,4,Bourguiba,14.720536,-17.447160,projection_sur_trace,suspect,323
+Tata AFTU,Ligne 43,5,Rue 10,14.752882,-17.395227,projection_sur_trace,suspect,496
+Tata AFTU,Ligne 43,6,G.dakar,14.698094,-17.447349,projection_sur_trace,suspect,520
+Tata AFTU,Ligne 43,9,Pont Hann,14.738797,-17.439301,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 43,10,Autoroute,14.745584,-17.420877,interpolation_sur_trace,faux,18171
+Tata AFTU,Ligne 43,12,Tally Bou Bess,14.757591,-17.391641,interpolation_sur_trace,faux,1081
+Tata AFTU,Ligne 43,13,Police Thiaroye,14.763006,-17.375291,projection_sur_trace,suspect,304
+Tata AFTU,Ligne 44,2,Route Nationale 1,14.743074,-17.314367,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 44,3,Fass Mbao,14.749458,-17.341714,projection_sur_trace,suspect,801
+Tata AFTU,Ligne 44,5,Diamaguène,14.748318,-17.350650,projection_sur_trace,suspect,861
+Tata AFTU,Ligne 44,7,Autoroute,14.745635,-17.401600,interpolation_sur_trace,faux,12570
+Tata AFTU,Ligne 44,8,Patte d'Oie,14.742883,-17.441909,projection_sur_trace,suspect,420
+Tata AFTU,Ligne 44,12,Mermoz,14.712334,-17.477177,projection_sur_trace,suspect,618
+Tata AFTU,Ligne 45,1,Kounoune Ngalam,14.755554,-17.255986,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 45,2,ZAC 3 Bis Kounoune,14.786266,-17.298429,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 45,3,Kounoune Cité Assurance,14.774321,-17.326362,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 45,5,Cité Yacine Diop,14.781547,-17.354588,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 45,6,Shell SEDIMA,14.790496,-17.345518,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 45,7,Lycée Jaxaay,14.793768,-17.355338,interpolation_sur_trace,faux,2179
+Tata AFTU,Ligne 45,8,Rond-Point Cité Pénitence,14.787801,-17.365486,interpolation_sur_trace,faux,2425
+Tata AFTU,Ligne 45,9,Auchan Keur Massar,14.781016,-17.373020,interpolation_sur_trace,faux,1030
+Tata AFTU,Ligne 45,14,Mbédou Fass,14.772841,-17.351511,projection_sur_trace,suspect,394
+Tata AFTU,Ligne 45,15,Tournal Boune,14.775196,-17.359585,projection_sur_trace,suspect,519
+Tata AFTU,Ligne 45,18,Cité ASECNA,14.786331,-17.348099,interpolation_sur_trace,faux,6442
+Tata AFTU,Ligne 45,19,49,14.759945,-17.438822,projection_sur_trace,suspect,660
+Tata AFTU,Ligne 45,20,Serigne Assane,14.786964,-17.366514,interpolation_sur_trace,faux,7888
+Tata AFTU,Ligne 45,26,Cité des Enseignants,14.775435,-17.402430,interpolation_sur_trace,faux,7207
+Tata AFTU,Ligne 45,34,63,14.759945,-17.438822,projection_sur_trace,suspect,675
+Tata AFTU,Ligne 46,1,SDE Serigne Assane,14.782157,-17.372947,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 46,2,Guédiawaye,14.771421,-17.386346,projection_sur_trace,suspect,747
+Tata AFTU,Ligne 46,3,Lycée Limamou Laye,14.765490,-17.391487,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 46,4,Préfecture,14.669122,-17.439699,projection_sur_trace,suspect,915
+Tata AFTU,Ligne 46,5,Rue10 Pikine,14.749331,-17.402924,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 46,6,Cité Lobattfall,14.746775,-17.410504,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 46,7,Route Nationale,14.745719,-17.420690,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 46,8,Technopole,14.746962,-17.409850,projection_sur_trace,suspect,557
+Tata AFTU,Ligne 46,9,Croisement Cambérène,14.742397,-17.440517,interpolation_sur_trace,faux,2812
+Tata AFTU,Ligne 46,10,Patte d'Oie,14.742849,-17.441908,projection_sur_trace,suspect,423
+Tata AFTU,Ligne 46,13,Derklé,14.725704,-17.456892,projection_sur_trace,suspect,318
+Tata AFTU,Ligne 46,20,Lat Dior,14.668966,-17.441115,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 47,1,Gare Lat-Dior,14.668816,-17.441096,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 47,2,Service d'Hygiène,14.674208,-17.442729,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 47,4,Av Cheikh Anta Diop,14.690177,-17.458503,interpolation_sur_trace,faux,2395
+Tata AFTU,Ligne 47,6,Route du Front de Terre,14.714517,-17.453579,interpolation_sur_trace,faux,1213
+Tata AFTU,Ligne 47,7,Giratoire Liberté 6,14.728690,-17.456921,projection_sur_trace,suspect,445
+Tata AFTU,Ligne 47,8,Av Hyacinthe Thiandoum (Grand-Yoff),14.730463,-17.456647,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 47,14,Rond-Point Almadies,14.737030,-17.509910,interpolation_sur_trace,faux,1517
+Tata AFTU,Ligne 48,1,Cité Serigne Mansour,14.746329,-17.298977,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 48,2,HLM Rufisque,14.731382,-17.303572,interpolation_sur_trace,faux,8672
+Tata AFTU,Ligne 48,3,Dioutyba,14.748443,-17.328371,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 48,4,Route Nationale 1,14.747100,-17.359752,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 48,7,Autoroute,14.743438,-17.430381,interpolation_sur_trace,faux,9097
+Tata AFTU,Ligne 48,8,Patte d'Oie,14.741585,-17.437198,projection_sur_trace,suspect,660
+Tata AFTU,Ligne 48,11,Poste Médine,14.675930,-17.444441,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 48,12,Lat Dior,14.668985,-17.441110,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 49,8,Lycée Canada,14.766476,-17.397369,projection_sur_trace,suspect,558
+Tata AFTU,Ligne 49,9,Route des Niayes,14.762551,-17.387442,interpolation_sur_trace,faux,2674
+Tata AFTU,Ligne 49,11,Marché aux Poissons,14.747711,-17.399188,projection_sur_trace,suspect,396
+Tata AFTU,Ligne 49,12,SERAS,14.743020,-17.408968,projection_sur_trace,suspect,455
+Tata AFTU,Ligne 49,15,Echangeur de Hann,14.727024,-17.445527,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 49,17,Sacré Cœur,14.715553,-17.471073,projection_sur_trace,suspect,511
+Tata AFTU,Ligne 49,18,Mermoz Rond-Point Cheikh Bethio,14.713712,-17.474564,projection_sur_trace,suspect,550
+Tata AFTU,Ligne 49,19,Ouakam,14.718457,-17.487961,projection_sur_trace,suspect,761
+Tata AFTU,Ligne 49,20,Mamelles,14.727363,-17.502044,projection_sur_trace,suspect,459
+Tata AFTU,Ligne 50,5,Môle 10,14.688080,-17.435637,projection_sur_trace,suspect,569
+Tata AFTU,Ligne 50,6,Môle 8,14.699139,-17.442010,interpolation_sur_trace,faux,1210
+Tata AFTU,Ligne 50,7,Rocade Fannbel-Air,14.712426,-17.441283,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 50,8,Pont de Colobane,14.725707,-17.440358,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 50,9,Autoroute,14.738792,-17.438698,interpolation_sur_trace,faux,17521
+Tata AFTU,Ligne 50,10,Echangeur Patte d'Oie,14.744401,-17.427334,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 50,11,Croisement Cambérène,14.746385,-17.413880,interpolation_sur_trace,faux,2825
+Tata AFTU,Ligne 50,14,Route des Niayes,14.760275,-17.383592,interpolation_sur_trace,faux,1114
+Tata AFTU,Ligne 50,15,Police Thiaroye,14.763002,-17.375290,projection_sur_trace,suspect,304
+Tata AFTU,Ligne 50,17,Route de Yeumbeul,14.778633,-17.357578,interpolation_sur_trace,faux,1343
+Tata AFTU,Ligne 50,18,Bene Baraque,14.787232,-17.346472,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 51,1,Jaxaay,14.766575,-17.280604,projection_sur_trace,suspect,481
+Tata AFTU,Ligne 51,2,Station Keurmassar,14.766853,-17.308869,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 51,5,Yeumbeul,14.771821,-17.358382,projection_sur_trace,suspect,458
+Tata AFTU,Ligne 51,7,Route des Niayes,14.760944,-17.379304,interpolation_sur_trace,faux,3530
+Tata AFTU,Ligne 51,8,Tallyicotaf,14.755359,-17.390473,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 52,3,Marché Chavanel,14.752415,-17.399762,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 52,4,Tally Boumack,14.761159,-17.393216,interpolation_sur_trace,faux,2108
+Tata AFTU,Ligne 52,5,Route des Niayes,14.761026,-17.384867,interpolation_sur_trace,faux,3468
+Tata AFTU,Ligne 52,6,Police Thiaroye,14.762984,-17.375287,projection_sur_trace,suspect,302
+Tata AFTU,Ligne 52,9,Bene Baraque,14.787748,-17.345568,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 52,10,Malika,14.793714,-17.335842,projection_sur_trace,suspect,880
+Tata AFTU,Ligne 52,13,Jaxaay,14.766791,-17.280468,projection_sur_trace,suspect,465
+Tata AFTU,Ligne 53,3,Croisement Tivaouane Peulh,14.786455,-17.296853,interpolation_sur_trace,faux,1392
+Tata AFTU,Ligne 53,4,SAFCO,14.786085,-17.281216,projection_sur_trace,suspect,589
+Tata AFTU,Ligne 53,6,Croisement Niagues,14.777388,-17.250223,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 53,10,Dangou,14.719480,-17.266488,projection_sur_trace,suspect,815
+Tata AFTU,Ligne 53,12,Poste Courant,14.701882,-17.245798,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 53,13,SOCOCIM,14.698328,-17.224665,interpolation_sur_trace,faux,17452
+Tata AFTU,Ligne 53,14,Bargny,14.696663,-17.230595,projection_sur_trace,suspect,326
+Tata AFTU,Ligne 54,1,Keur Massar (Cité MTOA),14.778972,-17.316417,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 54,4,Route de Boune,14.767235,-17.344160,projection_sur_trace,suspect,364
+Tata AFTU,Ligne 54,5,Mbédou Fass,14.765100,-17.345665,projection_sur_trace,suspect,899
+Tata AFTU,Ligne 54,6,Fassmbao,14.748769,-17.347064,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 54,7,Route Nationale N° 1,14.746692,-17.362582,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 54,9,Rond-Point Seven Up,14.743730,-17.396010,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 54,10,Bld Centenaire de la Commune de Dakar,14.746544,-17.413426,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 54,11,Place Bakou,14.743506,-17.431295,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 54,12,Pont de Colobane,14.730873,-17.440198,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 54,13,Canal 4,14.698048,-17.450270,projection_sur_trace,suspect,673
+Tata AFTU,Ligne 54,14,Université Cheikh Anta Diop,14.691618,-17.460148,projection_sur_trace,suspect,669
+Tata AFTU,Ligne 55,1,Rufisque SONADIS,14.716045,-17.273962,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 55,2,Boulevard Maurice Gueye,14.729226,-17.299811,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 55,3,Route Nationale N° 1,14.743771,-17.315012,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 55,4,Keurmbaye Fall,14.749922,-17.335244,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 55,5,Croisement Keurmassar,14.747489,-17.356623,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 55,8,Croisement Cambérène,14.744673,-17.426520,interpolation_sur_trace,faux,2811
+Tata AFTU,Ligne 55,9,Echangeur Patte d'Oie,14.728172,-17.440372,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 55,10,Autoroute,14.702880,-17.442037,interpolation_sur_trace,faux,8273
+Tata AFTU,Ligne 56,1,Jaxaay 1,14.766668,-17.280496,projection_sur_trace,suspect,476
+Tata AFTU,Ligne 56,4,Croisement Keur Massar,14.749949,-17.337887,interpolation_sur_trace,faux,1827
+Tata AFTU,Ligne 56,7,Croisement Cambérène,14.744709,-17.426434,interpolation_sur_trace,faux,2809
+Tata AFTU,Ligne 56,8,Echangeur Patte d'Oie,14.728249,-17.440404,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 56,9,Autoroute,14.702929,-17.442050,interpolation_sur_trace,faux,10828
+Tata AFTU,Ligne 57,5,Croisement Cambérène,14.744520,-17.427124,interpolation_sur_trace,faux,2809
+Tata AFTU,Ligne 57,8,Croisement Keur Massar,14.748812,-17.346675,interpolation_sur_trace,faux,5111
+Tata AFTU,Ligne 57,11,Bd Maurice Gueye,14.747330,-17.357846,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 57,12,Poste Courant,14.748058,-17.326530,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 57,13,Marché Colobane Rufisque,14.730435,-17.302013,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 58,2,Route Nationale 1,14.725666,-17.444900,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 58,3,Fass Mbao,14.749424,-17.342178,projection_sur_trace,suspect,799
+Tata AFTU,Ligne 58,5,Diamaguène,14.748328,-17.350581,projection_sur_trace,suspect,861
+Tata AFTU,Ligne 58,7,Péage,14.745942,-17.410601,interpolation_sur_trace,faux,3104
+Tata AFTU,Ligne 58,8,Echangeur Hann,14.731021,-17.440198,projection_sur_trace,suspect,632
+Tata AFTU,Ligne 59,2,Stade L.s.s,14.758626,-17.452484,projection_sur_trace,suspect,650
+Tata AFTU,Ligne 59,7,Canada,14.764862,-17.418613,interpolation_sur_trace,faux,7680
+Tata AFTU,Ligne 59,9,Police Thiaroye,14.763001,-17.375302,projection_sur_trace,suspect,304
+Tata AFTU,Ligne 59,14,Cité SOTRAC,14.779590,-17.293198,interpolation_sur_trace,faux,5293
+Tata AFTU,Ligne 60,1,Colobane,14.697186,-17.443320,projection_sur_trace,suspect,322
+Tata AFTU,Ligne 60,2,Auto Route,14.743234,-17.432131,interpolation_sur_trace,faux,1289
+Tata AFTU,Ligne 60,3,Route Nationale 1,14.746642,-17.405090,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 60,4,Diamaguène,14.748163,-17.350596,projection_sur_trace,suspect,879
+Tata AFTU,Ligne 60,6,Fass Mbao,14.749344,-17.341685,projection_sur_trace,suspect,813
+Tata AFTU,Ligne 60,7,Croisement Keur Massar,14.736621,-17.308702,interpolation_sur_trace,faux,5117
+Tata AFTU,Ligne 60,8,Dioutyba (Rufisque),14.723460,-17.289327,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 60,10,SOCOCIM,14.701896,-17.245775,interpolation_sur_trace,faux,2751
+Tata AFTU,Ligne 60,11,Bargny,14.696685,-17.230560,projection_sur_trace,suspect,328
+Tata AFTU,Ligne 61,2,Aéroport,14.752866,-17.487459,interpolation_sur_trace,faux,1467
+Tata AFTU,Ligne 61,4,Patte d'Oie,14.742997,-17.442090,projection_sur_trace,suspect,414
+Tata AFTU,Ligne 61,5,Autoroute,14.743935,-17.395189,interpolation_sur_trace,faux,14355
+Tata AFTU,Ligne 61,8,Fass Mbao,14.749448,-17.341701,projection_sur_trace,suspect,802
+Tata AFTU,Ligne 61,9,Route Nationale 1,14.752124,-17.324604,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 61,10,Keur Massar,14.777824,-17.314331,projection_sur_trace,suspect,595
+Tata AFTU,Ligne 62,2,Arafat,14.726437,-17.265962,interpolation_sur_trace,faux,1450
+Tata AFTU,Ligne 62,3,Marché Mardi,14.725265,-17.267439,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 62,4,Poste Courant,14.723872,-17.268674,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 62,5,SONADIS,14.722849,-17.270006,interpolation_sur_trace,faux,1117
+Tata AFTU,Ligne 62,8,HLM Rufisque,14.729985,-17.301226,interpolation_sur_trace,faux,9251
+Tata AFTU,Ligne 62,9,Dioutyba,14.747056,-17.322057,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 62,10,Route Nationale 1,14.748423,-17.349619,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 62,12,Autoroute A Péage,14.746647,-17.320185,projection_sur_trace,suspect,968
+Tata AFTU,Ligne 62,15,Colobane,14.698375,-17.447366,projection_sur_trace,suspect,416
+Tata AFTU,Ligne 62,16,Fass,14.689812,-17.458880,projection_sur_trace,suspect,415
+Tata AFTU,Ligne 62,18,Sahm,14.683686,-17.457579,projection_sur_trace,suspect,414
+Tata AFTU,Ligne 62,19,Penc Mi (Gueule Tapée),14.681029,-17.455070,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 63,1,Camp Marchand Rufisque,14.721433,-17.259546,projection_sur_trace,suspect,381
+Tata AFTU,Ligne 63,2,Marché Mardi,14.724424,-17.260076,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 63,3,Rond-Point Arafat,14.727795,-17.258711,interpolation_sur_trace,faux,2348
+Tata AFTU,Ligne 63,4,Passage A Niveau,14.728035,-17.262856,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 63,5,Khaar,14.728875,-17.267117,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 63,8,Route des HLM Rufisque,14.723513,-17.289414,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 63,9,Rond-Point Djouti Ba Rufisque,14.731977,-17.304478,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 63,11,Croisement Keur Massar,14.748676,-17.346747,interpolation_sur_trace,faux,5117
+Tata AFTU,Ligne 63,14,Croisement Cambérène,14.745961,-17.418250,interpolation_sur_trace,faux,1646
+Tata AFTU,Ligne 63,15,Rond-Point Cambérène (Case Bi),14.756918,-17.428945,projection_sur_trace,suspect,538
+Tata AFTU,Ligne 63,17,Route du Stade (Taliboubess),14.749638,-17.445966,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 63,18,Parcelles Dior,14.759013,-17.447169,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 64,2,Bargny,14.696740,-17.230616,projection_sur_trace,suspect,335
+Tata AFTU,Ligne 64,4,Boulevard Maurice Gueye,14.717783,-17.277465,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 64,5,Rond-Point Dioutyba,14.728670,-17.298761,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 64,7,Croisement Keur Massar,14.748827,-17.346574,interpolation_sur_trace,faux,5108
+Tata AFTU,Ligne 64,10,Tally Boumack,14.752613,-17.399679,interpolation_sur_trace,faux,2111
+Tata AFTU,Ligne 64,11,Route des Niayes,14.761445,-17.392981,interpolation_sur_trace,faux,3470
+Tata AFTU,Ligne 64,13,Croisement PAI,14.770743,-17.398402,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 64,14,72,14.772526,-17.402868,interpolation_sur_trace,faux,4377
+Tata AFTU,Ligne 64,15,Dial Mbaay,14.775408,-17.402755,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 65,2,Rocade Fann Bel-Air,14.709607,-17.434315,interpolation_sur_trace,faux,1880
+Tata AFTU,Ligne 65,3,Place Bakou,14.726583,-17.429014,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 65,4,Bld du Centenaire de la Commune de Dakar,14.736881,-17.413853,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 65,5,Rond-Point Seven Up,14.742642,-17.396594,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 65,7,Croisement Keur Massar,14.749851,-17.337614,interpolation_sur_trace,faux,2640
+Tata AFTU,Ligne 65,9,Route de Jaxxay,14.767028,-17.309367,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 65,10,Collège la Liberté,14.761125,-17.301720,interpolation_sur_trace,faux,3544
+Tata AFTU,Ligne 65,11,Centre de Jaxaay,14.756770,-17.290708,projection_sur_trace,suspect,395
+Tata AFTU,Ligne 65,12,Jaxaay 2,14.766792,-17.280468,projection_sur_trace,suspect,465
+Tata AFTU,Ligne 66,1,Yoff,14.755200,-17.470061,projection_sur_trace,suspect,606
+Tata AFTU,Ligne 66,3,Patte d'Oie,14.742825,-17.442061,projection_sur_trace,suspect,431
+Tata AFTU,Ligne 66,4,Croisement Cambérène,14.740498,-17.439715,interpolation_sur_trace,faux,2825
+Tata AFTU,Ligne 66,5,Cité Lobatt Fall,14.745519,-17.421406,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 66,9,Diamaguène,14.748196,-17.350383,projection_sur_trace,suspect,878
+Tata AFTU,Ligne 66,10,Fassmbao,14.748677,-17.346707,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 66,11,Croisement Keur Massar,14.748946,-17.331006,interpolation_sur_trace,faux,5118
+Tata AFTU,Ligne 66,13,Croisement Grand Mbao,14.730658,-17.302734,interpolation_sur_trace,faux,1039
+Tata AFTU,Ligne 66,14,Cap des Biches,14.721371,-17.285602,interpolation_sur_trace,faux,1164
+Tata AFTU,Ligne 66,16,Poste Courant,14.713522,-17.265578,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 66,17,Castors,14.715599,-17.263531,interpolation_sur_trace,faux,2234
+Tata AFTU,Ligne 67,2,Cité Avion,14.724508,-17.482892,projection_sur_trace,suspect,346
+Tata AFTU,Ligne 67,3,Entrée Ouakam,14.713717,-17.481556,projection_sur_trace,suspect,449
+Tata AFTU,Ligne 67,4,Mermoz,14.703581,-17.474587,projection_sur_trace,suspect,428
+Tata AFTU,Ligne 67,10,Tableau Ferrailles,14.719480,-17.433235,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 67,11,SERAS,14.738711,-17.407552,projection_sur_trace,suspect,949
+Tata AFTU,Ligne 67,15,Diamaguène,14.748312,-17.350526,projection_sur_trace,suspect,864
+Tata AFTU,Ligne 67,16,Fass Mbao,14.749441,-17.341825,projection_sur_trace,suspect,801
+Tata AFTU,Ligne 67,18,Grand Mbao,14.733684,-17.305996,interpolation_sur_trace,faux,1044
+Tata AFTU,Ligne 67,19,Cap des Biches,14.725786,-17.293429,interpolation_sur_trace,faux,1181
+Tata AFTU,Ligne 67,22,Thiawlène (Rufisque),14.710072,-17.262679,projection_sur_trace,suspect,807
+Tata AFTU,Ligne 68,5,Croisement Keur Massar,14.744079,-17.315311,interpolation_sur_trace,faux,2798
+Tata AFTU,Ligne 68,7,Bargny,14.696719,-17.230578,projection_sur_trace,suspect,332
+Tata AFTU,Ligne 69,2,Croisement Dior,14.759411,-17.445257,interpolation_sur_trace,faux,5295
+Tata AFTU,Ligne 69,6,Rond-Point Cambérène (Case Bi),14.756308,-17.429247,projection_sur_trace,suspect,591
+Tata AFTU,Ligne 69,7,Croisement Cambérène,14.744894,-17.421954,interpolation_sur_trace,faux,1731
+Tata AFTU,Ligne 69,8,Branche Est Autoroute,14.745606,-17.410948,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 70,2,SDE Guédiawaye,14.781692,-17.372949,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 70,4,Bld des Martyrs,14.772223,-17.384969,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 70,5,Poste de Guédiawaye,14.768779,-17.395871,interpolation_sur_trace,faux,3363
+Tata AFTU,Ligne 70,6,Route des Niayes Prolongée,14.762895,-17.388040,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 70,7,Police Thiaroye,14.759751,-17.380201,projection_sur_trace,suspect,679
+Tata AFTU,Ligne 70,9,Diamaguène,14.748199,-17.350396,projection_sur_trace,suspect,878
+Tata AFTU,Ligne 70,10,Croisement Keur Massar,14.748348,-17.325097,interpolation_sur_trace,faux,2634
+Tata AFTU,Ligne 70,13,Croisement Mame Abdou,14.755911,-17.288332,interpolation_sur_trace,faux,4894
+Tata AFTU,Ligne 70,14,Jaxaay 2,14.766876,-17.280440,projection_sur_trace,suspect,458
+Tata AFTU,Ligne 71,1,Keur Massar Extension,14.766694,-17.280274,terminus_officiel_aftu,faux,1011
+Tata AFTU,Ligne 71,2,Station Keur Massar,14.768482,-17.311913,interpolation_sur_trace,faux,1289
+Tata AFTU,Ligne 71,3,Croisement Keur Massar,14.760857,-17.321505,interpolation_sur_trace,faux,2636
+Tata AFTU,Ligne 71,5,Fass Mbao,14.749441,-17.341719,projection_sur_trace,suspect,802
+Tata AFTU,Ligne 71,8,Croisement Cambérène,14.743153,-17.432675,interpolation_sur_trace,faux,2806
+Tata AFTU,Ligne 71,10,HLM,14.716446,-17.447491,projection_sur_trace,suspect,790
+Tata AFTU,Ligne 71,11,Garage Guédiawaye,14.714723,-17.451295,interpolation_sur_trace,faux,1840
+Tata AFTU,Ligne 71,12,Bène Tally,14.714860,-17.450993,projection_sur_trace,suspect,340
+Tata AFTU,Ligne 71,15,Rue 10,14.702918,-17.461600,interpolation_sur_trace,faux,1119
+Tata AFTU,Ligne 71,17,Université,14.686360,-17.460837,projection_sur_trace,suspect,401
+Tata AFTU,Ligne 72,2,Av Oumar Foutiyou Tall (Golf Nord),14.770024,-17.393297,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 72,3,Route des Niayes,14.763959,-17.389767,interpolation_sur_trace,faux,4134
+Tata AFTU,Ligne 72,4,Police Thiaroye,14.759818,-17.380225,projection_sur_trace,suspect,680
+Tata AFTU,Ligne 72,6,Route Nationale N°1,14.747300,-17.357262,interpolation_sur_trace,faux,1241
+Tata AFTU,Ligne 72,7,Croisement Keur Massar,14.749932,-17.336242,interpolation_sur_trace,faux,4856
+Tata AFTU,Ligne 72,11,Allées Médina ZAC,14.741655,-17.297365,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 72,12,Cité CAPEC,14.736960,-17.287851,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 72,13,Route des HLM Rufisque,14.726957,-17.282345,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 72,14,Rond-Point Djouti Ba Rufisque,14.718708,-17.279215,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 72,15,Bld Maurice Gueye,14.712614,-17.268418,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 72,16,SONADIS Rufisque,14.718604,-17.261355,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 72,18,Route de Sangalkam,14.734461,-17.254073,interpolation_sur_trace,faux,3130
+Tata AFTU,Ligne 72,20,Cité SAGEF,14.746133,-17.241219,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 72,21,Cité Baba Guisse,14.752074,-17.237022,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 72,22,Kounoune (Cité Cardinal Thiandoum),14.764548,-17.229536,terminus_officiel_aftu,faux,1478
+Tata AFTU,Ligne 73,1,Lac Rose,14.834632,-17.249237,terminus_officiel_aftu,faux,3681
+Tata AFTU,Ligne 73,2,Croisement Niagues,14.799931,-17.254941,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 73,3,Darou Thioub,14.782959,-17.261452,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 73,4,Niakourab,14.786369,-17.276325,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 73,5,Cité SAFCO,14.786333,-17.294842,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 73,9,Yeumbeul,14.771763,-17.358355,projection_sur_trace,suspect,464
+Tata AFTU,Ligne 74,2,Colobane Rufisque,14.706228,-17.239321,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 74,3,Poste Courant,14.709228,-17.251161,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 74,4,Route Nationale N°1,14.715265,-17.264792,interpolation_sur_trace,faux,8411
+Tata AFTU,Ligne 74,5,Bld Maurice Gueye,14.716694,-17.275499,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 74,6,Rond-Point Djouti Ba Rufisque,14.725559,-17.282303,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 74,7,Route des HLM Rufisque,14.737989,-17.288083,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 74,8,Echangeur Rufisque-Ouest,14.751056,-17.285371,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 74,11,Keurmassar,14.786463,-17.297234,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 75,1,Malika (Cité Sonatel),14.793605,-17.332333,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 75,8,Croisement Cambérène,14.740340,-17.410174,interpolation_sur_trace,faux,3050
+Tata AFTU,Ligne 75,9,Maristes,14.733002,-17.431658,projection_sur_trace,suspect,882
+Tata AFTU,Ligne 75,11,Route du Front de Terre,14.723954,-17.438222,projection_sur_trace,suspect,524
+Tata AFTU,Ligne 76,1,Sipres,14.740039,-17.468959,terminus_officiel_aftu,faux,4034
+Tata AFTU,Ligne 76,4,Patte d'Oie,14.742844,-17.442139,projection_sur_trace,suspect,432
+Tata AFTU,Ligne 76,5,Croisement Cambérène,14.745928,-17.418600,interpolation_sur_trace,faux,2823
+Tata AFTU,Ligne 76,8,Fass Mbao,14.761751,-17.346195,projection_sur_trace,suspect,679
+Tata AFTU,Ligne 76,9,Mbédou Fass,14.764517,-17.346061,projection_sur_trace,suspect,901
+Tata AFTU,Ligne 76,12,Cité Assurance,14.766712,-17.280282,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 77,2,Pont Dangou,14.719802,-17.281795,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 77,3,SONADIS Rufisque,14.723636,-17.289458,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 77,4,Bld Maurice Gueye,14.727736,-17.297059,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 77,5,Rond-Point Djouti Ba Rufisque,14.732043,-17.304456,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 77,6,Route Nationale N° 1,14.738387,-17.310203,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 77,8,Croisement Keur Massar,14.748800,-17.346691,interpolation_sur_trace,faux,5109
+Tata AFTU,Ligne 77,11,Croisement Cambérène,14.746218,-17.416643,interpolation_sur_trace,faux,2808
+Tata AFTU,Ligne 77,12,Echangeur Hann,14.731047,-17.440173,projection_sur_trace,suspect,630
+Tata AFTU,Ligne 77,13,Route du Front de Terre,14.726164,-17.440794,projection_sur_trace,suspect,893
+Tata AFTU,Ligne 77,14,Liberté 5,14.723556,-17.458216,projection_sur_trace,suspect,757
+Tata AFTU,Ligne 78,1,Diamaguène,14.749000,-17.361959,terminus_officiel_aftu,faux,1362
+Tata AFTU,Ligne 78,3,Tally Diallo,14.764175,-17.370517,projection_sur_trace,suspect,601
+Tata AFTU,Ligne 78,4,Poste de Police Thiaroye,14.765721,-17.394034,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 78,5,Lycée Canada,14.771763,-17.399743,projection_sur_trace,suspect,376
+Tata AFTU,Ligne 78,12,Liberté 5,14.723771,-17.458409,projection_sur_trace,suspect,750
+Tata AFTU,Ligne 79,1,Sangalkam,14.777555,-17.225333,projection_sur_trace,suspect,370
+Tata AFTU,Ligne 79,3,Croisement Niagues,14.773425,-17.243523,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 79,4,Darou Thioub,14.779975,-17.257990,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 79,6,Croisement Tivaouane Peulh,14.785105,-17.302337,interpolation_sur_trace,faux,1390
+Tata AFTU,Ligne 79,7,Station Keurmassar,14.780017,-17.322158,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 79,9,VDN 3,14.800752,-17.352714,interpolation_sur_trace,faux,7533
+Tata AFTU,Ligne 79,10,Gadaye,14.784727,-17.372688,projection_sur_trace,suspect,456
+Tata AFTU,Ligne 79,14,Cité Nations Unies (Derriere Hôpital Dalal Diam),14.770923,-17.407568,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 80,8,PAI,14.771684,-17.399744,projection_sur_trace,suspect,369
+Tata AFTU,Ligne 80,9,Pikine Texaco,14.760001,-17.382938,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 80,12,Malika,14.793721,-17.335966,projection_sur_trace,suspect,876
+Tata AFTU,Ligne 80,15,Croisement Tivaouane Peulh,14.786367,-17.292707,interpolation_sur_trace,faux,1391
+Tata AFTU,Ligne 80,17,Darou Thioub,14.771325,-17.235585,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 81,4,Diamaguène,14.756755,-17.345596,projection_sur_trace,suspect,650
+Tata AFTU,Ligne 81,5,Fass Mbao,14.756305,-17.345540,projection_sur_trace,suspect,309
+Tata AFTU,Ligne 81,9,Malika,14.793817,-17.335794,projection_sur_trace,suspect,870
+Tata AFTU,Ligne 81,10,MTOA,14.779633,-17.321976,projection_sur_trace,suspect,768
+Tata AFTU,Ligne 81,16,Tawfeex,14.810700,-17.260878,terminus_officiel_aftu,faux,7900
+Tata AFTU,Ligne 82,1,Lat Dior,14.669153,-17.441343,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 82,2,Service d'Hygiène,14.676834,-17.445405,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 82,5,Rue 22,14.698232,-17.447456,projection_sur_trace,suspect,964
+Tata AFTU,Ligne 82,10,Autoroute A Péage,14.743594,-17.429817,interpolation_sur_trace,faux,2926
+Tata AFTU,Ligne 82,12,Fass Mbao,14.756314,-17.345517,projection_sur_trace,suspect,306
+Tata AFTU,Ligne 82,13,Mbédou Fass,14.764516,-17.346088,projection_sur_trace,suspect,899
+Tata AFTU,Ligne 82,14,Comico Yeumbeul,14.777986,-17.339140,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 83,1,Rufisque Arafat,14.721488,-17.283461,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 83,2,HLM Rufisque,14.758584,-17.295344,interpolation_sur_trace,faux,7188
+Tata AFTU,Ligne 83,6,VDN 3,14.791629,-17.376112,interpolation_sur_trace,faux,1837
+Tata AFTU,Ligne 83,8,Cité Nations Unies,14.767915,-17.422395,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 83,12,Route de Front de Terre,14.728851,-17.457290,interpolation_sur_trace,faux,1279
+Tata AFTU,Ligne 83,13,CTO,14.726826,-17.444151,projection_sur_trace,suspect,598
+Tata AFTU,Ligne 83,14,Zone de Captage,14.734232,-17.446112,projection_sur_trace,suspect,332

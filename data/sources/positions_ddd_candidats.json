@@ -1,0 +1,5660 @@
+{
+ "(Scoa)": {
+  "recherche": "Scoa",
+  "candidats": []
+ },
+ "2 voies": {
+  "recherche": "2 voies",
+  "candidats": [
+   {
+    "lat": 14.7196363,
+    "lon": -17.4650039,
+    "nom": "Arret 2 voies Sacré coeur, SC-105, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 99000, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7199844,
+    "lon": -17.4650702,
+    "nom": "Arret 2 voies sacré coeur, Boulevard du Koweit (SC-01), Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "2 voies Jaxaay": {
+  "recherche": "2 voies Jaxaay",
+  "candidats": []
+ },
+ "2 voies Liberté 6": {
+  "recherche": "2 voies Liberté 6",
+  "candidats": []
+ },
+ "AIBD": {
+  "recherche": "AIBD",
+  "candidats": [
+   {
+    "lat": 14.7451332,
+    "lon": -17.4680335,
+    "nom": "AIBD, Voie de Dégagement Nord, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11900, Sénégal",
+    "type": "amenity/fast_food"
+   }
+  ]
+ },
+ "APIX": {
+  "recherche": "APIX",
+  "candidats": [
+   {
+    "lat": 14.6654412,
+    "lon": -17.4342858,
+    "nom": "APIX, Rue Mohamed V, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "building/yes"
+   },
+   {
+    "lat": 14.8059739,
+    "lon": -17.2904083,
+    "nom": "Cité APIX, Tivaouane Peul, Commune de Tivaouane Peulh-Niaga, Arrondissement de Bambylor, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "landuse/residential"
+   },
+   {
+    "lat": 14.7988601,
+    "lon": -17.2870061,
+    "nom": "Croisement Apix, Bayal, Tivaouane Peul, Commune de Tivaouane Peulh-Niaga, Arrondissement de Bambylor, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "place/locality"
+   }
+  ]
+ },
+ "ASECNA": {
+  "recherche": "ASECNA",
+  "candidats": [
+   {
+    "lat": 14.7375719,
+    "lon": -17.5144749,
+    "nom": "ASECNA, Corniche des Almadies, Arrondissement des Almadies, Dakar, Région de Dakar, 18524, Sénégal",
+    "type": "building/government"
+   },
+   {
+    "lat": 14.6675704,
+    "lon": -17.4395325,
+    "nom": "ASECNA, Rue Imam Matar Sylla, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "office/government"
+   },
+   {
+    "lat": 14.6675299,
+    "lon": -17.4392716,
+    "nom": "ASECNA, 32, Avenue Thierno Seydou Nourou Tall, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "office/government"
+   },
+   {
+    "lat": 14.7306481,
+    "lon": -17.4905442,
+    "nom": "Cité ASECNA Ouakam, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.749923,
+    "lon": -17.4905306,
+    "nom": "Cité ASECNA Yoff, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   }
+  ]
+ },
+ "Acapes": {
+  "recherche": "Acapes",
+  "candidats": [
+   {
+    "lat": 14.7568652,
+    "lon": -17.4468822,
+    "nom": "ACAPES, Rue Mame Abdou Aziz Sy, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "amenity/school"
+   }
+  ]
+ },
+ "Air": {
+  "recherche": "Air",
+  "candidats": [
+   {
+    "lat": 14.6759856,
+    "lon": -17.4335181,
+    "nom": "Dakar, Boulevard du Centenaire de la Commune de Dakar, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "railway/station"
+   },
+   {
+    "lat": 14.6764382,
+    "lon": -17.4335551,
+    "nom": "Dakar, Boulevard du Centenaire de la Commune de Dakar, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "railway/stop"
+   }
+  ]
+ },
+ "Albert Sarraut": {
+  "recherche": "Albert Sarraut",
+  "candidats": [
+   {
+    "lat": 14.669681,
+    "lon": -17.4294523,
+    "nom": "Rue Hassan ll, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/residential"
+   }
+  ]
+ },
+ "Allées Ababacar Sy": {
+  "recherche": "Allées Ababacar Sy",
+  "candidats": [
+   {
+    "lat": 14.7167646,
+    "lon": -17.4556399,
+    "nom": "Pharmacie Les Allées Khalifa Ababacar Sy, Rue LIB-223, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "amenity/pharmacy"
+   },
+   {
+    "lat": 14.7142227,
+    "lon": -17.4553096,
+    "nom": "BICIS, Rue LIB-223, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "Allées Khalifa Ababacar Sy": {
+  "recherche": "Allées Khalifa Ababacar Sy",
+  "candidats": [
+   {
+    "lat": 14.7142227,
+    "lon": -17.4553096,
+    "nom": "BICIS, Rue LIB-223, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "Allées Papa Gueye Fall": {
+  "recherche": "Allées Papa Gueye Fall",
+  "candidats": [
+   {
+    "lat": 14.6778773,
+    "lon": -17.4414874,
+    "nom": "Allées Papa Gueye Fall, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.6782131,
+    "lon": -17.4424605,
+    "nom": "Grande Mosquée de Dakar, Allées Papa Gueye Fall, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "amenity/place_of_worship"
+   }
+  ]
+ },
+ "Allées Papa Guèye Fall": {
+  "recherche": "Allées Papa Guèye Fall",
+  "candidats": [
+   {
+    "lat": 14.6778773,
+    "lon": -17.4414874,
+    "nom": "Allées Papa Gueye Fall, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.6782131,
+    "lon": -17.4424605,
+    "nom": "Grande Mosquée de Dakar, Allées Papa Gueye Fall, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "amenity/place_of_worship"
+   }
+  ]
+ },
+ "Ancien Piste": {
+  "recherche": "Ancien Piste",
+  "candidats": []
+ },
+ "Ancienne Piste": {
+  "recherche": "Ancienne Piste",
+  "candidats": [
+   {
+    "lat": 14.7140766,
+    "lon": -17.4772721,
+    "nom": "Ancienne Piste, Arrondissement des Almadies, Dakar, Région de Dakar, 11266, Sénégal",
+    "type": "highway/service"
+   },
+   {
+    "lat": 14.712421,
+    "lon": -17.4768687,
+    "nom": "Boulevard Sheikh Bethio Thioune, Arrondissement des Almadies, Dakar, Région de Dakar, 11266, Sénégal",
+    "type": "highway/primary"
+   }
+  ]
+ },
+ "Arrêt Dial Mbaye": {
+  "recherche": "Dial Mbaye",
+  "candidats": [
+   {
+    "lat": 14.7765363,
+    "lon": -17.3941974,
+    "nom": "Arrêt Dial MBAYE, Boulevard El Hadj Omar Tall, Commune de Sam Notaire, Arrondissement de Sam Notaire, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.776318,
+    "lon": -17.3930217,
+    "nom": "ARRET DIAL MBAYE, Boulevard El Hadj Omar Tall, Commune de Sam Notaire, Arrondissement de Sam Notaire, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Arsanel": {
+  "recherche": "Arsanel",
+  "candidats": []
+ },
+ "Arsenal": {
+  "recherche": "Arsenal",
+  "candidats": []
+ },
+ "Asecna": {
+  "recherche": "Asecna",
+  "candidats": [
+   {
+    "lat": 14.7375719,
+    "lon": -17.5144749,
+    "nom": "ASECNA, Corniche des Almadies, Arrondissement des Almadies, Dakar, Région de Dakar, 18524, Sénégal",
+    "type": "building/government"
+   },
+   {
+    "lat": 14.6675704,
+    "lon": -17.4395325,
+    "nom": "ASECNA, Rue Imam Matar Sylla, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "office/government"
+   },
+   {
+    "lat": 14.6675299,
+    "lon": -17.4392716,
+    "nom": "ASECNA, 32, Avenue Thierno Seydou Nourou Tall, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "office/government"
+   },
+   {
+    "lat": 14.7306481,
+    "lon": -17.4905442,
+    "nom": "Cité ASECNA Ouakam, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.749923,
+    "lon": -17.4905306,
+    "nom": "Cité ASECNA Yoff, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   }
+  ]
+ },
+ "Assemblée Nationale": {
+  "recherche": "Assemblée Nationale",
+  "candidats": [
+   {
+    "lat": 14.6626125,
+    "lon": -17.438493,
+    "nom": "Assemblée Nationale du Sénégal, Rue PL-109, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "office/government"
+   },
+   {
+    "lat": 14.662718,
+    "lon": -17.4380087,
+    "nom": "Fontaine de l'Assemblée Nationale, Avenue Amadou Cissé Dia, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "amenity/fountain"
+   },
+   {
+    "lat": 14.6628158,
+    "lon": -17.4380612,
+    "nom": "Fontaine de l'Assemblée Nationale, Avenue Nelson Mandela, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "amenity/fountain"
+   },
+   {
+    "lat": 14.7311063,
+    "lon": -17.495465,
+    "nom": "Mosquée Cité Assemblée Nationale, OKM-55, Arrondissement des Almadies, Dakar, Région de Dakar, 38110, Sénégal",
+    "type": "amenity/place_of_worship"
+   }
+  ]
+ },
+ "Autoroute": {
+  "recherche": "Autoroute",
+  "candidats": [
+   {
+    "lat": 14.711332,
+    "lon": -17.1972744,
+    "nom": "Autoroute, Commune de Diamniadio, Arrondissement de Diamniadio, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "highway/construction"
+   }
+  ]
+ },
+ "Autoroute a Peage": {
+  "recherche": "Autoroute a Peage",
+  "candidats": [
+   {
+    "lat": 14.734376,
+    "lon": -17.2487861,
+    "nom": "Autoroute à péage, Commune de Rufisque Est, Rufisque, Arrondissement de Diamniadio, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "highway/motorway"
+   },
+   {
+    "lat": 14.7551452,
+    "lon": -17.3180129,
+    "nom": "Autoroute à péage, Commune de Rufisque Ouest, Commune de Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "highway/motorway"
+   },
+   {
+    "lat": 14.7486868,
+    "lon": -17.2909547,
+    "nom": "Autoroute à péage, Commune de Rufisque Ouest, Rufisque, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "highway/motorway"
+   },
+   {
+    "lat": 14.7600204,
+    "lon": -17.3387798,
+    "nom": "Autoroute à péage, Commune de Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "highway/motorway"
+   }
+  ]
+ },
+ "Autoroute à Péage": {
+  "recherche": "Autoroute à Péage",
+  "candidats": [
+   {
+    "lat": 14.734376,
+    "lon": -17.2487861,
+    "nom": "Autoroute à péage, Commune de Rufisque Est, Rufisque, Arrondissement de Diamniadio, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "highway/motorway"
+   },
+   {
+    "lat": 14.7551452,
+    "lon": -17.3180129,
+    "nom": "Autoroute à péage, Commune de Rufisque Ouest, Commune de Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "highway/motorway"
+   },
+   {
+    "lat": 14.7486868,
+    "lon": -17.2909547,
+    "nom": "Autoroute à péage, Commune de Rufisque Ouest, Rufisque, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "highway/motorway"
+   },
+   {
+    "lat": 14.7600204,
+    "lon": -17.3387798,
+    "nom": "Autoroute à péage, Commune de Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "highway/motorway"
+   }
+  ]
+ },
+ "Avenue André Peytavin": {
+  "recherche": "Avenue André Peytavin",
+  "candidats": []
+ },
+ "Avenue Blaise Diagne": {
+  "recherche": "Avenue Blaise Diagne",
+  "candidats": [
+   {
+    "lat": 14.6809191,
+    "lon": -17.4495718,
+    "nom": "Avenue Blaise Diagne, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.6744716,
+    "lon": -17.4429037,
+    "nom": "Avenue Blaise Diagne, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.6770538,
+    "lon": -17.4455387,
+    "nom": "Avenue Blaise Diagne, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "highway/primary"
+   }
+  ]
+ },
+ "Avenue Bourguiba": {
+  "recherche": "Avenue Bourguiba",
+  "candidats": [
+   {
+    "lat": 14.7033907,
+    "lon": -17.4634619,
+    "nom": "Avenue Habib Bourguiba, Amitié 2, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "highway/secondary"
+   },
+   {
+    "lat": 14.7169393,
+    "lon": -17.4514706,
+    "nom": "Avenue du Président Habib Bourguiba, Liberté, Commune de Dieuppeul-Derklé, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "highway/secondary"
+   },
+   {
+    "lat": 14.7242392,
+    "lon": -17.4456469,
+    "nom": "Avenue du Président Habib Bourguiba, Commune de HLM, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 00221, Sénégal",
+    "type": "highway/secondary"
+   },
+   {
+    "lat": 14.7110704,
+    "lon": -17.4566393,
+    "nom": "Avenue du Président Habib Bourguiba, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "highway/secondary"
+   },
+   {
+    "lat": 14.7082814,
+    "lon": -17.4591087,
+    "nom": "Avenue du Président Habib Bourguiba, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "highway/secondary"
+   }
+  ]
+ },
+ "Avenue Cheikh Ahmadou Bamba": {
+  "recherche": "Avenue Cheikh Ahmadou Bamba",
+  "candidats": [
+   {
+    "lat": 14.7001629,
+    "lon": -17.4471338,
+    "nom": "Avenue Cheikh Ahmadou Bamba, Gardien, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.7014927,
+    "lon": -17.4471172,
+    "nom": "Avenue Cheikh Ahmadou Bamba, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "highway/tertiary"
+   }
+  ]
+ },
+ "Avenue Cheikh Ahmadou Bamba (ex rue 13 Prolongée)": {
+  "recherche": "Avenue Cheikh Ahmadou Bamba (ex rue 13 Prolongée",
+  "candidats": []
+ },
+ "Avenue Cheikh Anta Diop": {
+  "recherche": "Avenue Cheikh Anta Diop",
+  "candidats": [
+   {
+    "lat": 14.7152151,
+    "lon": -17.4823629,
+    "nom": "Avenue Cheikh Anta Diop, Arrondissement des Almadies, Dakar, Région de Dakar, 24095, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.687191,
+    "lon": -17.4561899,
+    "nom": "Avenue Cheikh Anta Diop, Fass Delorme, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.6868287,
+    "lon": -17.4558589,
+    "nom": "Avenue Cheikh Anta Diop, Gueule Tapée, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.6989736,
+    "lon": -17.4686974,
+    "nom": "Avenue Cheikh Anta Diop, Arrondissement des Almadies, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7095696,
+    "lon": -17.4815626,
+    "nom": "Avenue Cheikh Anta Diop, Arrondissement des Almadies, Dakar, Région de Dakar, 24095, Sénégal",
+    "type": "highway/primary"
+   }
+  ]
+ },
+ "Avenue Cheikh Anta Diop (Hôpital Fann)": {
+  "recherche": "Avenue Cheikh Anta Diop (Hôpital Fann",
+  "candidats": []
+ },
+ "Avenue Faidherbe": {
+  "recherche": "Avenue Faidherbe",
+  "candidats": [
+   {
+    "lat": 14.6764877,
+    "lon": -17.4424371,
+    "nom": "Avenue Faidherbe, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/residential"
+   },
+   {
+    "lat": 14.67558,
+    "lon": -17.4384879,
+    "nom": "Avenue Faidherbe, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.6770797,
+    "lon": -17.445092,
+    "nom": "Avenue Faidherbe, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "highway/residential"
+   }
+  ]
+ },
+ "Avenue George Pompidou": {
+  "recherche": "Avenue George Pompidou",
+  "candidats": [
+   {
+    "lat": 14.6693648,
+    "lon": -17.434857,
+    "nom": "Avenue George Pompidou, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/tertiary"
+   }
+  ]
+ },
+ "Avenue Georges Pompidou": {
+  "recherche": "Avenue Georges Pompidou",
+  "candidats": []
+ },
+ "Avenue Gorges Pompidou": {
+  "recherche": "Avenue Gorges Pompidou",
+  "candidats": []
+ },
+ "Avenue Jean Jaurès": {
+  "recherche": "Avenue Jean Jaurès",
+  "candidats": [
+   {
+    "lat": 14.6704603,
+    "lon": -17.4401573,
+    "nom": "Avenue Jean Jaurès, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.6676981,
+    "lon": -17.4391575,
+    "nom": "Avenue Thierno Seydou Nourou Tall, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "highway/primary"
+   }
+  ]
+ },
+ "Avenue Jean Jaurès (Direction Général ASCENA)": {
+  "recherche": "Avenue Jean Jaurès (Direction Général ASCENA",
+  "candidats": []
+ },
+ "Avenue Lamine Gueye": {
+  "recherche": "Avenue Lamine Gueye",
+  "candidats": [
+   {
+    "lat": 14.6722876,
+    "lon": -17.437406,
+    "nom": "Avenue du Président Lamine Gueye, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.6643802,
+    "lon": -17.4370088,
+    "nom": "Avenue du Président Lamine Gueye, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "highway/primary"
+   }
+  ]
+ },
+ "Avenue Lamine Guèye (Sandaga)": {
+  "recherche": "Avenue Lamine Guèye (Sandaga",
+  "candidats": []
+ },
+ "Avenue Léopold Sedar Senghor": {
+  "recherche": "Avenue Léopold Sedar Senghor",
+  "candidats": [
+   {
+    "lat": 14.6662007,
+    "lon": -17.4329567,
+    "nom": "Avenue du Président Léopold Sedar Senghor, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.6635506,
+    "lon": -17.4339101,
+    "nom": "Avenue du Président Léopold Sedar Senghor, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "highway/tertiary"
+   }
+  ]
+ },
+ "Avenue Léopold Sédar Senghor": {
+  "recherche": "Avenue Léopold Sédar Senghor",
+  "candidats": [
+   {
+    "lat": 14.6662007,
+    "lon": -17.4329567,
+    "nom": "Avenue du Président Léopold Sedar Senghor, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.6635506,
+    "lon": -17.4339101,
+    "nom": "Avenue du Président Léopold Sedar Senghor, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "highway/tertiary"
+   }
+  ]
+ },
+ "Avenue Léopold Sédar Senghor (Roume)": {
+  "recherche": "Avenue Léopold Sédar Senghor (Roume",
+  "candidats": []
+ },
+ "Avenue Nelson Mandela": {
+  "recherche": "Avenue Nelson Mandela",
+  "candidats": [
+   {
+    "lat": 14.6626433,
+    "lon": -17.435756,
+    "nom": "Avenue Nelson Mandela, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "highway/tertiary"
+   }
+  ]
+ },
+ "Avenue Peytavin": {
+  "recherche": "Avenue Peytavin",
+  "candidats": [
+   {
+    "lat": 14.6688477,
+    "lon": -17.4406424,
+    "nom": "Avenue Peytavin, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "highway/tertiary"
+   }
+  ]
+ },
+ "Avenue Pompidou": {
+  "recherche": "Avenue Pompidou",
+  "candidats": [
+   {
+    "lat": 14.6693648,
+    "lon": -17.434857,
+    "nom": "Avenue George Pompidou, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/tertiary"
+   }
+  ]
+ },
+ "BCEAO": {
+  "recherche": "BCEAO",
+  "candidats": [
+   {
+    "lat": 14.7623487,
+    "lon": -17.4619928,
+    "nom": "Plage BCEAO, Dakar, Région de Dakar, Sénégal",
+    "type": "natural/beach"
+   },
+   {
+    "lat": 14.6700982,
+    "lon": -17.4263936,
+    "nom": "Siège de la BCEAO, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/commercial"
+   },
+   {
+    "lat": 14.7616547,
+    "lon": -17.4604865,
+    "nom": "Rue BCEAO, Arrondissement des Almadies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "highway/residential"
+   },
+   {
+    "lat": 14.7603235,
+    "lon": -17.4614194,
+    "nom": "Centre aéré BCEAO Yoff, Rue BCEAO, Arrondissement des Almadies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "leisure/sports_centre"
+   }
+  ]
+ },
+ "BOP": {
+  "recherche": "BOP",
+  "candidats": [
+   {
+    "lat": 14.7103652,
+    "lon": -17.4484168,
+    "nom": "Amidou Bop, 2395, Rue BIS-23, Ouagou Niayes1, Commune de Biscuiterie, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "building/yes"
+   }
+  ]
+ },
+ "BOPP": {
+  "recherche": "BOPP",
+  "candidats": [
+   {
+    "lat": 14.7036306,
+    "lon": -17.4487455,
+    "nom": "Bopp, Commune de Biscuiterie, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7036385,
+    "lon": -17.4487046,
+    "nom": "Bopp, Commune de Biscuiterie, Arrondissement de Grand Dakar, Dakar, Région de Dakar, Sénégal",
+    "type": "leisure/garden"
+   }
+  ]
+ },
+ "Bambilor": {
+  "recherche": "Bambilor",
+  "candidats": [
+   {
+    "lat": 14.8039119,
+    "lon": -17.1840413,
+    "nom": "Bambylor, Commune de Bambylor, Arrondissement de Bambylor, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "place/town"
+   },
+   {
+    "lat": 14.7848232,
+    "lon": -17.2147112,
+    "nom": "Bambilor, Noflaye, Commune de Sangalkam, Arrondissement de Sangalkam, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "landuse/residential"
+   },
+   {
+    "lat": 14.786413,
+    "lon": -17.2157,
+    "nom": "Noflaye, Commune de Sangalkam, Arrondissement de Sangalkam, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "place/village"
+   }
+  ]
+ },
+ "Bargny": {
+  "recherche": "Bargny",
+  "candidats": [
+   {
+    "lat": 14.693829,
+    "lon": -17.229741,
+    "nom": "Commune de Bargny, Arrondissement de Sangalkam, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Baux Maraichers": {
+  "recherche": "Baux Maraichers",
+  "candidats": [
+   {
+    "lat": 14.73979,
+    "lon": -17.4036152,
+    "nom": "Baux Maraîchers, Route de Rufisque, Thiaroye, Commune de Dalifort, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 16000, Sénégal",
+    "type": "railway/platform"
+   },
+   {
+    "lat": 14.7397124,
+    "lon": -17.4036081,
+    "nom": "Baux Maraîchers, Route de Rufisque, Thiaroye, Commune de Dalifort, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 16000, Sénégal",
+    "type": "railway/station"
+   },
+   {
+    "lat": 14.7397146,
+    "lon": -17.4035251,
+    "nom": "Baux Maraîchers, Route de Rufisque, Thiaroye, Commune de Dalifort, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 16000, Sénégal",
+    "type": "railway/stop"
+   },
+   {
+    "lat": 14.7396223,
+    "lon": -17.4035181,
+    "nom": "Baux Maraîchers, Route de Rufisque, Thiaroye, Commune de Dalifort, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 16000, Sénégal",
+    "type": "railway/halt"
+   }
+  ]
+ },
+ "Bel Air": {
+  "recherche": "Bel Air",
+  "candidats": [
+   {
+    "lat": 14.7022198,
+    "lon": -17.4284736,
+    "nom": "Bel Air, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7032519,
+    "lon": -17.4291896,
+    "nom": "Bel Air, Rue HB-47, Hann Marinas, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "railway/yard"
+   }
+  ]
+ },
+ "Blaise Diagne": {
+  "recherche": "Blaise Diagne",
+  "candidats": [
+   {
+    "lat": 14.6796626,
+    "lon": -17.449177,
+    "nom": "Blaise Diagne, Rue ME-16, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "amenity/pharmacy"
+   },
+   {
+    "lat": 14.668404,
+    "lon": -17.3994312,
+    "nom": "Blaise Diagne, Rue de Hann, Commune de Gorée, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 18522, Sénégal",
+    "type": "tourism/artwork"
+   }
+  ]
+ },
+ "Bld de la République": {
+  "recherche": "Bld de la République",
+  "candidats": []
+ },
+ "Boulangerie Jaune": {
+  "recherche": "Boulangerie Jaune",
+  "candidats": [
+   {
+    "lat": 14.7189886,
+    "lon": -17.466291,
+    "nom": "Boulangerie Jaune, Boulevard du Koweit (SC-01), Sacré Coeur 3, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "shop/bakery"
+   }
+  ]
+ },
+ "Boulangerie N’wely": {
+  "recherche": "Boulangerie N'wely",
+  "candidats": []
+ },
+ "Boulangerie Zone": {
+  "recherche": "Boulangerie Zone",
+  "candidats": [
+   {
+    "lat": 14.7269815,
+    "lon": -17.4443651,
+    "nom": "La Brioche dorée (Boulangerie et Pâtisserie), Avenue du Roi Fahd Ben Abdel Aziz, Zone De Captage, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 00221, Sénégal",
+    "type": "shop/bakery"
+   },
+   {
+    "lat": 14.7031717,
+    "lon": -17.4570036,
+    "nom": "Boulangerie el Mansour, Boulevard Dial Diop, Amitié 2, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "shop/bakery"
+   },
+   {
+    "lat": 14.7411545,
+    "lon": -17.4567062,
+    "nom": "Boulangerie Djam, Rue GY-250, CITE KERETOU, Hlm Grand Yoff, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "shop/bakery"
+   }
+  ]
+ },
+ "Boulevard Général De Gaule": {
+  "recherche": "Boulevard Général De Gaule",
+  "candidats": []
+ },
+ "Boulevard Général De Gaule (Centenaire)": {
+  "recherche": "Boulevard Général De Gaule (Centenaire",
+  "candidats": []
+ },
+ "Boulevard de la République": {
+  "recherche": "Boulevard de la République",
+  "candidats": []
+ },
+ "Boulevard de l’Arsenal": {
+  "recherche": "Boulevard de l'Arsenal",
+  "candidats": []
+ },
+ "Bountou Pikine": {
+  "recherche": "Bountou Pikine",
+  "candidats": [
+   {
+    "lat": 14.745654,
+    "lon": -17.4009333,
+    "nom": "Bountou Pikine, Tally Lcotaf, Commune de Pikine Ouest, Commune de Dalifort, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 16000, Sénégal",
+    "type": "building/yes"
+   }
+  ]
+ },
+ "Bountou pikine": {
+  "recherche": "Bountou pikine",
+  "candidats": [
+   {
+    "lat": 14.745654,
+    "lon": -17.4009333,
+    "nom": "Bountou Pikine, Tally Lcotaf, Commune de Pikine Ouest, Commune de Dalifort, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 16000, Sénégal",
+    "type": "building/yes"
+   }
+  ]
+ },
+ "Brioche d’orée Ouakam": {
+  "recherche": "Brioche d'orée Ouakam",
+  "candidats": []
+ },
+ "CEM Dieuppeul 3": {
+  "recherche": "CEM Dieuppeul 3",
+  "candidats": []
+ },
+ "CEM Ousmane Socé Diop": {
+  "recherche": "CEM Ousmane Socé Diop",
+  "candidats": [
+   {
+    "lat": 14.7206759,
+    "lon": -17.4530558,
+    "nom": "CEM Ousmane Socé Diop, Rue GY-583, Liberté, Commune de Dieuppeul-Derklé, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "amenity/college"
+   }
+  ]
+ },
+ "CES Canada": {
+  "recherche": "CES Canada",
+  "candidats": []
+ },
+ "CSS": {
+  "recherche": "CSS",
+  "candidats": [
+   {
+    "lat": 14.6980376,
+    "lon": -17.4479154,
+    "nom": "Caisse de securite sociale, Rocade Fann Bel-Air, HLM Fass, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "office/government"
+   }
+  ]
+ },
+ "Cafétéria": {
+  "recherche": "Cafétéria",
+  "candidats": [
+   {
+    "lat": 14.6977438,
+    "lon": -17.4507126,
+    "nom": "Cafétéria, Rocade Fann Bel-Air, Gardien, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/internet_cafe"
+   },
+   {
+    "lat": 14.699118,
+    "lon": -17.4557642,
+    "nom": "cafétéria, Rue ( AAB-33), Zone B, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "amenity/cafe"
+   },
+   {
+    "lat": 14.6988204,
+    "lon": -17.4565769,
+    "nom": "cafétéria, Rue ABEBE BIKILA( ABB-56), Zone B, Quartier Zone B ballon, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "amenity/cafe"
+   }
+  ]
+ },
+ "Camberene": {
+  "recherche": "Camberene",
+  "candidats": [
+   {
+    "lat": 14.7710028,
+    "lon": -17.4236972,
+    "nom": "Commune de Cambérène, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Camp penal": {
+  "recherche": "Camp penal",
+  "candidats": [
+   {
+    "lat": 14.7331719,
+    "lon": -17.4590601,
+    "nom": "Maison d'arrêt Camp Pénal, rue GY-149, SCAT URBAM (CITE CONACHAP), Scat Urbam, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "amenity/prison"
+   },
+   {
+    "lat": 14.7329936,
+    "lon": -17.4599103,
+    "nom": "Maison d'arret camp pénal pour femme, rue GY-149, SCAT URBAM (CITE CONACHAP), Scat Urbam, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "amenity/prison"
+   },
+   {
+    "lat": 14.7400864,
+    "lon": -17.4700495,
+    "nom": "Institut d’Études et de Formation en Statistiques Appliquée et en Gestion et Évaluation de Projets, Rue GY-22, CITE SIPRES II SICA, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11900, Sénégal",
+    "type": "amenity/school"
+   }
+  ]
+ },
+ "Canal 4": {
+  "recherche": "Canal 4",
+  "candidats": [
+   {
+    "lat": 14.6994007,
+    "lon": -17.4515712,
+    "nom": "Canal 4, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "waterway/drain"
+   }
+  ]
+ },
+ "Capa Virmaud": {
+  "recherche": "Capa Virmaud",
+  "candidats": []
+ },
+ "Case": {
+  "recherche": "Case",
+  "candidats": [
+   {
+    "lat": 14.7583533,
+    "lon": -17.4297359,
+    "nom": "Case bi- Eglise, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "highway/residential"
+   },
+   {
+    "lat": 14.7565928,
+    "lon": -17.4285632,
+    "nom": "Case-ba, Commune du Golf Sud, Arrondissement de Sam Notaire, Département de Guédiawaye, Région de Dakar, 14023, Sénégal",
+    "type": "highway/secondary"
+   },
+   {
+    "lat": 14.7565712,
+    "lon": -17.4290535,
+    "nom": "Case-ba, Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "highway/secondary"
+   },
+   {
+    "lat": 14.7569233,
+    "lon": -17.4288738,
+    "nom": "Case-ba, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "highway/secondary"
+   },
+   {
+    "lat": 14.7540589,
+    "lon": -17.4329962,
+    "nom": "ARRET CASE BI, Route des Niayes, Touba Ndar Fall JUS, Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Case PA": {
+  "recherche": "Case PA",
+  "candidats": []
+ },
+ "Case bi": {
+  "recherche": "Case bi",
+  "candidats": [
+   {
+    "lat": 14.7583533,
+    "lon": -17.4297359,
+    "nom": "Case bi- Eglise, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "highway/residential"
+   },
+   {
+    "lat": 14.7561852,
+    "lon": -17.4298612,
+    "nom": "ARRET CASE BI, Route de Niayes, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7540589,
+    "lon": -17.4329962,
+    "nom": "ARRET CASE BI, Route des Niayes, Touba Ndar Fall JUS, Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7560905,
+    "lon": -17.4292479,
+    "nom": "Station Total Case Bi, Route de Niayes, Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "amenity/fuel"
+   },
+   {
+    "lat": 14.7562152,
+    "lon": -17.4297524,
+    "nom": "ARRET CASE BI, Route de Niayes, Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "amenity/bus_station"
+   }
+  ]
+ },
+ "Case des tous petit": {
+  "recherche": "Case des tous petit",
+  "candidats": []
+ },
+ "Caserne Sapeurs Pompiers": {
+  "recherche": "Caserne Sapeurs Pompiers",
+  "candidats": [
+   {
+    "lat": 14.6834036,
+    "lon": -17.4396092,
+    "nom": "Caserne Sapeurs Pompiers, Avenue Cheikh Seydi El Hadji Malick Sy, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "amenity/fire_station"
+   },
+   {
+    "lat": 14.7605022,
+    "lon": -17.4372038,
+    "nom": "Caserne Sapeurs-pompiers, PA-11-14, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "amenity/fire_station"
+   },
+   {
+    "lat": 14.7262015,
+    "lon": -17.4397128,
+    "nom": "Caserne Sapeurs Pompiers, Autoroute Seydina-Limamoulaye, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 00221, Sénégal",
+    "type": "amenity/fire_station"
+   }
+  ]
+ },
+ "Centenaire": {
+  "recherche": "Centenaire",
+  "candidats": [
+   {
+    "lat": 14.6759856,
+    "lon": -17.4335181,
+    "nom": "Dakar, Boulevard du Centenaire de la Commune de Dakar, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "railway/station"
+   },
+   {
+    "lat": 14.6799107,
+    "lon": -17.4352444,
+    "nom": "Boulevard du Centenaire de la Commune de Dakar, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.6916453,
+    "lon": -17.4374779,
+    "nom": "Boulevard du Centenaire de la Commune de Dakar, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.6851495,
+    "lon": -17.4377203,
+    "nom": "Boulevard du Centenaire de la Commune de Dakar, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.6869968,
+    "lon": -17.4455746,
+    "nom": "Pharmacie du centenaire, Boulevard Mamadou Dia, Gibraltar, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "amenity/pharmacy"
+   }
+  ]
+ },
+ "Central Bel Air (MTOA)": {
+  "recherche": "Central Bel Air (MTOA",
+  "candidats": []
+ },
+ "Cfao Technologies": {
+  "recherche": "Cfao Technologies",
+  "candidats": []
+ },
+ "Cite Asecna": {
+  "recherche": "Cite Asecna",
+  "candidats": [
+   {
+    "lat": 14.7306481,
+    "lon": -17.4905442,
+    "nom": "Cité ASECNA Ouakam, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.749923,
+    "lon": -17.4905306,
+    "nom": "Cité ASECNA Yoff, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7307434,
+    "lon": -17.48822,
+    "nom": "Stade Cite Asecna, Rue OKM 26, Arrondissement des Almadies, Dakar, Région de Dakar, 24095, Sénégal",
+    "type": "leisure/sports_centre"
+   },
+   {
+    "lat": 14.7293467,
+    "lon": -17.4891295,
+    "nom": "Chapelle Cité ASECNA, Rue OKM 26, Arrondissement des Almadies, Dakar, Région de Dakar, 24095, Sénégal",
+    "type": "amenity/place_of_worship"
+   },
+   {
+    "lat": 14.7294806,
+    "lon": -17.491085,
+    "nom": "Boulangerie Cité ASECNA, OKM-284, Arrondissement des Almadies, Dakar, Région de Dakar, 38110, Sénégal",
+    "type": "shop/bakery"
+   }
+  ]
+ },
+ "Cité Asecna": {
+  "recherche": "Cité Asecna",
+  "candidats": [
+   {
+    "lat": 14.7306481,
+    "lon": -17.4905442,
+    "nom": "Cité ASECNA Ouakam, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.749923,
+    "lon": -17.4905306,
+    "nom": "Cité ASECNA Yoff, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7293467,
+    "lon": -17.4891295,
+    "nom": "Chapelle Cité ASECNA, Rue OKM 26, Arrondissement des Almadies, Dakar, Région de Dakar, 24095, Sénégal",
+    "type": "amenity/place_of_worship"
+   },
+   {
+    "lat": 14.7294806,
+    "lon": -17.491085,
+    "nom": "Boulangerie Cité ASECNA, OKM-284, Arrondissement des Almadies, Dakar, Région de Dakar, 38110, Sénégal",
+    "type": "shop/bakery"
+   },
+   {
+    "lat": 14.729233,
+    "lon": -17.4901917,
+    "nom": "Pharmacie Cité Asecna, Rue OKM 26, Arrondissement des Almadies, Dakar, Région de Dakar, 24095, Sénégal",
+    "type": "amenity/pharmacy"
+   }
+  ]
+ },
+ "Cité Assemblée": {
+  "recherche": "Cité Assemblée",
+  "candidats": [
+   {
+    "lat": 14.7304522,
+    "lon": -17.4941587,
+    "nom": "Pharmacie Rokya, Cité Assemblée, OKM-284, Arrondissement des Almadies, Dakar, Région de Dakar, 38110, Sénégal",
+    "type": "amenity/pharmacy"
+   },
+   {
+    "lat": 14.7310145,
+    "lon": -17.4988619,
+    "nom": "ATPS, Rue OKM 23, Arrondissement des Almadies, Dakar, Région de Dakar, 38110, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "Cité Comico": {
+  "recherche": "Cité Comico",
+  "candidats": [
+   {
+    "lat": 14.8086864,
+    "lon": -17.1804205,
+    "nom": "Association de developpement de COMICO 5 (ADCOM), Route de Bambilor, Bambilor, Cité Doudou Basse, Noflaye, Commune de Bambylor, Arrondissement de Bambylor, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "office/association"
+   }
+  ]
+ },
+ "Cité Derklé": {
+  "recherche": "Cité Derklé",
+  "candidats": [
+   {
+    "lat": 14.7187348,
+    "lon": -17.4495192,
+    "nom": "Université Dakar-Bourguiba, 12, Avenue du Président Habib Bourguiba, Liberté, Commune de Biscuiterie, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "amenity/university"
+   },
+   {
+    "lat": 14.7153613,
+    "lon": -17.4525622,
+    "nom": "Centre des services fiscaux de Dakar-Liberte, Avenue du Président Habib Bourguiba, Liberté, Commune de Biscuiterie, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "office/government"
+   }
+  ]
+ },
+ "Cité Isra": {
+  "recherche": "Cité Isra",
+  "candidats": []
+ },
+ "Cité Keur Gorgui": {
+  "recherche": "Cité Keur Gorgui",
+  "candidats": [
+   {
+    "lat": 14.7116889,
+    "lon": -17.4687165,
+    "nom": "Rond Point Cité Keur Gorgui, Sacré Coeur 3 Pyrotechnie, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/village_green"
+   }
+  ]
+ },
+ "Cité Lobatt Fall": {
+  "recherche": "Cité Lobatt Fall",
+  "candidats": []
+ },
+ "Cité Marine": {
+  "recherche": "Cité Marine",
+  "candidats": [
+   {
+    "lat": 14.7311906,
+    "lon": -17.4552178,
+    "nom": "Cité Marine, Khar Yalla, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "place/neighbourhood"
+   }
+  ]
+ },
+ "Cité Port": {
+  "recherche": "Cité Port",
+  "candidats": [
+   {
+    "lat": 14.7011067,
+    "lon": -17.4465997,
+    "nom": "Cité Port, Commune de HLM, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "place/neighbourhood"
+   }
+  ]
+ },
+ "Cité des Eaux": {
+  "recherche": "Cité des Eaux",
+  "candidats": [
+   {
+    "lat": 14.7248449,
+    "lon": -17.4443118,
+    "nom": "Cité des Eaux, Avenue du Président Habib Bourguiba, Commune de HLM, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "amenity/place_of_worship"
+   }
+  ]
+ },
+ "Collège Hyacinthe Thiandoum": {
+  "recherche": "Collège Hyacinthe Thiandoum",
+  "candidats": []
+ },
+ "Collège Sacré Cœur": {
+  "recherche": "Collège Sacré Cœur",
+  "candidats": [
+   {
+    "lat": 14.7114151,
+    "lon": -17.4636771,
+    "nom": "Rond Point Collège Sacré-Coeur, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "place/locality"
+   },
+   {
+    "lat": 14.7131101,
+    "lon": -17.4635593,
+    "nom": "Cour privée Collège Sacré-coeur, SC-152, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "amenity/school"
+   },
+   {
+    "lat": 14.7167429,
+    "lon": -17.4640648,
+    "nom": "Arret College sacre coeur, SC-133, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Colobane": {
+  "recherche": "Colobane",
+  "candidats": [
+   {
+    "lat": 14.6951179,
+    "lon": -17.4454265,
+    "nom": "Colobane, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   },
+   {
+    "lat": 14.7002757,
+    "lon": -17.441582,
+    "nom": "Colobane, Autoroute Seydina-Limamoulaye, Gibraltar, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "railway/platform"
+   },
+   {
+    "lat": 14.7004304,
+    "lon": -17.441666,
+    "nom": "Colobane, Autoroute Seydina-Limamoulaye, Gibraltar, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "railway/stop"
+   },
+   {
+    "lat": 14.7003482,
+    "lon": -17.4416523,
+    "nom": "Colobane, Autoroute Seydina-Limamoulaye, Gibraltar, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "railway/station"
+   },
+   {
+    "lat": 14.6882763,
+    "lon": -17.4553657,
+    "nom": "Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Comico": {
+  "recherche": "Comico",
+  "candidats": [
+   {
+    "lat": 14.7269953,
+    "lon": -17.4835303,
+    "nom": "Case des Tout-Petits, Comico, Rue OKM-243, Arrondissement des Almadies, Dakar, Région de Dakar, 24095, Sénégal",
+    "type": "amenity/kindergarten"
+   },
+   {
+    "lat": 14.7296022,
+    "lon": -17.4828161,
+    "nom": "Salle Polyvalente Saint-Martin, Comico, Ouakam, Rue OKM-243, Arrondissement des Almadies, Dakar, Région de Dakar, 24095, Sénégal",
+    "type": "amenity/place_of_worship"
+   },
+   {
+    "lat": 14.7866361,
+    "lon": -17.3720879,
+    "nom": "Mosquée Comico, WN-141, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/place_of_worship"
+   },
+   {
+    "lat": 14.7865789,
+    "lon": -17.3723352,
+    "nom": "Parking Comico, WN-141, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/parking"
+   },
+   {
+    "lat": 14.8086864,
+    "lon": -17.1804205,
+    "nom": "Association de developpement de COMICO 5 (ADCOM), Route de Bambilor, Bambilor, Cité Doudou Basse, Noflaye, Commune de Bambylor, Arrondissement de Bambylor, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "office/association"
+   }
+  ]
+ },
+ "Corniche": {
+  "recherche": "Corniche",
+  "candidats": [
+   {
+    "lat": 14.7286669,
+    "lon": -17.50526,
+    "nom": "Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 38110, Sénégal",
+    "type": "highway/trunk"
+   },
+   {
+    "lat": 14.703011,
+    "lon": -17.4789332,
+    "nom": "Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 15150, Sénégal",
+    "type": "highway/trunk"
+   },
+   {
+    "lat": 14.740242,
+    "lon": -17.5104487,
+    "nom": "Route de la Corniche O Dakar, Arrondissement des Almadies, Dakar, Région de Dakar, 18524, Sénégal",
+    "type": "highway/trunk"
+   },
+   {
+    "lat": 14.6708767,
+    "lon": -17.4461415,
+    "nom": "Route de la Corniche Ouest, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "highway/trunk"
+   },
+   {
+    "lat": 14.7119605,
+    "lon": -17.4877096,
+    "nom": "Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 24095, Sénégal",
+    "type": "highway/trunk"
+   }
+  ]
+ },
+ "Corniche Daroukhane": {
+  "recherche": "Corniche Daroukhane",
+  "candidats": []
+ },
+ "Corniche Ouest": {
+  "recherche": "Corniche Ouest",
+  "candidats": [
+   {
+    "lat": 14.7056049,
+    "lon": -17.4809367,
+    "nom": "International School Of Dakar, Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 15150, Sénégal",
+    "type": "amenity/school"
+   },
+   {
+    "lat": 14.7358428,
+    "lon": -17.5087147,
+    "nom": "HEC Dakar, Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 38110, Sénégal",
+    "type": "amenity/college"
+   },
+   {
+    "lat": 14.7019351,
+    "lon": -17.4765558,
+    "nom": "Embassy of the United Arab Emirates, 230, Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 15150, Sénégal",
+    "type": "office/diplomatic"
+   }
+  ]
+ },
+ "Corniche des Hlm": {
+  "recherche": "Corniche des Hlm",
+  "candidats": [
+   {
+    "lat": 14.7087032,
+    "lon": -17.4421613,
+    "nom": "Centre de santé des HLM, Avenue Corniche (HLM-137), Cité Douane, Commune de HLM, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/clinic"
+   }
+  ]
+ },
+ "Corniche ouest": {
+  "recherche": "Corniche ouest",
+  "candidats": [
+   {
+    "lat": 14.7056049,
+    "lon": -17.4809367,
+    "nom": "International School Of Dakar, Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 15150, Sénégal",
+    "type": "amenity/school"
+   },
+   {
+    "lat": 14.6703514,
+    "lon": -17.4438206,
+    "nom": "Palais de Justice de Dakar, Route de la Corniche Ouest, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "amenity/courthouse"
+   },
+   {
+    "lat": 14.7358428,
+    "lon": -17.5087147,
+    "nom": "HEC Dakar, Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 38110, Sénégal",
+    "type": "amenity/college"
+   },
+   {
+    "lat": 14.7019351,
+    "lon": -17.4765558,
+    "nom": "Embassy of the United Arab Emirates, 230, Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 15150, Sénégal",
+    "type": "office/diplomatic"
+   }
+  ]
+ },
+ "Cours Sainte Marie de Hann": {
+  "recherche": "Cours Sainte Marie de Hann",
+  "candidats": [
+   {
+    "lat": 14.733283,
+    "lon": -17.436071,
+    "nom": "Cours Sainte-Marie de Hann, HB-221, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 00221, Sénégal",
+    "type": "amenity/school"
+   }
+  ]
+ },
+ "Croisement 22": {
+  "recherche": "Croisement 22",
+  "candidats": [
+   {
+    "lat": 14.7534168,
+    "lon": -17.4340762,
+    "nom": "Croisement 22, Route des Niayes, Touba Ndar Fall JUS, Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7539628,
+    "lon": -17.4332428,
+    "nom": "Croisement 22, Route de Niayes, Unite 8, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Croisement Almadies": {
+  "recherche": "Croisement Almadies",
+  "candidats": [
+   {
+    "lat": 14.7370731,
+    "lon": -17.5093413,
+    "nom": "SGBS, Route de la Corniche O Dakar, Arrondissement des Almadies, Dakar, Région de Dakar, 18524, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "Croisement Bountou Pikine": {
+  "recherche": "Croisement Bountou Pikine",
+  "candidats": []
+ },
+ "Croisement Keur Massar": {
+  "recherche": "Croisement Keur Massar",
+  "candidats": [
+   {
+    "lat": 14.786355,
+    "lon": -17.2945284,
+    "nom": "Croisement tivavouane Peulh, Route de Keur Massar, Citée Total, Cité Doudou Basse, Ndiakhirate Digue, Commune de Tivaouane Peulh-Niaga, Arrondissement de Bambylor, Département de Rufisque, Région de Dakar, 17000, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7725976,
+    "lon": -17.3170546,
+    "nom": "SGBS, Route de Keur Massar, Camille Basse, Keur Massar, Commune de Keur Massar Sud, Arrondissement de Jaxaay, Département de Keur Massar, Région de Dakar, 17000, Sénégal",
+    "type": "amenity/bank"
+   },
+   {
+    "lat": 14.7721589,
+    "lon": -17.3173349,
+    "nom": "CBAO, Route de Keur Massar, Camille Basse, Keur Massar, Commune de Keur Massar Sud, Arrondissement de Jaxaay, Département de Keur Massar, Région de Dakar, 17000, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "Croisement Petit Mbao": {
+  "recherche": "Croisement Petit Mbao",
+  "candidats": []
+ },
+ "Croissement Camberene": {
+  "recherche": "Croissement Camberene",
+  "candidats": []
+ },
+ "Croissement Keur Massar": {
+  "recherche": "Croissement Keur Massar",
+  "candidats": [
+   {
+    "lat": 14.7689755,
+    "lon": -17.3652712,
+    "nom": "ACEP, Route de Malika, Quartier Demba Seck, Commune de Djidah Thiaroye Kaw, Commune de Yeumbeul Sud, Arrondissement de Yeumbeul, Arrondissement de Pikine-Dagoudane, Département de Keur Massar, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "Croissement Tivaoune Peulh": {
+  "recherche": "Croissement Tivaoune Peulh",
+  "candidats": []
+ },
+ "Cyrnos": {
+  "recherche": "Cyrnos",
+  "candidats": []
+ },
+ "Cyrnos (sur le pont)": {
+  "recherche": "Cyrnos (sur le pont",
+  "candidats": []
+ },
+ "DAF": {
+  "recherche": "DAF",
+  "candidats": [
+   {
+    "lat": 14.6743283,
+    "lon": -17.449595,
+    "nom": "Direction de l'automatisation des fichiers (DAF), Avenue Malick Sy, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "office/government"
+   }
+  ]
+ },
+ "Dakar sacré coeur": {
+  "recherche": "Dakar sacré coeur",
+  "candidats": [
+   {
+    "lat": 14.7133759,
+    "lon": -17.4622961,
+    "nom": "Dakar Sacré-Cœur, Rue Sérigne Fallou Mbacké (BIS-45), Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "club/sport"
+   },
+   {
+    "lat": 14.7149521,
+    "lon": -17.4665992,
+    "nom": "BEM Dakar, SC-103, Sacré Coeur, Sacré Coeur 3 Pyrotechnie, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "amenity/university"
+   },
+   {
+    "lat": 14.7132666,
+    "lon": -17.4686618,
+    "nom": "Le Collège Bilingue de Dakar, SC-104, Arrondissement des Almadies, Sacré Coeur 3 Pyrotechnie, Dakar, Région de Dakar, 22352, Sénégal",
+    "type": "amenity/school"
+   },
+   {
+    "lat": 14.7152524,
+    "lon": -17.4708124,
+    "nom": "Direction Générale DAKAR DEM DIKK, SC-91, Arrondissement des Almadies, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "office/government"
+   },
+   {
+    "lat": 14.7158689,
+    "lon": -17.4697108,
+    "nom": "Direction Dakar Dem Dik, SC-91, Arrondissement des Almadies, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "office/government"
+   }
+  ]
+ },
+ "Daroukhane": {
+  "recherche": "Daroukhane",
+  "candidats": [
+   {
+    "lat": 14.7849348,
+    "lon": -17.3754035,
+    "nom": "École Daroukhane, WN-119, Sentenac, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/school"
+   },
+   {
+    "lat": 14.781596,
+    "lon": -17.3727427,
+    "nom": "Senelec Daroukhane, WN-262, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/payment_terminal"
+   },
+   {
+    "lat": 14.7815469,
+    "lon": -17.3720364,
+    "nom": "Terminus Dakar Dem Dikk Daroukhane, WN-262, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/parking"
+   }
+  ]
+ },
+ "Deux voies liberté 6": {
+  "recherche": "Deux voies liberté 6",
+  "candidats": []
+ },
+ "Deux voies vers Camp Leclerc": {
+  "recherche": "Deux voies vers Camp Leclerc",
+  "candidats": []
+ },
+ "Dial Diop (ex rue 10)": {
+  "recherche": "Dial Diop (ex rue 10",
+  "candidats": []
+ },
+ "Diamaguene": {
+  "recherche": "Diamaguene",
+  "candidats": [
+   {
+    "lat": 14.7560561,
+    "lon": -17.3515872,
+    "nom": "Commune de Diamaguène-Sicap Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   },
+   {
+    "lat": 14.7515181,
+    "lon": -17.356075,
+    "nom": "Cimetière musulman de Diamaguene, Commune de Diamaguène-Sicap Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, Sénégal",
+    "type": "landuse/cemetery"
+   }
+  ]
+ },
+ "Diamagueune": {
+  "recherche": "Diamagueune",
+  "candidats": [
+   {
+    "lat": 14.7484219,
+    "lon": -17.3521328,
+    "nom": "Hôtel de ville Diamagueune/Sicap Mbao, N 1, Commune de Diamaguène-Sicap Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "office/government"
+   }
+  ]
+ },
+ "Diamaguène": {
+  "recherche": "Diamaguène",
+  "candidats": [
+   {
+    "lat": 14.7560561,
+    "lon": -17.3515872,
+    "nom": "Commune de Diamaguène-Sicap Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   },
+   {
+    "lat": 14.7515181,
+    "lon": -17.356075,
+    "nom": "Cimetière musulman de Diamaguene, Commune de Diamaguène-Sicap Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, Sénégal",
+    "type": "landuse/cemetery"
+   }
+  ]
+ },
+ "Diamalaye": {
+  "recherche": "Diamalaye",
+  "candidats": [
+   {
+    "lat": 14.7614948,
+    "lon": -17.4527315,
+    "nom": "Diamalaye, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7926153,
+    "lon": -17.3387331,
+    "nom": "Diamalaye, Route de Malika, Darou salam, Ndiayenne, Commune de Malika, Arrondissement de Malika, Département de Keur Massar, Région de Dakar, 20896, Sénégal",
+    "type": "shop/bakery"
+   }
+  ]
+ },
+ "Diamniadio": {
+  "recherche": "Diamniadio",
+  "candidats": [
+   {
+    "lat": 14.7202187,
+    "lon": -17.1842439,
+    "nom": "Commune de Diamniadio, Arrondissement de Diamniadio, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Diamniadio Yenne": {
+  "recherche": "Diamniadio Yenne",
+  "candidats": [
+   {
+    "lat": 14.6452211,
+    "lon": -17.1633722,
+    "nom": "Communauté rurale de Yenne, Arrondissement de Diamniadio, Département de Rufisque, Région de Dakar, 20100, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Difoncé": {
+  "recherche": "Difoncé",
+  "candidats": []
+ },
+ "Dior": {
+  "recherche": "Dior",
+  "candidats": [
+   {
+    "lat": 14.7580153,
+    "lon": -17.4471194,
+    "nom": "Marché Dior, Rue PA-24-02, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "amenity/marketplace"
+   },
+   {
+    "lat": 14.759214,
+    "lon": -17.4473732,
+    "nom": "École Dior, Rue PA-24-02, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "amenity/school"
+   },
+   {
+    "lat": 14.7586507,
+    "lon": -17.4474137,
+    "nom": "City Dia \"dior\", Rue PA-24-02, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "shop/supermarket"
+   },
+   {
+    "lat": 14.7586272,
+    "lon": -17.4476056,
+    "nom": "Total \"Dior\", Rue PA-24-02, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "shop/yes"
+   },
+   {
+    "lat": 14.7108167,
+    "lon": -17.4629827,
+    "nom": "Chez Dior, Boulevard Dial Diop, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "amenity/restaurant"
+   }
+  ]
+ },
+ "Direction Générale DDD": {
+  "recherche": "Direction Générale DDD",
+  "candidats": []
+ },
+ "Dispensaire Norade": {
+  "recherche": "Dispensaire Norade",
+  "candidats": [
+   {
+    "lat": 14.7557348,
+    "lon": -17.4464172,
+    "nom": "Dispensaire Norade, Rue Mame Abdou Aziz Sy, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "amenity/clinic"
+   }
+  ]
+ },
+ "Djoutiba": {
+  "recherche": "Djoutiba",
+  "candidats": []
+ },
+ "Douta Seck": {
+  "recherche": "Douta Seck",
+  "candidats": [
+   {
+    "lat": 14.6820218,
+    "lon": -17.4517405,
+    "nom": "Maison de la Culture Douta Seck, Rue ME-29 bis, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "building/yes"
+   }
+  ]
+ },
+ "Dépôt Thiaroye": {
+  "recherche": "Dépôt Thiaroye",
+  "candidats": [
+   {
+    "lat": 14.7635108,
+    "lon": -17.3886491,
+    "nom": "Dépôt, Route de Niayes, Commune de Djidah Thiaroye Kaw, Thiaroye, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 14000, Sénégal",
+    "type": "shop/tobacco"
+   }
+  ]
+ },
+ "ENA": {
+  "recherche": "ENA",
+  "candidats": [
+   {
+    "lat": 14.7267395,
+    "lon": -17.4710762,
+    "nom": "École Nationale des Arts, LIB-42, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "office/educational_institution"
+   },
+   {
+    "lat": 14.6996665,
+    "lon": -17.4523652,
+    "nom": "École Nationale d'Administration, Boulevard Dial Diop, Gardien, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "amenity/university"
+   }
+  ]
+ },
+ "ENEA": {
+  "recherche": "ENEA",
+  "candidats": [
+   {
+    "lat": 14.7046031,
+    "lon": -17.4793648,
+    "nom": "Ecole Supérieure d'Economie Appliquée, Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "amenity/college"
+   }
+  ]
+ },
+ "Ecole Canada": {
+  "recherche": "Ecole Canada",
+  "candidats": []
+ },
+ "Ecole Dior": {
+  "recherche": "Ecole Dior",
+  "candidats": [
+   {
+    "lat": 14.759214,
+    "lon": -17.4473732,
+    "nom": "École Dior, Rue PA-24-02, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "amenity/school"
+   }
+  ]
+ },
+ "Ecole Hyacinthe Thiandoum": {
+  "recherche": "Ecole Hyacinthe Thiandoum",
+  "candidats": []
+ },
+ "Ecole Normale": {
+  "recherche": "Ecole Normale",
+  "candidats": [
+   {
+    "lat": 14.698692,
+    "lon": -17.466078,
+    "nom": "Faculté des Sciences et Technologies de l'Éducation, Avenue Habib Bourguiba, Amitié 2, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "amenity/university"
+   },
+   {
+    "lat": 14.6675393,
+    "lon": -17.398939,
+    "nom": "Ancienne École normale William-Ponty, Rue Castel, Commune de Gorée, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 18522, Sénégal",
+    "type": "building/yes"
+   }
+  ]
+ },
+ "Ecole Normale Supérieure": {
+  "recherche": "Ecole Normale Supérieure",
+  "candidats": [
+   {
+    "lat": 14.6785278,
+    "lon": -17.4653083,
+    "nom": "École Normale Supérieure d'Enseignement Technique Professionnel, Route de la Corniche Ouest, Fann Hock, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "amenity/college"
+   }
+  ]
+ },
+ "Eglise": {
+  "recherche": "Eglise",
+  "candidats": [
+   {
+    "lat": 14.6669481,
+    "lon": -17.3979821,
+    "nom": "Église Saint-Charles-Borromée, Rue Boufflers, Commune de Gorée, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 18522, Sénégal",
+    "type": "amenity/place_of_worship"
+   },
+   {
+    "lat": 14.6848055,
+    "lon": -17.4440438,
+    "nom": "Eglise Saint-Laurent, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/religious"
+   },
+   {
+    "lat": 14.7583533,
+    "lon": -17.4297359,
+    "nom": "Case bi- Eglise, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "highway/residential"
+   },
+   {
+    "lat": 14.6026545,
+    "lon": -17.1448187,
+    "nom": "Église du Grand Monarque et du Christ de Lumière, Toubab Dialaw, Communauté rurale de Yenne, Arrondissement de Diamniadio, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "landuse/religious"
+   },
+   {
+    "lat": 14.6668512,
+    "lon": -17.3978038,
+    "nom": "Rue de l'Église, Commune de Gorée, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 18522, Sénégal",
+    "type": "highway/footway"
+   }
+  ]
+ },
+ "Eglise Martyrs de l’Ouganda": {
+  "recherche": "Eglise Martyrs de l'Ouganda",
+  "candidats": []
+ },
+ "Eglise Martyrs de l’ouganda": {
+  "recherche": "Eglise Martyrs de l'ouganda",
+  "candidats": []
+ },
+ "Eglise PA": {
+  "recherche": "Eglise PA",
+  "candidats": [
+   {
+    "lat": 14.752482,
+    "lon": -17.4540611,
+    "nom": "Grande Mosquée de PA Unité 26, ZGM-02, Keur Damel, Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "amenity/place_of_worship"
+   }
+  ]
+ },
+ "Eglise Sainte Thérèse": {
+  "recherche": "Eglise Sainte Thérèse",
+  "candidats": [
+   {
+    "lat": 14.7009292,
+    "lon": -17.4529256,
+    "nom": "Eglise Sainte-Thérèse, Rue Lieutenant-Colonel Pierre Faye (GD-72), Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "amenity/place_of_worship"
+   }
+  ]
+ },
+ "Embarcadère": {
+  "recherche": "Embarcadère",
+  "candidats": []
+ },
+ "Entrée ouakam": {
+  "recherche": "Entrée ouakam",
+  "candidats": []
+ },
+ "Esso Port": {
+  "recherche": "Esso Port",
+  "candidats": []
+ },
+ "Esso Port Embarcadère": {
+  "recherche": "Esso Port Embarcadère",
+  "candidats": []
+ },
+ "Fass Mbao": {
+  "recherche": "Fass Mbao",
+  "candidats": [
+   {
+    "lat": 14.7566381,
+    "lon": -17.3426922,
+    "nom": "Cité Institut Pasteur de Fass Mbao, Commune de Diamaguène-Sicap Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, Sénégal",
+    "type": "place/quarter"
+   },
+   {
+    "lat": 14.7604019,
+    "lon": -17.3477151,
+    "nom": "Poste de Santé de Fass Mbao, A 1, Commune de Diamaguène-Sicap Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "amenity/doctors"
+   },
+   {
+    "lat": 14.7645605,
+    "lon": -17.349954,
+    "nom": "Mosquée Medina Fass Mbao, Avenue Thierno Ndiaye, Quartier Demba Seck, Commune de Yeumbeul Sud, Arrondissement de Yeumbeul, Département de Keur Massar, Région de Dakar, 17000, Sénégal",
+    "type": "amenity/place_of_worship"
+   }
+  ]
+ },
+ "Foire": {
+  "recherche": "Foire",
+  "candidats": [
+   {
+    "lat": 14.7424927,
+    "lon": -17.4680722,
+    "nom": "canal foire, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11900, Sénégal",
+    "type": "waterway/ditch"
+   },
+   {
+    "lat": 14.7493864,
+    "lon": -17.4702084,
+    "nom": "Ouest Foire, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7526822,
+    "lon": -17.4601185,
+    "nom": "Nord Foire, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7396455,
+    "lon": -17.465721,
+    "nom": "Sud Foire, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7348502,
+    "lon": -17.463917,
+    "nom": "SUD FOIRE (CITE CSE), Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   }
+  ]
+ },
+ "Front de Terre": {
+  "recherche": "Front de Terre",
+  "candidats": [
+   {
+    "lat": 14.7226545,
+    "lon": -17.437302,
+    "nom": "CETUD: Conseil Exécutif des Transports Urbains de Dakar, Route du Front de Terre, Hann Equip, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 00221, Sénégal",
+    "type": "building/yes"
+   },
+   {
+    "lat": 14.7271869,
+    "lon": -17.4457331,
+    "nom": "Ageroute (Dakar), Avenue du Roi Fahd Ben Abdel Aziz, Zone De Captage, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 00221, Sénégal",
+    "type": "office/government"
+   }
+  ]
+ },
+ "Front de terre": {
+  "recherche": "Front de terre",
+  "candidats": [
+   {
+    "lat": 14.7226545,
+    "lon": -17.437302,
+    "nom": "CETUD: Conseil Exécutif des Transports Urbains de Dakar, Route du Front de Terre, Hann Equip, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 00221, Sénégal",
+    "type": "building/yes"
+   },
+   {
+    "lat": 14.7271869,
+    "lon": -17.4457331,
+    "nom": "Ageroute (Dakar), Avenue du Roi Fahd Ben Abdel Aziz, Zone De Captage, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 00221, Sénégal",
+    "type": "office/government"
+   }
+  ]
+ },
+ "GMD": {
+  "recherche": "GMD",
+  "candidats": []
+ },
+ "Gare Colobane": {
+  "recherche": "Gare Colobane",
+  "candidats": [
+   {
+    "lat": 14.697979,
+    "lon": -17.4428208,
+    "nom": "Gare Routière de Colobane, Rocade Fann-Bel Air, Colobane, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/bus_station"
+   },
+   {
+    "lat": 14.6973269,
+    "lon": -17.4428974,
+    "nom": "Gare Routière de Colobane, Autoroute Seydina-Limamoulaye, Colobane, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/bus_station"
+   },
+   {
+    "lat": 14.6848608,
+    "lon": -17.4403545,
+    "nom": "Gare Routière \"Les Pompiers\", Autoroute Seydina-Limamoulaye, Gibraltar, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Gare TER": {
+  "recherche": "Gare TER",
+  "candidats": []
+ },
+ "Gare Ter": {
+  "recherche": "Gare Ter",
+  "candidats": []
+ },
+ "Gare colobane": {
+  "recherche": "Gare colobane",
+  "candidats": [
+   {
+    "lat": 14.697979,
+    "lon": -17.4428208,
+    "nom": "Gare Routière de Colobane, Rue HLM-241, Cité Douane, Commune de HLM, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/bus_station"
+   },
+   {
+    "lat": 14.6973269,
+    "lon": -17.4428974,
+    "nom": "Gare Routière de Colobane, Autoroute Seydina-Limamoulaye, Colobane, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/bus_station"
+   },
+   {
+    "lat": 14.6848608,
+    "lon": -17.4403545,
+    "nom": "Gare Routière \"Les Pompiers\", Autoroute Seydina-Limamoulaye, Gibraltar, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Gare de Colobane": {
+  "recherche": "Gare de Colobane",
+  "candidats": [
+   {
+    "lat": 14.697979,
+    "lon": -17.4428208,
+    "nom": "Gare Routière de Colobane, Rocade Fann-Bel Air, Colobane, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/bus_station"
+   },
+   {
+    "lat": 14.6973269,
+    "lon": -17.4428974,
+    "nom": "Gare Routière de Colobane, Autoroute Seydina-Limamoulaye, Colobane, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/bus_station"
+   },
+   {
+    "lat": 14.6848608,
+    "lon": -17.4403545,
+    "nom": "Gare Routière \"Les Pompiers\", Autoroute Seydina-Limamoulaye, Gibraltar, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Gare de Dakar": {
+  "recherche": "Gare de Dakar",
+  "candidats": [
+   {
+    "lat": 14.6764636,
+    "lon": -17.4336834,
+    "nom": "Gare de Dakar, Boulevard du Centenaire de la Commune de Dakar, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "railway/station"
+   },
+   {
+    "lat": 14.6756037,
+    "lon": -17.4332523,
+    "nom": "Gare de Dakar, Boulevard du Centenaire de la Commune de Dakar, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "building/train_station"
+   }
+  ]
+ },
+ "Gare de Rufisque": {
+  "recherche": "Gare de Rufisque",
+  "candidats": [
+   {
+    "lat": 14.7157148,
+    "lon": -17.270342,
+    "nom": "Gare de Rufisque, N 1, Commune de Rufisque Est, Rufisque, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "building/train_station"
+   }
+  ]
+ },
+ "Gare de dakar": {
+  "recherche": "Gare de dakar",
+  "candidats": [
+   {
+    "lat": 14.6764636,
+    "lon": -17.4336834,
+    "nom": "Gare de Dakar, Boulevard du Centenaire de la Commune de Dakar, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "railway/station"
+   },
+   {
+    "lat": 14.6756037,
+    "lon": -17.4332523,
+    "nom": "Gare de Dakar, Boulevard du Centenaire de la Commune de Dakar, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "building/train_station"
+   }
+  ]
+ },
+ "Gorom 01": {
+  "recherche": "Gorom 01",
+  "candidats": [
+   {
+    "lat": 14.8121519,
+    "lon": -17.1704375,
+    "nom": "Gorom 2, Commune de Bambylor, Arrondissement de Bambylor, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "place/village"
+   },
+   {
+    "lat": 14.8210671,
+    "lon": -17.1524873,
+    "nom": "Gorom 1, Gorom 2, Commune de Bambylor, Arrondissement de Bambylor, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "landuse/residential"
+   }
+  ]
+ },
+ "Gororm 02": {
+  "recherche": "Gororm 02",
+  "candidats": []
+ },
+ "Grand Moulin de Dakar": {
+  "recherche": "Grand Moulin de Dakar",
+  "candidats": [
+   {
+    "lat": 14.7773717,
+    "lon": -17.3234725,
+    "nom": "Mosquée Unité 09 - Cité Grand Moulin, Route de Malika, Keur Massar, Commune de Keur Massar Nord, Arrondissement de Malika, Département de Keur Massar, Région de Dakar, 17000, Sénégal",
+    "type": "amenity/place_of_worship"
+   }
+  ]
+ },
+ "Grand Yoff": {
+  "recherche": "Grand Yoff",
+  "candidats": [
+   {
+    "lat": 14.7366826,
+    "lon": -17.4528126,
+    "nom": "Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Grand théâtre": {
+  "recherche": "Grand théâtre",
+  "candidats": [
+   {
+    "lat": 14.6802174,
+    "lon": -17.43677,
+    "nom": "Grand Théâtre National, TAH 1, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "amenity/parking"
+   },
+   {
+    "lat": 14.6793588,
+    "lon": -17.4363978,
+    "nom": "Grand Théâtre National de Dakar, Boulevard du Centenaire de la Commune de Dakar, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "amenity/theatre"
+   }
+  ]
+ },
+ "Grande mosquée": {
+  "recherche": "Grande mosquée",
+  "candidats": [
+   {
+    "lat": 14.7134718,
+    "lon": -17.2758721,
+    "nom": "Grande Mosquée, Commune de Rufisque Est, Rufisque, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "highway/residential"
+   },
+   {
+    "lat": 14.6824929,
+    "lon": -17.4442526,
+    "nom": "Grande Mosquée, Boulevard Mamadou Dia, Gibraltar, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7545948,
+    "lon": -17.3828977,
+    "nom": "Grande Mosquée, Rue3, Commune de Guinaw Rail Nord, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/place_of_worship"
+   },
+   {
+    "lat": 14.8219763,
+    "lon": -17.1535296,
+    "nom": "Grande Mosquée, Route de Bambilor, Gorom 1, Cité Doudou Basse, Noflaye, Commune de Bambylor, Arrondissement de Bambylor, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "amenity/place_of_worship"
+   }
+  ]
+ },
+ "Grands Moulin de Dakar": {
+  "recherche": "Grands Moulin de Dakar",
+  "candidats": []
+ },
+ "Gueule Tapée": {
+  "recherche": "Gueule Tapée",
+  "candidats": [
+   {
+    "lat": 14.6828667,
+    "lon": -17.4572828,
+    "nom": "Gueule Tapée, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7756038,
+    "lon": -17.3921661,
+    "nom": "Gueule Tapée, Boulevard El Hadj Omar Tall, Commune de Sam Notaire, Arrondissement de Sam Notaire, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "HLM Fass": {
+  "recherche": "HLM Fass",
+  "candidats": [
+   {
+    "lat": 14.6958602,
+    "lon": -17.4509571,
+    "nom": "HLM Fass, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "place/neighbourhood"
+   }
+  ]
+ },
+ "HLM Rufisque": {
+  "recherche": "HLM Rufisque",
+  "candidats": [
+   {
+    "lat": 14.8113661,
+    "lon": -17.2523593,
+    "nom": "Mosquée HLM, route vers Tawfekh, Quartier Marième Faye Sall, Niaga, Commune de Tivaouane Peulh-Niaga, Arrondissement de Bambylor, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "amenity/place_of_worship"
+   },
+   {
+    "lat": 14.8092108,
+    "lon": -17.2536682,
+    "nom": "Mosquée HLM 1, piste vers Tawfekh, Niaga, Commune de Tivaouane Peulh-Niaga, Arrondissement de Bambylor, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "amenity/place_of_worship"
+   }
+  ]
+ },
+ "HLM SIPRES": {
+  "recherche": "HLM SIPRES",
+  "candidats": []
+ },
+ "Hamo": {
+  "recherche": "Hamo",
+  "candidats": [
+   {
+    "lat": 14.7377328,
+    "lon": -17.4580484,
+    "nom": "HAMO GRAND YOFF, Scat Urbam, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7849453,
+    "lon": -17.3842327,
+    "nom": "Hamo 6, Commune de Ndiarème Limamoulaye, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7816519,
+    "lon": -17.389753,
+    "nom": "Terrain Hamo 4, Rue Joseph Corea, Commune de Sam Notaire, Arrondissement de Sam Notaire, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "leisure/pitch"
+   },
+   {
+    "lat": 14.7831249,
+    "lon": -17.3882454,
+    "nom": "École primaire Hamo 4, SN394, Hamo 6, Commune de Ndiarème Limamoulaye, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/school"
+   },
+   {
+    "lat": 14.7820302,
+    "lon": -17.3870273,
+    "nom": "Maternité Hamo 5, Route vers Corniche, Hamo 6, Commune de Ndiarème Limamoulaye, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "building/hospital"
+   }
+  ]
+ },
+ "Hamo 6": {
+  "recherche": "Hamo 6",
+  "candidats": [
+   {
+    "lat": 14.7849453,
+    "lon": -17.3842327,
+    "nom": "Hamo 6, Commune de Ndiarème Limamoulaye, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "place/neighbourhood"
+   }
+  ]
+ },
+ "Hamo6": {
+  "recherche": "Hamo6",
+  "candidats": [
+   {
+    "lat": 14.7837726,
+    "lon": -17.3837212,
+    "nom": "Hamo6, Route vers Corniche, Hamo 6, Commune de Ndiarème Limamoulaye, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/car_wash"
+   }
+  ]
+ },
+ "Hampathé Ba": {
+  "recherche": "Hampathé Ba",
+  "candidats": []
+ },
+ "Hann Maristes": {
+  "recherche": "Hann Maristes",
+  "candidats": [
+   {
+    "lat": 14.7302558,
+    "lon": -17.4325279,
+    "nom": "Bureau de la gestion des ressources de la DEFCCS (direction des eaux et foêts, chasses et conservation des sols), Hann-Maristes, Parcour sportif du parc, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 00221, Sénégal",
+    "type": "building/yes"
+   },
+   {
+    "lat": 14.7302972,
+    "lon": -17.4327964,
+    "nom": "CERSI (Cellule d'Evaluation des Ressources et du Système d'information), Hann-Maristes, Parcour sportif du parc, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 00221, Sénégal",
+    "type": "building/yes"
+   },
+   {
+    "lat": 14.7245638,
+    "lon": -17.4391649,
+    "nom": "Hann Maristes, Route du Front de Terre, Hann Equip, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 00221, Sénégal",
+    "type": "amenity/pharmacy"
+   }
+  ]
+ },
+ "Hlm Grand Médine": {
+  "recherche": "Hlm Grand Médine",
+  "candidats": [
+   {
+    "lat": 14.7609549,
+    "lon": -17.4495149,
+    "nom": "Unite 23, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Hopital Général Idrissa Pouye (Ex CTO )": {
+  "recherche": "Hopital Général Idrissa Pouye (Ex CTO",
+  "candidats": []
+ },
+ "Hopital IHO": {
+  "recherche": "Hopital IHO",
+  "candidats": []
+ },
+ "Hopital Mame Abdou": {
+  "recherche": "Hopital Mame Abdou",
+  "candidats": []
+ },
+ "Hopitale Principale": {
+  "recherche": "Hopitale Principale",
+  "candidats": []
+ },
+ "Hotel Terrou": {
+  "recherche": "Hotel Terrou",
+  "candidats": [
+   {
+    "lat": 14.6772223,
+    "lon": -17.4670535,
+    "nom": "Terrou-Bi, Route de la Corniche Ouest, Fann Hock, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "tourism/hotel"
+   }
+  ]
+ },
+ "Hôpital Dalal Diam": {
+  "recherche": "Hôpital Dalal Diam",
+  "candidats": []
+ },
+ "Hôpital Le Dantec": {
+  "recherche": "Hôpital Le Dantec",
+  "candidats": [
+   {
+    "lat": 14.6572465,
+    "lon": -17.4366635,
+    "nom": "Hôpital Aristide Le Dantec, Route de la Corniche Est, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "amenity/hospital"
+   }
+  ]
+ },
+ "Hôpital Principal": {
+  "recherche": "Hôpital Principal",
+  "candidats": [
+   {
+    "lat": 14.6622568,
+    "lon": -17.4345761,
+    "nom": "Parking Hôpital Principal de Dakar, Avenue Nelson Mandela, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "amenity/parking"
+   },
+   {
+    "lat": 14.6611201,
+    "lon": -17.4347816,
+    "nom": "Hopital Principal de Dakar, Route de la Corniche Est, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "amenity/hospital"
+   },
+   {
+    "lat": 14.6625583,
+    "lon": -17.4349547,
+    "nom": "Arret Hopital Principal, Avenue Nelson Mandela, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Hôpital militaire de Ouakam": {
+  "recherche": "Hôpital militaire de Ouakam",
+  "candidats": [
+   {
+    "lat": 14.7150546,
+    "lon": -17.480816,
+    "nom": "Hôpital Militaire de Ouakam, Avenue Cheikh Anta Diop, Arrondissement des Almadies, Dakar, Région de Dakar, 24095, Sénégal",
+    "type": "amenity/hospital"
+   },
+   {
+    "lat": 14.7151889,
+    "lon": -17.4816358,
+    "nom": "Hôpital Militaire de Ouakam, Avenue Cheikh Anta Diop, Arrondissement des Almadies, Dakar, Région de Dakar, 24095, Sénégal",
+    "type": "amenity/hospital"
+   }
+  ]
+ },
+ "IFAN": {
+  "recherche": "IFAN",
+  "candidats": [
+   {
+    "lat": 14.6835662,
+    "lon": -17.4677413,
+    "nom": "Institut Fondamental d'Afrique Noire, Rue FN-32, Fann Hock, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "building/university"
+   }
+  ]
+ },
+ "IHO": {
+  "recherche": "IHO",
+  "candidats": []
+ },
+ "IPG": {
+  "recherche": "IPG",
+  "candidats": [
+   {
+    "lat": 14.7192155,
+    "lon": -17.4615388,
+    "nom": "Groupe Institut Privé de Gestion - Institut Supérieur de Technologie Industrielle, Sacré-Cœur 1, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "amenity/college"
+   }
+  ]
+ },
+ "Icotaf": {
+  "recherche": "Icotaf",
+  "candidats": [
+   {
+    "lat": 14.7437034,
+    "lon": -17.398993,
+    "nom": "Icotaf, TAH 1, Commune de Dalifort, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 16000, Sénégal",
+    "type": "amenity/fuel"
+   },
+   {
+    "lat": 14.7553845,
+    "lon": -17.3904605,
+    "nom": "Avenue El Hadji Malick Sy, Commune de Pikine Ouest, Commune de Pikine Est, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 14000, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.761529,
+    "lon": -17.3857981,
+    "nom": "Avenue El Hadji Malick Sy, Commune de Pikine Est, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 15000, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.7615953,
+    "lon": -17.3857377,
+    "nom": "Avenue El Hadji Malick Sy, Commune de Djidah Thiaroye Kaw, Thiaroye, Commune de Pikine Est, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 15000, Sénégal",
+    "type": "highway/tertiary"
+   }
+  ]
+ },
+ "Immeuble Mariama": {
+  "recherche": "Immeuble Mariama",
+  "candidats": [
+   {
+    "lat": 14.716055,
+    "lon": -17.470838,
+    "nom": "Immeuble Mariama, Boulevard du Koweit (SC-01), Sacré Coeur 3, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "building/yes"
+   }
+  ]
+ },
+ "Institut Pasteur": {
+  "recherche": "Institut Pasteur",
+  "candidats": [
+   {
+    "lat": 14.6561847,
+    "lon": -17.4350339,
+    "nom": "Institut Pasteur, Avenue Pasteur, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "building/yes"
+   },
+   {
+    "lat": 14.7457414,
+    "lon": -17.4669308,
+    "nom": "Institut Pasteur, Voie de Dégagement Nord, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11900, Sénégal",
+    "type": "amenity/hospital"
+   }
+  ]
+ },
+ "Institut pasteur": {
+  "recherche": "Institut pasteur",
+  "candidats": [
+   {
+    "lat": 14.6561847,
+    "lon": -17.4350339,
+    "nom": "Institut Pasteur, Avenue Pasteur, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "building/yes"
+   },
+   {
+    "lat": 14.7457414,
+    "lon": -17.4669308,
+    "nom": "Institut Pasteur, Voie de Dégagement Nord, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11900, Sénégal",
+    "type": "amenity/hospital"
+   }
+  ]
+ },
+ "Intendance": {
+  "recherche": "Intendance",
+  "candidats": [
+   {
+    "lat": 14.6781115,
+    "lon": -17.4369984,
+    "nom": "Camp Intendance, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/military"
+   }
+  ]
+ },
+ "Itinéraire 213": {
+  "recherche": "Itinéraire 213",
+  "candidats": []
+ },
+ "Jaxaay": {
+  "recherche": "Jaxaay",
+  "candidats": [
+   {
+    "lat": 14.7705679,
+    "lon": -17.2823744,
+    "nom": "Commune de Jaxaay - Parcelles, Arrondissement de Jaxaay, Département de Keur Massar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   },
+   {
+    "lat": 14.767356,
+    "lon": -17.2938048,
+    "nom": "Arrondissement de Jaxaay, Département de Keur Massar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Jet d’Eau": {
+  "recherche": "Jet d'Eau",
+  "candidats": [
+   {
+    "lat": 14.7135944,
+    "lon": -17.4558949,
+    "nom": "Jardin Jet d'eau, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, Sénégal",
+    "type": "leisure/garden"
+   },
+   {
+    "lat": 14.7132388,
+    "lon": -17.4547052,
+    "nom": "Rond-Point Jet d'eau, Avenue du Président Habib Bourguiba, Commune de Biscuiterie, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "highway/*"
+   },
+   {
+    "lat": 14.712961,
+    "lon": -17.45542,
+    "nom": "BHS, Avenue du Président Habib Bourguiba, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "Jet d’eau": {
+  "recherche": "Jet d'eau",
+  "candidats": [
+   {
+    "lat": 14.7135944,
+    "lon": -17.4558949,
+    "nom": "Jardin Jet d'eau, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, Sénégal",
+    "type": "leisure/garden"
+   },
+   {
+    "lat": 14.7132388,
+    "lon": -17.4547052,
+    "nom": "Rond-Point Jet d'eau, Avenue du Président Habib Bourguiba, Commune de Biscuiterie, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "highway/*"
+   },
+   {
+    "lat": 14.712961,
+    "lon": -17.45542,
+    "nom": "BHS, Avenue du Président Habib Bourguiba, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "Keur Ndiaye Lo": {
+  "recherche": "Keur Ndiaye Lo",
+  "candidats": [
+   {
+    "lat": 14.743114,
+    "lon": -17.243779,
+    "nom": "Keur Ndiaye Lo, Commune de Sangalkam, Arrondissement de Sangalkam, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "place/village"
+   }
+  ]
+ },
+ "Khar Yalla": {
+  "recherche": "Khar Yalla",
+  "candidats": [
+   {
+    "lat": 14.7314881,
+    "lon": -17.4526828,
+    "nom": "Khar Yalla, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   },
+   {
+    "lat": 14.7286717,
+    "lon": -17.4510656,
+    "nom": "Khar Yalla, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7320323,
+    "lon": -17.456401,
+    "nom": "Khar Yalla, Route des Niayes, LIBERTE VI EXTENSION, Khar Yalla, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7335333,
+    "lon": -17.4561632,
+    "nom": "Khar Yalla, Route des Niayes, SCAT URBAM ARAFAT, Khar Yalla, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "LGI Mbao": {
+  "recherche": "LGI Mbao",
+  "candidats": [
+   {
+    "lat": 14.7509323,
+    "lon": -17.349143,
+    "nom": "Légion de Gendarmerie d'Intervention de Mbao, N 1, Commune de Diamaguène-Sicap Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "amenity/police"
+   }
+  ]
+ },
+ "Lac rose croissement Niague": {
+  "recherche": "Lac rose croissement Niague",
+  "candidats": []
+ },
+ "Lat Dior": {
+  "recherche": "Lat Dior",
+  "candidats": []
+ },
+ "Leclerc": {
+  "recherche": "Leclerc",
+  "candidats": [
+   {
+    "lat": 14.7339024,
+    "lon": -17.4692614,
+    "nom": "Camp Leclerc, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "landuse/military"
+   },
+   {
+    "lat": 14.6715523,
+    "lon": -17.4273013,
+    "nom": "Terminus Dakar Dem Dikk Leclerc, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "leisure/common"
+   },
+   {
+    "lat": 14.672023,
+    "lon": -17.4278024,
+    "nom": "Place du Général Leclerc, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/service"
+   },
+   {
+    "lat": 14.672134,
+    "lon": -17.4275808,
+    "nom": "Gare Leclerc, Place du Général Leclerc, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7527876,
+    "lon": -17.4609199,
+    "nom": "Institut Lucie leclerc, rue YF 260, Arrondissement des Almadies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "office/educational_institution"
+   }
+  ]
+ },
+ "Les deux voies de Liberté 6": {
+  "recherche": "Les deux voies de Liberté 6",
+  "candidats": []
+ },
+ "Les deux voies de Sipres": {
+  "recherche": "Les deux voies de Sipres",
+  "candidats": []
+ },
+ "Lycee De Lafosse": {
+  "recherche": "Lycee De Lafosse",
+  "candidats": []
+ },
+ "Lycée Blaise Diagne": {
+  "recherche": "Lycée Blaise Diagne",
+  "candidats": [
+   {
+    "lat": 14.6968911,
+    "lon": -17.4528538,
+    "nom": "Lycée Blaise Diagne, Boulevard Dial Diop, Gardien, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "amenity/school"
+   }
+  ]
+ },
+ "Lycée Canada": {
+  "recherche": "Lycée Canada",
+  "candidats": []
+ },
+ "Lycée Delafosse": {
+  "recherche": "Lycée Delafosse",
+  "candidats": [
+   {
+    "lat": 14.6701674,
+    "lon": -17.4413796,
+    "nom": "Lycée Delafosse, Rue Madeleine Ngom, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "amenity/school"
+   }
+  ]
+ },
+ "Lycée Jaxaay": {
+  "recherche": "Lycée Jaxaay",
+  "candidats": [
+   {
+    "lat": 14.7555784,
+    "lon": -17.2854867,
+    "nom": "Lycee Plan Jaxaay, Route de Diakhaye, Plan Jaxaay 01, Commune de Jaxaay - Parcelles, Arrondissement de Jaxaay, Département de Keur Massar, Région de Dakar, Sénégal",
+    "type": "amenity/school"
+   }
+  ]
+ },
+ "Lycée Kenedy": {
+  "recherche": "Lycée Kenedy",
+  "candidats": []
+ },
+ "Lycée Kennedy": {
+  "recherche": "Lycée Kennedy",
+  "candidats": [
+   {
+    "lat": 14.6966734,
+    "lon": -17.449098,
+    "nom": "Lycée John F. Kennedy, Rue FA-52, HLM Fass, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/school"
+   }
+  ]
+ },
+ "Lycée Limamoulaye": {
+  "recherche": "Lycée Limamoulaye",
+  "candidats": [
+   {
+    "lat": 14.7768042,
+    "lon": -17.3797301,
+    "nom": "Lycée Seydina Limamoulaye, WN-288, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/school"
+   },
+   {
+    "lat": 14.7771339,
+    "lon": -17.3807628,
+    "nom": "CLUB LYCEE LIMAMOULAYE Vovinam Viet Vo Dao, Rue Wakhinan Nimzatt 81, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/dojo"
+   }
+  ]
+ },
+ "Lycée d’excellence privée": {
+  "recherche": "Lycée d'excellence privée",
+  "candidats": []
+ },
+ "Mairie Grand Yoff": {
+  "recherche": "Mairie Grand Yoff",
+  "candidats": [
+   {
+    "lat": 14.7389681,
+    "lon": -17.4578363,
+    "nom": "Hôtel de ville grand Yoff, rue GY-169, HAMO GRAND YOFF, Scat Urbam, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "amenity/townhall"
+   }
+  ]
+ },
+ "Maison du partie": {
+  "recherche": "Maison du partie",
+  "candidats": []
+ },
+ "Malibu": {
+  "recherche": "Malibu",
+  "candidats": [
+   {
+    "lat": 14.7752884,
+    "lon": -17.4081038,
+    "nom": "ARRET MALIBU, Boulevard El Hadj Omar Tall, Golf Sud(Cité Aliou SOW), Commune du Golf Sud, Arrondissement de Sam Notaire, Département de Guédiawaye, Région de Dakar, 14000, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Malika Plage": {
+  "recherche": "Malika Plage",
+  "candidats": [
+   {
+    "lat": 14.8066907,
+    "lon": -17.3389391,
+    "nom": "Malika Plage, Voie de Dégagement Nord, Ndiayenne, Commune de Malika, Arrondissement de Malika, Département de Keur Massar, Région de Dakar, 20896, Sénégal",
+    "type": "building/yes"
+   }
+  ]
+ },
+ "Malika plage": {
+  "recherche": "Malika plage",
+  "candidats": [
+   {
+    "lat": 14.8066907,
+    "lon": -17.3389391,
+    "nom": "Malika Plage, Voie de Dégagement Nord, Ndiayenne, Commune de Malika, Arrondissement de Malika, Département de Keur Massar, Région de Dakar, 20896, Sénégal",
+    "type": "building/yes"
+   }
+  ]
+ },
+ "Mamelles": {
+  "recherche": "Mamelles",
+  "candidats": [
+   {
+    "lat": 14.7311563,
+    "lon": -17.5003005,
+    "nom": "Mamelles, Dakar, Région de Dakar, 38110, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7249749,
+    "lon": -17.5037556,
+    "nom": "Plage des mamelles, Dakar, Région de Dakar, Sénégal",
+    "type": "natural/beach"
+   }
+  ]
+ },
+ "Marche Grand Yoff": {
+  "recherche": "Marche Grand Yoff",
+  "candidats": [
+   {
+    "lat": 14.7392377,
+    "lon": -17.4488192,
+    "nom": "Marché de Grand Yoff, GY-476, TAIBA II, Khar Yalla, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "shop/supermarket"
+   },
+   {
+    "lat": 14.7308422,
+    "lon": -17.4529037,
+    "nom": "Marché Gant, Rue GY-588, BAGDAD, Khar Yalla, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "shop/supermarket"
+   },
+   {
+    "lat": 14.7386359,
+    "lon": -17.4481078,
+    "nom": "Mutuelle d'Epargne et de Credit des Commerçants et Entrepreneurs de Grand Yoff, GY-476, DJEDDAH, Khar Yalla, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "amenity/bank"
+   },
+   {
+    "lat": 14.7357509,
+    "lon": -17.453599,
+    "nom": "Mosquée Marché, GY-476, TAIBA II, Khar Yalla, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "amenity/place_of_worship"
+   }
+  ]
+ },
+ "Marche Jeudi": {
+  "recherche": "Marche Jeudi",
+  "candidats": [
+   {
+    "lat": 14.7759513,
+    "lon": -17.4000369,
+    "nom": "Rond point Marché du Jeudi, Commune de Sam Notaire, Arrondissement de Sam Notaire, Département de Guédiawaye, Région de Dakar, 14000, Sénégal",
+    "type": "highway/secondary"
+   }
+  ]
+ },
+ "Marche boubess": {
+  "recherche": "Marche boubess",
+  "candidats": [
+   {
+    "lat": 14.7762875,
+    "lon": -17.3738245,
+    "nom": "Carrefour Marché Boubess, Commune de Yeumbeul Sud, Arrondissement de Yeumbeul, Département de Keur Massar, Région de Dakar, 15000, Sénégal",
+    "type": "place/locality"
+   }
+  ]
+ },
+ "Marché Fass": {
+  "recherche": "Marché Fass",
+  "candidats": [
+   {
+    "lat": 14.6931717,
+    "lon": -17.4520362,
+    "nom": "Marché de Fass, Fass Rue FA-24, Fass Delorme, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/marketplace"
+   }
+  ]
+ },
+ "Marché Grand Médine": {
+  "recherche": "Marché Grand Médine",
+  "candidats": [
+   {
+    "lat": 14.745968,
+    "lon": -17.4425587,
+    "nom": "Marché Patte d'Oie, La Corniche Patte d'Oie Builders, Touba Ndar Fall JUS, Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 10168, Sénégal",
+    "type": "amenity/marketplace"
+   },
+   {
+    "lat": 14.7462717,
+    "lon": -17.4426136,
+    "nom": "Parking Marché Patte d'Oie, La Corniche Patte d'Oie Builders, Touba Ndar Fall JUS, Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 10168, Sénégal",
+    "type": "amenity/parking"
+   }
+  ]
+ },
+ "Marché HLM": {
+  "recherche": "Marché HLM",
+  "candidats": [
+   {
+    "lat": 14.7060798,
+    "lon": -17.4445855,
+    "nom": "Marché HLM 5, Rue HLM-272, HLM 6, Commune de HLM, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/marketplace"
+   },
+   {
+    "lat": 14.7060389,
+    "lon": -17.4445443,
+    "nom": "Marché HLM 5, Rue HLM-173, HLM 5, Commune de HLM, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/marketplace"
+   },
+   {
+    "lat": 14.7057306,
+    "lon": -17.444008,
+    "nom": "Mercerie Fouta Toro, Marché HLM 5, rue hlm-179, HLM 5, Commune de HLM, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "shop/fabric"
+   },
+   {
+    "lat": 14.7143553,
+    "lon": -17.4513334,
+    "nom": "Marché Nguelaw 2, Rue BIS-02, Cité Bissap, Commune de Biscuiterie, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "amenity/marketplace"
+   }
+  ]
+ },
+ "Marché Jeudi corniche": {
+  "recherche": "Marché Jeudi corniche",
+  "candidats": []
+ },
+ "Marché Sahm": {
+  "recherche": "Marché Sahm",
+  "candidats": [
+   {
+    "lat": 14.7736923,
+    "lon": -17.3951347,
+    "nom": "Marché Sahm, Sam-Notaire, Commune de Sam Notaire, Arrondissement de Sam Notaire, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/marketplace"
+   }
+  ]
+ },
+ "Marché Sandika": {
+  "recherche": "Marché Sandika",
+  "candidats": []
+ },
+ "Marché Tilen": {
+  "recherche": "Marché Tilen",
+  "candidats": []
+ },
+ "Marché Tilène": {
+  "recherche": "Marché Tilène",
+  "candidats": [
+   {
+    "lat": 14.6817182,
+    "lon": -17.4496629,
+    "nom": "Marché Tilène, Avenue Blaise Diagne, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "amenity/marketplace"
+   },
+   {
+    "lat": 14.6794172,
+    "lon": -17.4481891,
+    "nom": "Marché Tilène, Avenue Blaise Diagne, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Masalikul Djinane": {
+  "recherche": "Masalikul Djinane",
+  "candidats": []
+ },
+ "Mermoz": {
+  "recherche": "Mermoz",
+  "candidats": [
+   {
+    "lat": 14.7074454,
+    "lon": -17.474397,
+    "nom": "Mermoz, Dakar, Région de Dakar, 22352, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7045873,
+    "lon": -17.473116,
+    "nom": "Mermoz, Rue MZ-134, Arrondissement des Almadies, Dakar, Région de Dakar, 15150, Sénégal",
+    "type": "amenity/training"
+   },
+   {
+    "lat": 14.7010347,
+    "lon": -17.4712206,
+    "nom": "Bank of Africa, Avenue Cheikh Anta Diop, Arrondissement des Almadies, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "amenity/bank"
+   },
+   {
+    "lat": 14.7015591,
+    "lon": -17.471846,
+    "nom": "UBA, Avenue Cheikh Anta Diop, Arrondissement des Almadies, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "amenity/bank"
+   },
+   {
+    "lat": 14.7057285,
+    "lon": -17.4692086,
+    "nom": "Commune de Mermoz-Sacré-Cœur, Arrondissement des Almadies, Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Ministère de la Santé": {
+  "recherche": "Ministère de la Santé",
+  "candidats": [
+   {
+    "lat": 14.6932985,
+    "lon": -17.4688318,
+    "nom": "Ministère de la Santé et de l'Action Sociale, Rue Aimé Césaire, Point E, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "building/yes"
+   }
+  ]
+ },
+ "Mole 8": {
+  "recherche": "Mole 8",
+  "candidats": [
+   {
+    "lat": 14.6846512,
+    "lon": -17.42435,
+    "nom": "Mole 8, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/industrial"
+   }
+  ]
+ },
+ "Monument de la Renaissance": {
+  "recherche": "Monument de la Renaissance",
+  "candidats": [
+   {
+    "lat": 14.7221402,
+    "lon": -17.4949654,
+    "nom": "Monument de la Renaissance Africaine, Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 38110, Sénégal",
+    "type": "historic/monument"
+   },
+   {
+    "lat": 14.7221415,
+    "lon": -17.4950031,
+    "nom": "Monument de la Reneissance Africaine, Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 38110, Sénégal",
+    "type": "tourism/artwork"
+   },
+   {
+    "lat": 14.7233981,
+    "lon": -17.4928017,
+    "nom": "cambre avec balcon,monument de la renaissance Dakar, Avenue Cheikh Anta Diop, Arrondissement des Almadies, Dakar, Région de Dakar, 24095, Sénégal",
+    "type": "tourism/hotel"
+   }
+  ]
+ },
+ "Mosquée Seydou Nourrou Tall": {
+  "recherche": "Mosquée Seydou Nourrou Tall",
+  "candidats": []
+ },
+ "Mosquée seydou Nourrou Tall": {
+  "recherche": "Mosquée seydou Nourrou Tall",
+  "candidats": []
+ },
+ "Médina": {
+  "recherche": "Médina",
+  "candidats": [
+   {
+    "lat": 14.6804866,
+    "lon": -17.4509285,
+    "nom": "Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   },
+   {
+    "lat": 14.7717002,
+    "lon": -17.3820448,
+    "nom": "Commune de Medina Gounass, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   },
+   {
+    "lat": 14.7734664,
+    "lon": -17.2656906,
+    "nom": "Médina Thioub, Commune de Sangalkam, Arrondissement de Sangalkam, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "place/village"
+   }
+  ]
+ },
+ "National 1": {
+  "recherche": "National 1",
+  "candidats": [
+   {
+    "lat": 14.7156954,
+    "lon": -17.2077598,
+    "nom": "Marché d'Intérêt National (MIN), Commune de Diamniadio, Arrondissement de Diamniadio, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "landuse/commercial"
+   },
+   {
+    "lat": 14.7413183,
+    "lon": -17.3147545,
+    "nom": "Centre National Avicole, Commune de Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, Sénégal",
+    "type": "landuse/farmyard"
+   },
+   {
+    "lat": 14.6802174,
+    "lon": -17.43677,
+    "nom": "Grand Théâtre National, TAH 1, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "amenity/parking"
+   },
+   {
+    "lat": 14.6999424,
+    "lon": -17.4613466,
+    "nom": "Conseil national de développement de la nutrition, Rue 7, Amitié 1, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "office/company"
+   },
+   {
+    "lat": 14.754246,
+    "lon": -17.3754564,
+    "nom": "Centre Hospitalier National de Pikine, A 1, Thiaroye, Commune de Thiaroye-Gare, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 10000, Sénégal",
+    "type": "amenity/hospital"
+   }
+  ]
+ },
+ "Ngor": {
+  "recherche": "Ngor",
+  "candidats": [
+   {
+    "lat": 14.7487915,
+    "lon": -17.5149607,
+    "nom": "Commune de Ngor, Arrondissement des Almadies, Dakar, Région de Dakar, 18524, Sénégal",
+    "type": "boundary/administrative"
+   },
+   {
+    "lat": 14.7560186,
+    "lon": -17.5138622,
+    "nom": "Ngor, Dakar, Région de Dakar, Sénégal",
+    "type": "place/islet"
+   }
+  ]
+ },
+ "Ngor village": {
+  "recherche": "Ngor village",
+  "candidats": []
+ },
+ "Niary Tally": {
+  "recherche": "Niary Tally",
+  "candidats": [
+   {
+    "lat": 14.7069004,
+    "lon": -17.4525544,
+    "nom": "Niary Tally, Allées Cheikhna Cheikh Sidaty Aîdara, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "leisure/pitch"
+   }
+  ]
+ },
+ "Noflaye": {
+  "recherche": "Noflaye",
+  "candidats": [
+   {
+    "lat": 14.786413,
+    "lon": -17.2157,
+    "nom": "Noflaye, Commune de Sangalkam, Arrondissement de Sangalkam, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "place/village"
+   }
+  ]
+ },
+ "Obelisque": {
+  "recherche": "Obelisque",
+  "candidats": [
+   {
+    "lat": 14.6943906,
+    "lon": -17.4483242,
+    "nom": "Place de l'Obélisque, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "leisure/park"
+   },
+   {
+    "lat": 14.694762,
+    "lon": -17.4489643,
+    "nom": "Terrain de football obélisque, Boulevard Dial Diop, HLM Fass, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "leisure/pitch"
+   }
+  ]
+ },
+ "Obélisque": {
+  "recherche": "Obélisque",
+  "candidats": [
+   {
+    "lat": 14.6943906,
+    "lon": -17.4483242,
+    "nom": "Place de l'Obélisque, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "leisure/park"
+   },
+   {
+    "lat": 14.694762,
+    "lon": -17.4489643,
+    "nom": "Terrain de football obélisque, Boulevard Dial Diop, HLM Fass, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "leisure/pitch"
+   }
+  ]
+ },
+ "Ouagou Niayes": {
+  "recherche": "Ouagou Niayes",
+  "candidats": [
+   {
+    "lat": 14.7073664,
+    "lon": -17.4490029,
+    "nom": "Ouagou Niayes, Commune de Biscuiterie, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "place/neighbourhood"
+   }
+  ]
+ },
+ "Ouagou niayes": {
+  "recherche": "Ouagou niayes",
+  "candidats": [
+   {
+    "lat": 14.7073664,
+    "lon": -17.4490029,
+    "nom": "Ouagou Niayes, Commune de Biscuiterie, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "place/neighbourhood"
+   }
+  ]
+ },
+ "Ouakam": {
+  "recherche": "Ouakam",
+  "candidats": [
+   {
+    "lat": 14.7247367,
+    "lon": -17.4850662,
+    "nom": "Commune de Ouakam, Arrondissement des Almadies, Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "PAI": {
+  "recherche": "PAI",
+  "candidats": []
+ },
+ "PEAGE Pikine": {
+  "recherche": "PEAGE Pikine",
+  "candidats": [
+   {
+    "lat": 14.7551452,
+    "lon": -17.3180129,
+    "nom": "Autoroute à péage, Commune de Rufisque Ouest, Commune de Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "highway/motorway"
+   },
+   {
+    "lat": 14.7600204,
+    "lon": -17.3387798,
+    "nom": "Autoroute à péage, Commune de Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "highway/motorway"
+   }
+  ]
+ },
+ "Palais 1": {
+  "recherche": "Palais 1",
+  "candidats": [
+   {
+    "lat": 14.6510408,
+    "lon": -17.433456,
+    "nom": "Gare Palais 1, Route de la Corniche Est, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Palais 2": {
+  "recherche": "Palais 2",
+  "candidats": [
+   {
+    "lat": 14.652875,
+    "lon": -17.433433,
+    "nom": "Gare Palais 2, Route de la Corniche Est, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Patte d’Oie": {
+  "recherche": "Patte d'Oie",
+  "candidats": [
+   {
+    "lat": 14.746488,
+    "lon": -17.4406887,
+    "nom": "Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 10168, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Pentola": {
+  "recherche": "Pentola",
+  "candidats": [
+   {
+    "lat": 14.7350165,
+    "lon": -17.4618016,
+    "nom": "PENTOLA, rue GY-169, SCAT URBAM (ILOT B), Scat Urbam, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "building/yes"
+   },
+   {
+    "lat": 14.7358724,
+    "lon": -17.4344176,
+    "nom": "Pentola, HB-227, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 00221, Sénégal",
+    "type": "amenity/restaurant"
+   }
+  ]
+ },
+ "Petersen": {
+  "recherche": "Petersen",
+  "candidats": [
+   {
+    "lat": 14.6758838,
+    "lon": -17.4413132,
+    "nom": "Petersen, Avenue Faidherbe, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.6739113,
+    "lon": -17.4405074,
+    "nom": "Avenue Petersen, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/residential"
+   },
+   {
+    "lat": 14.6757659,
+    "lon": -17.4398865,
+    "nom": "Avenue Petersen, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/residential"
+   }
+  ]
+ },
+ "Pharmacie Mame Seynabou": {
+  "recherche": "Pharmacie Mame Seynabou",
+  "candidats": []
+ },
+ "Pharmacie Patte d’Oie": {
+  "recherche": "Pharmacie Patte d'Oie",
+  "candidats": [
+   {
+    "lat": 14.7417545,
+    "lon": -17.4457193,
+    "nom": "Pharmacie de Patte d'Oie, GY-476, MISSRAH, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 10168, Sénégal",
+    "type": "amenity/pharmacy"
+   }
+  ]
+ },
+ "Pharmacie cité Aviaon": {
+  "recherche": "Pharmacie cité Aviaon",
+  "candidats": []
+ },
+ "Place BAKOU": {
+  "recherche": "Place BAKOU",
+  "candidats": []
+ },
+ "Place Bakou": {
+  "recherche": "Place Bakou",
+  "candidats": []
+ },
+ "Place ONU": {
+  "recherche": "Place ONU",
+  "candidats": [
+   {
+    "lat": 14.6969405,
+    "lon": -17.4514063,
+    "nom": "Place de l'ONU, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/traffic_island"
+   },
+   {
+    "lat": 14.6969567,
+    "lon": -17.4514089,
+    "nom": "Place de l'ONU, Boulevard Dial Diop, Gardien, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "junction/yes"
+   }
+  ]
+ },
+ "Place de l’Indépendance": {
+  "recherche": "Place de l'Indépendance",
+  "candidats": [
+   {
+    "lat": 14.6695327,
+    "lon": -17.4320569,
+    "nom": "Place de l’Indépendance, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "leisure/park"
+   },
+   {
+    "lat": 14.6695126,
+    "lon": -17.4315741,
+    "nom": "Place de l’Indépendance, Rue Hassan ll, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Place de l’independace Avenue Sarraut": {
+  "recherche": "Place de l'independace Avenue Sarraut",
+  "candidats": []
+ },
+ "Place de l’indépendance": {
+  "recherche": "Place de l'indépendance",
+  "candidats": [
+   {
+    "lat": 14.6695327,
+    "lon": -17.4320569,
+    "nom": "Place de l’Indépendance, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "leisure/park"
+   },
+   {
+    "lat": 14.6695126,
+    "lon": -17.4315741,
+    "nom": "Place de l’Indépendance, Rue Hassan ll, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Point E": {
+  "recherche": "Point E",
+  "candidats": [
+   {
+    "lat": 14.6964782,
+    "lon": -17.4641817,
+    "nom": "Point E, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "place/neighbourhood"
+   }
+  ]
+ },
+ "Police 4em": {
+  "recherche": "Police 4em",
+  "candidats": []
+ },
+ "Police Bel Air": {
+  "recherche": "Police Bel Air",
+  "candidats": [
+   {
+    "lat": 14.6975115,
+    "lon": -17.4359805,
+    "nom": "Commissariat de Police de Bel-Air, Route des Grands Moulins, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/police"
+   }
+  ]
+ },
+ "Police Grand Yoff": {
+  "recherche": "Police Grand Yoff",
+  "candidats": [
+   {
+    "lat": 14.7390094,
+    "lon": -17.4476686,
+    "nom": "Commissariat de police Grand Yoff, GY-476, DJEDDAH, Khar Yalla, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "amenity/police"
+   }
+  ]
+ },
+ "Police PA": {
+  "recherche": "Police PA",
+  "candidats": [
+   {
+    "lat": 14.7516959,
+    "lon": -17.4414267,
+    "nom": "Terrain Police, PA-14-02, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "leisure/pitch"
+   },
+   {
+    "lat": 14.7525802,
+    "lon": -17.4404696,
+    "nom": "Marché Police, PA-14-02, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "amenity/marketplace"
+   }
+  ]
+ },
+ "Police Parcelles": {
+  "recherche": "Police Parcelles",
+  "candidats": [
+   {
+    "lat": 14.7506711,
+    "lon": -17.4413396,
+    "nom": "Commissariat des Parcelles Assainies, Route des Niayes, Touba Ndar Fall JUS, Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "amenity/police"
+   },
+   {
+    "lat": 14.7505853,
+    "lon": -17.4413278,
+    "nom": "Commissariat des Parcelles Assainies, Route des Niayes, Unite 14, Unite 22, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "amenity/police"
+   }
+  ]
+ },
+ "Police Wakhinane": {
+  "recherche": "Police Wakhinane",
+  "candidats": [
+   {
+    "lat": 14.787721,
+    "lon": -17.3764047,
+    "nom": "Commissariat de Wakhinane Nimzatt, Route vers Corniche, Cité SOFRACO, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/police"
+   }
+  ]
+ },
+ "Police de Parcelles Assainies": {
+  "recherche": "Police de Parcelles Assainies",
+  "candidats": [
+   {
+    "lat": 14.7516959,
+    "lon": -17.4414267,
+    "nom": "Terrain Police, PA-14-02, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "leisure/pitch"
+   },
+   {
+    "lat": 14.7525802,
+    "lon": -17.4404696,
+    "nom": "Marché Police, PA-14-02, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "amenity/marketplace"
+   },
+   {
+    "lat": 14.7503999,
+    "lon": -17.4410409,
+    "nom": "ARRET POLICE PARCELLES, Route des Niayes, Unite 14, Unite 22, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7510519,
+    "lon": -17.4387889,
+    "nom": "Police des Parcelles, Route des Niayes, Unite 14, Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Pond Foire": {
+  "recherche": "Pond Foire",
+  "candidats": []
+ },
+ "Pont Emergent": {
+  "recherche": "Pont Emergent",
+  "candidats": []
+ },
+ "Pont Sénégal 92": {
+  "recherche": "Pont Sénégal 92",
+  "candidats": []
+ },
+ "Pont Sénégal 92 (Pont de l’émergence)": {
+  "recherche": "Pont Sénégal 92 (Pont de l'émergence",
+  "candidats": []
+ },
+ "Pont Sénégal emergent (92)": {
+  "recherche": "Pont Sénégal emergent (92",
+  "candidats": []
+ },
+ "Poste Fann": {
+  "recherche": "Poste Fann",
+  "candidats": [
+   {
+    "lat": 14.6960571,
+    "lon": -17.4661893,
+    "nom": "Poste Fann, Rue Aimé Césaire, Point E, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "amenity/post_office"
+   }
+  ]
+ },
+ "Poste Médina": {
+  "recherche": "Poste Médina",
+  "candidats": [
+   {
+    "lat": 14.6772599,
+    "lon": -17.4459776,
+    "nom": "Poste de la medina, Avenue Blaise Diagne, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "amenity/post_office"
+   },
+   {
+    "lat": 14.7703156,
+    "lon": -17.385074,
+    "nom": "Poste de Santé Medina Gounass, SN-205, Commune de Medina Gounass, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/clinic"
+   }
+  ]
+ },
+ "Poste Thiaroye": {
+  "recherche": "Poste Thiaroye",
+  "candidats": [
+   {
+    "lat": 14.74604,
+    "lon": -17.3782866,
+    "nom": "Poste-Thiaroye, TAH 1, Commune de Guinaw Rail Sud, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 10000, Sénégal",
+    "type": "amenity/post_office"
+   }
+  ]
+ },
+ "Prison Rebeus": {
+  "recherche": "Prison Rebeus",
+  "candidats": []
+ },
+ "Péage": {
+  "recherche": "Péage",
+  "candidats": [
+   {
+    "lat": 14.74471,
+    "lon": -17.2819839,
+    "nom": "Péage, Autoroute à péage, Commune de Rufisque Ouest, Rufisque, Arrondissement de Diamniadio, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "highway/toll_gantry"
+   },
+   {
+    "lat": 14.7453024,
+    "lon": -17.2818498,
+    "nom": "Péage, A 1, Commune de Rufisque Ouest, Rufisque, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "highway/toll_gantry"
+   },
+   {
+    "lat": 14.734376,
+    "lon": -17.2487861,
+    "nom": "Autoroute à péage, Commune de Rufisque Est, Rufisque, Arrondissement de Diamniadio, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "highway/motorway"
+   },
+   {
+    "lat": 14.7551452,
+    "lon": -17.3180129,
+    "nom": "Autoroute à péage, Commune de Rufisque Ouest, Commune de Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "highway/motorway"
+   },
+   {
+    "lat": 14.7486868,
+    "lon": -17.2909547,
+    "nom": "Autoroute à péage, Commune de Rufisque Ouest, Rufisque, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "highway/motorway"
+   }
+  ]
+ },
+ "RTS": {
+  "recherche": "RTS",
+  "candidats": [
+   {
+    "lat": 14.6795834,
+    "lon": -17.4437388,
+    "nom": "Radio Télévision Sénégalaise (RTS), Avenue Malick Sy, Rebeuss, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "building/yes"
+   }
+  ]
+ },
+ "Ravin": {
+  "recherche": "Ravin",
+  "candidats": [
+   {
+    "lat": 14.7708556,
+    "lon": -17.3992582,
+    "nom": "Le Ravin, Route de Niayes, Commune de Sam Notaire, Arrondissement de Sam Notaire, Département de Guédiawaye, Région de Dakar, 14000, Sénégal",
+    "type": "amenity/restaurant"
+   }
+  ]
+ },
+ "Retour vers Lac Rose": {
+  "recherche": "Retour vers Lac Rose",
+  "candidats": []
+ },
+ "Reubeuss": {
+  "recherche": "Reubeuss",
+  "candidats": [
+   {
+    "lat": 14.6746812,
+    "lon": -17.4462647,
+    "nom": "Commissariat de Police de Reubeuss, Rue Ambroise Mendy, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "amenity/police"
+   }
+  ]
+ },
+ "Rond Point": {
+  "recherche": "Rond Point",
+  "candidats": [
+   {
+    "lat": 14.7875758,
+    "lon": -17.3767342,
+    "nom": "Rond point, Route vers Corniche, Cité SOFRACO, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "tourism/information"
+   }
+  ]
+ },
+ "Rond Point Bel": {
+  "recherche": "Rond Point Bel",
+  "candidats": []
+ },
+ "Rond Point Boulangerie Jaune": {
+  "recherche": "Rond Point Boulangerie Jaune",
+  "candidats": []
+ },
+ "Rond Point Colobane": {
+  "recherche": "Rond Point Colobane",
+  "candidats": [
+   {
+    "lat": 14.6977511,
+    "lon": -17.4439387,
+    "nom": "Rond-point Colobane, Colobane, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "highway/secondary"
+   }
+  ]
+ },
+ "Rond Point Grand Mbao": {
+  "recherche": "Rond Point Grand Mbao",
+  "candidats": []
+ },
+ "Rond Point JVC": {
+  "recherche": "Rond Point JVC",
+  "candidats": []
+ },
+ "Rond Point Jet d’Eau": {
+  "recherche": "Rond Point Jet d'Eau",
+  "candidats": [
+   {
+    "lat": 14.7132388,
+    "lon": -17.4547052,
+    "nom": "Rond-Point Jet d'eau, Avenue du Président Habib Bourguiba, Commune de Biscuiterie, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "highway/*"
+   },
+   {
+    "lat": 14.712961,
+    "lon": -17.45542,
+    "nom": "BHS, Avenue du Président Habib Bourguiba, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "Rond Point Jet d’eau": {
+  "recherche": "Rond Point Jet d'eau",
+  "candidats": [
+   {
+    "lat": 14.7132388,
+    "lon": -17.4547052,
+    "nom": "Rond-Point Jet d'eau, Avenue du Président Habib Bourguiba, Commune de Biscuiterie, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "highway/*"
+   },
+   {
+    "lat": 14.712961,
+    "lon": -17.45542,
+    "nom": "BHS, Avenue du Président Habib Bourguiba, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "Rond Point LIBERTE6": {
+  "recherche": "Rond Point LIBERTE6",
+  "candidats": []
+ },
+ "Rond Point Liberté 6": {
+  "recherche": "Rond Point Liberté 6",
+  "candidats": [
+   {
+    "lat": 14.7286286,
+    "lon": -17.4572326,
+    "nom": "Rond-Point Liberté 6, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/recreation_ground"
+   },
+   {
+    "lat": 14.7288378,
+    "lon": -17.4570815,
+    "nom": "Rond-Point Liberté 6, KHAR YALLA I, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7283688,
+    "lon": -17.4572998,
+    "nom": "Rond-Point Liberté 6, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7285508,
+    "lon": -17.4569674,
+    "nom": "Rond-Point Liberté 6, KHAR YALLA I, Khar Yalla, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7286287,
+    "lon": -17.457502,
+    "nom": "Rond-Point Liberté 6, LIBERTE VI EXTENSION, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   }
+  ]
+ },
+ "Rond Point Lobatt Fall": {
+  "recherche": "Rond Point Lobatt Fall",
+  "candidats": []
+ },
+ "Rond Point Ngor": {
+  "recherche": "Rond Point Ngor",
+  "candidats": [
+   {
+    "lat": 14.7489389,
+    "lon": -17.5143999,
+    "nom": "Arrêt bus rond point Ngor, Route de Ngor, Arrondissement des Almadies, Dakar, Région de Dakar, 18524, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Rond Point Sahm": {
+  "recherche": "Rond Point Sahm",
+  "candidats": [
+   {
+    "lat": 14.6845636,
+    "lon": -17.4535998,
+    "nom": "Rond-Point Sahm, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/traffic_island"
+   }
+  ]
+ },
+ "Rond Point Sham": {
+  "recherche": "Rond Point Sham",
+  "candidats": []
+ },
+ "Rond Point liberté 6": {
+  "recherche": "Rond Point liberté 6",
+  "candidats": [
+   {
+    "lat": 14.7286286,
+    "lon": -17.4572326,
+    "nom": "Rond-Point Liberté 6, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/recreation_ground"
+   },
+   {
+    "lat": 14.7288378,
+    "lon": -17.4570815,
+    "nom": "Rond-Point Liberté 6, KHAR YALLA I, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7283688,
+    "lon": -17.4572998,
+    "nom": "Rond-Point Liberté 6, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7285508,
+    "lon": -17.4569674,
+    "nom": "Rond-Point Liberté 6, KHAR YALLA I, Khar Yalla, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7286287,
+    "lon": -17.457502,
+    "nom": "Rond-Point Liberté 6, LIBERTE VI EXTENSION, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   }
+  ]
+ },
+ "Rond Point  Sahm": {
+  "recherche": "Rond Point Sahm",
+  "candidats": [
+   {
+    "lat": 14.6845636,
+    "lon": -17.4535998,
+    "nom": "Rond-Point Sahm, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/traffic_island"
+   }
+  ]
+ },
+ "Rond point 26": {
+  "recherche": "Rond point 26",
+  "candidats": [
+   {
+    "lat": 14.7285508,
+    "lon": -17.4569674,
+    "nom": "Rond-Point Liberté 6, KHAR YALLA I, Khar Yalla, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7286287,
+    "lon": -17.457502,
+    "nom": "Rond-Point Liberté 6, LIBERTE VI EXTENSION, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7283901,
+    "lon": -17.4570801,
+    "nom": "Rond-Point Liberté 6, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7288793,
+    "lon": -17.4572703,
+    "nom": "Rond-Point Liberté 6, LIBERTE VI EXTENSION, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7114151,
+    "lon": -17.4636771,
+    "nom": "Rond Point Collège Sacré-Coeur, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "place/locality"
+   }
+  ]
+ },
+ "Rond point Assemblée Nationale": {
+  "recherche": "Rond point Assemblée Nationale",
+  "candidats": []
+ },
+ "Rond point Cheikh Bethio": {
+  "recherche": "Rond point Cheikh Bethio",
+  "candidats": []
+ },
+ "Rond point JVC": {
+  "recherche": "Rond point JVC",
+  "candidats": []
+ },
+ "Rond point Liberté 6": {
+  "recherche": "Rond point Liberté 6",
+  "candidats": [
+   {
+    "lat": 14.7286286,
+    "lon": -17.4572326,
+    "nom": "Rond-Point Liberté 6, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/recreation_ground"
+   },
+   {
+    "lat": 14.7288378,
+    "lon": -17.4570815,
+    "nom": "Rond-Point Liberté 6, KHAR YALLA I, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7283688,
+    "lon": -17.4572998,
+    "nom": "Rond-Point Liberté 6, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7285508,
+    "lon": -17.4569674,
+    "nom": "Rond-Point Liberté 6, KHAR YALLA I, Khar Yalla, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7286287,
+    "lon": -17.457502,
+    "nom": "Rond-Point Liberté 6, LIBERTE VI EXTENSION, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/primary"
+   }
+  ]
+ },
+ "Rond point RTS": {
+  "recherche": "Rond point RTS",
+  "candidats": []
+ },
+ "Rond point Sandaga": {
+  "recherche": "Rond point Sandaga",
+  "candidats": []
+ },
+ "Rond point Sham": {
+  "recherche": "Rond point Sham",
+  "candidats": []
+ },
+ "Rond point assemblée nationale": {
+  "recherche": "Rond point assemblée nationale",
+  "candidats": []
+ },
+ "Route Nationale n° 1": {
+  "recherche": "Route Nationale n° 1",
+  "candidats": []
+ },
+ "Route de la Corniche": {
+  "recherche": "Route de la Corniche",
+  "candidats": [
+   {
+    "lat": 14.7290081,
+    "lon": -17.5055486,
+    "nom": "Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 38110, Sénégal",
+    "type": "highway/trunk"
+   },
+   {
+    "lat": 14.703011,
+    "lon": -17.4789332,
+    "nom": "Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 15150, Sénégal",
+    "type": "highway/trunk"
+   },
+   {
+    "lat": 14.740242,
+    "lon": -17.5104487,
+    "nom": "Route de la Corniche O Dakar, Arrondissement des Almadies, Dakar, Région de Dakar, 18524, Sénégal",
+    "type": "highway/trunk"
+   },
+   {
+    "lat": 14.7119605,
+    "lon": -17.4877096,
+    "nom": "Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 24095, Sénégal",
+    "type": "highway/trunk"
+   }
+  ]
+ },
+ "Route de l’aéroport": {
+  "recherche": "Route de l'aéroport",
+  "candidats": [
+   {
+    "lat": 14.7477906,
+    "lon": -17.4900439,
+    "nom": "Route de l'Aéroport, Arrondissement des Almadies, Dakar, Région de Dakar, 18524, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.7576836,
+    "lon": -17.4852871,
+    "nom": "Avenue Seydina Limamoulaye, Arrondissement des Almadies, Dakar, Région de Dakar, 11900, Sénégal",
+    "type": "highway/trunk"
+   },
+   {
+    "lat": 14.7454326,
+    "lon": -17.4577988,
+    "nom": "Avenue Seydina Limamoulaye, HLM SHELTER II, Hlm Grand Yoff, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 10168, Sénégal",
+    "type": "highway/trunk"
+   },
+   {
+    "lat": 14.7430497,
+    "lon": -17.4429744,
+    "nom": "Avenue Seydina Limamoulaye, HLM PATTE D'OIE, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 10168, Sénégal",
+    "type": "highway/trunk"
+   },
+   {
+    "lat": 14.7483669,
+    "lon": -17.4898693,
+    "nom": "Avenue Seydina Limamoulaye, Arrondissement des Almadies, Dakar, Région de Dakar, 18524, Sénégal",
+    "type": "highway/trunk"
+   }
+  ]
+ },
+ "Rte de l’Aéroport": {
+  "recherche": "Rte de l'Aéroport",
+  "candidats": [
+   {
+    "lat": 14.7477906,
+    "lon": -17.4900439,
+    "nom": "Route de l'Aéroport, Arrondissement des Almadies, Dakar, Région de Dakar, 18524, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.7576836,
+    "lon": -17.4852871,
+    "nom": "Avenue Seydina Limamoulaye, Arrondissement des Almadies, Dakar, Région de Dakar, 11900, Sénégal",
+    "type": "highway/trunk"
+   },
+   {
+    "lat": 14.7477508,
+    "lon": -17.4899174,
+    "nom": "Avenue Seydina Limamoulaye, Arrondissement des Almadies, Dakar, Région de Dakar, 11900, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.7483669,
+    "lon": -17.4898693,
+    "nom": "Avenue Seydina Limamoulaye, Arrondissement des Almadies, Dakar, Région de Dakar, 18524, Sénégal",
+    "type": "highway/trunk"
+   }
+  ]
+ },
+ "Rte des Niayes": {
+  "recherche": "Rte des Niayes",
+  "candidats": [
+   {
+    "lat": 14.7369526,
+    "lon": -17.4550717,
+    "nom": "Route des Niayes, ARAFAT, Khar Yalla, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "highway/secondary"
+   },
+   {
+    "lat": 14.7531016,
+    "lon": -17.4343992,
+    "nom": "Route des Niayes, Touba Ndar Fall JUS, Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "highway/primary"
+   },
+   {
+    "lat": 14.7430371,
+    "lon": -17.4491394,
+    "nom": "Route des Niayes, cite millionnaire, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 10168, Sénégal",
+    "type": "highway/secondary"
+   },
+   {
+    "lat": 14.7278259,
+    "lon": -17.457854,
+    "nom": "Route des Niayes, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/secondary"
+   },
+   {
+    "lat": 14.7574214,
+    "lon": -17.4281044,
+    "nom": "Route des Niayes, Commune du Golf Sud, Arrondissement de Sam Notaire, Département de Guédiawaye, Région de Dakar, 14023, Sénégal",
+    "type": "highway/primary"
+   }
+  ]
+ },
+ "Rue 22 prolongée": {
+  "recherche": "Rue 22 prolongée",
+  "candidats": [
+   {
+    "lat": 14.6885482,
+    "lon": -17.4547974,
+    "nom": "Rue FA-22 Prolongée, Fass Delorme, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "highway/residential"
+   }
+  ]
+ },
+ "Rue 39": {
+  "recherche": "Rue 39",
+  "candidats": [
+   {
+    "lat": 14.75525,
+    "lon": -17.443162,
+    "nom": "Villa 39, 39, Rue PA-18-01, 39, Unite 18, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "building/house"
+   },
+   {
+    "lat": 14.6998968,
+    "lon": -17.4549961,
+    "nom": "Rue ( AAB-39), Zone B, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "highway/residential"
+   },
+   {
+    "lat": 14.6992238,
+    "lon": -17.4557717,
+    "nom": "Rue ( AAB-33), Zone B, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "highway/residential"
+   },
+   {
+    "lat": 14.6989581,
+    "lon": -17.4560164,
+    "nom": "Rue ( AAB-31), Zone B, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "highway/residential"
+   },
+   {
+    "lat": 14.6994411,
+    "lon": -17.4555063,
+    "nom": "Rue ( AAB-35), Zone B, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "highway/residential"
+   }
+  ]
+ },
+ "Rue 6": {
+  "recherche": "Rue 6",
+  "candidats": [
+   {
+    "lat": 14.6997268,
+    "lon": -17.4622297,
+    "nom": "Rue 6, Amitié 1, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "highway/residential"
+   }
+  ]
+ },
+ "Rue Aimé césaire": {
+  "recherche": "Rue Aimé césaire",
+  "candidats": [
+   {
+    "lat": 14.6938794,
+    "lon": -17.4687301,
+    "nom": "Rue Aimé Césaire, Point E, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.6923616,
+    "lon": -17.4728876,
+    "nom": "Rue Aimé Césaire, Fann Résidence, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "highway/tertiary"
+   }
+  ]
+ },
+ "Rufisque": {
+  "recherche": "Rufisque",
+  "candidats": [
+   {
+    "lat": 14.716417,
+    "lon": -17.273844,
+    "nom": "Rufisque, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "SCOA": {
+  "recherche": "SCOA",
+  "candidats": []
+ },
+ "SDE": {
+  "recherche": "SDE",
+  "candidats": [
+   {
+    "lat": 14.7368319,
+    "lon": -17.4334301,
+    "nom": "SDE, HB-227, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 00221, Sénégal",
+    "type": "building/yes"
+   },
+   {
+    "lat": 14.7057094,
+    "lon": -17.4515995,
+    "nom": "SDE, Rue BIS-55, Ouagou Niayes, Commune de Biscuiterie, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "amenity/drinking_water"
+   }
+  ]
+ },
+ "SEDIMA": {
+  "recherche": "SEDIMA",
+  "candidats": [
+   {
+    "lat": 14.7748234,
+    "lon": -17.3165861,
+    "nom": "SEDIMA, Camille Basse, Keur Massar, Commune de Keur Massar Nord, Arrondissement de Malika, Département de Keur Massar, Région de Dakar, Sénégal",
+    "type": "landuse/industrial"
+   },
+   {
+    "lat": 14.7939822,
+    "lon": -17.3344365,
+    "nom": "Sedima, Route de Malika, Darou salam, Ndiayenne, Commune de Malika, Arrondissement de Malika, Département de Keur Massar, Région de Dakar, 20896, Sénégal",
+    "type": "amenity/watering_place"
+   }
+  ]
+ },
+ "SIPRES": {
+  "recherche": "SIPRES",
+  "candidats": [
+   {
+    "lat": 14.693807,
+    "lon": -17.4694731,
+    "nom": "SIPRES, Rue Aimé Césaire, Point E, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "office/company"
+   },
+   {
+    "lat": 14.7392337,
+    "lon": -17.4698518,
+    "nom": "CITE SIPRES II SICA, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7406951,
+    "lon": -17.4674211,
+    "nom": "CITE SIPRES I, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7386427,
+    "lon": -17.4696783,
+    "nom": "Cité SICA SIPRES II, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.709343,
+    "lon": -17.4770379,
+    "nom": "Cité Sipres Mermoz, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/residential"
+   }
+  ]
+ },
+ "Sacré Cœur": {
+  "recherche": "Sacré Cœur",
+  "candidats": [
+   {
+    "lat": 14.7114619,
+    "lon": -17.4688689,
+    "nom": "Sacré Coeur, Sacré Coeur 3 Pyrotechnie, Dakar, Région de Dakar, 22352, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7169443,
+    "lon": -17.4664899,
+    "nom": "Sacré Coeur, SC-152, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7167979,
+    "lon": -17.4643348,
+    "nom": "Sacre coeur, 3, SC-133, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "building/house"
+   }
+  ]
+ },
+ "Sandaga": {
+  "recherche": "Sandaga",
+  "candidats": [
+   {
+    "lat": 14.6699219,
+    "lon": -17.4377179,
+    "nom": "Marché Sandaga, Rue Braconnier, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "amenity/marketplace"
+   },
+   {
+    "lat": 14.6704958,
+    "lon": -17.4372205,
+    "nom": "Centre commercial Touba Sandaga, Rue El Hadj Mbaye Guèye, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "shop/mall"
+   },
+   {
+    "lat": 14.6788149,
+    "lon": -17.4539231,
+    "nom": "Boulangerie le petit sandaga, Boulevard du Docteur Samba Guéye, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "shop/bakery"
+   },
+   {
+    "lat": 14.670204,
+    "lon": -17.440238,
+    "nom": "Fabric Sandaga, Avenue Jean Jaurès, Rebeuss, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "shop/clothes"
+   },
+   {
+    "lat": 14.6698132,
+    "lon": -17.4396009,
+    "nom": "Pharmacie Sandaga, Rue Diaraf Mamadou Assane Paye, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "amenity/pharmacy"
+   }
+  ]
+ },
+ "Sangalkam": {
+  "recherche": "Sangalkam",
+  "candidats": [
+   {
+    "lat": 14.779304,
+    "lon": -17.228261,
+    "nom": "Commune de Sangalkam, Arrondissement de Sangalkam, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Sapeur Pompiers": {
+  "recherche": "Sapeur Pompiers",
+  "candidats": []
+ },
+ "Sapeur pompier Guédiawaye": {
+  "recherche": "Sapeur pompier Guédiawaye",
+  "candidats": []
+ },
+ "Scor liberté": {
+  "recherche": "Scor liberté",
+  "candidats": []
+ },
+ "Serigne Assane": {
+  "recherche": "Serigne Assane",
+  "candidats": [
+   {
+    "lat": 14.6827349,
+    "lon": -17.4481688,
+    "nom": "Wakeur Serigne Touba, Rue Imam Assane Ndoye (ME-19), Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "shop/shoes"
+   },
+   {
+    "lat": 14.6821876,
+    "lon": -17.4487142,
+    "nom": "Wakeur Serigne Touba, Rue Imam Assane Ndoye (ME-19), Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "shop/cosmetics"
+   }
+  ]
+ },
+ "Service des Mines": {
+  "recherche": "Service des Mines",
+  "candidats": [
+   {
+    "lat": 14.7272321,
+    "lon": -17.4457692,
+    "nom": "Service des Mines, Avenue du Roi Fahd Ben Abdel Aziz, Zone De Captage, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "office/government"
+   },
+   {
+    "lat": 14.6982771,
+    "lon": -17.4381336,
+    "nom": "Service des mines, Rocade Fann-Bel Air, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "highway/services"
+   }
+  ]
+ },
+ "Service des mines": {
+  "recherche": "Service des mines",
+  "candidats": [
+   {
+    "lat": 14.7272321,
+    "lon": -17.4457692,
+    "nom": "Service des Mines, Avenue du Roi Fahd Ben Abdel Aziz, Zone De Captage, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "office/government"
+   },
+   {
+    "lat": 14.6982771,
+    "lon": -17.4381336,
+    "nom": "Service des mines, Rocade Fann-Bel Air, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "highway/services"
+   }
+  ]
+ },
+ "Sicap Karack": {
+  "recherche": "Sicap Karack",
+  "candidats": []
+ },
+ "Sicap rue 10": {
+  "recherche": "Sicap rue 10",
+  "candidats": [
+   {
+    "lat": 14.7097994,
+    "lon": -17.4650799,
+    "nom": "Rue 12, Arrondissement des Almadies, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "highway/unclassified"
+   },
+   {
+    "lat": 14.710353,
+    "lon": -17.4590737,
+    "nom": "Rue Abebe Bikila, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "highway/unclassified"
+   },
+   {
+    "lat": 14.7134109,
+    "lon": -17.4585951,
+    "nom": "Rue LIB-269, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "highway/residential"
+   },
+   {
+    "lat": 14.7089264,
+    "lon": -17.4593353,
+    "nom": "Rue 311, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "highway/residential"
+   },
+   {
+    "lat": 14.7129774,
+    "lon": -17.4599439,
+    "nom": "Rue LIB-212, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "highway/residential"
+   }
+  ]
+ },
+ "Sipres": {
+  "recherche": "Sipres",
+  "candidats": [
+   {
+    "lat": 14.693807,
+    "lon": -17.4694731,
+    "nom": "SIPRES, Rue Aimé Césaire, Point E, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10700, Sénégal",
+    "type": "office/company"
+   },
+   {
+    "lat": 14.7392337,
+    "lon": -17.4698518,
+    "nom": "CITE SIPRES II SICA, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7406951,
+    "lon": -17.4674211,
+    "nom": "CITE SIPRES I, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7386427,
+    "lon": -17.4696783,
+    "nom": "Cité SICA SIPRES II, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.709343,
+    "lon": -17.4770379,
+    "nom": "Cité Sipres Mermoz, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/residential"
+   }
+  ]
+ },
+ "Sips": {
+  "recherche": "Sips",
+  "candidats": [
+   {
+    "lat": 14.7431906,
+    "lon": -17.391191,
+    "nom": "SIPS, N 1, Commune de Guinaw Rail Sud, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 10000, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Sipses": {
+  "recherche": "Sipses",
+  "candidats": []
+ },
+ "Sofrigal (môle 8)": {
+  "recherche": "Sofrigal (môle 8",
+  "candidats": []
+ },
+ "Sorano": {
+  "recherche": "Sorano",
+  "candidats": [
+   {
+    "lat": 14.6665067,
+    "lon": -17.4400466,
+    "nom": "théâtre sorano, Avenue de la République, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "amenity/pharmacy"
+   },
+   {
+    "lat": 14.6663171,
+    "lon": -17.4394706,
+    "nom": "Théâtre National Daniel Sorano, 45, Avenue de la République, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "amenity/theatre"
+   }
+  ]
+ },
+ "Sortie Mariste": {
+  "recherche": "Sortie Mariste",
+  "candidats": []
+ },
+ "Sortie Ouakam": {
+  "recherche": "Sortie Ouakam",
+  "candidats": []
+ },
+ "Sortie Rufisque": {
+  "recherche": "Sortie Rufisque",
+  "candidats": [
+   {
+    "lat": 14.7298052,
+    "lon": -17.2056669,
+    "nom": "Courtyard by Marriott Dakar Diamniadio, Rond point sortie diamniadio, Commune de Diamniadio, Arrondissement de Diamniadio, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "building/residential"
+   }
+  ]
+ },
+ "Sotiba (seras)": {
+  "recherche": "Sotiba (seras",
+  "candidats": []
+ },
+ "Stade Amadou Barry": {
+  "recherche": "Stade Amadou Barry",
+  "candidats": [
+   {
+    "lat": 14.7708966,
+    "lon": -17.390062,
+    "nom": "Stade Amadou Barry de Guediawaye, Sam-Notaire, Commune de Sam Notaire, Arrondissement de Sam Notaire, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "leisure/stadium"
+   },
+   {
+    "lat": 14.7718559,
+    "lon": -17.3907461,
+    "nom": "Stade de Basketball, Sam-Notaire, Commune de Sam Notaire, Arrondissement de Sam Notaire, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "leisure/stadium"
+   }
+  ]
+ },
+ "Stade Demba DIOP": {
+  "recherche": "Stade Demba DIOP",
+  "candidats": [
+   {
+    "lat": 14.7108526,
+    "lon": -17.4576045,
+    "nom": "Stade Demba Diop, Avenue du Président Habib Bourguiba, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "leisure/stadium"
+   }
+  ]
+ },
+ "Stade Demba Diop": {
+  "recherche": "Stade Demba Diop",
+  "candidats": [
+   {
+    "lat": 14.7108526,
+    "lon": -17.4576045,
+    "nom": "Stade Demba Diop, Avenue du Président Habib Bourguiba, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "leisure/stadium"
+   }
+  ]
+ },
+ "Stade Léopold Sédar Senghor": {
+  "recherche": "Stade Léopold Sédar Senghor",
+  "candidats": [
+   {
+    "lat": 14.7467717,
+    "lon": -17.451914,
+    "nom": "Stade Léopold Sédar Senghor, Avenue Seydina Limamoulaye, Village Grand Médine, Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 10168, Sénégal",
+    "type": "leisure/stadium"
+   },
+   {
+    "lat": 14.746779,
+    "lon": -17.4526618,
+    "nom": "Stade Léopold Sédar-Senghor, Avenue Seydina Limamoulaye, Village Grand Médine, Commune de Patte d'Oie, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 10168, Sénégal",
+    "type": "building/stadium"
+   }
+  ]
+ },
+ "Stade demba Diop": {
+  "recherche": "Stade demba Diop",
+  "candidats": [
+   {
+    "lat": 14.7108526,
+    "lon": -17.4576045,
+    "nom": "Stade Demba Diop, Avenue du Président Habib Bourguiba, Commune de Grand-Dakar, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "leisure/stadium"
+   }
+  ]
+ },
+ "Station Castor": {
+  "recherche": "Station Castor",
+  "candidats": []
+ },
+ "Station Castors": {
+  "recherche": "Station Castors",
+  "candidats": [
+   {
+    "lat": 14.7211423,
+    "lon": -17.4475219,
+    "nom": "Station TotalEnergie castors, Avenue Cheikh Ahmadou Bamba Mbacké (Rue HLM-17), Cité Bissap, Commune de HLM, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "amenity/fuel"
+   }
+  ]
+ },
+ "Station Keur Massar": {
+  "recherche": "Station Keur Massar",
+  "candidats": [
+   {
+    "lat": 14.7829554,
+    "lon": -17.323666,
+    "nom": "Station MTOA, Route de MTOA, Keur Massar, Commune de Keur Massar Nord, Arrondissement de Malika, Département de Keur Massar, Région de Dakar, 17000, Sénégal",
+    "type": "amenity/fuel"
+   },
+   {
+    "lat": 14.7697136,
+    "lon": -17.3514858,
+    "nom": "Station Service, Route de Boune, Commune de Yeumbeul Nord, Arrondissement de Yeumbeul, Arrondissement de Malika, Département de Keur Massar, Région de Dakar, 17000, Sénégal",
+    "type": "amenity/fuel"
+   }
+  ]
+ },
+ "Station castor": {
+  "recherche": "Station castor",
+  "candidats": []
+ },
+ "Station shell": {
+  "recherche": "Station shell",
+  "candidats": [
+   {
+    "lat": 14.7226382,
+    "lon": -17.4578917,
+    "nom": "Station Shell Liberté 5, Rue LIB-170, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "amenity/fuel"
+   },
+   {
+    "lat": 14.6875254,
+    "lon": -17.456157,
+    "nom": "Station Service shell, Avenue Cheikh Anta Diop, Fass Delorme, Commune de Gueule Tapée-Fass-Colobane, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "amenity/fuel"
+   },
+   {
+    "lat": 14.7423569,
+    "lon": -17.4455253,
+    "nom": "Station Shell de Patte d'Oie, GY-476, MISSRAH, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 10168, Sénégal",
+    "type": "amenity/fuel"
+   },
+   {
+    "lat": 14.7227854,
+    "lon": -17.4579551,
+    "nom": "Station Shell Liberté 5, Rue LIB-170, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "amenity/fuel"
+   },
+   {
+    "lat": 14.7036077,
+    "lon": -17.4286086,
+    "nom": "Station Shell Bel Air, Route des Hydrocarbures, Bel Air, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/fuel"
+   }
+  ]
+ },
+ "TERMINUS JAXAAY (Mosquée Niakoul Rab)": {
+  "recherche": "JAXAAY (Mosquée Niakoul Rab",
+  "candidats": []
+ },
+ "Tally Boubess": {
+  "recherche": "Tally Boubess",
+  "candidats": [
+   {
+    "lat": 14.7563879,
+    "lon": -17.3925625,
+    "nom": "Tally Boubess, Commune de Pikine Ouest, Commune de Djidah Thiaroye Kaw, Thiaroye, Commune de Pikine Est, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 14000, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.7489258,
+    "lon": -17.3982539,
+    "nom": "Tally Boubess, Commune de Pikine Ouest, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 16000, Sénégal",
+    "type": "highway/tertiary"
+   }
+  ]
+ },
+ "Tally Boumack": {
+  "recherche": "Tally Boumack",
+  "candidats": []
+ },
+ "Terminus 221 (Gadaye)": {
+  "recherche": "221 (Gadaye",
+  "candidats": [
+   {
+    "lat": 14.7864738,
+    "lon": -17.3688528,
+    "nom": "Route vers Gadaye, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "highway/tertiary"
+   }
+  ]
+ },
+ "Terminus 56": {
+  "recherche": "56",
+  "candidats": [
+   {
+    "lat": 14.754824,
+    "lon": -17.442655,
+    "nom": "Villa 56, 56, Rue PA-18-06, 56, Unite 18, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "building/house"
+   },
+   {
+    "lat": 14.693425,
+    "lon": -17.447938,
+    "nom": "Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Terminus Almadies": {
+  "recherche": "Almadies",
+  "candidats": [
+   {
+    "lat": 14.7441857,
+    "lon": -17.5175251,
+    "nom": "Arrondissement des Almadies, Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Terminus Aéroport LSS": {
+  "recherche": "Aéroport LSS",
+  "candidats": [
+   {
+    "lat": 14.746368,
+    "lon": -17.4906616,
+    "nom": "CBAO, Avenue Seydina Limamoulaye, Arrondissement des Almadies, Dakar, Région de Dakar, 11900, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "Terminus Daroukhane": {
+  "recherche": "Daroukhane",
+  "candidats": [
+   {
+    "lat": 14.7849348,
+    "lon": -17.3754035,
+    "nom": "École Daroukhane, WN-119, Sentenac, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/school"
+   },
+   {
+    "lat": 14.781596,
+    "lon": -17.3727427,
+    "nom": "Senelec Daroukhane, WN-262, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/payment_terminal"
+   },
+   {
+    "lat": 14.7815469,
+    "lon": -17.3720364,
+    "nom": "Terminus Dakar Dem Dikk Daroukhane, WN-262, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/parking"
+   }
+  ]
+ },
+ "Terminus Dieuppeul": {
+  "recherche": "Dieuppeul",
+  "candidats": [
+   {
+    "lat": 14.7198137,
+    "lon": -17.4532312,
+    "nom": "Commune de Dieuppeul-Derklé, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Terminus Gadaye (Filaos)": {
+  "recherche": "Gadaye (Filaos",
+  "candidats": []
+ },
+ "Terminus Guediawaye": {
+  "recherche": "Guediawaye",
+  "candidats": [
+   {
+    "lat": 14.7771207,
+    "lon": -17.390071,
+    "nom": "Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Terminus Guédiawaye": {
+  "recherche": "Guédiawaye",
+  "candidats": [
+   {
+    "lat": 14.7771207,
+    "lon": -17.390071,
+    "nom": "Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Terminus Keur Massar": {
+  "recherche": "Keur Massar",
+  "candidats": [
+   {
+    "lat": 14.7822567,
+    "lon": -17.311199,
+    "nom": "Keur Massar, Commune de Keur Massar Nord, Arrondissement de Malika, Département de Keur Massar, Région de Dakar, 17000, Sénégal",
+    "type": "boundary/administrative"
+   },
+   {
+    "lat": 14.7721779,
+    "lon": -17.2922054,
+    "nom": "Keur Massar, Plan Jaxaay 01, Commune de Jaxaay - Parcelles, Arrondissement de Jaxaay, Département de Keur Massar, Région de Dakar, 17000, Sénégal",
+    "type": "highway/residential"
+   }
+  ]
+ },
+ "Terminus Lat Dior": {
+  "recherche": "Lat Dior",
+  "candidats": []
+ },
+ "Terminus Leclerc": {
+  "recherche": "Leclerc",
+  "candidats": [
+   {
+    "lat": 14.7339024,
+    "lon": -17.4692614,
+    "nom": "Camp Leclerc, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "landuse/military"
+   },
+   {
+    "lat": 14.6715523,
+    "lon": -17.4273013,
+    "nom": "Terminus Dakar Dem Dikk Leclerc, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "leisure/common"
+   },
+   {
+    "lat": 14.672023,
+    "lon": -17.4278024,
+    "nom": "Place du Général Leclerc, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/service"
+   },
+   {
+    "lat": 14.672134,
+    "lon": -17.4275808,
+    "nom": "Gare Leclerc, Place du Général Leclerc, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99900, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7527876,
+    "lon": -17.4609199,
+    "nom": "Institut Lucie leclerc, rue YF 260, Arrondissement des Almadies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "office/educational_institution"
+   }
+  ]
+ },
+ "Terminus Liberté 5": {
+  "recherche": "Liberté 5",
+  "candidats": [
+   {
+    "lat": 14.7210269,
+    "lon": -17.4640285,
+    "nom": "Liberté 5, Boulevard du Koweit (SC-01), Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 10200, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Terminus Liberté 5 (Dieuppeul)": {
+  "recherche": "Liberté 5 (Dieuppeul",
+  "candidats": [
+   {
+    "lat": 14.7163529,
+    "lon": -17.4529293,
+    "nom": "Liberté, Commune de Dieuppeul-Derklé, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "place/neighbourhood"
+   }
+  ]
+ },
+ "Terminus Liberté 6": {
+  "recherche": "Liberté 6",
+  "candidats": [
+   {
+    "lat": 14.7262978,
+    "lon": -17.4591751,
+    "nom": "Liberté 6, Route des Niayes, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7257003,
+    "lon": -17.4596861,
+    "nom": "Liberté 6, Kognou Serigne Saliou Thioune, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7310352,
+    "lon": -17.4610459,
+    "nom": "LIBERTE 6, GY-103, LIBERTE VI EXTENSION, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "amenity/place_of_worship"
+   }
+  ]
+ },
+ "Terminus Malika": {
+  "recherche": "Malika",
+  "candidats": [
+   {
+    "lat": 14.8014836,
+    "lon": -17.3375999,
+    "nom": "Commune de Malika, Arrondissement de Malika, Département de Keur Massar, Région de Dakar, 20896, Sénégal",
+    "type": "boundary/administrative"
+   },
+   {
+    "lat": 14.8007189,
+    "lon": -17.3238381,
+    "nom": "Arrondissement de Malika, Département de Keur Massar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Terminus Ouakam": {
+  "recherche": "Ouakam",
+  "candidats": [
+   {
+    "lat": 14.7247367,
+    "lon": -17.4850662,
+    "nom": "Commune de Ouakam, Arrondissement des Almadies, Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Terminus Palais 2": {
+  "recherche": "Palais 2",
+  "candidats": [
+   {
+    "lat": 14.652875,
+    "lon": -17.433433,
+    "nom": "Gare Palais 2, Route de la Corniche Est, Commune de Dakar-Plateau, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 99341, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Terminus Parcelles": {
+  "recherche": "Parcelles",
+  "candidats": [
+   {
+    "lat": 14.7594072,
+    "lon": -17.4384546,
+    "nom": "Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   },
+   {
+    "lat": 14.761589,
+    "lon": -17.4401923,
+    "nom": "commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Terminus Parcelles Assainies": {
+  "recherche": "Parcelles Assainies",
+  "candidats": [
+   {
+    "lat": 14.7594072,
+    "lon": -17.4384546,
+    "nom": "Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Terminus Rufisque": {
+  "recherche": "Rufisque",
+  "candidats": [
+   {
+    "lat": 14.716417,
+    "lon": -17.273844,
+    "nom": "Rufisque, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Terminus Scat Urban": {
+  "recherche": "Scat Urban",
+  "candidats": []
+ },
+ "Terminus aéroport LSS": {
+  "recherche": "aéroport LSS",
+  "candidats": [
+   {
+    "lat": 14.746368,
+    "lon": -17.4906616,
+    "nom": "CBAO, Avenue Seydina Limamoulaye, Arrondissement des Almadies, Dakar, Région de Dakar, 11900, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "Terminus des Parcelles": {
+  "recherche": "des Parcelles",
+  "candidats": [
+   {
+    "lat": 14.7602743,
+    "lon": -17.4386574,
+    "nom": "GTSC Dakar-Banjul Start, Rue PA-17-29, unite 17, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Terminus keur Massar": {
+  "recherche": "keur Massar",
+  "candidats": [
+   {
+    "lat": 14.7822567,
+    "lon": -17.311199,
+    "nom": "Keur Massar, Commune de Keur Massar Nord, Arrondissement de Malika, Département de Keur Massar, Région de Dakar, 17000, Sénégal",
+    "type": "boundary/administrative"
+   },
+   {
+    "lat": 14.7721779,
+    "lon": -17.2922054,
+    "nom": "Keur Massar, Plan Jaxaay 01, Commune de Jaxaay - Parcelles, Arrondissement de Jaxaay, Département de Keur Massar, Région de Dakar, 17000, Sénégal",
+    "type": "highway/residential"
+   }
+  ]
+ },
+ "Terminus liberté 5 (Dieuppeul)": {
+  "recherche": "liberté 5 (Dieuppeul",
+  "candidats": [
+   {
+    "lat": 14.7163529,
+    "lon": -17.4529293,
+    "nom": "Liberté, Commune de Dieuppeul-Derklé, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 30018, Sénégal",
+    "type": "place/neighbourhood"
+   }
+  ]
+ },
+ "Terminus liberté 6": {
+  "recherche": "liberté 6",
+  "candidats": [
+   {
+    "lat": 14.7257003,
+    "lon": -17.4596861,
+    "nom": "Liberté 6, Kognou Serigne Saliou Thioune, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7262978,
+    "lon": -17.4591751,
+    "nom": "Liberté 6, Route des Niayes, Commune de Sicap-Liberté, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 11000, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7310352,
+    "lon": -17.4610459,
+    "nom": "LIBERTE 6, GY-103, LIBERTE VI EXTENSION, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11500, Sénégal",
+    "type": "amenity/place_of_worship"
+   }
+  ]
+ },
+ "Terrain Acapes": {
+  "recherche": "Terrain Acapes",
+  "candidats": [
+   {
+    "lat": 14.756243,
+    "lon": -17.4467363,
+    "nom": "Terrain ACAPES, Rue Mame Abdou Aziz Sy, Commune de Parcelles Assainies, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 14023, Sénégal",
+    "type": "leisure/pitch"
+   }
+  ]
+ },
+ "Thiaroye": {
+  "recherche": "Thiaroye",
+  "candidats": [
+   {
+    "lat": 14.7473433,
+    "lon": -17.3687784,
+    "nom": "Thiaroye, Commune de Tivaouane Diacksao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 10000, Sénégal",
+    "type": "boundary/administrative"
+   },
+   {
+    "lat": 14.7450846,
+    "lon": -17.3415534,
+    "nom": "Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 10000, Sénégal",
+    "type": "boundary/administrative"
+   },
+   {
+    "lat": 14.7412201,
+    "lon": -17.3749702,
+    "nom": "Commune de Thiaroye-sur-Mer, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 10000, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Tolou Abdoulaye Wade": {
+  "recherche": "Tolou Abdoulaye Wade",
+  "candidats": []
+ },
+ "Travaux communaux": {
+  "recherche": "Travaux communaux",
+  "candidats": []
+ },
+ "Tunnel de soumbédioune": {
+  "recherche": "Tunnel de soumbédioune",
+  "candidats": []
+ },
+ "Turbinal de dakar": {
+  "recherche": "Turbinal de dakar",
+  "candidats": []
+ },
+ "UCAD": {
+  "recherche": "UCAD",
+  "candidats": [
+   {
+    "lat": 14.6930841,
+    "lon": -17.4621614,
+    "nom": "UCAD, Avenue Cheikh Anta Diop, Point E, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.6872494,
+    "lon": -17.4644464,
+    "nom": "Université Cheikh Anta Diop, Route de la Corniche Ouest, Fann Hock, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "amenity/university"
+   },
+   {
+    "lat": 14.6843203,
+    "lon": -17.4620147,
+    "nom": "Jardin Botanique de l'UCAD, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "leisure/garden"
+   }
+  ]
+ },
+ "Ucad": {
+  "recherche": "Ucad",
+  "candidats": [
+   {
+    "lat": 14.6930841,
+    "lon": -17.4621614,
+    "nom": "UCAD, Avenue Cheikh Anta Diop, Point E, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.6872494,
+    "lon": -17.4644464,
+    "nom": "Université Cheikh Anta Diop, Route de la Corniche Ouest, Fann Hock, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "amenity/university"
+   },
+   {
+    "lat": 14.6843203,
+    "lon": -17.4620147,
+    "nom": "Jardin Botanique de l'UCAD, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, Sénégal",
+    "type": "leisure/garden"
+   }
+  ]
+ },
+ "Unité 11": {
+  "recherche": "Unité 11",
+  "candidats": [
+   {
+    "lat": 14.7578003,
+    "lon": -17.4336152,
+    "nom": "Unite 11, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Unités 09 10 15": {
+  "recherche": "Unités 09 10 15",
+  "candidats": []
+ },
+ "Unités 22 24": {
+  "recherche": "Unités 22 24",
+  "candidats": []
+ },
+ "Université Amphate BA": {
+  "recherche": "Université Amphate BA",
+  "candidats": []
+ },
+ "Usine des eaux": {
+  "recherche": "Usine des eaux",
+  "candidats": []
+ },
+ "VDN": {
+  "recherche": "VDN",
+  "candidats": [
+   {
+    "lat": 14.7842013,
+    "lon": -17.3936821,
+    "nom": "VDN, Voie de Dégagement Nord, Commune de Sam Notaire, Arrondissement de Sam Notaire, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "highway/milestone"
+   },
+   {
+    "lat": 14.7208355,
+    "lon": -17.4726338,
+    "nom": "Sacré Cœur 3 VDN, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   },
+   {
+    "lat": 14.7413124,
+    "lon": -17.4716862,
+    "nom": "rond point VDN Ouest Foire, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/traffic_island"
+   }
+  ]
+ },
+ "VDN-Foire": {
+  "recherche": "VDN-Foire",
+  "candidats": [
+   {
+    "lat": 14.7413124,
+    "lon": -17.4716862,
+    "nom": "rond point VDN Ouest Foire, Dakar, Région de Dakar, Sénégal",
+    "type": "landuse/traffic_island"
+   },
+   {
+    "lat": 14.74739,
+    "lon": -17.465517,
+    "nom": "Ecobank, Voie de Dégagement Nord, Arrondissement des Almadies, Commune de Grand Yoff, commune d'arrondissement des Parcelles Assainies, Dakar, Région de Dakar, 11900, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "Village Artisanal de Soumbédioune": {
+  "recherche": "Village Artisanal de Soumbédioune",
+  "candidats": [
+   {
+    "lat": 14.6768522,
+    "lon": -17.4578103,
+    "nom": "Village Artisanal de Soumbédioune, Route de la Corniche Ouest, Gueule Tapée, Commune de Médina, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 10500, Sénégal",
+    "type": "amenity/marketplace"
+   }
+  ]
+ },
+ "Ville de Rufisque": {
+  "recherche": "Ville de Rufisque",
+  "candidats": [
+   {
+    "lat": 14.7130132,
+    "lon": -17.2767318,
+    "nom": "Travaux publics Ville de Rufisque (Garage), Rue Kounoune, Commune de Rufisque Est, Rufisque, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "building/yes"
+   }
+  ]
+ },
+ "Yarakh": {
+  "recherche": "Yarakh",
+  "candidats": [
+   {
+    "lat": 14.7354486,
+    "lon": -17.4161783,
+    "nom": "Yarakh, Route de Rufisque, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 16000, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7241346,
+    "lon": -17.4305446,
+    "nom": "Pharmacie Hann Yarakh, Route de Rufisque, Hann Equip, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 00221, Sénégal",
+    "type": "amenity/pharmacy"
+   }
+  ]
+ },
+ "Yoff": {
+  "recherche": "Yoff",
+  "candidats": [
+   {
+    "lat": 14.7603583,
+    "lon": -17.468149,
+    "nom": "Commune de Yoff, Arrondissement des Almadies, Dakar, Région de Dakar, 11900, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ },
+ "Yoff Tonghor": {
+  "recherche": "Yoff Tonghor",
+  "candidats": [
+   {
+    "lat": 14.762249,
+    "lon": -17.4805925,
+    "nom": "Yoff Tonghor, Dakar, Région de Dakar, Sénégal",
+    "type": "place/neighbourhood"
+   }
+  ]
+ },
+ "Yoff Village": {
+  "recherche": "Yoff Village",
+  "candidats": [
+   {
+    "lat": 14.7610379,
+    "lon": -17.4638582,
+    "nom": "Lycée Yoff Village, Rue BCEAO, Arrondissement des Almadies, Dakar, Région de Dakar, 26369, Sénégal",
+    "type": "amenity/school"
+   }
+  ]
+ },
+ "ZAC Mbao": {
+  "recherche": "ZAC Mbao",
+  "candidats": [
+   {
+    "lat": 14.7304126,
+    "lon": -17.3021447,
+    "nom": "ZAC Mbao, N 1, Commune de Rufisque Ouest, Rufisque, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "Zone B": {
+  "recherche": "Zone B",
+  "candidats": [
+   {
+    "lat": 14.6994048,
+    "lon": -17.4555604,
+    "nom": "Zone B, Commune de Fann-Point E-Amitié, Arrondissement de Dakar-Plateau, Dakar, Région de Dakar, 13000, Sénégal",
+    "type": "place/neighbourhood"
+   }
+  ]
+ },
+ "Zone industrielle": {
+  "recherche": "Zone industrielle",
+  "candidats": [
+   {
+    "lat": 14.7417489,
+    "lon": -17.3427045,
+    "nom": "Zone Industrielle de Mbao, Commune de Diamaguène-Sicap Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, Sénégal",
+    "type": "landuse/industrial"
+   },
+   {
+    "lat": 14.6988173,
+    "lon": -17.4381325,
+    "nom": "CBAO, Rocade Fann-Bel Air, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/bank"
+   },
+   {
+    "lat": 14.6987058,
+    "lon": -17.4380332,
+    "nom": "SGBS, Rocade Fann-Bel Air, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/bank"
+   },
+   {
+    "lat": 14.6984256,
+    "lon": -17.4377569,
+    "nom": "Bank of Africa, Rocade Fann-Bel Air, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/bank"
+   },
+   {
+    "lat": 14.6972829,
+    "lon": -17.4356749,
+    "nom": "CBAO, Route des Grands Moulins, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de Dakar, 13500, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "ancienne piste": {
+  "recherche": "ancienne piste",
+  "candidats": [
+   {
+    "lat": 14.7140766,
+    "lon": -17.4772721,
+    "nom": "Ancienne Piste, Arrondissement des Almadies, Dakar, Région de Dakar, 11266, Sénégal",
+    "type": "highway/service"
+   },
+   {
+    "lat": 14.712421,
+    "lon": -17.4768687,
+    "nom": "Boulevard Sheikh Bethio Thioune, Arrondissement des Almadies, Dakar, Région de Dakar, 11266, Sénégal",
+    "type": "highway/primary"
+   }
+  ]
+ },
+ "autoroute": {
+  "recherche": "autoroute",
+  "candidats": [
+   {
+    "lat": 14.711332,
+    "lon": -17.1972744,
+    "nom": "Autoroute, Commune de Diamniadio, Arrondissement de Diamniadio, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "highway/construction"
+   }
+  ]
+ },
+ "deux voies Notaire": {
+  "recherche": "deux voies Notaire",
+  "candidats": []
+ },
+ "gadaye": {
+  "recherche": "gadaye",
+  "candidats": [
+   {
+    "lat": 14.7864738,
+    "lon": -17.3688528,
+    "nom": "Route vers Gadaye, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "highway/tertiary"
+   }
+  ]
+ },
+ "keur Mbaye Fall": {
+  "recherche": "keur Mbaye Fall",
+  "candidats": [
+   {
+    "lat": 14.745044,
+    "lon": -17.3155488,
+    "nom": "École Keur Mbaye Fall 1, N 1, Commune de Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "amenity/school"
+   },
+   {
+    "lat": 14.7422331,
+    "lon": -17.3169245,
+    "nom": "École Keur Mbaye Fall, N 1, Mbao, Commune de Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "amenity/school"
+   },
+   {
+    "lat": 14.7463453,
+    "lon": -17.3193691,
+    "nom": "Keur Mbaye Fall Centre, N 1, Mbao, Commune de Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.74415,
+    "lon": -17.3152216,
+    "nom": "Keur Mbaye Fall Mosquée, N 1, Commune de Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "highway/bus_stop"
+   },
+   {
+    "lat": 14.7437142,
+    "lon": -17.3151948,
+    "nom": "Keur Mbaye Fall Mosquée, N 1, Mbao, Commune de Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "highway/bus_stop"
+   }
+  ]
+ },
+ "marché Ndiarème": {
+  "recherche": "marché Ndiarème",
+  "candidats": [
+   {
+    "lat": 14.7797188,
+    "lon": -17.3822992,
+    "nom": "Marché Ndiaréme, Hamo 6, Commune de Ndiarème Limamoulaye, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.7795824,
+    "lon": -17.380861,
+    "nom": "Marché Ndiaréme, WN-262, Commune de Wakhinane Nimzatt, Arrondissement de Wakhinane Nimzatt, Département de Guédiawaye, Région de Dakar, 15000, Sénégal",
+    "type": "amenity/marketplace"
+   }
+  ]
+ },
+ "marché Ouakam": {
+  "recherche": "marché Ouakam",
+  "candidats": [
+   {
+    "lat": 14.7236906,
+    "lon": -17.4875037,
+    "nom": "Marché Ouakam, Rue OKM-246, Arrondissement des Almadies, Dakar, Région de Dakar, 24095, Sénégal",
+    "type": "amenity/marketplace"
+   }
+  ]
+ },
+ "patte d’oies": {
+  "recherche": "patte d'oies",
+  "candidats": []
+ },
+ "poste Thiaroye": {
+  "recherche": "poste Thiaroye",
+  "candidats": [
+   {
+    "lat": 14.74604,
+    "lon": -17.3782866,
+    "nom": "Poste-Thiaroye, TAH 1, Commune de Guinaw Rail Sud, Arrondissement de Pikine-Dagoudane, Département de Pikine, Région de Dakar, 10000, Sénégal",
+    "type": "amenity/post_office"
+   }
+  ]
+ },
+ "péage": {
+  "recherche": "péage",
+  "candidats": [
+   {
+    "lat": 14.74471,
+    "lon": -17.2819839,
+    "nom": "Péage, Autoroute à péage, Commune de Rufisque Ouest, Rufisque, Arrondissement de Diamniadio, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "highway/toll_gantry"
+   },
+   {
+    "lat": 14.7453024,
+    "lon": -17.2818498,
+    "nom": "Péage, A 1, Commune de Rufisque Ouest, Rufisque, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "highway/toll_gantry"
+   },
+   {
+    "lat": 14.734376,
+    "lon": -17.2487861,
+    "nom": "Autoroute à péage, Commune de Rufisque Est, Rufisque, Arrondissement de Diamniadio, Département de Rufisque, Région de Dakar, 20000, Sénégal",
+    "type": "highway/motorway"
+   },
+   {
+    "lat": 14.7551452,
+    "lon": -17.3180129,
+    "nom": "Autoroute à péage, Commune de Rufisque Ouest, Commune de Mbao, Arrondissement de Thiaroye, Département de Pikine, Région de Dakar, 17000, Sénégal",
+    "type": "highway/motorway"
+   },
+   {
+    "lat": 14.7486868,
+    "lon": -17.2909547,
+    "nom": "Autoroute à péage, Commune de Rufisque Ouest, Rufisque, Département de Rufisque, Région de Dakar, Sénégal",
+    "type": "highway/motorway"
+   }
+  ]
+ },
+ "route des Almadies": {
+  "recherche": "route des Almadies",
+  "candidats": [
+   {
+    "lat": 14.7417127,
+    "lon": -17.5184933,
+    "nom": "Route de King Fahd, Arrondissement des Almadies, Dakar, Région de Dakar, 18524, Sénégal",
+    "type": "highway/tertiary"
+   },
+   {
+    "lat": 14.7464594,
+    "lon": -17.5091369,
+    "nom": "Bank of Africa, Route de l'Aeroport, Arrondissement des Almadies, Dakar, Région de Dakar, 18524, Sénégal",
+    "type": "amenity/bank"
+   },
+   {
+    "lat": 14.7467791,
+    "lon": -17.5089517,
+    "nom": "CBAO attijariwafa bank, Route de l'Aeroport, Arrondissement des Almadies, Dakar, Région de Dakar, 18524, Sénégal",
+    "type": "amenity/bank"
+   }
+  ]
+ },
+ "route des mamelles": {
+  "recherche": "route des mamelles",
+  "candidats": [
+   {
+    "lat": 14.7286669,
+    "lon": -17.50526,
+    "nom": "Route de la Corniche Ouest, Arrondissement des Almadies, Dakar, Région de Dakar, 38110, Sénégal",
+    "type": "highway/trunk"
+   }
+  ]
+ },
+ "sortie Croissement Cambérène": {
+  "recherche": "sortie Croissement Cambérène",
+  "candidats": []
+ },
+ "terminus Ouakam": {
+  "recherche": "Ouakam",
+  "candidats": [
+   {
+    "lat": 14.7247367,
+    "lon": -17.4850662,
+    "nom": "Commune de Ouakam, Arrondissement des Almadies, Dakar, Région de Dakar, Sénégal",
+    "type": "boundary/administrative"
+   }
+  ]
+ }
+}

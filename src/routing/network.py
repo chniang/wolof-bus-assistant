@@ -17,9 +17,10 @@ from dataclasses import dataclass
 from typing import Iterable, NamedTuple
 
 from .places import normalize_name
+from .traces import distances_sur_trace
 
 # Modeling constants.  They are deliberately simple and easy to tune.
-BUS_SPEED_M_PER_MIN = 250.0       # about 15 km/h in Dakar traffic
+BUS_SPEED_M_PER_MIN = 333.0       # 20 km/h, sur de vraies longueurs de route
 FIXED_MINUTES_PER_SEGMENT = 3.0    # fallback when a stop has no coordinates
 # Une ligne réduite à ses deux terminus, dont l'un sans position, n'a aucun
 # arrêt pour borner la distance : Dem Dikk 11 (Keur Massar -> Lat Dior) coûtait
@@ -164,10 +165,15 @@ class Network:
         lines: Iterable[Line],
         stop_coords: dict[str, tuple[float, float]],
         stop_confidence: dict[str, str] | None = None,
+        line_positions: dict[LineKey, tuple] | None = None,
+        line_distances: dict[LineKey, tuple] | None = None,
     ) -> None:
         self.lines = {line.key: line for line in lines}
         self.stop_coords = dict(stop_coords)
         self.stop_confidence = dict(stop_confidence or {})
+        # Position de chaque arrêt sur sa ligne, et longueur mesurée sur la trace.
+        self.line_positions = dict(line_positions or {})
+        self.line_distances = dict(line_distances or {})
         self.stop_names = sorted(
             {stop for line in self.lines.values() for stop in line.stops}
         )
@@ -244,22 +250,46 @@ class Network:
             self._adjacency = self._build_adjacency()
         return self._adjacency
 
-    def _ride_estimate(
-        self,
-        from_stop: str,
-        to_stop: str,
-        stops_on_line: int = 0,
-    ) -> tuple[float, float | None]:
-        start = self.coords(from_stop)
-        end = self.coords(to_stop)
-        if start is None or end is None:
-            if stops_on_line == 2:
-                return UNKNOWN_TWO_STOP_RIDE_MINUTES, None
-            return FIXED_MINUTES_PER_SEGMENT, None
+    def position_on_line(self, line: Line, index: int) -> tuple[float, float] | None:
+        """La position de cet arrêt sur cette ligne (sa position générale par défaut)."""
 
-        distance = haversine_m(start, end)
-        minutes = max(0.5, distance / BUS_SPEED_M_PER_MIN)
-        return minutes, distance
+        positions = self.line_positions.get(line.key)
+        if positions is not None:
+            return positions[index]
+        return self.coords(line.stops[index])
+
+    def _segment_distances(self, line: Line) -> tuple[float | None, ...]:
+        """Longueur de chaque segment, dans l'ordre de la ligne.
+
+        La trace d'abord, sinon les distances entre arrêts consécutifs.  Un arrêt
+        sans position est sauté : la distance entre ses deux voisins est partagée.
+        """
+
+        mesurees = self.line_distances.get(line.key)
+        if mesurees is not None:
+            return mesurees
+
+        positions = [
+            self.position_on_line(line, index) for index in range(len(line.stops))
+        ]
+        connus = [i for i, position in enumerate(positions) if position is not None]
+        segments: list[float | None] = [None] * (len(positions) - 1)
+        for gauche, droite in zip(connus, connus[1:]):
+            part = haversine_m(positions[gauche], positions[droite]) / (droite - gauche)
+            for index in range(gauche, droite):
+                segments[index] = part
+        return tuple(segments)
+
+    @staticmethod
+    def _ride_estimate(
+        distance: float | None,
+        stops_on_line: int,
+    ) -> float:
+        if distance is None:
+            if stops_on_line == 2:
+                return UNKNOWN_TWO_STOP_RIDE_MINUTES
+            return FIXED_MINUTES_PER_SEGMENT
+        return max(0.5, distance / BUS_SPEED_M_PER_MIN)
 
     def _build_adjacency(self) -> dict[Node, list[Edge]]:
         adjacency: dict[Node, list[Edge]] = {
@@ -268,14 +298,15 @@ class Network:
 
         # Ride along the ordered stops, in both directions.
         for line in self.lines.values():
+            forward = self._segment_distances(line)
             for direction in (0, 1):
                 sequence = line.stops_for(direction)
+                distances = forward if direction == 0 else forward[::-1]
                 for index in range(len(sequence) - 1):
                     source = Node(line.key, direction, index)
                     target = Node(line.key, direction, index + 1)
-                    minutes, distance = self._ride_estimate(
-                        sequence[index], sequence[index + 1], len(sequence)
-                    )
+                    distance = distances[index]
+                    minutes = self._ride_estimate(distance, len(sequence))
                     adjacency[source].append(
                         Edge(
                             target=target,
@@ -373,12 +404,16 @@ class Network:
                 termini[key] = (str(row.terminus_a), str(row.terminus_b))
 
         lines: list[Line] = []
+        line_orders: dict[LineKey, list[int]] = {}
         grouped = data.itineraires.groupby(["compagnie", "ligne"], sort=False)
         for (company, name), group in grouped:
             ordered = group.sort_values("ordre")
             stops = tuple(str(stop) for stop in ordered["arret"])
             if len(stops) < 2:
                 continue
+            line_orders[(str(company), str(name))] = [
+                int(ordre) for ordre in ordered["ordre"]
+            ]
             terminus_a, terminus_b = termini.get(
                 (str(company), str(name)), (None, None)
             )
@@ -442,10 +477,57 @@ class Network:
                 stop_coords[stop] = borrowed
                 stop_confidence.setdefault(stop, "estimee")
 
+        # Une position fiable sur une ligne situe aussi un arrêt qui n'en avait pas
+        # de bonne (« Sandaga », « Point E », nouveaux noms officiels de Dem Dikk).
+        by_order = getattr(data, "positions_ligne", {})
+        sure_by_order = getattr(data, "positions_sures", {})
+        raw_positions: dict[LineKey, list] = {}
+        for line in lines:
+            orders = line_orders.get(line.key)
+            per_line = by_order.get(line.key)
+            if not per_line or orders is None or len(orders) != len(line.stops):
+                continue
+            raw_positions[line.key] = [per_line.get(ordre, ...) for ordre in orders]
+            for stop, ordre in zip(line.stops, orders):
+                position = per_line.get(ordre)
+                if position is None:
+                    continue
+                sure = sure_by_order.get(line.key, {}).get(ordre, False)
+                if stop not in stop_coords or (
+                    sure and stop_confidence.get(stop) != "bonne"
+                ):
+                    stop_coords[stop] = position
+                    stop_confidence[stop] = "bonne" if sure else "estimee"
+
         # Les arrêts restants sont placés à vol d'oiseau le long de leur
         # ligne, uniquement en mémoire : les CSV ne sont jamais modifiés.
         stop_coords, stop_confidence = interpolate_missing_coordinates(
             lines, stop_coords, stop_confidence
         )
 
-        return cls(lines, stop_coords, stop_confidence)
+        # Sur chaque ligne : sa propre position si elle en a une, None si elle est
+        # connue pour être inconnue, sinon la position générale de l'arrêt.
+        line_positions = {
+            key: tuple(
+                stop_coords.get(stop) if position is ... else position
+                for stop, position in zip(by_key[key].stops, positions)
+            )
+            for by_key in [{line.key: line for line in lines}]
+            for key, positions in raw_positions.items()
+        }
+
+        # La vraie longueur de route pour les lignes Tata qui ont une trace.
+        line_distances: dict[LineKey, tuple] = {}
+        traces = getattr(data, "traces", {})
+        for line in lines:
+            trace = traces.get(line.name) if line.company == "Tata AFTU" else None
+            if not trace:
+                continue
+            positions = line_positions.get(line.key) or tuple(
+                stop_coords.get(stop) for stop in line.stops
+            )
+            measured = distances_sur_trace(trace, positions)
+            if measured is not None:
+                line_distances[line.key] = measured
+
+        return cls(lines, stop_coords, stop_confidence, line_positions, line_distances)
