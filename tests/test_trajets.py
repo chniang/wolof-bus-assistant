@@ -782,7 +782,12 @@ def test_moteur_v2() -> tuple[int, int]:
 
     from matching.stops_matcher import StopsMatcher
     from routing import adapter
-    from routing.network import BUS_SPEED_M_PER_MIN, TRANSFER_PENALTY_MIN
+    from routing.network import (
+        BUS_SPEED_M_PER_MIN,
+        TRANSFER_PENALTY_MIN,
+        haversine_m,
+    )
+    from routing.router import ResolvedPlace
 
     echecs = 0
     total = 0
@@ -882,6 +887,57 @@ def test_moteur_v2() -> tuple[int, int]:
         any(ligne.get("estimee") for ligne in lat_dior["lignes"])
         and "durée estimée" in (RACINE / "app.py").read_text(encoding="utf-8"),
         lat_dior["lignes"],
+    )
+
+    # Tata 54 : 157 min à cause de positions interpolées, pour 18,5 km.
+    tata_54 = next(
+        trajet
+        for trajet in adapter._ENGINE.find_trips(
+            "Keur Massar",
+            "UCAD",
+            max_trips=4,
+            first_line=("Tata AFTU", "Ligne 54"),
+            origin_place=ResolvedPlace(stops=("Station Keur Massar",)),
+            destination_place=ResolvedPlace(stops=("Université Cheikh Anta Diop",)),
+        )
+    )
+    troncon_54 = tata_54.legs[0]
+    plafond = max(
+        10.0,
+        haversine_m(
+            reseau.coords(troncon_54.board_stop),
+            reseau.coords(troncon_54.alight_stop),
+        )
+        * 1.6
+        / BUS_SPEED_M_PER_MIN
+        + 5.0,
+    )
+    verifie(
+        "Tata 54 plafonné, marqué estimé, et classé sur la durée plafonnée",
+        troncon_54.minutes <= plafond + 1e-6
+        and tata_54.estimated
+        and tata_54.raw_minutes <= plafond + 1e-6,
+        (troncon_54.minutes, plafond, tata_54.raw_minutes),
+    )
+
+    # Le départ des Maristes, jamais Keur Ngoor ; et les mêmes arrêts pour v1 et v2.
+    resolu = adapter._resoudre(repli, "Rond-Point École Mariste")
+    verifie(
+        "Rond-Point École Mariste : les Maristes, jamais Keur Ngoor",
+        resolu["arret"] == "Maristes"
+        and "Maristes" in resolu["large"].stops
+        and not any("Keur Ngoor" in arret for arret in resolu["large"].stops),
+        resolu,
+    )
+    verifie(
+        "v1 et v2 reconnaissent le même arrêt des Maristes",
+        repli.find_line("Rond-Point École Mariste", "Palais")["depart_matched"]
+        == "Maristes",
+    )
+    verifie(
+        "« Keur Ngoor » dit tel quel trouve toujours son arrêt",
+        adapter._resoudre(repli, "Keur Ngoor")["arret"]
+        == "Keur Ngoor (Rond-Point École Mariste)",
     )
     return echecs, total
 

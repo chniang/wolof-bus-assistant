@@ -81,6 +81,14 @@ ALIAS = {
     # dit « Palais », une ligne vers l'un ou l'autre convient.
     "palais 1": "palais",
     "palais 2": "palais",
+    # Le rond-point de l'école Mariste est aux Maristes (Hann).  Sans cela, seul
+    # « Keur Ngoor (Rond-Point École Mariste) » portait ces mots : l'usager était
+    # envoyé à Keur Ngoor.  « Keur Ngoor » dit tel quel trouve toujours cet arrêt.
+    "ecole mariste": "maristes",
+    "ecole maristes": "maristes",
+    "mariste": "maristes",
+    "hann maristes": "maristes",
+    "hann mariste": "maristes",
 }
 
 # Premiers mots d'une voie : « Route de Rufisque » n'est pas Rufisque.

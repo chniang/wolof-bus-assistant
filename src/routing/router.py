@@ -55,6 +55,12 @@ MAX_WALK_ONLY_MINUTES = 40.0
 MAX_TIME_VS_BEST = 3.0
 # Détour minimal de la route par rapport au vol d'oiseau, pour le plancher de durée.
 STRAIGHT_LINE_ROAD_FACTOR = 1.25
+# Plafond d'un trajet en bus : max(10, vol d'oiseau * 1,6 / vitesse + 5).  Additionner
+# des positions fausses gonfle la durée : Pont de Colobane, interpolé à 10 km de sa
+# place, ajoutait 75 min aux 157 min de Tata 54 (Keur Massar -> UCAD).
+RIDE_CAP_MIN_MINUTES = 10.0
+RIDE_CAP_ROAD_FACTOR = 1.6
+RIDE_CAP_EXTRA_MINUTES = 5.0
 
 
 def walking_minutes(
@@ -144,9 +150,11 @@ class Trip:
     via_downtown: bool
     ridden_stops: tuple[str, ...]
     estimated: bool = False
-    # Durée avant le plancher.  Le plancher met à égalité tous les trajets courts
-    # sur le papier : c'est elle qui les départage et qui borne la recherche.
+    # Durée plafonnée, avant le plancher.  Le plancher met à égalité tous les
+    # trajets courts : c'est elle qui les départage et qui borne la recherche.
     raw_minutes: float = 0.0
+    # Durée sans le plafond, pour la seule comparaison avec la marche (find_trips).
+    uncapped_minutes: float = 0.0
 
     @property
     def walked_minutes(self) -> float:
@@ -316,6 +324,10 @@ class _Label:
     combo: tuple[LineKey, ...]
     steps: tuple[_Step, ...]
     rode_since_transfer: bool
+    # Le bus en cours : d'où il part, et son temps cumulé avant plafond.
+    leg_board_stop: str = ""
+    leg_start_cost: float = 0.0
+    leg_raw_minutes: float = 0.0
 
 
 class RouteEngine:
@@ -664,8 +676,11 @@ class RouteEngine:
         )
 
         if walk_trip is not None:
+            # Sans le plafond : il ne sait pas distinguer une position fausse d'un
+            # vrai détour.  Un bus qui fait 10 km pour relier deux lieux à 1 km ne
+            # doit pas battre la marche.  Le trajet à pied s'ajoute, le bus reste.
             fastest_bus = min(
-                (trip.total_minutes for trip in trips), default=None
+                (trip.uncapped_minutes for trip in trips), default=None
             )
             if fastest_bus is None or walk_trip.total_minutes < fastest_bus:
                 result = [walk_trip] + result
@@ -918,9 +933,34 @@ class RouteEngine:
             ),
         )
 
+    def _ride_cap(self, board_stop: str, alight_stop: str) -> float | None:
+        """La durée maximale d'un bus entre deux arrêts, si leurs positions sont connues."""
+
+        board = self.network.coords(board_stop)
+        alight = self.network.coords(alight_stop)
+        if board is None or alight is None:
+            return None
+        return max(
+            RIDE_CAP_MIN_MINUTES,
+            haversine_m(board, alight) * RIDE_CAP_ROAD_FACTOR / BUS_SPEED_M_PER_MIN
+            + RIDE_CAP_EXTRA_MINUTES,
+        )
+
     def _advance_ride(self, label: _Label, edge: Edge) -> _Label:
         from_stop = self.network.stop_for(label.node)
         to_stop = self.network.stop_for(edge.target)
+        if label.rode_since_transfer:
+            board_stop = label.leg_board_stop
+            start_cost = label.leg_start_cost
+            leg_raw = label.leg_raw_minutes + edge.minutes
+        else:
+            board_stop, start_cost, leg_raw = from_stop, label.cost, edge.minutes
+        # La recherche compte déjà le temps plafonné : sinon la borne d'arrêt
+        # écarterait une ligne avant de voir sa vraie durée.  Le coût reste
+        # croissant, même quand le bus se rapproche de son point de départ.
+        cap = self._ride_cap(board_stop, to_stop)
+        leg_minutes = leg_raw if cap is None else min(leg_raw, cap)
+        cost = max(label.cost, start_cost + leg_minutes)
         step = _Step(
             kind="ride",
             from_stop=from_stop,
@@ -936,10 +976,13 @@ class RouteEngine:
         return _Label(
             node=edge.target,
             transfers=label.transfers,
-            cost=label.cost + edge.minutes,
+            cost=cost,
             combo=label.combo,
             steps=label.steps + (step,),
             rode_since_transfer=True,
+            leg_board_stop=board_stop,
+            leg_start_cost=start_cost,
+            leg_raw_minutes=leg_raw,
         )
 
     def _advance_transfer(self, label: _Label, edge: Edge) -> _Label:
@@ -1001,14 +1044,20 @@ class RouteEngine:
         ridden_stops: list[str] = []
         current: dict | None = None
         minimum_leg_extra = 0.0
+        uncapped_leg_extra = 0.0
 
         def finish_leg() -> None:
-            nonlocal current, minimum_leg_extra
+            nonlocal current, minimum_leg_extra, uncapped_leg_extra
             if current is None:
                 return
             line = self.network.lines[current["line"]]
-            billed_minutes = max(MIN_LEG_MINUTES, current["minutes"])
+            cap = self._ride_cap(current["board_stop"], current["alight_stop"])
+            capped = cap is not None and current["minutes"] > cap
+            billed_minutes = max(
+                MIN_LEG_MINUTES, cap if capped else current["minutes"]
+            )
             minimum_leg_extra += billed_minutes - current["minutes"]
+            uncapped_leg_extra += max(0.0, MIN_LEG_MINUTES - current["minutes"])
             legs.append(
                 Leg(
                     operator=line.company,
@@ -1021,7 +1070,7 @@ class RouteEngine:
                     ),
                     minutes=billed_minutes,
                     distance_m=current["distance"],
-                    estimated=current["estimated"],
+                    estimated=current["estimated"] or capped,
                 )
             )
             current = None
@@ -1103,6 +1152,7 @@ class RouteEngine:
 
         total_minutes = sum(step.minutes for step in steps) + minimum_leg_extra
         raw_minutes = total_minutes
+        uncapped_minutes = sum(step.minutes for step in steps) + uncapped_leg_extra
 
         total_distance: float | None = 0.0
         for step in steps:
@@ -1150,8 +1200,9 @@ class RouteEngine:
             detour=detour,
             via_downtown=via_downtown,
             ridden_stops=tuple(ridden_stops),
-            estimated=any(step.estimated for step in steps),
+            estimated=any(leg.estimated for leg in legs),
             raw_minutes=raw_minutes,
+            uncapped_minutes=uncapped_minutes,
         )
 
     def _passes_downtown(
