@@ -19,7 +19,6 @@ arret,Avenue Léopold Sédar Senghor,lieu_avenue_leopold_sedar_senghor.wav,Avenu
 arret,Avenue Nelson Mandela,lieu_avenue_nelson_mandela.wav,Avenue Nelson Mandela
 arret,Avenue Peytavin,lieu_avenue_peytavin.wav,Avenue André Peytavin | Avenue Peytavin
 arret,Avenue Pompidou,lieu_avenue_pompidou.wav,Avenue George Pompidou | Avenue Georges Pompidou | Avenue Gorges Pompidou | Avenue Pompidou
-arret,BCEAO,lieu_bceao.wav,BCEAO
 arret,Bel Air,lieu_bel_air.wav,Bel Air
 arret,Blaise Diagne,lieu_blaise_diagne.wav,Blaise Diagne
 arret,Bopp,lieu_bopp.wav,Bop | Bopp
@@ -31,21 +30,25 @@ arret,Boulevard de l'Arsenal,lieu_boulevard_de_l_arsenal.wav,Boulevard de l'Arse
 arret,Boulevard de la République,lieu_boulevard_de_la_republique.wav,Bld de la République | Boulevard de la République
 arret,Boulevard des Martyrs,lieu_boulevard_des_martyrs.wav,Bld des Martyrs
 arret,Brioche d'Orée Ouakam,lieu_brioche_d_oree_ouakam.wav,Brioche d'Orée Ouakam
+arret,Béséyaawoo,lieu_beseyaawoo.wav,BCEAO
+arret,C E M Dieuppeul trois,lieu_c_e_m_dieuppeul_trois.wav,Cem Dieuppeul 3
+arret,C E M Ousmane Socé Diop,lieu_c_e_m_ousmane_soce_diop.wav,Cem Ousmane Socé Diop
+arret,C E S Canada,lieu_c_e_s_canada.wav,Ces Canada
+arret,C S S,lieu_c_s_s.wav,Css
 arret,CAPA Virmaud,lieu_capa_virmaud.wav,CAPA Virmaud
 arret,Camp Penal,lieu_camp_penal.wav,Camp Penal
+arret,Carrefour HLM Grand Medine/diamalaye,lieu_carrefour_hlm_grand_medine_diamalaye.wav,Carrefour HLM Gd Medine/diamalaye
 arret,Case,lieu_case.wav,Case
 arret,Case Bi,lieu_case_bi.wav,Case Bi
 arret,Case Pa,lieu_case_pa.wav,Case Pa
 arret,Case des Tous Petit,lieu_case_des_tous_petit.wav,Case des Tous Petit
-arret,Cem Dieuppeul trois,lieu_cem_dieuppeul_trois.wav,Cem Dieuppeul 3
-arret,Cem Ousmane Socé Diop,lieu_cem_ousmane_soce_diop.wav,Cem Ousmane Socé Diop
 arret,Centenaire,lieu_centenaire.wav,Centenaire
 arret,Central Bel Air,lieu_central_bel_air.wav,Central Bel Air (MTOA)
-arret,Ces Canada,lieu_ces_canada.wav,Ces Canada
+arret,Centre Aéré de la Béséyaawoo,lieu_centre_aere_de_la_beseyaawoo.wav,Centre Aéré de la BCEAO
 arret,Cfao Technologies,lieu_cfao_technologies.wav,Cfao Technologies
 arret,Cinquante-six,lieu_cinquante_six.wav,56
 arret,Cité Assemblée,lieu_cite_assemblee.wav,Cité Assemblée
-arret,Cité Comico,lieu_cite_comico.wav,Cité Comico
+arret,Cité Comico,lieu_cite_comico.wav,Cité Comico | Comico
 arret,Cité Derklé,lieu_cite_derkle.wav,Cité Derklé
 arret,Cité Isra,lieu_cite_isra.wav,Cité Isra
 arret,Cité Keur Gorgui,lieu_cite_keur_gorgui.wav,Cité Keur Gorgui
@@ -53,15 +56,14 @@ arret,Cité Marine,lieu_cite_marine.wav,Cité Marine
 arret,Cité Port,lieu_cite_port.wav,Cité Port
 arret,Collège Hyacinthe Thiandoum,lieu_college_hyacinthe_thiandoum.wav,Collège Hyacinthe Thiandoum
 arret,Collège Sacré Cœur,lieu_college_sacre_c_ur.wav,Collège Sacré Cœur
-arret,Comico,lieu_comico.wav,Comico
 arret,Corniche Daroukhane,lieu_corniche_daroukhane.wav,Corniche Daroukhane
 arret,Corniche Ouest,lieu_corniche_ouest.wav,Corniche Ouest
 arret,Corniche des HLM,lieu_corniche_des_hlm.wav,Corniche des HLM
 arret,Cours Sainte Marie de Hann,lieu_cours_sainte_marie_de_hann.wav,Cours Sainte Marie de Hann
 arret,Croisement Almadies,lieu_croisement_almadies.wav,Croisement Almadies
 arret,Croisement Bountou Pikine,lieu_croisement_bountou_pikine.wav,Croisement Bountou Pikine
+arret,Croisement Gàddaay,lieu_croisement_gaddaay.wav,Croisement Gadaye
 arret,Croisement Petit Mbao,lieu_croisement_petit_mbao.wav,Croisement Petit Mbao
-arret,Css,lieu_css.wav,Css
 arret,Cyrnos,lieu_cyrnos.wav,Cyrnos | Cyrnos (Sur le Pont)
 arret,Daf,lieu_daf.wav,Daf
 arret,Dakar Sacré Cœur,lieu_dakar_sacre_c_ur.wav,Dakar Sacré Cœur
@@ -73,49 +75,47 @@ arret,Deux cent vingt et un,lieu_deux_cent_vingt_et_un.wav,221 (Gadaye)
 arret,Dial Diop,lieu_dial_diop.wav,Dial Diop (Ex Rue 10)
 arret,Diamniadio Yenne,lieu_diamniadio_yenne.wav,Diamniadio Yenne
 arret,Difoncé,lieu_difonce.wav,Difoncé
-arret,Direction Générale Ddd,lieu_direction_generale_ddd.wav,Direction Générale Ddd
+arret,Direction Générale D D D,lieu_direction_generale_d_d_d.wav,Direction Générale Ddd
 arret,Dispensaire Norade,lieu_dispensaire_norade.wav,Dispensaire Norade
 arret,Djoutiba,lieu_djoutiba.wav,Djoutiba
 arret,Douta Seck,lieu_douta_seck.wav,Douta Seck
 arret,Dépôt Thiaroye,lieu_depot_thiaroye.wav,Dépôt Thiaroye
 arret,Embarcadère,lieu_embarcadere.wav,Embarcadère
-arret,Ena,lieu_ena.wav,Ena
-arret,Enea,lieu_enea.wav,Enea
+arret,Espace HLM Grand Médine,lieu_espace_hlm_grand_medine.wav,Espace HLM Gd Médine (Face Autoroute)
 arret,Esso Port,lieu_esso_port.wav,Esso Port
 arret,Esso Port Embarcadère,lieu_esso_port_embarcadere.wav,Esso Port Embarcadère
+arret,G M D,lieu_g_m_d.wav,Gmd
 arret,Gare Ter,lieu_gare_ter.wav,Gare Ter
 arret,Gare de Rufisque,lieu_gare_de_rufisque.wav,Gare de Rufisque
-arret,Gmd,lieu_gmd.wav,Gmd
 arret,Gorom zéro deux,lieu_gorom_zero_deux.wav,Gororm 02
 arret,Gorom zéro un,lieu_gorom_zero_un.wav,Gorom 01
 arret,Grand Moulin de Dakar,lieu_grand_moulin_de_dakar.wav,Grand Moulin de Dakar | Grands Moulin de Dakar
 arret,Grand Théâtre,lieu_grand_theatre.wav,Grand Théâtre
 arret,Grande Mosquée,lieu_grande_mosquee.wav,Grande Mosquée
+arret,Gàddaay,lieu_gaddaay.wav,Gadaye | Gadaye (Guédiawaye) | Gadaye (Filaos)
 arret,HLM Fass,lieu_hlm_fass.wav,HLM Fass
 arret,HLM Grand Médine,lieu_hlm_grand_medine.wav,HLM Grand Médine
 arret,HLM Sipres,lieu_hlm_sipres.wav,HLM Sipres
 arret,Hamo,lieu_hamo.wav,Hamo
 arret,Hampathé Ba,lieu_hampathe_ba.wav,Hampathé Ba
-arret,Hann Maristes,lieu_hann_maristes.wav,Hann Maristes
 arret,Hôpital Dalal Diam,lieu_hopital_dalal_diam.wav,Hôpital Dalal Diam
 arret,Hôpital Général Idrissa Pouye,lieu_hopital_general_idrissa_pouye.wav,Hôpital Général Idrissa Pouye (Ex CTO )
-arret,Hôpital Iho,lieu_hopital_iho.wav,Hôpital Iho
+arret,Hôpital Iho,lieu_hopital_iho.wav,Hôpital Iho | Iho
 arret,Hôpital Mame Abdou,lieu_hopital_mame_abdou.wav,Hôpital Mame Abdou
 arret,Hôpital Militaire de Ouakam,lieu_hopital_militaire_de_ouakam.wav,Hôpital Militaire de Ouakam
 arret,Hôpital le Dantec,lieu_hopital_le_dantec.wav,Hôpital le Dantec
 arret,Hôtel Terrou,lieu_hotel_terrou.wav,Hôtel Terrou
+arret,I P G,lieu_i_p_g.wav,Ipg
 arret,Icotaf,lieu_icotaf.wav,Icotaf
 arret,Ifan,lieu_ifan.wav,Ifan
-arret,Iho,lieu_iho.wav,Iho
 arret,Immeuble Mariama,lieu_immeuble_mariama.wav,Immeuble Mariama
 arret,Institut Pasteur,lieu_institut_pasteur.wav,Institut Pasteur
 arret,Intendance,lieu_intendance.wav,Intendance
-arret,Ipg,lieu_ipg.wav,Ipg
 arret,Jet d'Eau,lieu_jet_d_eau.wav,Jet d'Eau
+arret,L G I Mbao,lieu_l_g_i_mbao.wav,Lgi Mbao
 arret,Lac Rose Croisement Niague,lieu_lac_rose_croisement_niague.wav,Lac Rose Croissement Niague
 arret,Leclerc,lieu_leclerc.wav,Leclerc
 arret,Les Deux Voies de Sipres,lieu_les_deux_voies_de_sipres.wav,Les Deux Voies de Sipres
-arret,Lgi Mbao,lieu_lgi_mbao.wav,Lgi Mbao
 arret,Lycée Blaise Diagne,lieu_lycee_blaise_diagne.wav,Lycée Blaise Diagne
 arret,Lycée Delafosse,lieu_lycee_delafosse.wav,Lycée de Lafosse | Lycée Delafosse
 arret,Lycée d'Excellence Privée,lieu_lycee_d_excellence_privee.wav,Lycée d'Excellence Privée
@@ -132,7 +132,7 @@ arret,Masalikul Djinane,lieu_masalikul_djinane.wav,Masalikul Djinane
 arret,Ministère de la Santé,lieu_ministere_de_la_sante.wav,Ministère de la Santé
 arret,Monument de la Renaissance,lieu_monument_de_la_renaissance.wav,Monument de la Renaissance
 arret,Mosquée Seydou Nourrou Tall,lieu_mosquee_seydou_nourrou_tall.wav,Mosquée Seydou Nourrou Tall
-arret,National un,lieu_national_un.wav,National 1
+arret,Nationale un,lieu_nationale_un.wav,National 1
 arret,Ngor Village,lieu_ngor_village.wav,Ngor Village
 arret,Noflaye,lieu_noflaye.wav,Noflaye
 arret,Obélisque,lieu_obelisque.wav,Obélisque
@@ -148,16 +148,15 @@ arret,Point E,lieu_point_e.wav,Point E
 arret,Police Bel Air,lieu_police_bel_air.wav,Police Bel Air
 arret,Police Grand Yoff,lieu_police_grand_yoff.wav,Police Grand Yoff
 arret,Police Pa,lieu_police_pa.wav,Police Pa
-arret,Police quatre em,lieu_police_quatre_em.wav,Police 4em
+arret,Police quatrième,lieu_police_quatrieme.wav,Police 4em
 arret,Pont Emergent,lieu_pont_emergent.wav,Pont Emergent
 arret,Pont Foire,lieu_pont_foire.wav,Pond Foire
 arret,Pont Sénégal Emergent,lieu_pont_senegal_emergent.wav,Pont Sénégal Emergent (92)
 arret,Pont Sénégal quatre-vingt-douze,lieu_pont_senegal_quatre_vingt_douze.wav,Pont Sénégal 92 | Pont Sénégal 92 (Pont de l'Émergence)
-arret,Prison Rebeus,lieu_prison_rebeus.wav,Prison Rebeus
+arret,Prison Rebeus,lieu_prison_rebeus.wav,Prison Rebeus | Reubeuss
 arret,Péage Pikine,lieu_peage_pikine.wav,Péage Pikine
 arret,Ravin,lieu_ravin.wav,Ravin
 arret,Retour Vers Lac Rose,lieu_retour_vers_lac_rose.wav,Retour Vers Lac Rose
-arret,Reubeuss,lieu_reubeuss.wav,Reubeuss
 arret,Rond Point,lieu_rond_point.wav,Rond Point
 arret,Rond Point Assemblée Nationale,lieu_rond_point_assemblee_nationale.wav,Rond Point Assemblée Nationale
 arret,Rond Point Bel Air,lieu_rond_point_bel_air.wav,Rond Point Bel Air
@@ -171,14 +170,16 @@ arret,Rond Point RTS,lieu_rond_point_rts.wav,Rond Point RTS
 arret,Rond Point Sahm,lieu_rond_point_sahm.wav,Rond Point SAHM | Rond Point SHAM
 arret,Rond Point Sandaga,lieu_rond_point_sandaga.wav,Rond Point Sandaga
 arret,Rond Point vingt-six,lieu_rond_point_vingt_six.wav,Rond Point 26
-arret,Route Corniche de HLM Gd Médine,lieu_route_corniche_de_hlm_gd_medine.wav,Rte Corniche de HLM Gd Médine
+arret,Route Corniche de HLM Grand Médine,lieu_route_corniche_de_hlm_grand_medine.wav,Rte Corniche de HLM Gd Médine
+arret,Route de l'Hôpital Général de Grand Yoff,lieu_route_de_l_hopital_general_de_grand_yoff.wav,Route de l'Hôpital Général de Gd Yoff (Hoggy)
 arret,Route de la Corniche,lieu_route_de_la_corniche.wav,Route de la Corniche
 arret,Route des Almadies,lieu_route_des_almadies.wav,Route des Almadies
 arret,Route des Mamelles,lieu_route_des_mamelles.wav,Route des Mamelles
 arret,Rue Aimé Césaire,lieu_rue_aime_cesaire.wav,Rue Aimé Césaire
 arret,Rue vingt-deux Prolongée,lieu_rue_vingt_deux_prolongee.wav,Rue 22 Prolongée
-arret,SCAT Urban,lieu_scat_urban.wav,SCAT Urban
-arret,SDE,lieu_sde.wav,SDE
+arret,S D E,lieu_s_d_e.wav,SDE
+arret,S D E Guédiawaye,lieu_s_d_e_guediawaye.wav,SDE Guédiawaye
+arret,S D E Serigne Assane,lieu_s_d_e_serigne_assane.wav,SDE Serigne Assane
 arret,SICAP Karack,lieu_sicap_karack.wav,SICAP Karack
 arret,SICAP Rue dix,lieu_sicap_rue_dix.wav,SICAP Rue 10
 arret,Sandaga,lieu_sandaga.wav,Sandaga
@@ -193,7 +194,6 @@ arret,Sortie Mariste,lieu_sortie_mariste.wav,Sortie Mariste
 arret,Sortie Ouakam,lieu_sortie_ouakam.wav,Sortie Ouakam
 arret,Sortie Rufisque,lieu_sortie_rufisque.wav,Sortie Rufisque
 arret,Sotiba,lieu_sotiba.wav,Sotiba (SERAS)
-arret,Stade Léopold Sédar Senghor,lieu_stade_leopold_sedar_senghor.wav,Stade Léopold Sédar Senghor
 arret,Station Castors,lieu_station_castors.wav,Station Castor | Station Castors
 arret,Station Shell,lieu_station_shell.wav,Station Shell
 arret,Tally Icotaf dix Route des Niayes,lieu_tally_icotaf_dix_route_des_niayes.wav,Tally Icotaf X Rte des Niayes (Pikine)
@@ -207,7 +207,7 @@ arret,Unités vingt-deux vingt-quatre,lieu_unites_vingt_deux_vingt_quatre.wav,Un
 arret,Unités zéro neuf dix quinze,lieu_unites_zero_neuf_dix_quinze.wav,Unités 09 10 15
 arret,Université Amphate Ba,lieu_universite_amphate_ba.wav,Université Amphate Ba
 arret,Usine des Eaux,lieu_usine_des_eaux.wav,Usine des Eaux
-arret,Vdn-Foire,lieu_vdn_foire.wav,Vdn-Foire
+arret,V D N Foire,lieu_v_d_n_foire.wav,Vdn-Foire
 arret,Village Artisanal de Soumbédioune,lieu_village_artisanal_de_soumbedioune.wav,Village Artisanal de Soumbédioune
 arret,Ville de Rufisque,lieu_ville_de_rufisque.wav,Ville de Rufisque
 arret,Yarakh,lieu_yarakh.wav,Yarakh
@@ -219,3 +219,5 @@ arret,École Normale Supérieure,lieu_ecole_normale_superieure.wav,École Normal
 arret,Église Martyrs de l'Ouganda,lieu_eglise_martyrs_de_l_ouganda.wav,Église Martyrs de l'Ouganda
 arret,Église Pa,lieu_eglise_pa.wav,Église Pa
 arret,Église Sainte Thérèse,lieu_eglise_sainte_therese.wav,Église Sainte Thérèse
+arret,Énaa,lieu_enaa.wav,Ena
+arret,Énéa,lieu_enea.wav,Enea

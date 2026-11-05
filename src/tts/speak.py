@@ -197,7 +197,9 @@ MOTIF_ROMAIN = re.compile(
 )
 # Sigles à épeler lettre par lettre. Vide pour l'instant : le contenu sera
 # décidé après écoute (« HLM » -> « H L M »).
-SIGLES_EPELES: list[str] = []
+# Sigles épelés lettre par lettre (« C S S »), quelle que soit leur casse dans le
+# nom affiché (« Css »).  Les autres se lisent comme des mots (Daf, Ifan…).
+SIGLES_EPELES: list[str] = ["CSS", "IPG", "GMD", "DDD", "SDE", "CEM", "CES", "LGI"]
 
 # Orthographes différentes d'un même mot dans les itinéraires : une seule
 # prononciation, donc un seul audio pour toutes.
@@ -215,6 +217,11 @@ MOTS_DITS = {
     "Pond": "Pont",
     "Tivaoune": "Tivaouane",
     "Scor": "Score",
+    # Prononciations validées par l'équipe (locuteur natif).
+    "Enea": "Énéa",
+    "Ena": "Énaa",
+    "BCEAO": "Béséyaawoo",
+    "Gadaye": "Gàddaay",
 }
 
 # Variantes d'un même lieu, sous leur forme parlée : clé -> nom dit.  Le nom dit
@@ -240,6 +247,20 @@ NOMS_DITS = {
     "Sapeur Pompier Guédiawaye": "Sapeurs-Pompiers de Guédiawaye",
     "Ancien Piste": "Ancienne Piste",
     "Allées Khalifa Ababacar Sy": "Allées Ababacar Sy",
+    "Police quatre em": "Police quatrième",
+    "National un": "Nationale un",
+    "SCAT Urban": "Scat Urbam",
+    "Vdn-Foire": "V D N Foire",
+    # Même lieu, deux noms : un seul audio, l'existant quand il y en a un.
+    "Hann Maristes": "Maristes",
+    "Reubeuss": "Prison Rebeus",
+    "Comico": "Cité Comico",
+    "Iho": "Hôpital Iho",
+}
+
+# Un nom dit dont l'audio existant porte un autre nom de fichier.
+FICHIERS_LIEUX = {
+    "Stade Léopold Sédar Senghor": "lieu_stade_l_s_s.wav",
 }
 _NOMS_DITS = {cle.casefold(): valeur for cle, valeur in NOMS_DITS.items()}
 
@@ -262,16 +283,28 @@ def nom_lieu_parle(
     phrase autour est en wolof. Les sigles de `SIGLES_EPELES` sont épelés.
     """
     texte = str(arret if arret is not None else "")
+    if avec_alias:
+        # « Terminus 221 (Gadaye) » : le numéro est celui d'une ligne, le lieu est
+        # entre parenthèses.
+        trouve = re.fullmatch(
+            r"\s*terminus\s+\d+\s*\(([^()]+)\)\s*", texte, flags=re.IGNORECASE
+        )
+        if trouve:
+            texte = trouve.group(1)
     texte = re.sub(r"\s*\([^)]*\)", "", texte)
     # Jamais « Terminus » dans une phrase wolof : « ba Malika », pas « ba Malika
-    # Terminus » (validé par l'équipe).  Le mot seul reste, faute d'autre nom.
+    # Terminus » (validé par l'équipe).  Le mot seul reste, faute d'autre nom, et
+    # un terminus qui n'a qu'un numéro le garde : « Terminus cinquante-six ».
     sans_terminus = re.sub(r"\bterminus\b", " ", texte, flags=re.IGNORECASE)
-    if sans_terminus.strip():
+    numero_seul = re.fullmatch(r"[\d\s]+", sans_terminus) is not None
+    if sans_terminus.strip() and not (avec_alias and numero_seul):
         texte = sans_terminus
     texte = re.sub(r"\bAv\.?(?=\s|$)", "Avenue", texte, flags=re.IGNORECASE)
     texte = re.sub(r"\bBd\.?(?=\s|$)", "Boulevard", texte, flags=re.IGNORECASE)
     texte = re.sub(r"\bBld\.?(?=\s|$)", "Boulevard", texte, flags=re.IGNORECASE)
     texte = re.sub(r"\bRte\.?(?=\s|$)", "Route", texte, flags=re.IGNORECASE)
+    if avec_alias:
+        texte = re.sub(r"\bGd\.?(?=\s|$)", "Grand", texte, flags=re.IGNORECASE)
     if avec_alias:
         for mot, dit in MOTS_DITS.items():
             texte = re.sub(rf"\b{mot}\b", dit, texte, flags=re.IGNORECASE)
@@ -284,12 +317,16 @@ def nom_lieu_parle(
         texte,
     )
     texte = texte.replace("&", " et ")
-    sigles = SIGLES_EPELES if sigles_epeles is None else sigles_epeles
+    if sigles_epeles is not None:
+        sigles = sigles_epeles
+    else:
+        sigles = SIGLES_EPELES if avec_alias else []
     for sigle in sorted({s for s in sigles if s}, key=len, reverse=True):
         texte = re.sub(
             rf"\b{re.escape(sigle)}\b",
-            " ".join(sigle),
+            " ".join(sigle.upper()),
             texte,
+            flags=re.IGNORECASE,
         )
     texte = " ".join(texte.split())
     if avec_alias:
@@ -299,7 +336,27 @@ def nom_lieu_parle(
 
 def nom_fichier_lieu(arret: object) -> str:
     """Le WAV d'un arrêt ; deux noms qui se disent pareil partagent le fichier."""
-    return f"lieu_{_slug(nom_lieu_parle(arret))}.wav"
+    dit = nom_lieu_parle(arret)
+    return FICHIERS_LIEUX.get(dit, f"lieu_{_slug(dit)}.wav")
+
+
+def nom_fichier_lieu_ancien(arret: object) -> str:
+    """Le WAV du lieu tel qu'il a été enregistré avant les alias de prononciation."""
+    return f"lieu_{_slug(nom_lieu_parle(arret, avec_alias=False))}.wav"
+
+
+def chemin_lieu(dossier: Path, arret: object) -> Path:
+    """L'audio du lieu, sinon celui enregistré sous l'ancienne prononciation.
+
+    « Gàddaay » remplace « Gadaye » : tant que le nouvel audio n'est pas généré,
+    on rejoue l'ancien plutôt que de taire le lieu.  Sans aucun des deux, on rend
+    le chemin du nouveau, à générer.
+    """
+    nouveau = chemin_audio(dossier, nom_fichier_lieu(arret))
+    if nouveau.is_file():
+        return nouveau
+    ancien = chemin_audio(dossier, nom_fichier_lieu_ancien(arret))
+    return ancien if ancien.is_file() else nouveau
 
 
 def numero_de(ligne: object) -> int | None:
@@ -543,13 +600,12 @@ def _ajoute_lieu(
     """
     if not str(arret if arret is not None else "").strip():
         return
-    nom_lieu = nom_fichier_lieu(arret)
-    chemin_lieu = chemin_audio(dossier, nom_lieu)
-    if not chemin_lieu.is_file():
-        _segment_manquant(nom_lieu)
+    audio_lieu = chemin_lieu(dossier, arret)
+    if not audio_lieu.is_file():
+        _segment_manquant(audio_lieu.name)
         return
     _ajoute_segment(morceaux, dossier, connecteur, PAUSE_LIEU)
-    morceaux.append((chemin_lieu, pause_lieu))
+    morceaux.append((audio_lieu, pause_lieu))
 
 
 def plan_correspondance(
@@ -624,7 +680,7 @@ def _lieu_du_plan(
         return []
     return [
         (chemin_audio(dossier, connecteur), PAUSE_LIEU),
-        (chemin_audio(dossier, nom_fichier_lieu(arret)), SILENCE_ENTRE),
+        (chemin_lieu(dossier, arret), SILENCE_ENTRE),
     ]
 
 

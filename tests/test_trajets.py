@@ -1403,10 +1403,22 @@ def test_voix() -> tuple[int, int]:
         if (
             sans_alias != avec_alias
             and speak.chemin_audio(speak.CACHE_DIR, sans_alias).is_file()
-            and not speak.chemin_audio(speak.CACHE_DIR, avec_alias).is_file()
+            and not speak.chemin_lieu(speak.CACHE_DIR, affiche).is_file()
         ):
             perdus.append((affiche, sans_alias, avec_alias))
     verifie("aucun alias ne fait perdre un audio existant", not perdus, perdus)
+    verifie(
+        "Gàddaay : l'ancien audio Gadaye sert tant que le nouveau n'existe pas",
+        speak.chemin_lieu(speak.CACHE_DIR, "Gadaye").name
+        in {"lieu_gaddaay.wav", "lieu_gadaye.wav"}
+        and speak.chemin_lieu(speak.CACHE_DIR, "Gadaye").is_file(),
+        speak.chemin_lieu(speak.CACHE_DIR, "Gadaye"),
+    )
+    verifie(
+        "Stade Léopold Sédar Senghor retrouve son audio existant",
+        speak.chemin_lieu(speak.CACHE_DIR, "Stade Léopold Sédar Senghor").name
+        == "lieu_stade_l_s_s.wav",
+    )
 
     # Un audio absent de data/tts_cache/ est cherché dans data/tts_cache_ajouts/.
     ancien_ajouts = speak.CACHE_AJOUTS
@@ -1469,10 +1481,10 @@ def test_voix() -> tuple[int, int]:
     phrase_corr = phrase_correspondances(corr)
     attendu_corr = (
         "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
-        "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Tata, numero fanweer ak "
+        "nga wàcc Gàddaay. Ci ginnaaw, jëlal bus bu Tata, numero fanweer ak "
         "juróom ñaar, moo lay yóbbu ba Malika. Walla, "
         "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
-        "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Tata, numero juróom ñaar "
+        "nga wàcc Gàddaay. Ci ginnaaw, jëlal bus bu Tata, numero juróom ñaar "
         "fukk ak juróom ñeent, moo lay yóbbu ba Malika."
     )
     # Moteur v2, itinéraires officiels de Dem Dikk (221 + 16A, 221 + 220).  Wolof
@@ -1480,10 +1492,10 @@ def test_voix() -> tuple[int, int]:
     # « Terminus » dans la phrase (« ba Malika »).
     attendu_corr_officiel = (
         "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
-        "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Dem Dikk, numero fukk ak "
+        "nga wàcc Gàddaay. Ci ginnaaw, jëlal bus bu Dem Dikk, numero fukk ak "
         "juróom benn A, moo lay yóbbu ba Malika. Walla, "
         "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
-        "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Dem Dikk, numero ñaari "
+        "nga wàcc Gàddaay. Ci ginnaaw, jëlal bus bu Dem Dikk, numero ñaari "
         "téeméer ak ñaar fukk, moo lay yóbbu ba Malika."
     )
     verifie(
@@ -1614,7 +1626,25 @@ def test_lieux() -> tuple[int, int]:
         "Av Hyacinthe Thiandoum (Grand-Yoff)": "Avenue Hyacinthe Thiandoum",
         "Palais 1": "Palais un",
         "30 & 42": "Trente et quarante-deux",
-        "Croisement Gadaye": "Croisement Gadaye",
+        # Prononciations validées par l'équipe (locuteur natif).
+        "Croisement Gadaye": "Croisement Gàddaay",
+        "Terminus 221 (Gadaye)": "Gàddaay",
+        "Terminus 56": "Terminus cinquante-six",
+        "Police 4em": "Police quatrième",
+        "National 1": "Nationale un",
+        "Vdn-Foire": "V D N Foire",
+        "Route Corniche de HLM Gd Médine": "Route Corniche de HLM Grand Médine",
+        "Css": "C S S",
+        "Direction Générale Ddd": "Direction Générale D D D",
+        "BCEAO": "Béséyaawoo",
+        "Enea": "Énéa",
+        "Ena": "Énaa",
+        "Ifan": "Ifan",
+        "Daf": "Daf",
+        "Hann Maristes": "Maristes",
+        "Reubeuss": "Prison Rebeus",
+        "Comico": "Cité Comico",
+        "Iho": "Hôpital Iho",
         # Jamais « Terminus » dans une phrase wolof (validé par l'équipe).
         "Malika Terminus": "Malika",
         "Icotaf Villa": "Icotaf Villa",
@@ -1668,7 +1698,7 @@ def test_lieux() -> tuple[int, int]:
     }
     attendu_phrase = (
         "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
-        "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Tata, numero fanweer ak "
+        "nga wàcc Gàddaay. Ci ginnaaw, jëlal bus bu Tata, numero fanweer ak "
         "juróom ñaar, moo lay yóbbu ba Malika."
     )
     verifie(
