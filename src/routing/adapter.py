@@ -24,6 +24,7 @@ from .router import (
     ResolvedPlace,
     RouteEngine,
     Trip,
+    direct_rank_key,
     keep_sensible_trips,
     rank_trips,
     remove_dominated_trips,
@@ -340,16 +341,10 @@ def _directs_comme_v1(trips: list[Trip], dep: dict, arr: dict) -> list[Trip]:
     ]
     seuil = max(note(trip) for trip in bus) - TOLERANCE
     gardes = keep_sensible_trips([trip for trip in bus if note(trip) >= seuil])
-    # Règle 1 de v1 : une ligne trouvée par le nom du lieu passe avant une ligne
-    # trouvée seulement par la position, puis la plus rapide.  Sinon le « Stade Amadou
-    # Barry », voisin de Guédiawaye, passait devant les arrêts qui portent ce nom.
-    def par_nom(trip: Trip) -> int:
-        leg = trip.legs[0]
-        return int(leg.board_stop in dep["par_son_nom"]) + int(
-            leg.alight_stop in arr["par_son_nom"]
-        )
-
-    classes = sorted(rank_trips(gardes), key=lambda trip: -par_nom(trip))
+    # Entre bus directs, le plus rapide (marche + bus) d'abord, tant qu'on monte à
+    # moins de 10 min à pied.  Le nom de l'arrêt ne prime plus : Dem Dikk 2 passait
+    # devant Tata 55 pour Sandaga -> Pikine parce qu'elle s'arrête à « Sandaga ».
+    classes = sorted(rank_trips(gardes), key=direct_rank_key)
     return remove_dominated_trips(classes, _NETWORK)
 
 

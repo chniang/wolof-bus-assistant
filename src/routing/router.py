@@ -180,6 +180,18 @@ def _rank_key(trip: Trip) -> tuple[float, float, float, int]:
     return trip.score, trip.total_minutes, distance, trip.transfers
 
 
+# Au-delà de cette marche jusqu'à l'arrêt de montée, un bus direct n'est plus
+# classé sur sa seule durée : il passe après ceux qui partent tout près.
+MAX_ACCESS_WALK_FOR_FASTEST_MINUTES = 10.0
+
+
+def direct_rank_key(trip: Trip) -> tuple[bool, float]:
+    """Entre bus directs : le plus rapide d'abord (marche + bus), si l'on monte près."""
+
+    access = sum(walk.minutes for walk in trip.walks if walk.kind == "access")
+    return access >= MAX_ACCESS_WALK_FOR_FASTEST_MINUTES, trip.total_minutes
+
+
 def rank_trips(trips: list[Trip], max_trips: int | None = None) -> list[Trip]:
     """Order trips by score, promoting a direct trip within 15 minutes.
 
@@ -211,6 +223,7 @@ def rank_trips(trips: list[Trip], max_trips: int | None = None) -> list[Trip]:
         if trip.transfers == 0
         and trip.score <= best_score + DIRECT_ALLOWANCE_MINUTES
     ]
+    direct.sort(key=direct_rank_key)
     direct_keys = {trip.line_combo for trip in direct}
     rest = [trip for trip in ordered if trip.line_combo not in direct_keys]
     ranked = direct + rest

@@ -208,6 +208,11 @@ def nom_lieu_parle(
     """
     texte = str(arret if arret is not None else "")
     texte = re.sub(r"\s*\([^)]*\)", "", texte)
+    # Jamais « Terminus » dans une phrase wolof : « ba Malika », pas « ba Malika
+    # Terminus » (validé par l'équipe).  Le mot seul reste, faute d'autre nom.
+    sans_terminus = re.sub(r"\bterminus\b", " ", texte, flags=re.IGNORECASE)
+    if sans_terminus.strip():
+        texte = sans_terminus
     texte = re.sub(r"\bAv\.?(?=\s|$)", "Avenue", texte, flags=re.IGNORECASE)
     texte = re.sub(r"\bBd\.?(?=\s|$)", "Boulevard", texte, flags=re.IGNORECASE)
     texte = MOTIF_ROMAIN.sub(
@@ -236,9 +241,15 @@ def nom_fichier_lieu(arret: object) -> str:
 
 
 def numero_de(ligne: object) -> int | None:
-    """Le numéro d'une ligne du CSV (« Ligne 12 » -> 12), None s'il n'y en a pas."""
-    trouve = re.search(r"\d+", str(ligne))
-    return int(trouve.group()) if trouve else None
+    """Le numéro d'une ligne du CSV (« Ligne 12 » -> 12), None s'il n'y en a pas.
+
+    Seulement « Ligne N » ou un nombre seul : « TAF TAF OUAKAM (TO1) » n'est pas la
+    ligne 1, et l'annoncer « numero benn » ferait prendre le mauvais bus.
+    """
+    trouve = re.fullmatch(
+        r"(?:ligne\s+)?(\d+)\s*[a-z]?", str(ligne).strip(), flags=re.IGNORECASE
+    )
+    return int(trouve.group(1)) if trouve else None
 
 
 def suffixe_de(ligne: object) -> str:

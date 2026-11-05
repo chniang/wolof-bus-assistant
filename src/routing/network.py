@@ -21,7 +21,15 @@ from .places import _GENERIC_TOKENS, normalize_name, terminus_forms
 from .traces import distances_sur_trace
 
 # Modeling constants.  They are deliberately simple and easy to tune.
-BUS_SPEED_M_PER_MIN = 333.0       # 20 km/h, sur de vraies longueurs de route
+# Vitesse commerciale, sur de vraies longueurs de route.  Sur le terrain, les bus
+# Dem Dikk roulent nettement plus vite que les Tata, qui s'arrêtent partout.
+SPEED_BY_COMPANY_M_PER_MIN = {
+    "Dakar Dem Dikk": 333.0,      # 20 km/h
+    "Tata AFTU": 250.0,           # 15 km/h
+}
+# La plus rapide : la recherche guidée s'en sert pour ne jamais surestimer le
+# temps restant.  Une compagnie inconnue roule à cette vitesse aussi.
+BUS_SPEED_M_PER_MIN = max(SPEED_BY_COMPANY_M_PER_MIN.values())
 FIXED_MINUTES_PER_SEGMENT = 3.0    # fallback when a stop has no coordinates
 # Une ligne réduite à ses deux terminus, dont l'un sans position, n'a aucun
 # arrêt pour borner la distance : Dem Dikk 11 (Keur Massar -> Lat Dior) coûtait
@@ -364,12 +372,14 @@ class Network:
     def _ride_estimate(
         distance: float | None,
         stops_on_line: int,
+        company: str = "",
     ) -> float:
         if distance is None:
             if stops_on_line == 2:
                 return UNKNOWN_TWO_STOP_RIDE_MINUTES
             return FIXED_MINUTES_PER_SEGMENT
-        return max(0.5, distance / BUS_SPEED_M_PER_MIN)
+        speed = SPEED_BY_COMPANY_M_PER_MIN.get(company, BUS_SPEED_M_PER_MIN)
+        return max(0.5, distance / speed)
 
     def _build_adjacency(self) -> dict[Node, list[Edge]]:
         adjacency: dict[Node, list[Edge]] = {
@@ -386,7 +396,9 @@ class Network:
                     source = Node(line.key, direction, index)
                     target = Node(line.key, direction, index + 1)
                     distance = distances[index]
-                    minutes = self._ride_estimate(distance, len(sequence))
+                    minutes = self._ride_estimate(
+                        distance, len(sequence), line.company
+                    )
                     adjacency[source].append(
                         Edge(
                             target=target,

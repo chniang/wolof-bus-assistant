@@ -1354,6 +1354,15 @@ def test_voix() -> tuple[int, int]:
         annoncees,
     )
 
+    # Une ligne dont le nom contient un chiffre n'est pas une ligne numérotée.
+    to1 = [{"compagnie": "Dakar Dem Dikk", "ligne": "TAF TAF OUAKAM (TO1)"}]
+    verifie(
+        "TAF TAF OUAKAM (TO1) n'est jamais annoncée comme la ligne 1",
+        "numero" not in phrase_reponse(to1)
+        and nom_cache_match(to1[0]) != "dakar_dem_dikk_1.wav",
+        (phrase_reponse(to1), nom_cache_match(to1[0])),
+    )
+
     suffixe = [{"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 15A"}]
     verifie(
         "suffixe de ligne (15A) dit et fichier distinct",
@@ -1390,12 +1399,32 @@ def test_voix() -> tuple[int, int]:
     attendu_corr = (
         "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
         "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Tata, numero fanweer ak "
-        "juróom ñaar, moo lay yóbbu ba Malika Terminus. Walla, "
+        "juróom ñaar, moo lay yóbbu ba Malika. Walla, "
         "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
         "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Tata, numero juróom ñaar "
         "fukk ak juróom ñeent, moo lay yóbbu ba Malika."
     )
-    verifie("voix 2 changements", phrase_corr == attendu_corr, phrase_corr)
+    # Moteur v2, itinéraires officiels de Dem Dikk (221 + 16A, 221 + 220).  Wolof
+    # validé par l'équipe : « fukk ak juróom benn A », « Walla », et jamais
+    # « Terminus » dans la phrase (« ba Malika »).
+    attendu_corr_officiel = (
+        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
+        "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Dem Dikk, numero fukk ak "
+        "juróom benn A, moo lay yóbbu ba Malika. Walla, "
+        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
+        "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Dem Dikk, numero ñaari "
+        "téeméer ak ñaar fukk, moo lay yóbbu ba Malika."
+    )
+    verifie(
+        "voix 2 changements",
+        phrase_corr in {attendu_corr, attendu_corr_officiel},
+        phrase_corr,
+    )
+    verifie(
+        "jamais « Terminus » dans une phrase wolof",
+        "Terminus" not in phrase_corr,
+        phrase_corr,
+    )
     audio_corr = voix_correspondances_depuis_cache(corr)
     verifie(
         "audio 2 changements (segments manquants sautés)",
@@ -1515,7 +1544,8 @@ def test_lieux() -> tuple[int, int]:
         "Palais 1": "Palais un",
         "30 & 42": "Trente et quarante-deux",
         "Croisement Gadaye": "Croisement Gadaye",
-        "Malika Terminus": "Malika Terminus",
+        # Jamais « Terminus » dans une phrase wolof (validé par l'équipe).
+        "Malika Terminus": "Malika",
         "Icotaf Villa": "Icotaf Villa",
         "Véto": "Véto",
         "Village VI": "Village six",
