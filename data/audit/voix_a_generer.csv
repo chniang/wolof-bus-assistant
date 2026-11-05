@@ -1,4 +1,12 @@
 type,texte_a_prononcer,fichier_wav,utilise_par
+conversation,Ba beneen yoon !,conversation_au_revoir.wav,conversation : au_revoir
+conversation,"Baal ma, bus yi rekk laa xam. Wax ma fan nga nekk ak fan nga bëgga dem.",conversation_hors_sujet.wav,conversation : hors_sujet
+conversation,Cheikh Niang moo ma defar.,conversation_createur.wav,conversation : createur
+conversation,"Maa ngi fi rekk, jërëjëf. Yaw nag ? Fan nga bëgga dem ?",conversation_ca_va.wav,conversation : ca_va
+conversation,Maa ngi tudd GuindiMa. Damay won nit ñi bus bi ñuy jël ci Ndakaaru.,conversation_role.wav,conversation : role
+conversation,Maalekum salaam ! Fan nga bëgga dem ?,conversation_salutation.wav,conversation : salutation
+conversation,"Wax ma fan nga nekk ak fan nga bëgga dem, ma won la bus bi nga wara jël.",conversation_capacites.wav,conversation : capacites
+conversation,"Ñoo ko bokk ! Soo ma soxlaa, maa ngi lay déglu.",conversation_merci.wav,conversation : merci
 ligne,"Jëlal bus bu Dem Dikk, TAF TAF Wakaam.",dakar_dem_dikk_taf_taf_ouakam_to1.wav,Dakar Dem Dikk TAF TAF OUAKAM (TO1)
 ligne,"Jëlal bus bu Dem Dikk, numero fukk ak juróom.",dakar_dem_dikk_15.wav,Dakar Dem Dikk Ligne 15
 ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñaar.",dakar_dem_dikk_502.wav,Dakar Dem Dikk Ligne 502
@@ -37,7 +45,7 @@ arret,C E S Canada,lieu_c_e_s_canada.wav,Ces Canada
 arret,C S S,lieu_c_s_s.wav,Css
 arret,CAPA Virmaud,lieu_capa_virmaud.wav,CAPA Virmaud
 arret,Camp Penal,lieu_camp_penal.wav,Camp Penal
-arret,Carrefour HLM Grand Medine/diamalaye,lieu_carrefour_hlm_grand_medine_diamalaye.wav,Carrefour HLM Gd Medine/diamalaye
+arret,Carrefour HLM Grand Médine Diamalaye,lieu_carrefour_hlm_grand_medine_diamalaye.wav,Carrefour HLM Gd Medine/diamalaye
 arret,Case,lieu_case.wav,Case
 arret,Case Bi,lieu_case_bi.wav,Case Bi
 arret,Case Pa,lieu_case_pa.wav,Case Pa

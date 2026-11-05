@@ -24,6 +24,7 @@ from pathlib import Path
 RACINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RACINE / "src"))
 
+from intent.conversation import TOUTES as CONVERSATION
 from matching.lieux import joli
 from routing.adapter import _NETWORK
 from tts.speak import (
@@ -74,6 +75,14 @@ def main() -> int:
         if affiche not in noms:
             noms.append(affiche)
 
+    # Les réponses de petite conversation (phrases validées par l'équipe).
+    for intention in CONVERSATION:
+        if not _present(intention.fichier):
+            a_generer.setdefault(
+                intention.fichier,
+                ("conversation", intention.reponse, [f"conversation : {intention.nom}"]),
+            )
+
     MANQUANTES.parent.mkdir(parents=True, exist_ok=True)
     with MANQUANTES.open("w", encoding="utf-8", newline="") as sortie:
         ecrivain = csv.DictWriter(sortie, fieldnames=("type", "nom", "dit", "fichier"))
@@ -87,7 +96,11 @@ def main() -> int:
         )
         ecrivain.writeheader()
         for fichier, (genre, texte, noms) in sorted(
-            a_generer.items(), key=lambda item: (item[1][0] != "ligne", item[1][1])
+            a_generer.items(),
+            key=lambda item: (
+                ("conversation", "ligne", "arret").index(item[1][0]),
+                item[1][1],
+            ),
         ):
             ecrivain.writerow(
                 {
@@ -98,11 +111,14 @@ def main() -> int:
                 }
             )
 
-    nb_lignes = sum(1 for genre, _, _ in a_generer.values() if genre == "ligne")
+    compte = {
+        genre: sum(1 for g, _, _ in a_generer.values() if g == genre)
+        for genre in ("conversation", "ligne", "arret")
+    }
     print(
         f"Noms affichés sans audio : {len(manquantes)}\n"
-        f"Audios à générer : {len(a_generer)} ({nb_lignes} lignes, "
-        f"{len(a_generer) - nb_lignes} arrêts)\n"
+        f"Audios à générer : {len(a_generer)} ({compte['conversation']} conversation, "
+        f"{compte['ligne']} lignes, {compte['arret']} arrêts)\n"
         f"Listes : {MANQUANTES} ; {A_GENERER}"
     )
     return 0

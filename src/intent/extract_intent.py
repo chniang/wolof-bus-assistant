@@ -555,7 +555,9 @@ _CIBLES_EXACTES |= {cible for cible, _ in _CIBLES_COMPLETES}
 # un ne peut pas viser un lieu, quelle que soit sa longueur. « baobab » (quartier
 # « Sicap Baobab ») se rapprochait tour à tour de « Banoba » (unigramme, 0,83) et
 # de « SICAP Mbao » (« sicap baobab », 0,86) : on préfère ne rien deviner.
-MOTS_HORS_LIEUX = {"baobab"}
+# « faire » ressemble à « Foire » : « qu'est-ce que tu peux faire » n'est pas un
+# trajet vers la Foire.
+MOTS_HORS_LIEUX = {"baobab", "faire"}
 # Chiffres dits et leurs graphies ASR : un chiffre n'est JAMAIS un lieu. Après
 # « liberté »/« palais » il est converti en chiffre arabe ; isolé, il est ignoré
 # (sinon « siis » se ferait passer pour l'arrêt « SIPS »).

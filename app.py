@@ -67,6 +67,9 @@ from matching.compagnie import message_autre_compagnie  # noqa: E402
 from matching.geo import arrets_non_fiables  # noqa: E402
 from matching.lieux import AVANT_NUMERO, FAUX_AMIS, joli, sans_accents  # noqa: E402
 from matching.stops_matcher import StopsMatcher  # noqa: E402
+from intent.conversation import HORS_SUJET, Intention  # noqa: E402
+from intent.conversation import detecter as detecter_conversation  # noqa: E402
+from tts.speak import voix_conversation  # noqa: E402
 from tts.speak import (  # noqa: E402
     MAX_POSSIBILITES,
     nombre_en_wolof,
@@ -426,6 +429,9 @@ def _phrase_donne_un_trajet(phrase: str) -> bool:
     if not phrase or phrase.startswith(ERREUR_ASR):
         return False
     local = extract_local(phrase)
+    if not (local.get("depart") or local.get("arrivee")) and detecter_conversation(phrase):
+        # « Salam » est compris : inutile de re-transcrire avec l'autre modèle.
+        return True
     if not (local.get("depart") and local.get("arrivee")):
         return False
     essai = MATCHER.find_line(local["depart"], local["arrivee"])
@@ -458,6 +464,11 @@ def _voix_wolof(
         # correspondance, avec un bus et un lieu de plus. Aucune synthèse en
         # direct ; si un segment manque, la réponse reste silencieuse.
         octets = voix_trajets_2_depuis_cache(trajets_2)
+    return _ecrire_voix(octets)
+
+
+def _ecrire_voix(octets: bytes | None) -> str | None:
+    """Écrit l'audio d'une réponse et rend son chemin, ou None sans audio."""
     if octets is None:
         print("[voix] aucun segment disponible, réponse laissée sans voix", flush=True)
         return None
@@ -465,6 +476,20 @@ def _voix_wolof(
     chemin = DOSSIER_VOIX / f"reponse_{next(_COMPTEUR)}.wav"
     chemin.write_bytes(octets)
     return str(chemin)
+
+
+def _reponse_conversation(
+    phrase: str, intention: Intention, modele_asr: str, duree_asr: float
+) -> tuple:
+    """Une réponse de petite conversation : la phrase wolof, à l'écran et à voix haute."""
+    _journal(modele_asr, duree_asr, 0, f"conversation_{intention.nom}")
+    return (
+        phrase,
+        "",
+        f"### 💬 {_echapper(intention.reponse)}",
+        _ecrire_voix(voix_conversation(intention.fichier)),
+        _mention({}, modele_asr),
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -1155,6 +1180,12 @@ def _pipeline(
     # ne se trompe pas de numéro (le LLM a déjà rendu « liberti sënk » en
     # Liberté 6). Le LLM ne sert que si elle ne trouve pas un trajet complet.
     local = extract_local(phrase)
+    # Petite conversation seulement sans aucun lieu : une demande de trajet gagne
+    # toujours (« salam, dama bëgga dem Médina » est un trajet).
+    if not local.get("depart") and not local.get("arrivee"):
+        intention = detecter_conversation(phrase)
+        if intention is not None:
+            return _reponse_conversation(phrase, intention, modele_asr, duree_asr), True
     intent = None
     if local.get("depart") and local.get("arrivee"):
         essai = MATCHER.find_line(local["depart"], local["arrivee"])
@@ -1164,6 +1195,10 @@ def _pipeline(
         intent = extract_intent(phrase, client=_client_llm())
     depart, arrivee = intent.get("depart") or "", intent.get("arrivee") or ""
 
+    if not depart and not arrivee:
+        # Rien compris : ni lieu, ni petite conversation.
+        quint = _reponse_conversation(phrase, HORS_SUJET, modele_asr, duree_asr)
+        return quint[:4] + (_mention(intent, modele_asr),), False
     if not depart or not arrivee:
         _journal(modele_asr, duree_asr, 0, "lieu_manquant")
         return (phrase, "", _carte({}, depart, arrivee), None, _mention(intent, modele_asr)), False

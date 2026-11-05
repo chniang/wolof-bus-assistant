@@ -256,6 +256,7 @@ NOMS_DITS = {
     "Reubeuss": "Prison Rebeus",
     "Comico": "Cité Comico",
     "Iho": "Hôpital Iho",
+    "Carrefour HLM Grand Medine/diamalaye": "Carrefour HLM Grand Médine Diamalaye",
 }
 
 # Un nom dit dont l'audio existant porte un autre nom de fichier.
@@ -554,6 +555,15 @@ def chemin_audio(dossier: Path, nom: str) -> Path:
         return principal
     ajout = CACHE_AJOUTS / nom
     return ajout if ajout.is_file() else principal
+
+
+def voix_conversation(fichier: str, cache_dir: Path | None = None) -> bytes | None:
+    """L'audio d'une réponse de conversation, ou None s'il n'est pas encore généré."""
+    chemin = chemin_audio(cache_dir or CACHE_DIR, fichier)
+    if not chemin.is_file():
+        _segment_manquant(fichier)
+        return None
+    return assembler([chemin])
 
 
 def _segment_manquant(nom: str) -> None:

@@ -983,6 +983,163 @@ def test_moteur_v2() -> tuple[int, int]:
     return echecs, total
 
 
+def test_conversation() -> tuple[int, int]:
+    """Petite conversation : les 8 phrases validées, et un trajet gagne toujours.
+
+    Les phrases de réponse sont celles validées par un locuteur natif : elles sont
+    recopiées ici pour qu'aucune modification ne passe inaperçue.
+    """
+    import contextlib
+    import csv
+    import io
+    import json
+    import re
+    import tempfile
+
+    import tts.speak as speak
+    from intent.conversation import HORS_SUJET, INTENTIONS, detecter
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | conversation {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    reponses = {
+        "salutation": "Maalekum salaam ! Fan nga bëgga dem ?",
+        "ca_va": "Maa ngi fi rekk, jërëjëf. Yaw nag ? Fan nga bëgga dem ?",
+        "merci": "Ñoo ko bokk ! Soo ma soxlaa, maa ngi lay déglu.",
+        "role": "Maa ngi tudd GuindiMa. Damay won nit ñi bus bi ñuy jël ci Ndakaaru.",
+        "createur": "Cheikh Niang moo ma defar.",
+        "capacites": "Wax ma fan nga nekk ak fan nga bëgga dem, ma won la bus bi nga wara jël.",
+        "au_revoir": "Ba beneen yoon !",
+        "hors_sujet": "Baal ma, bus yi rekk laa xam. Wax ma fan nga nekk ak fan nga bëgga dem.",
+    }
+    obtenues = {i.nom: i.reponse for i in INTENTIONS + (HORS_SUJET,)}
+    verifie("les 8 phrases validées, mot pour mot", obtenues == reponses, obtenues)
+
+    exemples = {
+        "salutation": ["salam", "Salamaleykoum", "asalaa maalekum", "Bonjour", "salut", "hello"],
+        "ca_va": ["nanga def", "na nga def", "naka nga def", "naka waa", "ça va ?", "comment tu vas", "nangadef"],
+        "merci": ["jërëjëf", "jerejef", "jaajëf", "merci", "dieuredieuf"],
+        "role": ["kan nga", "lan ngay def", "qui es-tu", "tu fais quoi", "c'est quoi ton rôle"],
+        "createur": ["kan moo la defar", "kan moo la sos", "qui t'a créé", "qui t'a fait"],
+        "capacites": ["lan nga mëna def", "qu'est-ce que tu peux faire"],
+        "au_revoir": ["ba beneen", "ba beneen yoon", "au revoir", "bye"],
+    }
+    for nom, phrases in exemples.items():
+        for phrase in phrases:
+            trouve = detecter(phrase)
+            verifie(f"{phrase!r} -> {nom}", trouve is not None and trouve.nom == nom, trouve and trouve.nom)
+    verifie("« quel temps fait-il » : aucune petite conversation", detecter("quel temps fait-il") is None)
+    verifie("« qu'est-ce que tu peux faire » n'est pas un trajet vers la Foire",
+            not extract_local_sans_lieu("qu'est-ce que tu peux faire"))
+
+    app = _charger_module(RACINE / "app.py", "app_guindima_conversation")
+    with contextlib.redirect_stdout(io.StringIO()):
+        salam, salam_ok = app._pipeline("salam", "", 0.0)
+        mixte, _ = app._pipeline("salam, maa ngi Ouakam dama bëgg dem Médina", "", 0.0)
+        mixte_arrivee, _ = app._pipeline("salam, dama bëgga dem Médina", "", 0.0)
+        hors, hors_ok = app._pipeline("quel temps fait-il", "", 0.0)
+    verifie(
+        "« salam » : la salutation à l'écran",
+        salam_ok and reponses["salutation"] in salam[2],
+        salam[2],
+    )
+    verifie(
+        "salutation + trajet : le trajet gagne",
+        "Maalekum" not in mixte[2] and "Ouakam" in mixte[1] and "Médina" in mixte[1],
+        (mixte[1], mixte[2][:120]),
+    )
+    verifie(
+        "« salam, dama bëgga dem Médina » : un trajet, jamais la salutation",
+        "Maalekum" not in mixte_arrivee[2],
+        mixte_arrivee[2][:120],
+    )
+    verifie(
+        "hors sujet : la phrase « bus yi rekk laa xam »",
+        not hors_ok and reponses["hors_sujet"] in hors[2],
+        hors[2],
+    )
+    verifie("« salam » compris : pas de seconde transcription", app._phrase_donne_un_trajet("salam"))
+
+    # La voix vient de data/tts_cache_ajouts/ quand l'audio y est.
+    ancien = speak.CACHE_AJOUTS
+    with tempfile.TemporaryDirectory() as dossier:
+        speak.CACHE_AJOUTS = Path(dossier)
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                absent = speak.voix_conversation("conversation_salutation.wav")
+            (Path(dossier) / "conversation_salutation.wav").write_bytes(
+                (speak.CACHE_DIR / "aucune_ligne.wav").read_bytes()
+            )
+            present = speak.voix_conversation("conversation_salutation.wav")
+        finally:
+            speak.CACHE_AJOUTS = ancien
+    verifie(
+        "voix de conversation lue depuis data/tts_cache_ajouts/",
+        absent is None and present is not None and present.startswith(b"RIFF"),
+    )
+
+    with (RACINE / "data" / "audit" / "voix_a_generer.csv").open(encoding="utf-8") as fichier:
+        liste = list(csv.DictReader(fichier))
+    conversation = {r["fichier_wav"]: r["texte_a_prononcer"] for r in liste if r["type"] == "conversation"}
+    verifie(
+        "les 8 phrases sont dans la liste des audios à générer",
+        conversation == {i.fichier: i.reponse for i in INTENTIONS + (HORS_SUJET,)},
+        conversation,
+    )
+
+    # Notebook des audios manquants : à jour, mêmes réglages, aucun secret écrit.
+    chemin_nb = RACINE / "notebooks" / "voix_ajouts_colab.ipynb"
+    notebook = json.loads(chemin_nb.read_text(encoding="utf-8"))
+    sources = ["".join(c["source"]) for c in notebook["cells"] if c["cell_type"] == "code"]
+    plan = next(s for s in sources if s.startswith("PLAN = "))
+    portee: dict = {}
+    exec(plan, portee)
+    verifie(
+        "notebook : exactement les audios de voix_a_generer.csv",
+        [(p["fichier"], p["phrase"]) for p in portee["PHRASES"]]
+        == [(r["fichier_wav"], r["texte_a_prononcer"]) for r in liste],
+        len(portee["PHRASES"]),
+    )
+    origine = json.loads((RACINE / "notebooks" / "voix_oolel_colab.ipynb").read_text(encoding="utf-8"))
+    generation = "".join(origine["cells"][7]["source"])
+    verifie(
+        "notebook : génération identique aux 637 (mêmes paramètres, reprise)",
+        generation in sources and portee["GRAINE"] == 1234,
+    )
+    tout = "\n".join(sources)
+    verifie(
+        "notebook : jeton lu dans les secrets Colab, jamais écrit",
+        "userdata.get(\"HF_TOKEN\")" in tout and not re.search(r"hf_[A-Za-z0-9]{20,}", tout),
+    )
+    verifie(
+        "notebook : écrit dans Drive guindima_ajouts/tts_cache_ajouts",
+        "/content/drive/MyDrive/guindima_ajouts" in tout and "tts_cache_ajouts" in tout,
+    )
+    for numero, source in enumerate(sources):
+        lignes = [ligne for ligne in source.splitlines() if not ligne.lstrip().startswith("!")]
+        try:
+            compile("\n".join(lignes), f"cellule {numero}", "exec")
+        except SyntaxError as exc:
+            verifie(f"notebook : cellule {numero} valide", False, exc)
+    return echecs, total
+
+
+def extract_local_sans_lieu(phrase: str) -> bool:
+    """Vrai si l'extraction locale trouve un lieu dans la phrase."""
+    from intent.extract_intent import extract_local
+
+    lieux = extract_local(phrase)
+    return bool(lieux.get("depart") or lieux.get("arrivee"))
+
+
 def test_trajets_frequents() -> tuple[int, int]:
     """Chaque choix de l'onglet « Écrire » mène vraiment à un bus.
 
@@ -2803,7 +2960,9 @@ def test_micro_vidage() -> tuple[int, int]:
             sortie,
         )
 
-        sortie = app.repondre_et_vider_micro(None, "Bonjour", "")
+        # « Bonjour » est désormais une salutation (petite conversation) : une
+        # phrase sans trajet complet, c'est une arrivée sans départ.
+        sortie = app.repondre_et_vider_micro(None, "dama bëgg dem Palais", "")
         verifie(
             "aucun trajet : micro vidé, explication affichée",
             sortie[5] is None
@@ -3032,6 +3191,7 @@ if __name__ == "__main__":
         echecs_generiques, total_generiques = test_mots_generiques()
         echecs_distance, total_distance = test_distance_courte()
         echecs_sahm, total_sahm = test_sahm_ligne_62()
+        echecs_conversation, total_conversation = test_conversation()
         echecs_moteur, total_moteur = test_moteur_v2()
         echecs_frequents, total_frequents = test_trajets_frequents()
         echecs_interface, total_interface = test_interface_micro()
@@ -3047,6 +3207,7 @@ if __name__ == "__main__":
             + echecs_generiques
             + echecs_distance
             + echecs_sahm
+            + echecs_conversation
             + echecs_moteur
             + echecs_frequents
             + echecs_interface
@@ -3063,6 +3224,7 @@ if __name__ == "__main__":
             + total_generiques
             + total_distance
             + total_sahm
+            + total_conversation
             + total_moteur
             + total_frequents
             + total_interface
