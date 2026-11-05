@@ -52,6 +52,9 @@ MAX_TRIPS = 4
 _DATA = load_data()
 _NETWORK = Network.from_data(_DATA)
 _ENGINE = RouteEngine(_NETWORK, PlaceIndex.from_data(_DATA))
+# Le graphe se construit ici, au démarrage (5 s) : sinon, c'est le premier usager
+# qui attend.  app.py importe ce module au lancement.
+_NETWORK.adjacency
 
 # La catégorie (« Express », « Urbain »…) ne sert qu'à l'affichage : le moteur
 # v2 ne la garde pas dans ses objets Line.
@@ -479,6 +482,8 @@ class MoteurV2:
 
     def __init__(self, repli) -> None:
         self._repli = repli
+        # Calculé une fois pour toutes, avant la première requête.
+        _arrets_surs(repli)
 
     def __getattr__(self, nom: str):
         return getattr(self._repli, nom)

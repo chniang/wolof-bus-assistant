@@ -16,7 +16,6 @@ from typing import Callable
 
 from .network import (
     BUS_SPEED_M_PER_MIN,
-    TRANSFER_PENALTY_MIN,
     WALK_SPEED_M_PER_MIN,
     Edge,
     LineKey,
@@ -53,17 +52,12 @@ MAX_WALK_ONLY_MINUTES = 40.0
 # alternative.  This also catches routes with missing coordinates that
 # escape the distance-based detour check.
 MAX_TIME_VS_BEST = 3.0
+# Un rapport ne veut rien dire sur un trajet très court : à côté d'une ligne à 2 min,
+# Tata 62 (10 min, Sahm -> Colobane) passait pour absurdement lent.
+MIN_TIME_MARGIN_MINUTES = 20.0
 # La recherche s'arrête quand plus rien ne peut approcher le meilleur trajet trouvé :
 # au-delà, un trajet serait écarté ou jamais affiché.
 MAX_SCORE_ABOVE_BEST = 30.0
-# Détour minimal de la route par rapport au vol d'oiseau, pour le plancher de durée.
-STRAIGHT_LINE_ROAD_FACTOR = 1.25
-# Plafond d'un trajet en bus : max(10, vol d'oiseau * 1,6 / vitesse + 5).  Additionner
-# des positions fausses gonfle la durée : Pont de Colobane, interpolé à 10 km de sa
-# place, ajoutait 75 min aux 157 min de Tata 54 (Keur Massar -> UCAD).
-RIDE_CAP_MIN_MINUTES = 10.0
-RIDE_CAP_ROAD_FACTOR = 1.6
-RIDE_CAP_EXTRA_MINUTES = 5.0
 
 
 def walking_minutes(
@@ -153,11 +147,6 @@ class Trip:
     via_downtown: bool
     ridden_stops: tuple[str, ...]
     estimated: bool = False
-    # Durée plafonnée, avant le plancher.  Le plancher met à égalité tous les
-    # trajets courts : c'est elle qui les départage et qui borne la recherche.
-    raw_minutes: float = 0.0
-    # Durée sans le plafond, pour la seule comparaison avec la marche (find_trips).
-    uncapped_minutes: float = 0.0
 
     @property
     def walked_minutes(self) -> float:
@@ -182,13 +171,13 @@ class AccessPoint:
     walk: Walk
 
 
-def _rank_key(trip: Trip) -> tuple[float, float, float, float, int]:
+def _rank_key(trip: Trip) -> tuple[float, float, float, int]:
     distance = (
         trip.total_distance_m
         if trip.total_distance_m is not None
         else float("inf")
     )
-    return trip.score, trip.raw_minutes, trip.total_minutes, distance, trip.transfers
+    return trip.score, trip.total_minutes, distance, trip.transfers
 
 
 def rank_trips(trips: list[Trip], max_trips: int | None = None) -> list[Trip]:
@@ -228,6 +217,10 @@ def rank_trips(trips: list[Trip], max_trips: int | None = None) -> list[Trip]:
     return ranked if max_trips is None else ranked[:max_trips]
 
 
+def _slowest_sensible(fastest: float) -> float:
+    return max(fastest * MAX_TIME_VS_BEST, fastest + MIN_TIME_MARGIN_MINUTES)
+
+
 def keep_sensible_trips(trips: list[Trip]) -> list[Trip]:
     """Écarte les détours par le centre et les trajets absurdement lents."""
 
@@ -240,12 +233,8 @@ def keep_sensible_trips(trips: list[Trip]) -> list[Trip]:
     # Do not offer an absurdly slow "alternative" just because it has
     # fewer transfers.  If every remaining trip is slow, keep them.
     if trips:
-        fastest = min(trip.total_minutes for trip in trips)
-        sane = [
-            trip
-            for trip in trips
-            if trip.total_minutes <= fastest * MAX_TIME_VS_BEST
-        ]
+        limit = _slowest_sensible(min(trip.total_minutes for trip in trips))
+        sane = [trip for trip in trips if trip.total_minutes <= limit]
         if sane:
             trips = sane
     return trips
@@ -327,10 +316,6 @@ class _Label:
     combo: tuple[LineKey, ...]
     steps: tuple[_Step, ...]
     rode_since_transfer: bool
-    # Le bus en cours : d'où il part, et son temps cumulé avant plafond.
-    leg_board_stop: str = ""
-    leg_start_cost: float = 0.0
-    leg_raw_minutes: float = 0.0
 
 
 class RouteEngine:
@@ -691,11 +676,8 @@ class RouteEngine:
         )
 
         if walk_trip is not None:
-            # Sans le plafond : il ne sait pas distinguer une position fausse d'un
-            # vrai détour.  Un bus qui fait 10 km pour relier deux lieux à 1 km ne
-            # doit pas battre la marche.  Le trajet à pied s'ajoute, le bus reste.
             fastest_bus = min(
-                (trip.uncapped_minutes for trip in trips), default=None
+                (trip.total_minutes for trip in trips), default=None
             )
             if fastest_bus is None or walk_trip.total_minutes < fastest_bus:
                 result = [walk_trip] + result
@@ -851,12 +833,7 @@ class RouteEngine:
 
             # Queue order is score order, so this lower bound is final.
             if len(accepted) >= max_trips:
-                # La durée brute, pas le total : un plancher élevé rendrait la
-                # borne inutile (26 s et 250 000 expansions pour Keur Massar -> UCAD).
-                worst_score = max(
-                    trip.raw_minutes + TRANSFER_SCORE_MINUTES * trip.transfers
-                    for trip in accepted
-                )
+                worst_score = max(trip.score for trip in accepted)
                 if score_so_far >= worst_score:
                     break
 
@@ -873,10 +850,7 @@ class RouteEngine:
                     origin_is_downtown=origin_is_downtown,
                     destination_is_downtown=destination_is_downtown,
                 )
-                best_score = min(
-                    best_score,
-                    trip.raw_minutes + TRANSFER_SCORE_MINUTES * trip.transfers,
-                )
+                best_score = min(best_score, trip.score)
                 current = recorded.get(trip.line_combo)
                 if current is None or self._trip_rank(trip) < self._trip_rank(current):
                     recorded[trip.line_combo] = trip
@@ -916,16 +890,15 @@ class RouteEngine:
     @staticmethod
     def _trip_rank(
         trip: Trip,
-    ) -> tuple[bool, bool, float, int, float, float, float]:
+    ) -> tuple[bool, bool, float, int, float, float]:
         # Prefer a clean trip over a detour, and a non-downtown trip over a
         # downtown shortcut, even if the clean version is slightly slower.
-        score, raw, minutes, distance, transfers = _rank_key(trip)
+        score, minutes, distance, transfers = _rank_key(trip)
         return (
             trip.detour,
             trip.via_downtown,
             score,
             transfers,
-            raw,
             minutes,
             distance,
         )
@@ -940,11 +913,11 @@ class RouteEngine:
 
         if not unique:
             return []
-        fastest = min(trip.total_minutes for trip in unique.values())
+        limit = _slowest_sensible(
+            min(trip.total_minutes for trip in unique.values())
+        )
         reasonable = [
-            trip
-            for trip in unique.values()
-            if trip.total_minutes <= fastest * MAX_TIME_VS_BEST
+            trip for trip in unique.values() if trip.total_minutes <= limit
         ]
         return rank_trips(reasonable, max_trips)
 
@@ -988,34 +961,9 @@ class RouteEngine:
             ),
         )
 
-    def _ride_cap(self, board_stop: str, alight_stop: str) -> float | None:
-        """La durée maximale d'un bus entre deux arrêts, si leurs positions sont connues."""
-
-        board = self.network.coords(board_stop)
-        alight = self.network.coords(alight_stop)
-        if board is None or alight is None:
-            return None
-        return max(
-            RIDE_CAP_MIN_MINUTES,
-            haversine_m(board, alight) * RIDE_CAP_ROAD_FACTOR / BUS_SPEED_M_PER_MIN
-            + RIDE_CAP_EXTRA_MINUTES,
-        )
-
     def _advance_ride(self, label: _Label, edge: Edge) -> _Label:
         from_stop = self.network.stop_for(label.node)
         to_stop = self.network.stop_for(edge.target)
-        if label.rode_since_transfer:
-            board_stop = label.leg_board_stop
-            start_cost = label.leg_start_cost
-            leg_raw = label.leg_raw_minutes + edge.minutes
-        else:
-            board_stop, start_cost, leg_raw = from_stop, label.cost, edge.minutes
-        # La recherche compte déjà le temps plafonné : sinon la borne d'arrêt
-        # écarterait une ligne avant de voir sa vraie durée.  Le coût reste
-        # croissant, même quand le bus se rapproche de son point de départ.
-        cap = self._ride_cap(board_stop, to_stop)
-        leg_minutes = leg_raw if cap is None else min(leg_raw, cap)
-        cost = max(label.cost, start_cost + leg_minutes)
         step = _Step(
             kind="ride",
             from_stop=from_stop,
@@ -1031,13 +979,10 @@ class RouteEngine:
         return _Label(
             node=edge.target,
             transfers=label.transfers,
-            cost=cost,
+            cost=label.cost + edge.minutes,
             combo=label.combo,
             steps=label.steps + (step,),
             rode_since_transfer=True,
-            leg_board_stop=board_stop,
-            leg_start_cost=start_cost,
-            leg_raw_minutes=leg_raw,
         )
 
     def _advance_transfer(self, label: _Label, edge: Edge) -> _Label:
@@ -1099,20 +1044,14 @@ class RouteEngine:
         ridden_stops: list[str] = []
         current: dict | None = None
         minimum_leg_extra = 0.0
-        uncapped_leg_extra = 0.0
 
         def finish_leg() -> None:
-            nonlocal current, minimum_leg_extra, uncapped_leg_extra
+            nonlocal current, minimum_leg_extra
             if current is None:
                 return
             line = self.network.lines[current["line"]]
-            cap = self._ride_cap(current["board_stop"], current["alight_stop"])
-            capped = cap is not None and current["minutes"] > cap
-            billed_minutes = max(
-                MIN_LEG_MINUTES, cap if capped else current["minutes"]
-            )
+            billed_minutes = max(MIN_LEG_MINUTES, current["minutes"])
             minimum_leg_extra += billed_minutes - current["minutes"]
-            uncapped_leg_extra += max(0.0, MIN_LEG_MINUTES - current["minutes"])
             legs.append(
                 Leg(
                     operator=line.company,
@@ -1125,7 +1064,7 @@ class RouteEngine:
                     ),
                     minutes=billed_minutes,
                     distance_m=current["distance"],
-                    estimated=current["estimated"] or capped,
+                    estimated=current["estimated"],
                 )
             )
             current = None
@@ -1206,8 +1145,6 @@ class RouteEngine:
         finish_leg()
 
         total_minutes = sum(step.minutes for step in steps) + minimum_leg_extra
-        raw_minutes = total_minutes
-        uncapped_minutes = sum(step.minutes for step in steps) + uncapped_leg_extra
 
         total_distance: float | None = 0.0
         for step in steps:
@@ -1222,14 +1159,6 @@ class RouteEngine:
         straight_line: float | None = None
         if origin_coords is not None and destination_coords is not None:
             straight_line = haversine_m(origin_coords, destination_coords)
-            # Pas de téléportation : quelles que soient les données d'une ligne,
-            # un bus ne couvre pas la distance réelle plus vite que le trafic.
-            # Keur Massar -> UCAD affichait 25 min par Dem Dikk 11, à 18 km.
-            total_minutes = max(
-                total_minutes,
-                straight_line * STRAIGHT_LINE_ROAD_FACTOR / BUS_SPEED_M_PER_MIN
-                + TRANSFER_PENALTY_MIN * label.transfers,
-            )
 
         detour = bool(
             total_distance is not None
@@ -1256,8 +1185,6 @@ class RouteEngine:
             via_downtown=via_downtown,
             ridden_stops=tuple(ridden_stops),
             estimated=any(leg.estimated for leg in legs),
-            raw_minutes=raw_minutes,
-            uncapped_minutes=uncapped_minutes,
         )
 
     def _passes_downtown(

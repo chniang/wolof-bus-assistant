@@ -146,7 +146,13 @@ def distances_sur_trace(
 
     segments: list[float | None] = [None] * (len(positions) - 1)
     for gauche, droite in zip(retenus, retenus[1:]):
-        part = (abscisses[droite] - abscisses[gauche]) / (droite - gauche)
+        # Une route n'est jamais plus courte que la ligne droite : Tata 37 mesurait
+        # 2 km entre VDN et Malika Terminus, pourtant distants de 5,8 km.
+        longueur_route = max(
+            abscisses[droite] - abscisses[gauche],
+            distance_m(positions[gauche], positions[droite]),
+        )
+        part = longueur_route / (droite - gauche)
         for i in range(gauche, droite):
             segments[i] = part
     return tuple(segments)

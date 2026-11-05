@@ -15,6 +15,7 @@ import math
 import random
 import statistics
 import sys
+import time
 from pathlib import Path
 
 RACINE = Path(__file__).resolve().parents[1]
@@ -266,10 +267,14 @@ def main() -> int:
         for origine, destination in PAIRES_FIXES
     ]
 
-    resultats = [
-        evaluer_paire(engine, origine, destination, coords, type_paire)
-        for type_paire, origine, destination in paires
-    ]
+    resultats = []
+    durees: list[tuple[float, str, str]] = []
+    for type_paire, origine, destination in paires:
+        debut = time.perf_counter()
+        resultats.append(
+            evaluer_paire(engine, origine, destination, coords, type_paire)
+        )
+        durees.append((time.perf_counter() - debut, origine, destination))
 
     SORTIE.parent.mkdir(parents=True, exist_ok=True)
     with SORTIE.open("w", encoding="utf-8-sig", newline="") as fichier:
@@ -278,6 +283,11 @@ def main() -> int:
         writer.writerows(resultats)
 
     resume(resultats)
+    pire = max(durees)
+    print(
+        f"Temps de réponse: médiane {statistics.median(d[0] for d in durees):.2f} s | "
+        f"pire {pire[0]:.2f} s ({pire[1]} -> {pire[2]})"
+    )
     print(f"\nCSV: {SORTIE}")
     return 0
 

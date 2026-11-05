@@ -21,6 +21,22 @@ def _phrase_bus(match: dict) -> str:
     )
 
 
+def _lignes_changement(etapes) -> list[str]:
+    """Les bus numérotés, avec le même nom pour l'arrêt de changement des deux côtés.
+
+    Les lignes écrivent le même lieu différemment (« Liberté 6 », « Giratoire Liberté
+    VI ») : le message se lit comme un seul arrêt, celui où l'on descend.
+    """
+    morceaux = []
+    precedent = None
+    for i, etape in enumerate(etapes, start=1):
+        if precedent is not None:
+            etape = {**etape, "monte_a": precedent.get("descend_a", "")}
+        morceaux.append(f"{i}. {_phrase_bus(etape)}")
+        precedent = etape
+    return morceaux
+
+
 def texte_partage(
     depart: str,
     arrivee: str,
@@ -38,23 +54,14 @@ def texte_partage(
     trajets_2 = resultat.get("trajets_2") or []
     if trajet is not None:
         etapes = trajet.get("etapes") or (trajet["etape_1"], trajet["etape_2"])
-        morceaux = [
-            f"{i}. {_phrase_bus(etape)}"
-            for i, etape in enumerate(etapes, start=1)
-        ]
+        morceaux = _lignes_changement(etapes)
     elif lignes:
         morceaux = [_phrase_bus(ligne) for ligne in lignes]
     elif correspondances:
         etapes = correspondances[0]
-        morceaux = [
-            f"{i}. {_phrase_bus(etape)}"
-            for i, etape in enumerate((etapes["etape_1"], etapes["etape_2"]), start=1)
-        ]
+        morceaux = _lignes_changement((etapes["etape_1"], etapes["etape_2"]))
     elif trajets_2:
-        morceaux = [
-            f"{i}. {_phrase_bus(etape)}"
-            for i, etape in enumerate(trajets_2[0]["etapes"], start=1)
-        ]
+        morceaux = _lignes_changement(trajets_2[0]["etapes"])
     else:
         return ""
     return "\n".join([f"🚌 GuindiMa : {depart} → {arrivee}", *morceaux, LIEN_APP])

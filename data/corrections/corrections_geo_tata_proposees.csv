@@ -132,15 +132,15 @@ Tata AFTU,Ligne 34,3,VDN,14.736787,-17.464056,interpolation_sur_trace,faux,6498
 Tata AFTU,Ligne 34,4,2 Voies Liberté 6,14.727036,-17.458622,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 34,5,Sacré Cœur,14.713745,-17.465733,projection_sur_trace,suspect,422
 Tata AFTU,Ligne 34,11,Lat Dior,14.669008,-17.441104,terminus_officiel_aftu,sans_coord,
-Tata AFTU,Ligne 35,2,Aéroport,14.748798,-17.514505,interpolation_sur_trace,faux,1463
+Tata AFTU,Ligne 35,2,Aéroport,14.750263,-17.503962,interpolation_sur_trace,faux,1463
 Tata AFTU,Ligne 35,3,Yoff,14.755211,-17.469739,projection_sur_trace,suspect,594
 Tata AFTU,Ligne 35,4,Patte d'Oie,14.742787,-17.441807,projection_sur_trace,suspect,426
-Tata AFTU,Ligne 35,5,Croisement Cambérène,14.748861,-17.514503,interpolation_sur_trace,faux,2812
-Tata AFTU,Ligne 35,6,Route Nationale,14.748882,-17.514502,interpolation_sur_trace,sans_coord,
-Tata AFTU,Ligne 35,7,Cité Lobatt Fall,14.748903,-17.514502,interpolation_sur_trace,sans_coord,
-Tata AFTU,Ligne 35,8,Khourounar,14.748923,-17.514501,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 35,5,Croisement Cambérène,14.753551,-17.467234,interpolation_sur_trace,faux,2812
+Tata AFTU,Ligne 35,6,Route Nationale,14.744991,-17.454385,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 35,7,Cité Lobatt Fall,14.742156,-17.438295,interpolation_sur_trace,sans_coord,
+Tata AFTU,Ligne 35,8,Khourounar,14.745572,-17.422402,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 35,9,Tally Boumack,14.745615,-17.421750,projection_sur_trace,suspect,473
-Tata AFTU,Ligne 35,10,Pikine Texaco,14.748986,-17.514499,terminus_officiel_aftu,sans_coord,
+Tata AFTU,Ligne 35,10,Pikine Texaco,14.761206,-17.385489,terminus_officiel_aftu,sans_coord,
 Tata AFTU,Ligne 36,2,Parc Lambaye,14.776318,-17.382270,interpolation_sur_trace,faux,2828
 Tata AFTU,Ligne 36,3,Quartier Cheikh Wade,14.773036,-17.384324,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 36,4,2 Voies Notaire,14.772378,-17.387796,interpolation_sur_trace,sans_coord,
