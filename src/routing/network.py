@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import heapq
 import math
-from collections import defaultdict
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 from typing import Iterable, NamedTuple
 
@@ -629,7 +629,10 @@ class Network:
         # Une ligne seule ne déplace pas un arrêt pour tout le réseau : sa position
         # peut être fausse (Tata 35 met Pikine Texaco près de Ngor, ce qui créait une
         # correspondance à pied entre les deux).  Il faut deux lignes d'accord, ou
-        # que l'arrêt n'ait encore aucune position.
+        # que l'arrêt n'ait encore aucune position.  Si toutes les lignes qui le
+        # desservent s'accordent, elles priment même sur une position « bonne » :
+        # AIBD, seulement sur TAF TAF, restait à Grand Yoff dans arrets_geo.csv.
+        served = Counter(stop for line in lines for stop in line.stops)
         for stop, proposed in proposals.items():
             position, sure, supporters = max(
                 (
@@ -650,6 +653,12 @@ class Network:
                 stop_confidence[stop] = (
                     "bonne" if sure and supporters >= 2 else "estimee"
                 )
+            elif (
+                supporters == len(proposed) == served[stop]
+                and haversine_m(position, stop_coords[stop]) > POSITION_AGREEMENT_M
+            ):
+                stop_coords[stop] = position
+                stop_confidence[stop] = "bonne" if sure else "estimee"
             elif (
                 sure
                 and supporters >= 2

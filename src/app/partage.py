@@ -21,16 +21,23 @@ def _phrase_bus(match: dict) -> str:
     )
 
 
-def _lignes_changement(etapes) -> list[str]:
-    """Les bus numérotés, avec le même nom pour l'arrêt de changement des deux côtés.
+def _lignes_changement(etapes, marches=()) -> list[str]:
+    """Les bus numérotés, et ce qu'il faut faire entre deux bus.
 
-    Les lignes écrivent le même lieu différemment (« Liberté 6 », « Giratoire Liberté
-    VI ») : le message se lit comme un seul arrêt, celui où l'on descend.
+    Même arrêt : un seul nom des deux côtés, celui où l'on descend, car les lignes
+    l'écrivent différemment (« Rond Point Liberté 6 », « Rond-Point Liberté 6 »).
+    Deux arrêts différents : le message dit où descendre, combien de minutes marcher
+    et où prendre le bus suivant.  `marches` donne ces minutes, 0 pour le même arrêt.
     """
     morceaux = []
     precedent = None
     for i, etape in enumerate(etapes, start=1):
-        if precedent is not None:
+        marche = marches[i - 2] if 2 <= i <= len(marches) + 1 else 0
+        if marche:
+            morceaux.append(
+                f"À pied : environ {marche} min jusqu'à {etape.get('monte_a', '')}."
+            )
+        elif precedent is not None:
             etape = {**etape, "monte_a": precedent.get("descend_a", "")}
         morceaux.append(f"{i}. {_phrase_bus(etape)}")
         precedent = etape
@@ -54,14 +61,18 @@ def texte_partage(
     trajets_2 = resultat.get("trajets_2") or []
     if trajet is not None:
         etapes = trajet.get("etapes") or (trajet["etape_1"], trajet["etape_2"])
-        morceaux = _lignes_changement(etapes)
+        morceaux = _lignes_changement(etapes, trajet.get("marches") or ())
     elif lignes:
         morceaux = [_phrase_bus(ligne) for ligne in lignes]
     elif correspondances:
         etapes = correspondances[0]
-        morceaux = _lignes_changement((etapes["etape_1"], etapes["etape_2"]))
+        morceaux = _lignes_changement(
+            (etapes["etape_1"], etapes["etape_2"]), etapes.get("marches") or ()
+        )
     elif trajets_2:
-        morceaux = _lignes_changement(trajets_2[0]["etapes"])
+        morceaux = _lignes_changement(
+            trajets_2[0]["etapes"], trajets_2[0].get("marches") or ()
+        )
     else:
         return ""
     return "\n".join([f"🚌 GuindiMa : {depart} → {arrivee}", *morceaux, LIEN_APP])

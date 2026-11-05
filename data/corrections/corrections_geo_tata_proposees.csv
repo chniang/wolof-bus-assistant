@@ -13,7 +13,7 @@ Tata AFTU,Ligne 1,17,2 Voies de Liberté VI,14.737002,-17.464315,interpolation_s
 Tata AFTU,Ligne 1,18,VDN,14.741537,-17.471399,interpolation_sur_trace,faux,7431
 Tata AFTU,Ligne 1,19,Rte Corniche de HLM Gd Médine,14.747308,-17.464567,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 1,20,Espace HLM Gd Médine (Face Autoroute),14.745099,-17.455267,projection_sur_trace,suspect,417
-Tata AFTU,Ligne 2,5,Route des Niayes,14.760030,-17.439094,projection_sur_trace,suspect,918
+Tata AFTU,Ligne 2,5,Route des Niayes,14.745586,-17.446317,interpolation_sur_trace,suspect,918
 Tata AFTU,Ligne 2,7,Avenue Cardinal Hyacinthe Thiandoum,14.736835,-17.455371,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 2,9,Route du Front de Terre,14.722815,-17.453122,interpolation_sur_trace,faux,1244
 Tata AFTU,Ligne 2,10,Rue P,14.696181,-17.452374,projection_sur_trace,suspect,494
@@ -79,7 +79,7 @@ Tata AFTU,Ligne 28,2,Hamo IV,14.780645,-17.388987,interpolation_sur_trace,faux,1
 Tata AFTU,Ligne 28,5,Cité Enseignants,14.775377,-17.405477,interpolation_sur_trace,faux,4318
 Tata AFTU,Ligne 28,6,Hamo III,14.773953,-17.408519,interpolation_sur_trace,faux,1964
 Tata AFTU,Ligne 28,7,Croisement Cheikh Bethio,14.769820,-17.410026,interpolation_sur_trace,sans_coord,
-Tata AFTU,Ligne 28,12,Croisement Cambérène,14.764223,-17.421245,projection_sur_trace,suspect,795
+Tata AFTU,Ligne 28,12,Croisement Cambérène,14.743072,-17.433120,interpolation_sur_trace,suspect,795
 Tata AFTU,Ligne 28,13,Branche Est Autoroute,14.728638,-17.440345,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 28,14,Echangeur Patte d'Oie,14.710411,-17.441551,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 28,15,Autoroute,14.692174,-17.442702,interpolation_sur_trace,faux,21507
@@ -97,7 +97,7 @@ Tata AFTU,Ligne 29,13,Carrefour Seydou N Tall,14.696125,-17.465756,interpolation
 Tata AFTU,Ligne 29,14,Avenue Cheikh Anta Diop,14.688691,-17.457463,interpolation_sur_trace,faux,2660
 Tata AFTU,Ligne 30,1,Gadaye (Guédiawaye),14.772594,-17.387409,terminus_officiel_aftu,faux,1433
 Tata AFTU,Ligne 30,2,Wakhinanenimzatt (Rue 212),14.780434,-17.380634,projection_sur_trace,suspect,619
-Tata AFTU,Ligne 30,5,Sam Notaire,14.774150,-17.390027,projection_sur_trace,suspect,392
+Tata AFTU,Ligne 30,5,Sam Notaire,14.776618,-17.378389,interpolation_sur_trace,suspect,392
 Tata AFTU,Ligne 30,7,Lycée Canada,14.771672,-17.399716,projection_sur_trace,suspect,369
 Tata AFTU,Ligne 30,9,Rond-Point de Cambérène (Casebi),14.749518,-17.442701,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 30,10,Route des Niayes Prolongée (Police des P Assainies),14.743304,-17.448959,interpolation_sur_trace,sans_coord,
@@ -118,11 +118,11 @@ Tata AFTU,Ligne 31,14,Canal de la Gueule Tapée,14.701581,-17.455514,interpolati
 Tata AFTU,Ligne 31,15,Hôpital Abass Ndao,14.685401,-17.453209,projection_sur_trace,suspect,809
 Tata AFTU,Ligne 32,5,Autoroute,14.735725,-17.439709,interpolation_sur_trace,faux,21065
 Tata AFTU,Ligne 32,6,Croisement Cambérène,14.744449,-17.426946,interpolation_sur_trace,faux,2124
-Tata AFTU,Ligne 32,8,Tally Boumack,14.745471,-17.421545,projection_sur_trace,suspect,491
+Tata AFTU,Ligne 32,8,Tally Boumack,14.752657,-17.399608,interpolation_sur_trace,suspect,491
 Tata AFTU,Ligne 32,9,Route des Niayes,14.764531,-17.390708,interpolation_sur_trace,faux,1118
 Tata AFTU,Ligne 32,10,Canada,14.772282,-17.400461,interpolation_sur_trace,faux,8824
 Tata AFTU,Ligne 32,11,Corniche,14.776656,-17.395467,interpolation_sur_trace,faux,4781
-Tata AFTU,Ligne 32,13,Serigne Assane,14.684892,-17.453091,projection_sur_trace,suspect,581
+Tata AFTU,Ligne 32,13,Serigne Assane,14.788082,-17.376958,terminus_officiel_aftu,suspect,581
 Tata AFTU,Ligne 33,5,Front de Terre,14.717795,-17.446038,interpolation_sur_trace,faux,1324
 Tata AFTU,Ligne 33,8,HLM Grand Yoff,14.739533,-17.453439,projection_sur_trace,suspect,331
 Tata AFTU,Ligne 33,13,PAI,14.771663,-17.399737,projection_sur_trace,suspect,367
@@ -153,10 +153,10 @@ Tata AFTU,Ligne 37,3,Cité SOTRAC,14.786238,-17.298844,interpolation_sur_trace,f
 Tata AFTU,Ligne 37,6,Ecobank,14.783067,-17.323368,interpolation_sur_trace,faux,3518
 Tata AFTU,Ligne 37,8,Malika Montagne,14.793758,-17.335899,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 37,9,Malika Terminus,14.804395,-17.343542,interpolation_sur_trace,sans_coord,
-Tata AFTU,Ligne 37,10,VDN,14.779586,-17.390861,projection_sur_trace,suspect,594
+Tata AFTU,Ligne 37,10,VDN,14.797438,-17.360658,interpolation_sur_trace,suspect,594
 Tata AFTU,Ligne 37,12,49,14.740522,-17.408624,interpolation_sur_trace,faux,2698
 Tata AFTU,Ligne 37,14,Monument Serigne Saliou,14.710171,-17.441542,interpolation_sur_trace,sans_coord,
-Tata AFTU,Ligne 37,15,Police Wakhinane,14.785465,-17.373382,projection_sur_trace,suspect,410
+Tata AFTU,Ligne 37,15,Police Wakhinane,14.726774,-17.437074,interpolation_sur_trace,suspect,410
 Tata AFTU,Ligne 37,16,Hamo VI,14.738093,-17.423089,interpolation_sur_trace,faux,2425
 Tata AFTU,Ligne 37,17,Rond-Point Dial Mbaay,14.740431,-17.407113,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 37,18,Allées Cherif Macky Sall,14.759417,-17.401953,interpolation_sur_trace,sans_coord,
@@ -199,17 +199,17 @@ Tata AFTU,Ligne 41,14,Rue 10 Prolongée,14.764789,-17.391042,interpolation_sur_t
 Tata AFTU,Ligne 41,16,Station Toure,14.773335,-17.384081,interpolation_sur_trace,faux,1264
 Tata AFTU,Ligne 41,17,Quartier Cheikh Wade,14.776484,-17.382347,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 41,20,Daroukhane,14.781839,-17.375251,projection_sur_trace,suspect,343
-Tata AFTU,Ligne 42,3,Cité des Enseignants,14.710127,-17.481399,projection_sur_trace,suspect,385
+Tata AFTU,Ligne 42,3,Cité des Enseignants,14.776647,-17.396049,interpolation_sur_trace,suspect,385
 Tata AFTU,Ligne 42,8,Route du Stade LSS (Taliboubess),14.750153,-17.459056,interpolation_sur_trace,sans_coord,
-Tata AFTU,Ligne 42,9,VDN,14.779428,-17.391004,projection_sur_trace,suspect,601
+Tata AFTU,Ligne 42,9,VDN,14.737917,-17.472492,interpolation_sur_trace,suspect,601
 Tata AFTU,Ligne 42,10,Ancienne Piste d'Envol,14.718789,-17.471441,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 42,12,Route Principale de Ouakam (Marché),14.717985,-17.486830,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 42,13,Boutikou Diallo,14.723101,-17.487750,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 42,14,Ouakam Baye,14.729690,-17.492586,terminus_officiel_aftu,sans_coord,
 Tata AFTU,Ligne 43,1,Ouakam,14.724238,-17.487986,projection_sur_trace,suspect,319
 Tata AFTU,Ligne 43,2,Siège Expresso Ouakam,14.706723,-17.479442,interpolation_sur_trace,sans_coord,
-Tata AFTU,Ligne 43,4,Bourguiba,14.720536,-17.447160,projection_sur_trace,suspect,323
-Tata AFTU,Ligne 43,5,Rue 10,14.752882,-17.395227,projection_sur_trace,suspect,496
+Tata AFTU,Ligne 43,4,Bourguiba,14.706964,-17.460056,interpolation_sur_trace,suspect,323
+Tata AFTU,Ligne 43,5,Rue 10,14.699205,-17.453474,interpolation_sur_trace,suspect,496
 Tata AFTU,Ligne 43,6,G.dakar,14.698094,-17.447349,projection_sur_trace,suspect,520
 Tata AFTU,Ligne 43,9,Pont Hann,14.738797,-17.439301,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 43,10,Autoroute,14.745584,-17.420877,interpolation_sur_trace,faux,18171
@@ -229,17 +229,17 @@ Tata AFTU,Ligne 45,6,Shell SEDIMA,14.790496,-17.345518,interpolation_sur_trace,s
 Tata AFTU,Ligne 45,7,Lycée Jaxaay,14.793768,-17.355338,interpolation_sur_trace,faux,2179
 Tata AFTU,Ligne 45,8,Rond-Point Cité Pénitence,14.787801,-17.365486,interpolation_sur_trace,faux,2425
 Tata AFTU,Ligne 45,9,Auchan Keur Massar,14.781016,-17.373020,interpolation_sur_trace,faux,1030
-Tata AFTU,Ligne 45,14,Mbédou Fass,14.772841,-17.351511,projection_sur_trace,suspect,394
+Tata AFTU,Ligne 45,14,Mbédou Fass,14.791270,-17.363461,interpolation_sur_trace,suspect,394
 Tata AFTU,Ligne 45,15,Tournal Boune,14.775196,-17.359585,projection_sur_trace,suspect,519
 Tata AFTU,Ligne 45,18,Cité ASECNA,14.786331,-17.348099,interpolation_sur_trace,faux,6442
-Tata AFTU,Ligne 45,19,49,14.759945,-17.438822,projection_sur_trace,suspect,660
+Tata AFTU,Ligne 45,19,49,14.793984,-17.353493,interpolation_sur_trace,suspect,660
 Tata AFTU,Ligne 45,20,Serigne Assane,14.786964,-17.366514,interpolation_sur_trace,faux,7888
 Tata AFTU,Ligne 45,26,Cité des Enseignants,14.775435,-17.402430,interpolation_sur_trace,faux,7207
 Tata AFTU,Ligne 45,34,63,14.759945,-17.438822,projection_sur_trace,suspect,675
 Tata AFTU,Ligne 46,1,SDE Serigne Assane,14.782157,-17.372947,terminus_officiel_aftu,sans_coord,
 Tata AFTU,Ligne 46,2,Guédiawaye,14.771421,-17.386346,projection_sur_trace,suspect,747
 Tata AFTU,Ligne 46,3,Lycée Limamou Laye,14.765490,-17.391487,interpolation_sur_trace,sans_coord,
-Tata AFTU,Ligne 46,4,Préfecture,14.669122,-17.439699,projection_sur_trace,suspect,915
+Tata AFTU,Ligne 46,4,Préfecture,14.757416,-17.397511,interpolation_sur_trace,suspect,915
 Tata AFTU,Ligne 46,5,Rue10 Pikine,14.749331,-17.402924,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 46,6,Cité Lobattfall,14.746775,-17.410504,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 46,7,Route Nationale,14.745719,-17.420690,interpolation_sur_trace,sans_coord,
@@ -332,7 +332,7 @@ Tata AFTU,Ligne 57,11,Bd Maurice Gueye,14.747330,-17.357846,interpolation_sur_tr
 Tata AFTU,Ligne 57,12,Poste Courant,14.748058,-17.326530,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 57,13,Marché Colobane Rufisque,14.730435,-17.302013,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 58,2,Route Nationale 1,14.725666,-17.444900,interpolation_sur_trace,sans_coord,
-Tata AFTU,Ligne 58,3,Fass Mbao,14.749424,-17.342178,projection_sur_trace,suspect,799
+Tata AFTU,Ligne 58,3,Fass Mbao,14.743096,-17.403270,interpolation_sur_trace,suspect,799
 Tata AFTU,Ligne 58,5,Diamaguène,14.748328,-17.350581,projection_sur_trace,suspect,861
 Tata AFTU,Ligne 58,7,Péage,14.745942,-17.410601,interpolation_sur_trace,faux,3104
 Tata AFTU,Ligne 58,8,Echangeur Hann,14.731021,-17.440198,projection_sur_trace,suspect,632
@@ -362,9 +362,9 @@ Tata AFTU,Ligne 62,5,SONADIS,14.722849,-17.270006,interpolation_sur_trace,faux,1
 Tata AFTU,Ligne 62,8,HLM Rufisque,14.729985,-17.301226,interpolation_sur_trace,faux,9251
 Tata AFTU,Ligne 62,9,Dioutyba,14.747056,-17.322057,interpolation_sur_trace,sans_coord,
 Tata AFTU,Ligne 62,10,Route Nationale 1,14.748423,-17.349619,interpolation_sur_trace,sans_coord,
-Tata AFTU,Ligne 62,12,Autoroute A Péage,14.746647,-17.320185,projection_sur_trace,suspect,968
+Tata AFTU,Ligne 62,12,Autoroute A Péage,14.745842,-17.414438,interpolation_sur_trace,suspect,968
 Tata AFTU,Ligne 62,15,Colobane,14.698375,-17.447366,projection_sur_trace,suspect,416
-Tata AFTU,Ligne 62,16,Fass,14.689812,-17.458880,projection_sur_trace,suspect,415
+Tata AFTU,Ligne 62,16,Fass,14.695591,-17.453011,interpolation_sur_trace,suspect,415
 Tata AFTU,Ligne 62,18,Sahm,14.683686,-17.457579,projection_sur_trace,suspect,414
 Tata AFTU,Ligne 62,19,Penc Mi (Gueule Tapée),14.681029,-17.455070,terminus_officiel_aftu,sans_coord,
 Tata AFTU,Ligne 63,1,Camp Marchand Rufisque,14.721433,-17.259546,projection_sur_trace,suspect,381
@@ -397,7 +397,7 @@ Tata AFTU,Ligne 65,9,Route de Jaxxay,14.767028,-17.309367,interpolation_sur_trac
 Tata AFTU,Ligne 65,10,Collège la Liberté,14.761125,-17.301720,interpolation_sur_trace,faux,3544
 Tata AFTU,Ligne 65,11,Centre de Jaxaay,14.756770,-17.290708,projection_sur_trace,suspect,395
 Tata AFTU,Ligne 65,12,Jaxaay 2,14.766792,-17.280468,projection_sur_trace,suspect,465
-Tata AFTU,Ligne 66,1,Yoff,14.755200,-17.470061,projection_sur_trace,suspect,606
+Tata AFTU,Ligne 66,1,Yoff,14.761299,-17.475651,terminus_officiel_aftu,suspect,606
 Tata AFTU,Ligne 66,3,Patte d'Oie,14.742825,-17.442061,projection_sur_trace,suspect,431
 Tata AFTU,Ligne 66,4,Croisement Cambérène,14.740498,-17.439715,interpolation_sur_trace,faux,2825
 Tata AFTU,Ligne 66,5,Cité Lobatt Fall,14.745519,-17.421406,interpolation_sur_trace,sans_coord,
@@ -412,7 +412,7 @@ Tata AFTU,Ligne 67,2,Cité Avion,14.724508,-17.482892,projection_sur_trace,suspe
 Tata AFTU,Ligne 67,3,Entrée Ouakam,14.713717,-17.481556,projection_sur_trace,suspect,449
 Tata AFTU,Ligne 67,4,Mermoz,14.703581,-17.474587,projection_sur_trace,suspect,428
 Tata AFTU,Ligne 67,10,Tableau Ferrailles,14.719480,-17.433235,interpolation_sur_trace,sans_coord,
-Tata AFTU,Ligne 67,11,SERAS,14.738711,-17.407552,projection_sur_trace,suspect,949
+Tata AFTU,Ligne 67,11,SERAS,14.719716,-17.433872,interpolation_sur_trace,suspect,949
 Tata AFTU,Ligne 67,15,Diamaguène,14.748312,-17.350526,projection_sur_trace,suspect,864
 Tata AFTU,Ligne 67,16,Fass Mbao,14.749441,-17.341825,projection_sur_trace,suspect,801
 Tata AFTU,Ligne 67,18,Grand Mbao,14.733684,-17.305996,interpolation_sur_trace,faux,1044
@@ -517,7 +517,7 @@ Tata AFTU,Ligne 81,10,MTOA,14.779633,-17.321976,projection_sur_trace,suspect,768
 Tata AFTU,Ligne 81,16,Tawfeex,14.810700,-17.260878,terminus_officiel_aftu,faux,7900
 Tata AFTU,Ligne 82,1,Lat Dior,14.669153,-17.441343,terminus_officiel_aftu,sans_coord,
 Tata AFTU,Ligne 82,2,Service d'Hygiène,14.676834,-17.445405,interpolation_sur_trace,sans_coord,
-Tata AFTU,Ligne 82,5,Rue 22,14.698232,-17.447456,projection_sur_trace,suspect,964
+Tata AFTU,Ligne 82,5,Rue 22,14.686148,-17.450405,interpolation_sur_trace,suspect,964
 Tata AFTU,Ligne 82,10,Autoroute A Péage,14.743594,-17.429817,interpolation_sur_trace,faux,2926
 Tata AFTU,Ligne 82,12,Fass Mbao,14.756314,-17.345517,projection_sur_trace,suspect,306
 Tata AFTU,Ligne 82,13,Mbédou Fass,14.764516,-17.346088,projection_sur_trace,suspect,899

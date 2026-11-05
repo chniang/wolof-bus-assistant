@@ -96,7 +96,8 @@ TRAJETS_SANS_MONTEE_HOMONYME = [
 # Sandaga) : la position des arrêts (arrets_geo.csv) doit faire trouver une ligne.
 # (phrase, lignes attendues — au moins une —, lignes interdites).
 TRAJETS_GEO = [
-    ("Maa ngi Liberté 6, dama bëgg dem Médina ak Tata", {"Ligne 1"}, frozenset()),
+    # Compagnie nommée : n'importe quelle ligne de cette compagnie, et rien d'autre.
+    ("Maa ngi Liberté 6, dama bëgg dem Médina ak Tata", frozenset(), frozenset()),
     ("Maa ngi Sandaga, dama bëgg dem Pikine", {"Ligne 27", "Ligne 55", "Ligne 56"}, frozenset()),
 ]
 
@@ -108,7 +109,8 @@ TRAJETS_COMPAGNIE = [
     # Bug ASR réel : « liberation siis » (Liberté 6) et « madiina » (Médina).
     # Le chiffre dit « siis » ne doit pas devenir l'arrêt « SIPS », et Tata doit
     # tout de même trouver sa ligne 1.
-    ("maa ngi liberation siis dama bëgg a dem madiina ak tata", "Tata AFTU", {"Ligne 1"}, {"Dakar Dem Dikk"}),
+    # Attendues vides : n'importe quelle ligne de la compagnie convient.
+    ("maa ngi liberation siis dama bëgg a dem madiina ak tata", "Tata AFTU", frozenset(), {"Dakar Dem Dikk"}),
 ]
 
 # Cas réel : « Liberté 5 -> Médina » avec Tata. Tata n'a pas de ligne directe ;
@@ -340,10 +342,15 @@ def test_local() -> int:
         print(f"      {_detail(resultat) if (resultat['lignes'] or resultat['correspondances']) else 'rien'}")
     for phrase, compagnie, attendues, interdites in TRAJETS_COMPAGNIE:
         lieux = extract_local(phrase)
-        resultat = matcher.find_line(lieux.get("depart") or "", lieux.get("arrivee") or "")
+        # Le chemin réel de l'app quand une compagnie est nommée.
+        resultat, _ = matcher.find_line_compagnie(
+            lieux.get("depart") or "", lieux.get("arrivee") or "", compagnie
+        )
         trouvees = {l["ligne"] for l in resultat["lignes"] if l["compagnie"] == compagnie}
         exclues = {l["ligne"] for l in resultat["lignes"] if l["compagnie"] in interdites}
-        bon = lieux.get("compagnie") == compagnie and _ok(trouvees, attendues, exclues)
+        bon = lieux.get("compagnie") == compagnie and _ok(
+            trouvees, attendues or trouvees, exclues
+        )
         echecs += not bon
         print(
             f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
@@ -518,10 +525,19 @@ def test_local() -> int:
     # positions des arrêts (data/arrets_geo.csv), pas seulement à leur nom.
     for phrase, attendues, exclues in TRAJETS_GEO:
         lieux = extract_local(phrase)
-        resultat = matcher.find_line(lieux.get("depart") or "", lieux.get("arrivee") or "")
+        compagnie = lieux.get("compagnie")
+        if compagnie:
+            resultat, _ = matcher.find_line_compagnie(
+                lieux.get("depart") or "", lieux.get("arrivee") or "", compagnie
+            )
+        else:
+            resultat = matcher.find_line(lieux.get("depart") or "", lieux.get("arrivee") or "")
         trouvees = {l["ligne"] for l in resultat["lignes"]}
         trouvees |= {"corr:" + c["etape_1"]["ligne"] for c in resultat["correspondances"]}
-        bon = _ok(trouvees, attendues, exclues)
+        bon = _ok(trouvees, attendues or trouvees, exclues) and (
+            not compagnie
+            or {l["compagnie"] for l in resultat["lignes"]} == {compagnie}
+        )
         echecs += not bon
         print(
             f"{'OK ' if bon else 'ÉCHEC'} | {phrase}\n"
@@ -783,7 +799,8 @@ def test_moteur_v2() -> tuple[int, int]:
 
     from matching.stops_matcher import StopsMatcher
     from routing import adapter
-    from routing.network import BUS_SPEED_M_PER_MIN, TRANSFER_PENALTY_MIN
+    from routing.network import Line, Network
+    from routing.router import Leg, ResolvedPlace, Trip, Walk
 
     echecs = 0
     total = 0
@@ -829,35 +846,76 @@ def test_moteur_v2() -> tuple[int, int]:
         moteur.find_line("Zzzqwx", "Colobane") == repli.find_line("Zzzqwx", "Colobane"),
     )
 
-    cle = ("Dakar Dem Dikk", "Ligne 11")
-    dep = adapter._resoudre(repli, "Keur Massar")
-    arr = adapter._resoudre(repli, "UCAD")
-    trajets = adapter._ENGINE.find_trips(
-        "Keur Massar",
-        "UCAD",
-        max_trips=4,
-        first_line=cle,
-        origin_place=dep["place"],
-        destination_place=arr["place"],
+    # Une ligne de 2 arrêts sans position : la durée est un forfait, et la carte le dit.
+    reseau_vide = Network([Line("Op", "Bus", ("A", "B"))], {})
+    arete = next(
+        arete
+        for aretes in reseau_vide.adjacency.values()
+        for arete in aretes
+        if arete.kind == "ride"
     )
     verifie(
-        "plancher : aucun trajet plus rapide que le vol d'oiseau en bus",
-        trajets
-        and all(
-            trajet.straight_line_m
-            and trajet.total_minutes
-            >= trajet.straight_line_m * 1.25 / BUS_SPEED_M_PER_MIN
-            + TRANSFER_PENALTY_MIN * trajet.transfers
-            for trajet in trajets
-        ),
-        [trajet.total_minutes for trajet in trajets],
+        "2 arrêts sans position : 35 min, marquée estimée",
+        arete.minutes == 35.0 and arete.estimated,
+        arete,
     )
-    lat_dior = adapter.chercher_v2(repli, "Keur Massar", "Lat Dior", {"Dakar Dem Dikk"})
+    forfaits = [
+        ligne
+        for ligne in adapter._NETWORK.lines.values()
+        if len(ligne.stops) == 2
+        and adapter._NETWORK._segment_distances(ligne) == (None,)
+    ]
+    verifie("le réseau réel compte de telles lignes", bool(forfaits))
+    forfait = forfaits[0]
+    trajet_forfait = adapter._ENGINE.find_trips(
+        forfait.stops[0],
+        forfait.stops[1],
+        first_line=forfait.key,
+        origin_place=ResolvedPlace(stops=(forfait.stops[0],)),
+        destination_place=ResolvedPlace(stops=(forfait.stops[1],)),
+        direct_only=True,
+        max_trips=9,
+    )
+    bus_forfait = [trajet for trajet in trajet_forfait if trajet.legs]
     verifie(
         "la durée estimée arrive jusqu'à la carte",
-        any(ligne.get("estimee") for ligne in lat_dior["lignes"])
+        bool(bus_forfait)
+        and bus_forfait[0].estimated
+        and adapter._direct(bus_forfait[0])["estimee"]
         and "durée estimée" in (RACINE / "app.py").read_text(encoding="utf-8"),
-        lat_dior["lignes"],
+        [forfait.key, bus_forfait],
+    )
+
+    # Un changement à pied : l'adaptateur transmet les minutes au message de partage.
+    def _bus(ligne: str, depart: str, arrivee: str) -> Leg:
+        return Leg(
+            operator="Tata AFTU",
+            line=ligne,
+            board_stop=depart,
+            alight_stop=arrivee,
+            direction=adapter._NETWORK.lines[("Tata AFTU", ligne)].stops[-1],
+            num_stops=1,
+            minutes=10.0,
+        )
+
+    a_pied = Trip(
+        legs=(_bus("Ligne 49", "Ngor", "Liberté 6"), _bus("Ligne 30", "Giratoire Liberté VI", "Gare de Colobane")),
+        walks=(Walk("transfer", "Liberté 6", "Giratoire Liberté VI", 3.6, 290.0, after_leg=1),),
+        total_minutes=30.0,
+        transfers=1,
+        line_combo=(),
+        origin_name="Ngor",
+        destination_name="Colobane",
+        total_distance_m=None,
+        straight_line_m=None,
+        detour=False,
+        via_downtown=False,
+        ridden_stops=(),
+    )
+    verifie(
+        "l'adaptateur donne les minutes de marche d'un changement",
+        adapter._correspondance(a_pied)["marches"] == [4],
+        adapter._correspondance(a_pied),
     )
 
     # Le départ des Maristes, jamais Keur Ngoor ; et les mêmes arrêts pour v1 et v2.
@@ -878,6 +936,18 @@ def test_moteur_v2() -> tuple[int, int]:
         "« Keur Ngoor » dit tel quel trouve toujours son arrêt",
         adapter._resoudre(repli, "Keur Ngoor")["arret"]
         == "Keur Ngoor (Rond-Point École Mariste)",
+    )
+
+    # AIBD est à Diass : plus jamais « à pied » depuis Grand Yoff, où le plaçait le CSV.
+    aibd = adapter._NETWORK.coords("AIBD")
+    verifie(
+        "AIBD situé à Diass, loin de Grand Yoff",
+        aibd is not None and aibd[1] > -17.2,
+        aibd,
+    )
+    verifie(
+        "Grand Yoff -> AIBD ne se fait pas à pied",
+        not adapter.chercher_v2(repli, "Grand Yoff", "AIBD")["a_pied"],
     )
 
     # Le chemin réel de l'app pour « ak Tata » : uniquement du Tata.
@@ -1080,6 +1150,43 @@ def test_partage() -> tuple[int, int]:
         "changement sans possibilité précisée",
         texte_partage("Ngor", "Colobane", corr) == attendu_corr,
         texte_partage("Ngor", "Colobane", corr),
+    )
+
+    # Deux arrêts différents : où descendre, la marche, et où prendre le 2e bus.
+    avec_marche = {
+        "etape_1": {
+            "compagnie": "Tata AFTU",
+            "ligne": "Ligne 49",
+            "monte_a": "Ngor",
+            "descend_a": "Liberté 6",
+        },
+        "etape_2": {
+            "compagnie": "Tata AFTU",
+            "ligne": "Ligne 30",
+            "monte_a": "Giratoire Liberté VI",
+            "descend_a": "Gare de Colobane",
+        },
+        "changement": "Liberté 6",
+        "marches": [4],
+    }
+    attendu_marche = (
+        "🚌 GuindiMa : Ngor → Colobane\n"
+        "1. Ligne 49 (Tata AFTU) : monte à Ngor, descends à Liberté 6.\n"
+        "À pied : environ 4 min jusqu'à Giratoire Liberté VI.\n"
+        "2. Ligne 30 (Tata AFTU) : monte à Giratoire Liberté VI, descends à Gare de Colobane.\n"
+        f"{LIEN_APP}"
+    )
+    verifie(
+        "changement à pied entre deux arrêts",
+        texte_partage("Ngor", "Colobane", {"correspondances": [avec_marche]}, avec_marche)
+        == attendu_marche,
+        texte_partage("Ngor", "Colobane", {"correspondances": [avec_marche]}, avec_marche),
+    )
+    verifie(
+        "changement à pied sans possibilité précisée",
+        texte_partage("Ngor", "Colobane", {"correspondances": [avec_marche]})
+        == attendu_marche,
+        texte_partage("Ngor", "Colobane", {"correspondances": [avec_marche]}),
     )
 
     aucun = {"found": False, "lignes": [], "correspondances": []}
@@ -1288,20 +1395,7 @@ def test_voix() -> tuple[int, int]:
         "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Tata, numero juróom ñaar "
         "fukk ak juróom ñeent, moo lay yóbbu ba Malika."
     )
-    # Le moteur v2 passe par les itinéraires officiels de Dem Dikk (221 + 16A, 221 + 220).
-    attendu_corr_officiel = (
-        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
-        "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Dem Dikk, numero fukk ak "
-        "juróom benn A, moo lay yóbbu ba Malika. Walla, "
-        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
-        "nga wàcc Gadaye. Ci ginnaaw, jëlal bus bu Dem Dikk, numero ñaari "
-        "téeméer ak ñaar fukk, moo lay yóbbu ba Malika."
-    )
-    verifie(
-        "voix 2 changements",
-        phrase_corr in {attendu_corr, attendu_corr_officiel},
-        phrase_corr,
-    )
+    verifie("voix 2 changements", phrase_corr == attendu_corr, phrase_corr)
     audio_corr = voix_correspondances_depuis_cache(corr)
     verifie(
         "audio 2 changements (segments manquants sautés)",

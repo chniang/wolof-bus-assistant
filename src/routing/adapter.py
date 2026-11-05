@@ -130,6 +130,17 @@ def _direct(trip: Trip) -> dict:
     }
 
 
+def _marches(trip: Trip) -> list[int]:
+    """Les minutes à pied à chaque changement, 0 quand on reste au même arrêt."""
+
+    minutes = [0] * (len(trip.legs) - 1)
+    for walk in trip.walks:
+        if walk.kind == "transfer" and 1 <= walk.after_leg <= len(minutes):
+            if (walk.distance_m or 0) > 0:
+                minutes[walk.after_leg - 1] = max(1, int(round(walk.minutes)))
+    return minutes
+
+
 def _correspondance(trip: Trip) -> dict:
     """Un trajet à un changement : etape_1, etape_2, changement."""
 
@@ -139,6 +150,7 @@ def _correspondance(trip: Trip) -> dict:
         "etape_1": etape_1,
         "etape_2": etape_2,
         "changement": joli(trip.legs[0].alight_stop),
+        "marches": _marches(trip),
         "minutes": int(round(trip.total_minutes)),
     }
 
@@ -150,6 +162,7 @@ def _trajet_2(trip: Trip) -> dict:
     return {
         "etapes": etapes,
         "changements": [joli(leg.alight_stop) for leg in trip.legs[:-1]],
+        "marches": _marches(trip),
         "minutes": int(round(trip.total_minutes)),
     }
 
@@ -269,7 +282,9 @@ def _resoudre(matcher, lieu: str) -> dict:
                 par_son_nom.add(nom)
     # Le point connu des CSV seulement : il sert à mesurer le vol d'oiseau, jamais
     # à décider où monter, et ne doit pas dépendre du réseau.
-    point = matcher.geo.point_connu(lieu)
+    # Un lieu qui est exactement un arrêt prend la position de cet arrêt sur le réseau :
+    # celle de arrets_geo.csv peut être périmée (AIBD, placé à Grand Yoff).
+    point = None if note >= 1.0 else matcher.geo.point_connu(lieu)
 
     def place(seuil: float) -> ResolvedPlace:
         return ResolvedPlace(
