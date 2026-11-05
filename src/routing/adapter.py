@@ -16,7 +16,7 @@ from .network import Network
 from functools import lru_cache
 
 from .corrections import STOP_NAME_ALIASES
-from .places import PlaceIndex, normalize_name
+from .places import PlaceIndex, normalize_name, terminus_forms
 from .router import (
     Leg,
     NoRouteFoundError,
@@ -217,6 +217,19 @@ def _vers_reseau(arrets: list[str]) -> tuple[str, ...]:
     return tuple(noms)
 
 
+def _note_du_nom(lieu: str, arret: str) -> float:
+    """La note de v1, ou celle d'un lieu que désigne ce terminus.
+
+    Sans cela, « Terminus liberté 5 (Dieuppeul) » ne valait que 0,83 pour « Liberté 5 »,
+    et les Dem Dikk 10 et 13 disparaissaient devant la 6 (« Liberté 5 », 1,0).
+    """
+
+    return max(
+        (score(lieu, nom) for nom in (arret, *terminus_forms(arret))),
+        default=0.0,
+    )
+
+
 def _resoudre(matcher, lieu: str) -> dict:
     """Résout un lieu exactement comme ``StopsMatcher.find_line``.
 
@@ -234,12 +247,12 @@ def _resoudre(matcher, lieu: str) -> dict:
     geo_scores = matcher.geo.scores_lieu(lieu, proximite=par_nom < MIN_SCORE)
 
     notes_v1 = {
-        arret: max(score(lieu, arret), geo_scores.get(arret, 0.0))
+        arret: max(_note_du_nom(lieu, arret), geo_scores.get(arret, 0.0))
         for arret in matcher.tous_les_arrets
         if _arrets_du_reseau(arret)
     }
     notes_v1.update(
-        (arret, score(lieu, arret)) for arret in _arrets_nouveaux(matcher)
+        (arret, _note_du_nom(lieu, arret)) for arret in _arrets_nouveaux(matcher)
     )
     tries = sorted(notes_v1, key=lambda arret: -notes_v1[arret])
     meilleur = tries[0] if tries and notes_v1[tries[0]] > 0 else ""
@@ -249,7 +262,7 @@ def _resoudre(matcher, lieu: str) -> dict:
     for arret in tries:
         for nom in _arrets_du_reseau(arret):
             notes.setdefault(nom, notes_v1[arret])
-            if score(lieu, arret) >= MIN_SCORE:
+            if _note_du_nom(lieu, arret) >= MIN_SCORE:
                 par_son_nom.add(nom)
     # Le point connu des CSV seulement : il sert à mesurer le vol d'oiseau, jamais
     # à décider où monter, et ne doit pas dépendre du réseau.

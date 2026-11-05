@@ -7,6 +7,7 @@ les CSV protégés ne sont jamais modifiés.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -70,6 +71,21 @@ def _nom_ligne_ddd(ligne: object) -> str:
     return f"Ligne {texte}" if texte[:1].isdigit() else texte
 
 
+def _sans_terminus(nom: object) -> str:
+    """« Terminus keur Massar » -> « Keur Massar » : le même arrêt que nos autres lignes.
+
+    « Terminus X (Y) » garde son nom complet : il désigne deux lieux (voir
+    ``terminus_forms``), et le renommer en perdrait un.
+    """
+
+    texte = str(nom).strip()
+    trouve = re.fullmatch(r"terminus\s+([^()]+)", texte, flags=re.IGNORECASE)
+    if not trouve:
+        return texte
+    reste = trouve.group(1).strip()
+    return reste[0].upper() + reste[1:] if not reste.isdigit() else texte
+
+
 def _charger_positions(data: NetworkData, frame: pd.DataFrame) -> None:
     for rangee in frame.itertuples(index=False):
         cle = (str(rangee.compagnie), str(rangee.ligne))
@@ -97,6 +113,7 @@ def _integrer_dem_dikk_officiel(data: NetworkData) -> None:
     officiel = pd.read_csv(CORRECTIONS_DDD, encoding="utf-8", dtype={"ligne": str})
     officiel["ligne"] = officiel["ligne"].map(_nom_ligne_ddd)
     officiel["ordre"] = pd.to_numeric(officiel["ordre"])
+    officiel["arret"] = officiel["arret"].map(_sans_terminus)
     remplacees = set(officiel["ligne"])
 
     def officielle(frame: pd.DataFrame) -> pd.Series:

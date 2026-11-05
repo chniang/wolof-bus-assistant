@@ -36,7 +36,7 @@ MAX_TRANSFERS = 2
 ACCESS_WALK_RADIUS_M = 1200.0
 NEARBY_EXACT_STOP_RADIUS_M = 900.0
 MAX_NEARBY_STOPS = 14
-MAX_LABELS_PER_STATE = 12
+MAX_LABELS_PER_STATE = 6
 MAX_EXPANSIONS = 250_000
 DETOUR_LIMIT = 1.8
 DOWNTOWN_RADIUS_M = 1_500.0
@@ -53,6 +53,9 @@ MAX_WALK_ONLY_MINUTES = 40.0
 # alternative.  This also catches routes with missing coordinates that
 # escape the distance-based detour check.
 MAX_TIME_VS_BEST = 3.0
+# La recherche s'arrête quand plus rien ne peut approcher le meilleur trajet trouvé :
+# au-delà, un trajet serait écarté ou jamais affiché.
+MAX_SCORE_ABOVE_BEST = 30.0
 # Détour minimal de la route par rapport au vol d'oiseau, pour le plancher de durée.
 STRAIGHT_LINE_ROAD_FACTOR = 1.25
 # Plafond d'un trajet en bus : max(10, vol d'oiseau * 1,6 / vitesse + 5).  Additionner
@@ -617,31 +620,43 @@ class RouteEngine:
                 max_trips=max_trips,
                 operator=operator,
                 first_line=first_line,
+                # Sans bus trouvé, rien ne bornerait la recherche : la marche le fait.
+                score_limit=walk_trip.total_minutes if walk_trip else float("inf"),
             )
 
         # Comme v1 : le trajet direct d'abord.  S'il existe, inutile de chercher
         # des changements que l'affichage ne proposera pas.
-        trips = self._direct_trips(
-            origin_points,
-            destination_points,
-            operator,
-            first_line,
-            origin_name=origin,
-            destination_name=destination,
-            origin_coords=origin_coords,
-            destination_coords=destination_coords,
-            origin_is_downtown=origin_is_downtown,
-            destination_is_downtown=destination_is_downtown,
-        )
+        def direct(
+            access_points: dict[str, AccessPoint],
+            egress_points: dict[str, AccessPoint],
+        ) -> list[Trip]:
+            return self._direct_trips(
+                access_points,
+                egress_points,
+                operator,
+                first_line,
+                origin_name=origin,
+                destination_name=destination,
+                origin_coords=origin_coords,
+                destination_coords=destination_coords,
+                origin_is_downtown=origin_is_downtown,
+                destination_is_downtown=destination_is_downtown,
+            )
+
+        trips = direct(origin_points, destination_points)
         if not trips and not direct_only:
             trips = search(origin_points, destination_points)
             if (
                 expanded_origin_points != origin_points
                 or expanded_destination_points != destination_points
             ):
-                trips += search(
-                    expanded_origin_points,
-                    expanded_destination_points,
+                # Si la recherche exacte a trouvé, les arrêts proches ne peuvent plus
+                # ajouter qu'un bus direct : un changement avec marche serait écarté
+                # plus bas.  Inutile de refaire toute la recherche (jusqu'à 7 s).
+                trips += (
+                    direct(expanded_origin_points, expanded_destination_points)
+                    if trips
+                    else search(expanded_origin_points, expanded_destination_points)
                 )
         # L'appelant de ``direct_only`` trie d'abord les arrêts selon ses règles :
         # c'est lui qui applique ensuite ce filtre, sinon un arrêt qu'il écartera
@@ -777,9 +792,36 @@ class RouteEngine:
         max_trips: int,
         operator: str | None = None,
         first_line: LineKey | None = None,
+        score_limit: float = float("inf"),
     ) -> list[Trip]:
         queue: list[tuple[float, int, float, int, _Label]] = []
         counter = itertools.count()
+        best_score = score_limit
+
+        # Recherche guidée (A*) : le temps minimal restant, à vol d'oiseau, s'ajoute à
+        # la priorité.  Sans cela, 72 000 correspondances font explorer toute la ville
+        # avant d'avancer vers l'arrivée (jusqu'à 44 s par requête).
+        goals = [
+            coords
+            for stop in destination_points
+            if (coords := self.network.coords(stop)) is not None
+        ]
+        remaining_by_stop: dict[str, float] = {}
+
+        def remaining(node: Node) -> float:
+            stop = self.network.stop_for(node)
+            value = remaining_by_stop.get(stop)
+            if value is None:
+                here = self.network.coords(stop)
+                value = (
+                    min(haversine_m(here, goal) for goal in goals)
+                    / BUS_SPEED_M_PER_MIN
+                    if here is not None and goals
+                    else 0.0
+                )
+                remaining_by_stop[stop] = value
+            return value
+
         best: dict[tuple[Node, int], list[_Label]] = defaultdict(list)
         recorded: dict[tuple[LineKey, ...], Trip] = {}
         accepted: list[Trip] = []
@@ -790,7 +832,9 @@ class RouteEngine:
                     continue
                 if operator is not None and node.line[0] != operator:
                     continue
-                self._push(queue, best, counter, self._start_label(stop, access, node))
+                self._push(
+                    queue, best, counter, self._start_label(stop, access, node), remaining
+                )
 
         expansions = 0
         while queue:
@@ -801,6 +845,8 @@ class RouteEngine:
 
             expansions += 1
             if expansions > MAX_EXPANSIONS:
+                break
+            if score_so_far >= best_score + MAX_SCORE_ABOVE_BEST:
                 break
 
             # Queue order is score order, so this lower bound is final.
@@ -827,6 +873,10 @@ class RouteEngine:
                     origin_is_downtown=origin_is_downtown,
                     destination_is_downtown=destination_is_downtown,
                 )
+                best_score = min(
+                    best_score,
+                    trip.raw_minutes + TRANSFER_SCORE_MINUTES * trip.transfers,
+                )
                 current = recorded.get(trip.line_combo)
                 if current is None or self._trip_rank(trip) < self._trip_rank(current):
                     recorded[trip.line_combo] = trip
@@ -842,6 +892,7 @@ class RouteEngine:
                         best,
                         counter,
                         self._advance_ride(label, edge),
+                        remaining,
                     )
                 else:
                     if label.transfers >= MAX_TRANSFERS:
@@ -857,6 +908,7 @@ class RouteEngine:
                         best,
                         counter,
                         self._advance_transfer(label, edge),
+                        remaining,
                     )
 
         return list(recorded.values())
@@ -902,6 +954,7 @@ class RouteEngine:
         best: dict[tuple[Node, int], list[_Label]],
         counter,
         label: _Label,
+        remaining: Callable[[Node], float],
     ) -> None:
         state = (label.node, label.transfers)
         current = best[state]
@@ -925,7 +978,9 @@ class RouteEngine:
         heapq.heappush(
             queue,
             (
-                label.cost + TRANSFER_SCORE_MINUTES * label.transfers,
+                label.cost
+                + TRANSFER_SCORE_MINUTES * label.transfers
+                + remaining(label.node),
                 label.transfers,
                 label.cost,
                 next(counter),

@@ -367,13 +367,12 @@ Dakar Dem Dikk,502,6,Police 4em,14.695609,-17.452448,interpolation,entre UCAD et
 Dakar Dem Dikk,502,7,Rond Point Sham,14.696794,-17.447634,interpolation,entre UCAD et Gare Colobane,
 Dakar Dem Dikk,502,8,Gare Colobane,14.697979,-17.442821,ancre_tata,Gare de Colobane,
 Dakar Dem Dikk,503,1,Gare de Colobane,14.697979,-17.442821,ancre_tata,Gare de Colobane,
-Dakar Dem Dikk,503,2,Rond Point Bel,14.687209,-17.438188,interpolation,entre Gare de Colobane et Air,
-Dakar Dem Dikk,503,3,Air,14.676438,-17.433555,nominatim,"Dakar, Boulevard du Centenaire de la Commune de Dakar, Commune de Dakar-Plateau,",
-Dakar Dem Dikk,503,4,Mole 8,14.684651,-17.424350,guindima_origine,Môle 8,
-Dakar Dem Dikk,503,5,Cité Isra,14.690967,-17.430012,interpolation,entre Mole 8 et Zone industrielle,
-Dakar Dem Dikk,503,6,Zone industrielle,14.697283,-17.435675,nominatim,"CBAO, Route des Grands Moulins, Commune de Hann Bel-Air, Arrondissement de Grand",
-Dakar Dem Dikk,503,7,Service des mines,14.698277,-17.438134,nominatim,"Service des mines, Rocade Fann-Bel Air, Commune de Hann Bel-Air, Arrondissement ",
-Dakar Dem Dikk,503,8,Gare de Colobane,14.697979,-17.442821,ancre_tata,Gare de Colobane,
+Dakar Dem Dikk,503,2,Rond Point Bel Air,14.691315,-17.433585,interpolation,entre Gare de Colobane et Mole 8,
+Dakar Dem Dikk,503,3,Mole 8,14.684651,-17.424350,nominatim,"Mole 8, Commune de Hann Bel-Air, Arrondissement de Grand Dakar, Dakar, Région de",
+Dakar Dem Dikk,503,4,Cité Isra,14.690967,-17.430012,interpolation,entre Mole 8 et Zone industrielle,
+Dakar Dem Dikk,503,5,Zone industrielle,14.697283,-17.435675,nominatim,"CBAO, Route des Grands Moulins, Commune de Hann Bel-Air, Arrondissement de Grand",
+Dakar Dem Dikk,503,6,Service des mines,14.698277,-17.438134,nominatim,"Service des mines, Rocade Fann-Bel Air, Commune de Hann Bel-Air, Arrondissement ",
+Dakar Dem Dikk,503,7,Gare de Colobane,14.697979,-17.442821,ancre_tata,Gare de Colobane,
 Dakar Dem Dikk,TAF TAF,1,Terminus Ouakam,14.724737,-17.485066,ancre_tata,Ouakam,
 Dakar Dem Dikk,TAF TAF,2,Mamelles,14.726925,-17.501237,osm_arret,Arret bus Mamelles,
 Dakar Dem Dikk,TAF TAF,3,Croisement Almadies,14.737073,-17.509341,nominatim,"SGBS, Route de la Corniche O Dakar, Arrondissement des Almadies, Dakar, Région d",
@@ -382,15 +381,14 @@ Dakar Dem Dikk,TAF TAF,5,Yoff,14.760358,-17.468149,nominatim,"Commune de Yoff, A
 Dakar Dem Dikk,TAF TAF,6,Rte de l’Aéroport,14.755450,-17.475580,ancre_tata,Route de l'Aéroport,
 Dakar Dem Dikk,TAF TAF,7,Foire,14.742493,-17.468072,ancre_tata,Foire,
 Dakar Dem Dikk,TAF TAF,8,VDN,14.741312,-17.471686,nominatim,"rond point VDN Ouest Foire, Dakar, Région de Dakar, Sénégal",
-Dakar Dem Dikk,TAF TAF,9,Direction Générale DDD,14.737084,-17.466958,interpolation,entre VDN et Rond Point Liberté 6,
-Dakar Dem Dikk,TAF TAF,10,Rond Point JVC,14.732857,-17.462230,interpolation,entre VDN et Rond Point Liberté 6,
-Dakar Dem Dikk,TAF TAF,11,Rond Point Liberté 6,14.728629,-17.457502,nominatim,"Rond-Point Liberté 6, LIBERTE VI EXTENSION, Commune de Sicap-Liberté, Arrondisse",
-Dakar Dem Dikk,TAF TAF,12,Itinéraire 213,14.733819,-17.452585,interpolation,entre Rond Point Liberté 6 et Police Grand Yoff,
-Dakar Dem Dikk,TAF TAF,13,Police Grand Yoff,14.739009,-17.447669,nominatim,"Commissariat de police Grand Yoff, GY-476, DJEDDAH, Khar Yalla, Commune de Grand",
-Dakar Dem Dikk,TAF TAF,14,Pharmacie Patte d’Oie,14.741562,-17.445788,osm_arret,Pharmacie de patte d'oie,
-Dakar Dem Dikk,TAF TAF,15,Autoroute à Péage,14.742753,-17.453203,interpolation,entre Pharmacie Patte d’Oie et AIBD,
-Dakar Dem Dikk,TAF TAF,16,Diamniadio,14.743943,-17.460618,interpolation,entre Pharmacie Patte d’Oie et AIBD,
-Dakar Dem Dikk,TAF TAF,17,AIBD,14.745133,-17.468034,nominatim,"AIBD, Voie de Dégagement Nord, Commune de Grand Yoff, commune d'arrondissement d",
+Dakar Dem Dikk,TAF TAF,9,Direction Générale DDD,14.737154,-17.466818,interpolation,entre VDN et Rond Point Liberté 6,
+Dakar Dem Dikk,TAF TAF,10,Rond Point JVC,14.732996,-17.461950,interpolation,entre VDN et Rond Point Liberté 6,
+Dakar Dem Dikk,TAF TAF,11,Rond Point Liberté 6,14.728838,-17.457082,nominatim,"Rond-Point Liberté 6, KHAR YALLA I, Commune de Grand Yoff, commune d'arrondissem",
+Dakar Dem Dikk,TAF TAF,12,Police Grand Yoff,14.739009,-17.447669,nominatim,"Commissariat de police Grand Yoff, GY-476, DJEDDAH, Khar Yalla, Commune de Grand",
+Dakar Dem Dikk,TAF TAF,13,Pharmacie Patte d’Oie,14.741562,-17.445788,osm_arret,Pharmacie de patte d'oie,
+Dakar Dem Dikk,TAF TAF,14,Autoroute à Péage,14.742753,-17.453203,interpolation,entre Pharmacie Patte d’Oie et AIBD,
+Dakar Dem Dikk,TAF TAF,15,Diamniadio,14.743943,-17.460618,interpolation,entre Pharmacie Patte d’Oie et AIBD,
+Dakar Dem Dikk,TAF TAF,16,AIBD,14.745133,-17.468034,nominatim,"AIBD, Voie de Dégagement Nord, Commune de Grand Yoff, commune d'arrondissement d",
 Dakar Dem Dikk,2,1,Terminus Daroukhane,14.784935,-17.375404,guindima_origine,Daroukhane,
 Dakar Dem Dikk,2,2,Corniche,14.783483,-17.381216,interpolation,entre Terminus Daroukhane et Hamo,
 Dakar Dem Dikk,2,3,Hamo,14.782030,-17.387027,nominatim,"Maternité Hamo 5, Route vers Corniche, Hamo 6, Commune de Ndiarème Limamoulaye, ",
@@ -707,21 +705,6 @@ Dakar Dem Dikk,232,12,VDN,14.741312,-17.471686,nominatim,"rond point VDN Ouest F
 Dakar Dem Dikk,232,13,Foire,14.742493,-17.468072,ancre_tata,Foire,
 Dakar Dem Dikk,232,14,Yoff,14.760358,-17.468149,nominatim,"Commune de Yoff, Arrondissement des Almadies, Dakar, Région de Dakar, 11900, Sén",
 Dakar Dem Dikk,232,15,Terminus Aéroport LSS,14.746368,-17.490662,ancre_tata,Aéroport LSS,
-Dakar Dem Dikk,233,1,Baux Maraichers,14.739622,-17.403518,osm_arret,Baux Maraîchers,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-Dakar Dem Dikk,233,2,Yarakh,14.735449,-17.416178,osm_arret,Yarakh,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-Dakar Dem Dikk,233,3,Cafétéria,14.697744,-17.450713,nominatim,"Cafétéria, Rocade Fann Bel-Air, Gardien, Commune de Grand-Dakar, Arrondissement ","page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-Dakar Dem Dikk,233,4,Hann Maristes,14.724564,-17.439165,nominatim,"Hann Maristes, Route du Front de Terre, Hann Equip, Commune de Hann Bel-Air, Arr","page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-Dakar Dem Dikk,233,5,Cours Sainte Marie de Hann,14.733283,-17.436071,nominatim,"Cours Sainte-Marie de Hann, HB-221, Commune de Hann Bel-Air, Arrondissement de G","page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-Dakar Dem Dikk,233,6,Sortie Mariste,14.731251,-17.439292,interpolation,entre Cours Sainte Marie de Hann et Front de terre,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-Dakar Dem Dikk,233,7,Usine des eaux,14.729219,-17.442512,interpolation,entre Cours Sainte Marie de Hann et Front de terre,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-Dakar Dem Dikk,233,8,Front de terre,14.727187,-17.445733,nominatim,"Ageroute (Dakar), Avenue du Roi Fahd Ben Abdel Aziz, Zone De Captage, Commune de","page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-Dakar Dem Dikk,233,9,Khar Yalla,14.731109,-17.456657,osm_arret,Arrêt Khar Yalla,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-Dakar Dem Dikk,233,10,Rond Point Liberté 6,14.728838,-17.457082,nominatim,"Rond-Point Liberté 6, KHAR YALLA I, Commune de Grand Yoff, commune d'arrondissem","page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-Dakar Dem Dikk,233,11,Deux voies vers Camp Leclerc,14.735075,-17.464384,interpolation,entre Rond Point Liberté 6 et VDN,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-Dakar Dem Dikk,233,12,VDN,14.741312,-17.471686,nominatim,"rond point VDN Ouest Foire, Dakar, Région de Dakar, Sénégal","page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-Dakar Dem Dikk,233,13,Foire,14.742493,-17.468072,ancre_tata,Foire,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-Dakar Dem Dikk,233,14,Yoff,14.760358,-17.468149,nominatim,"Commune de Yoff, Arrondissement des Almadies, Dakar, Région de Dakar, 11900, Sén","page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-Dakar Dem Dikk,233,15,Terminus Aéroport LSS,14.746368,-17.490662,ancre_tata,Aéroport LSS,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
 Dakar Dem Dikk,234,1,TERMINUS JAXAAY (Mosquée Niakoul Rab),14.770568,-17.282374,terminus_guindima,Jaxaay,
 Dakar Dem Dikk,234,2,Terminus 56,14.774219,-17.288176,osm_arret,Terminus 56,
 Dakar Dem Dikk,234,3,2 voies Jaxaay,14.778587,-17.305921,interpolation,entre Terminus 56 et Station Keur Massar,

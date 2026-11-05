@@ -76,6 +76,8 @@ STOP_NAME_ALIASES = {
     "pattesd oie": "Patte d'Oie",
     "patte d oie": "Patte d'Oie",
     "sahm": "Sahm",
+    # La liste officielle écrit « Ucad » : le nom connu des usagers reste UCAD.
+    "ucad": "UCAD",
 }
 
 
@@ -157,7 +159,10 @@ def canonicalize_data_stop_names(data: Any) -> None:
         text = value.strip()
         if not text:
             return value
-        return case_names.get(normalize_name(text), canonical_stop_name(text))
+        normalized = normalize_name(text)
+        if normalized in STOP_NAME_ALIASES:
+            return STOP_NAME_ALIASES[normalized]
+        return case_names.get(normalized, text)
 
     for frame, columns in targets:
         for column in columns:

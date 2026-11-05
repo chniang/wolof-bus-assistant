@@ -19,11 +19,12 @@ Point = tuple[float, float]
 
 # Un arrêt plus loin de la trace n'est pas sur ce parcours : il n'y compte pas.
 MAX_ECART_TRACE_M = 1_000.0
-# Une trace peut repasser au même endroit (aller-retour, boucle) : parmi les passages
-# presque aussi proches, on garde le premier, pour ne pas sauter un tronçon.
-MARGE_PASSAGE_M = 100.0
-# Sous cette part d'arrêts bien placés, la trace et la ligne ne correspondent pas.
-PART_MIN_ARRETS_SUR_TRACE = 0.5
+# Deux arrêts consécutifs retenus doivent avancer d'au moins cela sur la trace : des
+# arrêts empilés au même point ne prouvent pas qu'on suit le bon sens.
+PAS_MIN_M = 50.0
+# Il faut au moins 3 arrêts cohérents, couvrant cette part de la trace.
+MIN_ARRETS_COHERENTS = 3
+PART_MIN_TRACE_COUVERTE = 0.5
 
 
 def distance_m(a: Point, b: Point) -> float:
@@ -76,36 +77,43 @@ def _projeter(point: Point, a: Point, b: Point) -> tuple[float, float]:
 def _abscisses(
     trace: Sequence[Point],
     positions: Sequence[Point | None],
-) -> list[float | None]:
-    """Abscisse de chaque arrêt sur la trace, toujours croissante le long de la ligne."""
+) -> tuple[list[float | None], float]:
+    """L'abscisse de chaque arrêt le plus proche de la trace, et la longueur de la trace."""
 
     longueurs = [0.0]
     for a, b in zip(trace, trace[1:]):
         longueurs.append(longueurs[-1] + distance_m(a, b))
 
     sortie: list[float | None] = []
-    debut = 0
     for position in positions:
         if position is None:
             sortie.append(None)
             continue
-        candidats = [
+        ecart, t, i = min(
             (*_projeter(position, trace[i], trace[i + 1]), i)
-            for i in range(debut, len(trace) - 1)
-        ]
-        if not candidats:
-            sortie.append(None)
-            continue
-        meilleur = min(ecart for ecart, _, _ in candidats)
-        if meilleur > MAX_ECART_TRACE_M:
-            sortie.append(None)
-            continue
-        ecart, t, i = next(
-            c for c in candidats if c[0] <= meilleur + MARGE_PASSAGE_M
+            for i in range(len(trace) - 1)
         )
-        sortie.append(longueurs[i] + t * (longueurs[i + 1] - longueurs[i]))
-        debut = i
-    return sortie
+        sortie.append(
+            None
+            if ecart > MAX_ECART_TRACE_M
+            else longueurs[i] + t * (longueurs[i + 1] - longueurs[i])
+        )
+    return sortie, longueurs[-1]
+
+
+def _suite_croissante(abscisses: Sequence[float | None]) -> list[int]:
+    """Les arrêts qui se suivent dans l'ordre de la trace : la plus longue suite."""
+
+    indices = [i for i, valeur in enumerate(abscisses) if valeur is not None]
+    meilleure: dict[int, list[int]] = {}
+    for i in indices:
+        precedentes = [
+            meilleure[j]
+            for j in indices
+            if j < i and abscisses[j] + PAS_MIN_M <= abscisses[i]
+        ]
+        meilleure[i] = max(precedentes, key=len, default=[]) + [i]
+    return max(meilleure.values(), key=len, default=[])
 
 
 def distances_sur_trace(
@@ -114,26 +122,31 @@ def distances_sur_trace(
 ) -> tuple[float | None, ...] | None:
     """Longueur de route de chaque segment de la ligne, ou None si la trace ne convient pas.
 
-    Le sens de la trace n'est pas forcément celui de nos arrêts : on essaie les deux
-    et on garde celui qui place le plus d'arrêts.  Un arrêt hors trace ne compte
-    pas : la longueur entre ses deux voisins est partagée à parts égales.
+    Le sens de la trace n'est pas forcément celui de nos arrêts : on garde celui qui
+    place le plus d'arrêts dans l'ordre.  Un arrêt incohérent est ignoré : Tata 35
+    a plusieurs arrêts proposés au même point, près de Ngor.  La longueur entre ses
+    deux voisins est alors partagée à parts égales.
     """
 
-    connus = sum(position is not None for position in positions)
-    if len(trace) < 2 or connus < 2:
+    if len(trace) < 2:
         return None
 
-    abscisses = max(
-        (_abscisses(trace, positions), _abscisses(trace[::-1], positions)),
-        key=lambda valeurs: sum(valeur is not None for valeur in valeurs),
-    )
-    places = [i for i, valeur in enumerate(abscisses) if valeur is not None]
-    if len(places) < 2 or len(places) < PART_MIN_ARRETS_SUR_TRACE * connus:
+    meilleur: tuple[list[int], list[float | None], float] | None = None
+    for sens in (trace, trace[::-1]):
+        abscisses, longueur = _abscisses(sens, positions)
+        retenus = _suite_croissante(abscisses)
+        if meilleur is None or len(retenus) > len(meilleur[0]):
+            meilleur = (retenus, abscisses, longueur)
+    retenus, abscisses, longueur = meilleur
+    if len(retenus) < MIN_ARRETS_COHERENTS:
+        return None
+    couvert = abscisses[retenus[-1]] - abscisses[retenus[0]]
+    if couvert < PART_MIN_TRACE_COUVERTE * longueur:
         return None
 
     segments: list[float | None] = [None] * (len(positions) - 1)
-    for gauche, droite in zip(places, places[1:]):
-        longueur = (abscisses[droite] - abscisses[gauche]) / (droite - gauche)
+    for gauche, droite in zip(retenus, retenus[1:]):
+        part = (abscisses[droite] - abscisses[gauche]) / (droite - gauche)
         for i in range(gauche, droite):
-            segments[i] = longueur
+            segments[i] = part
     return tuple(segments)

@@ -100,6 +100,29 @@ def normalize_name(text: object) -> str:
     return " ".join(tokens).strip()
 
 
+def terminus_forms(name: object) -> tuple[str, ...]:
+    """Les lieux que désigne un nom de terminus ou de gare.
+
+    « Terminus liberté 5 (Dieuppeul) » -> Liberté 5 et Dieuppeul ;
+    « Terminus Parcelles Assainies » -> Parcelles Assainies ; « Gare de Colobane »
+    -> Colobane.  Un numéro seul (« Terminus 221 (Gadaye) ») ne désigne aucun lieu.
+    """
+
+    text = str(name or "").strip()
+    match = re.fullmatch(
+        r"(?:terminus|gare(?:\s+(?:de|du|d'))?)\s+([^()]+?)\s*(?:\(([^()]*)\))?",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ()
+    return tuple(
+        form.strip()
+        for form in match.groups()
+        if form and form.strip() and not form.strip().isdigit()
+    )
+
+
 def _spoken_display_rank(name: str) -> tuple[bool, bool, int, str]:
     """Prefer normal title case when two rows name the same place."""
 
@@ -301,6 +324,28 @@ class PlaceIndex:
                     is_place=True,
                 )
             )
+        # En dernier, pour que la position générale d'un arrêt connu reste prioritaire :
+        # les arrêts des itinéraires (noms officiels de Dem Dikk compris), et les
+        # lieux que désigne un terminus : « Dieuppeul » pour « Terminus liberté 5
+        # (Dieuppeul) ».  Leur position est celle de l'arrêt sur sa ligne.
+        positions = getattr(data, "positions_ligne", {})
+        for row in data.itineraires.itertuples(index=False):
+            name = str(row.arret)
+            position = positions.get((str(row.compagnie), str(row.ligne)), {}).get(
+                int(row.ordre)
+            )
+            lat, lon = position or (None, None)
+            for label in (name, *terminus_forms(name)):
+                entries.append(
+                    _Entry(
+                        name=label,
+                        normalized=normalize_name(label),
+                        lat=lat,
+                        lon=lon,
+                        is_stop=True,
+                        stop_names=[name],
+                    )
+                )
         return cls(entries)
 
     @classmethod

@@ -367,13 +367,12 @@ TAF TAF OUAKAM (TO1),urbain,OUAKAM  PALAIS 2,10,Palais 2,
 502,urbain,GARE DE GARE  GARE DE GARE,7,Rond Point Sham,
 502,urbain,GARE DE GARE  GARE DE GARE,8,Gare Colobane,
 503,urbain,GARE DE GARE  GARE DE GARE,1,Gare de Colobane,
-503,urbain,GARE DE GARE  GARE DE GARE,2,Rond Point Bel,
-503,urbain,GARE DE GARE  GARE DE GARE,3,Air,
-503,urbain,GARE DE GARE  GARE DE GARE,4,Mole 8,
-503,urbain,GARE DE GARE  GARE DE GARE,5,Cité Isra,
-503,urbain,GARE DE GARE  GARE DE GARE,6,Zone industrielle,
-503,urbain,GARE DE GARE  GARE DE GARE,7,Service des mines,
-503,urbain,GARE DE GARE  GARE DE GARE,8,Gare de Colobane,
+503,urbain,GARE DE GARE  GARE DE GARE,2,Rond Point Bel Air,
+503,urbain,GARE DE GARE  GARE DE GARE,3,Mole 8,
+503,urbain,GARE DE GARE  GARE DE GARE,4,Cité Isra,
+503,urbain,GARE DE GARE  GARE DE GARE,5,Zone industrielle,
+503,urbain,GARE DE GARE  GARE DE GARE,6,Service des mines,
+503,urbain,GARE DE GARE  GARE DE GARE,7,Gare de Colobane,
 TAF TAF,urbain,,1,Terminus Ouakam,
 TAF TAF,urbain,,2,Mamelles,
 TAF TAF,urbain,,3,Croisement Almadies,
@@ -385,12 +384,11 @@ TAF TAF,urbain,,8,VDN,
 TAF TAF,urbain,,9,Direction Générale DDD,
 TAF TAF,urbain,,10,Rond Point JVC,
 TAF TAF,urbain,,11,Rond Point Liberté 6,
-TAF TAF,urbain,,12,Itinéraire 213,
-TAF TAF,urbain,,13,Police Grand Yoff,
-TAF TAF,urbain,,14,Pharmacie Patte d’Oie,
-TAF TAF,urbain,,15,Autoroute à Péage,
-TAF TAF,urbain,,16,Diamniadio,
-TAF TAF,urbain,,17,AIBD,
+TAF TAF,urbain,,12,Police Grand Yoff,
+TAF TAF,urbain,,13,Pharmacie Patte d’Oie,
+TAF TAF,urbain,,14,Autoroute à Péage,
+TAF TAF,urbain,,15,Diamniadio,
+TAF TAF,urbain,,16,AIBD,
 2,banlieue,DAROUKHANE  PLACE LECLERC,1,Terminus Daroukhane,
 2,banlieue,DAROUKHANE  PLACE LECLERC,2,Corniche,
 2,banlieue,DAROUKHANE  PLACE LECLERC,3,Hamo,
@@ -707,21 +705,6 @@ TAF TAF,urbain,,17,AIBD,
 232,banlieue,BAUX MARAICHERS  AEROPORT LSS,13,Foire,
 232,banlieue,BAUX MARAICHERS  AEROPORT LSS,14,Yoff,
 232,banlieue,BAUX MARAICHERS  AEROPORT LSS,15,Terminus Aéroport LSS,
-233,banlieue,BAUX MARAICHERS  PALAIS 1,1,Baux Maraichers,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-233,banlieue,BAUX MARAICHERS  PALAIS 1,2,Yarakh,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-233,banlieue,BAUX MARAICHERS  PALAIS 1,3,Cafétéria,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-233,banlieue,BAUX MARAICHERS  PALAIS 1,4,Hann Maristes,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-233,banlieue,BAUX MARAICHERS  PALAIS 1,5,Cours Sainte Marie de Hann,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-233,banlieue,BAUX MARAICHERS  PALAIS 1,6,Sortie Mariste,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-233,banlieue,BAUX MARAICHERS  PALAIS 1,7,Usine des eaux,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-233,banlieue,BAUX MARAICHERS  PALAIS 1,8,Front de terre,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-233,banlieue,BAUX MARAICHERS  PALAIS 1,9,Khar Yalla,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-233,banlieue,BAUX MARAICHERS  PALAIS 1,10,Rond Point Liberté 6,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-233,banlieue,BAUX MARAICHERS  PALAIS 1,11,Deux voies vers Camp Leclerc,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-233,banlieue,BAUX MARAICHERS  PALAIS 1,12,VDN,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-233,banlieue,BAUX MARAICHERS  PALAIS 1,13,Foire,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-233,banlieue,BAUX MARAICHERS  PALAIS 1,14,Yoff,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
-233,banlieue,BAUX MARAICHERS  PALAIS 1,15,Terminus Aéroport LSS,"page DDD incohérente : titre Palais 1, arrêts vers Aéroport LSS (copie de la 232 ?)"
 234,banlieue,JAXAAY  LECLERC,1,TERMINUS JAXAAY (Mosquée Niakoul Rab),
 234,banlieue,JAXAAY  LECLERC,2,Terminus 56,
 234,banlieue,JAXAAY  LECLERC,3,2 voies Jaxaay,

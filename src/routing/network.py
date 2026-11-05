@@ -11,12 +11,13 @@ stop name, or at two stops within 500 m.
 
 from __future__ import annotations
 
+import heapq
 import math
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Iterable, NamedTuple
 
-from .places import normalize_name
+from .places import _GENERIC_TOKENS, normalize_name, terminus_forms
 from .traces import distances_sur_trace
 
 # Modeling constants.  They are deliberately simple and easy to tune.
@@ -29,6 +30,15 @@ UNKNOWN_TWO_STOP_RIDE_MINUTES = 35.0
 TRANSFER_PENALTY_MIN = 6.0        # waiting / walking to the next line
 WALK_SPEED_M_PER_MIN = 80.0
 MAX_TRANSFER_WALK_M = 500.0
+# Correspondances à pied gardées pour deux lignes données : les plus courtes.  Toutes
+# les garder faisait 126 000 arêtes et jusqu'à 44 s par requête, sans bus direct.
+MAX_WALK_TRANSFERS_PER_LINE_PAIR = 2
+# Un ancien nom absent des listes officielles (« Cambérène 2 ») vaut l'arrêt officiel
+# le plus proche : portant le même nom de quartier, ou tout près s'il n'y en a pas.
+LEGACY_SAME_NAME_RADIUS_M = 2_000.0
+LEGACY_ANY_NAME_RADIUS_M = 500.0
+POSITION_AGREEMENT_M = 500.0
+SAME_NAME_MAX_APART_M = 1_000.0
 
 LineKey = tuple[str, str]          # (operator, line name)
 
@@ -159,6 +169,63 @@ def interpolate_missing_coordinates(
     return coords, confidence
 
 
+def _name_tokens(name: str) -> set[str]:
+    return {
+        token
+        for token in normalize_name(name).split()
+        if token not in _GENERIC_TOKENS and not token.isdigit()
+    }
+
+
+def _legacy_stops(
+    data,
+    lines: list[Line],
+    stop_coords: dict[str, tuple[float, float]],
+    stop_confidence: dict[str, str],
+) -> dict[str, str]:
+    """Ancien nom bien situé -> arrêt officiel le plus proche de la même zone.
+
+    Une position interpolée ne désigne jamais de zone, ni un ancien nom douteux :
+    mieux vaut ne pas répondre que répondre à côté.
+    """
+
+    current = {stop for line in lines for stop in line.stops}
+    norms = {normalize_name(stop) for stop in current}
+    located = [
+        (stop, stop_coords[stop], _name_tokens(stop))
+        for stop in current
+        if stop in stop_coords and stop_confidence.get(stop) in {"bonne", "estimee"}
+    ]
+
+    legacy: dict[str, str] = {}
+    for row in data.arrets.itertuples(index=False):
+        name = str(row.arret)
+        if (
+            normalize_name(name) in norms
+            or getattr(row, "confiance", None) != "bonne"
+        ):
+            continue
+        lat, lon = _number(row.lat), _number(row.lon)
+        if lat is None or lon is None:
+            continue
+        tokens = _name_tokens(name)
+        best: tuple[bool, float, str] | None = None
+        for stop, coords, stop_tokens in located:
+            distance = haversine_m((lat, lon), coords)
+            same_area = bool(tokens & stop_tokens)
+            limit = (
+                LEGACY_SAME_NAME_RADIUS_M if same_area else LEGACY_ANY_NAME_RADIUS_M
+            )
+            if distance > limit:
+                continue
+            candidate = (not same_area, distance, stop)
+            if best is None or candidate < best:
+                best = candidate
+        if best is not None:
+            legacy[name] = best[2]
+    return legacy
+
+
 class Network:
     def __init__(
         self,
@@ -167,6 +234,7 @@ class Network:
         stop_confidence: dict[str, str] | None = None,
         line_positions: dict[LineKey, tuple] | None = None,
         line_distances: dict[LineKey, tuple] | None = None,
+        legacy_stops: dict[str, str] | None = None,
     ) -> None:
         self.lines = {line.key: line for line in lines}
         self.stop_coords = dict(stop_coords)
@@ -195,6 +263,18 @@ class Network:
         for stop in self.stop_names:
             self._stops_by_norm[normalize_name(stop)].append(stop)
 
+        # « Dieuppeul » et « Liberté 5 » mènent aussi à « Terminus liberté 5
+        # (Dieuppeul) », sans en faire le même arrêt pour les correspondances.
+        for stop in self.stop_names:
+            for form in terminus_forms(stop):
+                names = self._stops_by_norm[normalize_name(form)]
+                if stop not in names:
+                    names.append(stop)
+        for old_name, stop in (legacy_stops or {}).items():
+            normalized = normalize_name(old_name)
+            if not self._stops_by_norm.get(normalized):
+                self._stops_by_norm[normalized] = [stop]
+
         self._adjacency: dict[Node, list[Edge]] | None = None
 
     # ------------------------------------------------------------------
@@ -220,7 +300,7 @@ class Network:
         return self._nodes_at_norm.get(normalized, [])
 
     def stops_for_normalized(self, normalized: str) -> list[str]:
-        return self._stops_by_norm.get(normalized, [])
+        return list(self._stops_by_norm.get(normalized, ()))
 
     def coords(self, stop: str) -> tuple[float, float] | None:
         return self.stop_coords.get(stop)
@@ -319,10 +399,30 @@ class Network:
 
         # Transfers at the same normalized stop name.  This also joins
         # spellings such as "Sahm" and "SAHM".
+        # Deux lignes peuvent donner le même nom à deux endroits éloignés : « VDN » est
+        # une avenue de 15 km, et Tata 37 y passe loin de TAF TAF.  Sans ce contrôle,
+        # on changeait de bus à « VDN » en se téléportant vers Malika.
+        def node_position(node: Node) -> tuple[float, float] | None:
+            line = self.lines[node.line]
+            index = (
+                node.index
+                if node.direction == 0
+                else len(line.stops) - 1 - node.index
+            )
+            return self.position_on_line(line, index)
+
         for nodes in self._nodes_at_norm.values():
+            positions = {node: node_position(node) for node in nodes}
             for source in nodes:
                 for target in nodes:
                     if source == target or source.line == target.line:
+                        continue
+                    here, there = positions[source], positions[target]
+                    if (
+                        here is not None
+                        and there is not None
+                        and haversine_m(here, there) > SAME_NAME_MAX_APART_M
+                    ):
                         continue
                     adjacency[source].append(
                         Edge(
@@ -335,7 +435,25 @@ class Network:
                         )
                     )
 
-        # Short walking transfers between different stop names.
+        # Short walking transfers between different stop names: only the closest
+        # stop pairs of each pair of lines.
+        lines_at_stop: dict[str, set[LineKey]] = defaultdict(set)
+        nodes_on_line: dict[tuple[LineKey, str], list[Node]] = defaultdict(list)
+        for stop, nodes in self._nodes_at_stop.items():
+            for node in nodes:
+                lines_at_stop[stop].add(node.line)
+                nodes_on_line[(node.line, stop)].append(node)
+
+        def position_for(line: LineKey, stop: str) -> tuple[float, float] | None:
+            first = min(
+                (node for node in nodes_on_line[(line, stop)] if node.direction == 0),
+                key=lambda node: node.index,
+            )
+            return self.position_on_line(self.lines[line], first.index)
+
+        by_line_pair: dict[
+            tuple[LineKey, LineKey], list[tuple[float, str, str]]
+        ] = defaultdict(list)
         stops_with_coords = [
             stop for stop in self.stop_names if stop in self.stop_coords
         ]
@@ -349,33 +467,45 @@ class Network:
                 )
                 if distance > MAX_TRANSFER_WALK_M:
                     continue
+                for left_line in lines_at_stop[left_stop]:
+                    for right_line in lines_at_stop[right_stop]:
+                        # Là où chaque ligne passe vraiment : une position générale
+                        # fausse mettait Pikine Texaco (Tata 80) à côté de Ngor.
+                        left_here = position_for(left_line, left_stop)
+                        right_here = position_for(right_line, right_stop)
+                        if (
+                            left_here is None
+                            or right_here is None
+                            or haversine_m(left_here, right_here) > MAX_TRANSFER_WALK_M
+                        ):
+                            continue
+                        if left_line < right_line:
+                            by_line_pair[(left_line, right_line)].append(
+                                (distance, left_stop, right_stop)
+                            )
+                        elif right_line < left_line:
+                            by_line_pair[(right_line, left_line)].append(
+                                (distance, right_stop, left_stop)
+                            )
 
+        for (first_line, second_line), candidates in by_line_pair.items():
+            closest = heapq.nsmallest(MAX_WALK_TRANSFERS_PER_LINE_PAIR, candidates)
+            for distance, first_stop, second_stop in closest:
                 walk_minutes = distance / WALK_SPEED_M_PER_MIN
                 cost = TRANSFER_PENALTY_MIN + walk_minutes
-                for source in self._nodes_at_stop[left_stop]:
-                    for target in self._nodes_at_stop[right_stop]:
-                        if source.line == target.line:
-                            continue
-                        adjacency[source].append(
-                            Edge(
-                                target=target,
-                                kind="transfer",
-                                minutes=cost,
-                                walk_minutes=walk_minutes,
-                                walk_distance_m=distance,
-                                transfer_penalty=TRANSFER_PENALTY_MIN,
+                for source in nodes_on_line[(first_line, first_stop)]:
+                    for target in nodes_on_line[(second_line, second_stop)]:
+                        for start, end in ((source, target), (target, source)):
+                            adjacency[start].append(
+                                Edge(
+                                    target=end,
+                                    kind="transfer",
+                                    minutes=cost,
+                                    walk_minutes=walk_minutes,
+                                    walk_distance_m=distance,
+                                    transfer_penalty=TRANSFER_PENALTY_MIN,
+                                )
                             )
-                        )
-                        adjacency[target].append(
-                            Edge(
-                                target=source,
-                                kind="transfer",
-                                minutes=cost,
-                                walk_minutes=walk_minutes,
-                                walk_distance_m=distance,
-                                transfer_penalty=TRANSFER_PENALTY_MIN,
-                            )
-                        )
 
         # If the same (source, target) node pair was reached twice, keep
         # the cheapest way to make that change.
@@ -482,6 +612,7 @@ class Network:
         by_order = getattr(data, "positions_ligne", {})
         sure_by_order = getattr(data, "positions_sures", {})
         raw_positions: dict[LineKey, list] = {}
+        proposals: dict[str, list[tuple[tuple[float, float], bool]]] = defaultdict(list)
         for line in lines:
             orders = line_orders.get(line.key)
             per_line = by_order.get(line.key)
@@ -490,14 +621,42 @@ class Network:
             raw_positions[line.key] = [per_line.get(ordre, ...) for ordre in orders]
             for stop, ordre in zip(line.stops, orders):
                 position = per_line.get(ordre)
-                if position is None:
-                    continue
-                sure = sure_by_order.get(line.key, {}).get(ordre, False)
-                if stop not in stop_coords or (
-                    sure and stop_confidence.get(stop) != "bonne"
-                ):
-                    stop_coords[stop] = position
-                    stop_confidence[stop] = "bonne" if sure else "estimee"
+                if position is not None:
+                    proposals[stop].append(
+                        (position, sure_by_order.get(line.key, {}).get(ordre, False))
+                    )
+
+        # Une ligne seule ne déplace pas un arrêt pour tout le réseau : sa position
+        # peut être fausse (Tata 35 met Pikine Texaco près de Ngor, ce qui créait une
+        # correspondance à pied entre les deux).  Il faut deux lignes d'accord, ou
+        # que l'arrêt n'ait encore aucune position.
+        for stop, proposed in proposals.items():
+            position, sure, supporters = max(
+                (
+                    (
+                        candidate,
+                        is_sure,
+                        sum(
+                            haversine_m(candidate, other) <= POSITION_AGREEMENT_M
+                            for other, _ in proposed
+                        ),
+                    )
+                    for candidate, is_sure in proposed
+                ),
+                key=lambda item: (item[2], item[1]),
+            )
+            if stop not in stop_coords:
+                stop_coords[stop] = position
+                stop_confidence[stop] = (
+                    "bonne" if sure and supporters >= 2 else "estimee"
+                )
+            elif (
+                sure
+                and supporters >= 2
+                and stop_confidence.get(stop) != "bonne"
+            ):
+                stop_coords[stop] = position
+                stop_confidence[stop] = "bonne"
 
         # Les arrêts restants sont placés à vol d'oiseau le long de leur
         # ligne, uniquement en mémoire : les CSV ne sont jamais modifiés.
@@ -530,4 +689,11 @@ class Network:
             if measured is not None:
                 line_distances[line.key] = measured
 
-        return cls(lines, stop_coords, stop_confidence, line_positions, line_distances)
+        return cls(
+            lines,
+            stop_coords,
+            stop_confidence,
+            line_positions,
+            line_distances,
+            _legacy_stops(data, lines, stop_coords, stop_confidence),
+        )
