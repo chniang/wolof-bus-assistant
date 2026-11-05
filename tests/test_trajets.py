@@ -1363,6 +1363,77 @@ def test_voix() -> tuple[int, int]:
         (phrase_reponse(to1), nom_cache_match(to1[0])),
     )
 
+    verifie(
+        "TAF TAF OUAKAM (TO1) se dit « TAF TAF Wakaam »",
+        phrase_reponse(to1) == "Jëlal bus bu Dem Dikk, TAF TAF Wakaam.",
+        phrase_reponse(to1),
+    )
+
+    # Les variantes d'orthographe d'un lieu partagent un seul audio.
+    import tts.speak as speak
+
+    pompidou = {
+        speak.nom_fichier_lieu(nom)
+        for nom in (
+            "Avenue George Pompidou",
+            "Avenue Georges Pompidou",
+            "Avenue Gorges Pompidou",
+            "Avenue Pompidou",
+        )
+    }
+    verifie("variantes de Pompidou : un seul audio", len(pompidou) == 1, pompidou)
+    verifie(
+        "Arsanel/Arsenal, Bop/Bopp, Bld/Boulevard : un seul audio chacun",
+        speak.nom_fichier_lieu("Arsanel") == speak.nom_fichier_lieu("Arsenal")
+        and speak.nom_fichier_lieu("Bop") == speak.nom_fichier_lieu("Bopp")
+        and speak.nom_fichier_lieu("Bld de la République")
+        == speak.nom_fichier_lieu("Boulevard de la République"),
+    )
+    # Un alias ne doit jamais faire perdre un audio qui existe déjà.
+    from matching.lieux import joli
+    from routing.adapter import _NETWORK
+
+    perdus = []
+    for arret in _NETWORK.stop_names:
+        affiche = joli(arret)
+        sans_alias = (
+            f"lieu_{speak._slug(speak.nom_lieu_parle(affiche, avec_alias=False))}.wav"
+        )
+        avec_alias = speak.nom_fichier_lieu(affiche)
+        if (
+            sans_alias != avec_alias
+            and speak.chemin_audio(speak.CACHE_DIR, sans_alias).is_file()
+            and not speak.chemin_audio(speak.CACHE_DIR, avec_alias).is_file()
+        ):
+            perdus.append((affiche, sans_alias, avec_alias))
+    verifie("aucun alias ne fait perdre un audio existant", not perdus, perdus)
+
+    # Un audio absent de data/tts_cache/ est cherché dans data/tts_cache_ajouts/.
+    ancien_ajouts = speak.CACHE_AJOUTS
+    with tempfile.TemporaryDirectory() as dossier_ajouts:
+        speak.CACHE_AJOUTS = Path(dossier_ajouts)
+        try:
+            nom_to1 = speak.nom_cache_match(to1[0])
+            sans_ajout = speak.voix_depuis_cache(to1)
+            (Path(dossier_ajouts) / nom_to1).write_bytes(
+                (speak.CACHE_DIR / "dakar_dem_dikk_taf_taf.wav").read_bytes()
+            )
+            avec_ajout = speak.voix_depuis_cache(to1)
+            # Le premier dossier passe avant : un fichier présent aux deux endroits
+            # vient de data/tts_cache/.
+            (Path(dossier_ajouts) / "dakar_dem_dikk_1.wav").write_bytes(b"faux")
+            prioritaire = speak.chemin_audio(speak.CACHE_DIR, "dakar_dem_dikk_1.wav")
+        finally:
+            speak.CACHE_AJOUTS = ancien_ajouts
+    verifie(
+        "audio cherché aussi dans data/tts_cache_ajouts/, après data/tts_cache/",
+        sans_ajout is None
+        and avec_ajout is not None
+        and avec_ajout.startswith(b"RIFF")
+        and prioritaire == speak.CACHE_DIR / "dakar_dem_dikk_1.wav",
+        (sans_ajout is None, avec_ajout is not None, prioritaire),
+    )
+
     suffixe = [{"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 15A"}]
     verifie(
         "suffixe de ligne (15A) dit et fichier distinct",

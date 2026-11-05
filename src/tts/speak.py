@@ -64,6 +64,10 @@ CACHE_DIR = Path(__file__).resolve().parents[2] / "data" / "tts_cache"
 # `scripts/installer_voix_adia.py` n'écrit ce marqueur que si les 637 fichiers
 # du plan sont là ; il documente l'état du cache, sans déclencher de synthèse.
 MARQUEUR = CACHE_DIR / "cache_complet.txt"
+# Les audios générés plus tard (nouvelles lignes Dem Dikk, nouveaux arrêts) vont
+# ici, avec les mêmes noms de fichier : data/tts_cache/ reste intact.  Un fichier
+# est cherché d'abord dans data/tts_cache/, puis ici.
+CACHE_AJOUTS = CACHE_DIR.parent / "tts_cache_ajouts"
 AUCUNE_LIGNE = "aucune_ligne.wav"
 WALLA = "walla.wav"
 # « Walla, » sépare deux possibilités AVEC changement ; un fichier distinct de
@@ -195,9 +199,60 @@ MOTIF_ROMAIN = re.compile(
 # décidé après écoute (« HLM » -> « H L M »).
 SIGLES_EPELES: list[str] = []
 
+# Orthographes différentes d'un même mot dans les itinéraires : une seule
+# prononciation, donc un seul audio pour toutes.
+MOTS_DITS = {
+    "Croissement": "Croisement",
+    "Arsanel": "Arsenal",
+    "Bop": "Bopp",
+    "Hopitale": "Hôpital",
+    "Kenedy": "Kennedy",
+    "Tilen": "Tilène",
+    "Diamagueune": "Diamaguène",
+    "Gororm": "Gorom",
+    "Independace": "Indépendance",
+    "Aviaon": "Avion",
+    "Pond": "Pont",
+    "Tivaoune": "Tivaouane",
+    "Scor": "Score",
+}
+
+# Variantes d'un même lieu, sous leur forme parlée : clé -> nom dit.  Le nom dit
+# est celui d'un audio existant quand il y en a un.
+NOMS_DITS = {
+    "Avenue George Pompidou": "Avenue Pompidou",
+    "Avenue Georges Pompidou": "Avenue Pompidou",
+    "Avenue Gorges Pompidou": "Avenue Pompidou",
+    "Avenue André Peytavin": "Avenue Peytavin",
+    "Grands Moulin de Dakar": "Grand Moulin de Dakar",
+    "Lycée de Lafosse": "Lycée Delafosse",
+    "Station Castor": "Station Castors",
+    "Rond Point SAHM": "Rond Point Sahm",
+    "Rond Point SHAM": "Rond Point Sahm",
+    "Hôpital Principale": "Hôpital Principal",
+    "Maison du Partie": "Maison du Parti",
+    "Patte d'Oies": "Patte d'Oie",
+    "Police de Parcelles Assainies": "Police des Parcelles Assainies",
+    "Les Deux Voies de Liberté six": "Deux Voies de Liberté six",
+    "Boulevard Général de Gaule": "Boulevard du Général de Gaulle",
+    "Gare Colobane": "Gare de Colobane",
+    "Stade Demba Diop": "Stade Dembadiop",
+    "Sapeur Pompier Guédiawaye": "Sapeurs-Pompiers de Guédiawaye",
+    "Ancien Piste": "Ancienne Piste",
+    "Allées Khalifa Ababacar Sy": "Allées Ababacar Sy",
+}
+_NOMS_DITS = {cle.casefold(): valeur for cle, valeur in NOMS_DITS.items()}
+
+# Lignes sans numéro dont le nom affiché ne se dit pas tel quel.
+LIGNES_DITES = {
+    "TAF TAF OUAKAM (TO1)": "TAF TAF Wakaam",
+}
+
 
 def nom_lieu_parle(
-    arret: object, sigles_epeles: list[str] | None = None
+    arret: object,
+    sigles_epeles: list[str] | None = None,
+    avec_alias: bool = True,
 ) -> str:
     """Le nom d'un arrêt tel qu'on le dit à Dakar.
 
@@ -215,6 +270,11 @@ def nom_lieu_parle(
         texte = sans_terminus
     texte = re.sub(r"\bAv\.?(?=\s|$)", "Avenue", texte, flags=re.IGNORECASE)
     texte = re.sub(r"\bBd\.?(?=\s|$)", "Boulevard", texte, flags=re.IGNORECASE)
+    texte = re.sub(r"\bBld\.?(?=\s|$)", "Boulevard", texte, flags=re.IGNORECASE)
+    texte = re.sub(r"\bRte\.?(?=\s|$)", "Route", texte, flags=re.IGNORECASE)
+    if avec_alias:
+        for mot, dit in MOTS_DITS.items():
+            texte = re.sub(rf"\b{mot}\b", dit, texte, flags=re.IGNORECASE)
     texte = MOTIF_ROMAIN.sub(
         lambda trouve: ROMAINS_FR[trouve.group().upper()], texte
     )
@@ -232,6 +292,8 @@ def nom_lieu_parle(
             texte,
         )
     texte = " ".join(texte.split())
+    if avec_alias:
+        texte = _NOMS_DITS.get(texte.casefold(), texte)
     return texte[:1].upper() + texte[1:] if texte else texte
 
 
@@ -285,12 +347,18 @@ def compagnie_dite(compagnie: str) -> str:
     return {"Tata AFTU": "Tata", "Dakar Dem Dikk": "Dem Dikk"}.get(compagnie, compagnie)
 
 
+def ligne_dite(ligne: object) -> str:
+    """Le nom d'une ligne sans numéro tel qu'on le dit (« TAF TAF Wakaam »)."""
+    texte = str(ligne if ligne is not None else "").strip()
+    return LIGNES_DITES.get(texte, texte)
+
+
 def _dit_ligne(match: dict) -> str:
     """Un morceau de phrase pour une ligne : « Jëlal bus bu Tata, numero ñaar. »"""
     compagnie = compagnie_dite(str(match.get("compagnie", "")).strip())
     numero = numero_de(match.get("ligne"))
     if numero is None:
-        return f"Jëlal bus bu {compagnie}, {str(match.get('ligne', '')).strip()}."
+        return f"Jëlal bus bu {compagnie}, {ligne_dite(match.get('ligne'))}."
     suffixe = suffixe_de(match.get("ligne"))
     fin = f" {suffixe}" if suffixe else ""
     return f"Jëlal bus bu {compagnie}, numero {nombre_en_wolof(numero)}{fin}."
@@ -309,7 +377,7 @@ def _dit_etape(etape: dict) -> str:
     compagnie = compagnie_dite(str(etape.get("compagnie", "")).strip())
     numero = numero_de(etape.get("ligne"))
     if numero is None:
-        return f"bus bu {compagnie}, {str(etape.get('ligne', '')).strip()}"
+        return f"bus bu {compagnie}, {ligne_dite(etape.get('ligne'))}"
     suffixe = suffixe_de(etape.get("ligne"))
     fin = f" {suffixe}" if suffixe else ""
     return f"bus bu {compagnie}, numero {nombre_en_wolof(numero)}{fin}"
@@ -415,6 +483,19 @@ def assembler(
     return tampon.getvalue()
 
 
+def chemin_audio(dossier: Path, nom: str) -> Path:
+    """Le fichier `nom` : dans `dossier`, sinon dans data/tts_cache_ajouts/.
+
+    Le second dossier ne sert qu'au cache de l'app : un dossier passé par un test
+    reste seul consulté.  Sans fichier nulle part, on rend le chemin principal.
+    """
+    principal = dossier / nom
+    if principal.is_file() or dossier != CACHE_DIR:
+        return principal
+    ajout = CACHE_AJOUTS / nom
+    return ajout if ajout.is_file() else principal
+
+
 def _segment_manquant(nom: str) -> None:
     """Signale un audio absent sans interrompre la réponse.
 
@@ -430,7 +511,7 @@ def _segment_manquant(nom: str) -> None:
 
 def _separateur(dossier: Path, nom: str) -> list[Path]:
     """Le WAV de liaison s'il existe, sinon rien (le silence de 0,3 s suffit)."""
-    chemin = dossier / nom
+    chemin = chemin_audio(dossier, nom)
     if chemin.is_file():
         return [chemin]
     _segment_manquant(nom)
@@ -441,7 +522,7 @@ def _ajoute_segment(
     morceaux: list[tuple[Path, float]], dossier: Path, nom: str, pause: float
 ) -> None:
     """Ajoute un WAV et la pause qui le suit ; signale le fichier absent."""
-    chemin = dossier / nom
+    chemin = chemin_audio(dossier, nom)
     if chemin.is_file():
         morceaux.append((chemin, pause))
     else:
@@ -463,7 +544,7 @@ def _ajoute_lieu(
     if not str(arret if arret is not None else "").strip():
         return
     nom_lieu = nom_fichier_lieu(arret)
-    chemin_lieu = dossier / nom_lieu
+    chemin_lieu = chemin_audio(dossier, nom_lieu)
     if not chemin_lieu.is_file():
         _segment_manquant(nom_lieu)
         return
@@ -510,7 +591,7 @@ def voix_depuis_cache(
     """
     dossier = cache_dir or CACHE_DIR
     if not lignes:
-        chemin = dossier / AUCUNE_LIGNE
+        chemin = chemin_audio(dossier, AUCUNE_LIGNE)
         if not chemin.is_file():
             _segment_manquant(AUCUNE_LIGNE)
             return None
@@ -518,7 +599,7 @@ def voix_depuis_cache(
 
     fichiers: list[Path] = []
     for match in lignes_annoncees(lignes):
-        chemin = dossier / nom_cache_match(match)
+        chemin = chemin_audio(dossier, nom_cache_match(match))
         if not chemin.is_file():
             _segment_manquant(chemin.name)
             continue
@@ -542,8 +623,8 @@ def _lieu_du_plan(
     if not str(arret if arret is not None else "").strip():
         return []
     return [
-        (dossier / connecteur, PAUSE_LIEU),
-        (dossier / nom_fichier_lieu(arret), SILENCE_ENTRE),
+        (chemin_audio(dossier, connecteur), PAUSE_LIEU),
+        (chemin_audio(dossier, nom_fichier_lieu(arret)), SILENCE_ENTRE),
     ]
 
 
@@ -584,7 +665,7 @@ def _ajoute_segment_plan(
 ) -> None:
     """Ajoute un WAV au plan sans vérifier le disque."""
 
-    morceaux.append((dossier / nom, SILENCE_ENTRE))
+    morceaux.append((chemin_audio(dossier, nom), SILENCE_ENTRE))
 
 
 def voix_trajets_2_depuis_cache(
@@ -608,7 +689,7 @@ def voix_trajets_2_depuis_cache(
                 _segment_manquant(chemin.name)
             return None
         if morceaux:
-            separateur = dossier / WALLA_AUTRE
+            separateur = chemin_audio(dossier, WALLA_AUTRE)
             if not separateur.is_file():
                 _segment_manquant(WALLA_AUTRE)
                 return None

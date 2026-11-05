@@ -3,8 +3,14 @@ r"""Ce que le moteur v2 peut dire en wolof sans avoir l'audio correspondant.
 Une réponse dit des noms de ligne (« bus bu Tata, numero … ») et, pour un trajet
 avec changement, des noms d'arrêt (« nga wàcc X », « moo lay yóbbu ba Y »).  Tout
 arrêt du réseau peut être un arrêt de descente ou de changement, dans un sens ou
-dans l'autre.  Le script ne génère aucun audio : il liste seulement les fichiers
-absents de ``data/tts_cache/`` et écrit ``data/audit/voix_manquantes.csv``.
+dans l'autre.  Le script ne génère aucun audio.  Il écrit :
+
+- ``data/audit/voix_manquantes.csv`` : chaque nom affiché sans audio ;
+- ``data/audit/voix_a_generer.csv`` : un audio par prononciation, avec tous les
+  noms affichés qui s'en servent (les variantes d'orthographe sont regroupées
+  par les alias de ``tts.speak``).
+
+Un audio compte comme présent dans ``data/tts_cache/`` ou ``data/tts_cache_ajouts/``.
 
     .\.venv\Scripts\python.exe scripts\couverture_voix.py
 """
@@ -20,66 +26,85 @@ sys.path.insert(0, str(RACINE / "src"))
 
 from matching.lieux import joli
 from routing.adapter import _NETWORK
-from tts.speak import CACHE_DIR, nom_cache_match, nom_fichier_lieu, nom_lieu_parle
+from tts.speak import (
+    CACHE_DIR,
+    chemin_audio,
+    nom_cache_match,
+    nom_fichier_lieu,
+    nom_lieu_parle,
+    phrase_reponse,
+)
 
-SORTIE = RACINE / "data" / "audit" / "voix_manquantes.csv"
+MANQUANTES = RACINE / "data" / "audit" / "voix_manquantes.csv"
+A_GENERER = RACINE / "data" / "audit" / "voix_a_generer.csv"
+
+
+def _present(fichier: str) -> bool:
+    return chemin_audio(CACHE_DIR, fichier).is_file()
 
 
 def main() -> int:
-    rangees: list[dict[str, str]] = []
-    vus: set[str] = set()
+    manquantes: list[dict[str, str]] = []
+    # fichier -> (type, texte à prononcer, noms affichés)
+    a_generer: dict[str, tuple[str, str, list[str]]] = {}
 
     lignes = sorted(_NETWORK.lines.values(), key=lambda l: (l.company, l.name))
     for ligne in lignes:
-        fichier = nom_cache_match({"compagnie": ligne.company, "ligne": ligne.name})
-        if fichier in vus:
+        match = {"compagnie": ligne.company, "ligne": ligne.name}
+        fichier = nom_cache_match(match)
+        if _present(fichier):
             continue
-        vus.add(fichier)
-        if not (CACHE_DIR / fichier).is_file():
-            rangees.append(
-                {
-                    "type": "ligne",
-                    "nom": f"{ligne.company} {ligne.name}",
-                    "dit": "",
-                    "fichier": fichier,
-                }
-            )
+        nom = f"{ligne.company} {ligne.name}"
+        texte = phrase_reponse([match])
+        manquantes.append({"type": "ligne", "nom": nom, "dit": texte, "fichier": fichier})
+        a_generer.setdefault(fichier, ("ligne", texte, []))[2].append(nom)
 
-    arrets_manquants = 0
     for arret in sorted(_NETWORK.stop_names):
         # La voix dit le nom affiché (joli), comme les cartes.
         affiche = joli(arret)
-        fichier = nom_fichier_lieu(affiche)
-        if fichier in vus:
+        dit = nom_lieu_parle(affiche)
+        if not dit:
+            # « (SCOA) » : rien à dire, la voix saute déjà ce lieu.
             continue
-        vus.add(fichier)
-        if not (CACHE_DIR / fichier).is_file():
-            arrets_manquants += 1
-            rangees.append(
+        fichier = nom_fichier_lieu(affiche)
+        if _present(fichier):
+            continue
+        manquantes.append({"type": "arret", "nom": affiche, "dit": dit, "fichier": fichier})
+        noms = a_generer.setdefault(fichier, ("arret", dit, []))[2]
+        if affiche not in noms:
+            noms.append(affiche)
+
+    MANQUANTES.parent.mkdir(parents=True, exist_ok=True)
+    with MANQUANTES.open("w", encoding="utf-8", newline="") as sortie:
+        ecrivain = csv.DictWriter(sortie, fieldnames=("type", "nom", "dit", "fichier"))
+        ecrivain.writeheader()
+        ecrivain.writerows(manquantes)
+
+    with A_GENERER.open("w", encoding="utf-8", newline="") as sortie:
+        ecrivain = csv.DictWriter(
+            sortie,
+            fieldnames=("type", "texte_a_prononcer", "fichier_wav", "utilise_par"),
+        )
+        ecrivain.writeheader()
+        for fichier, (genre, texte, noms) in sorted(
+            a_generer.items(), key=lambda item: (item[1][0] != "ligne", item[1][1])
+        ):
+            ecrivain.writerow(
                 {
-                    "type": "arret",
-                    "nom": affiche,
-                    "dit": nom_lieu_parle(affiche),
-                    "fichier": fichier,
+                    "type": genre,
+                    "texte_a_prononcer": texte,
+                    "fichier_wav": fichier,
+                    "utilise_par": " | ".join(noms),
                 }
             )
 
-    SORTIE.parent.mkdir(parents=True, exist_ok=True)
-    with SORTIE.open("w", encoding="utf-8", newline="") as sortie:
-        ecrivain = csv.DictWriter(sortie, fieldnames=("type", "nom", "dit", "fichier"))
-        ecrivain.writeheader()
-        ecrivain.writerows(rangees)
-
-    lignes_manquantes = len(rangees) - arrets_manquants
-    noms_lieux = sum(1 for nom in vus if nom.startswith("lieu_"))
+    nb_lignes = sum(1 for genre, _, _ in a_generer.values() if genre == "ligne")
     print(
-        f"Lignes : {len(lignes)} au réseau, {lignes_manquantes} sans audio\n"
-        f"Arrêts : {noms_lieux} noms prononçables, {arrets_manquants} sans audio\n"
-        f"Liste : {SORTIE}"
+        f"Noms affichés sans audio : {len(manquantes)}\n"
+        f"Audios à générer : {len(a_generer)} ({nb_lignes} lignes, "
+        f"{len(a_generer) - nb_lignes} arrêts)\n"
+        f"Listes : {MANQUANTES} ; {A_GENERER}"
     )
-    for rangee in rangees:
-        if rangee["type"] == "ligne":
-            print(f"  ligne sans audio : {rangee['nom']} ({rangee['fichier']})")
     return 0
 
 
