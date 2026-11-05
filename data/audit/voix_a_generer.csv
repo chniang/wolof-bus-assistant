@@ -46,7 +46,6 @@ arret,Centenaire,lieu_centenaire.wav,Centenaire
 arret,Central Bel Air,lieu_central_bel_air.wav,Central Bel Air (MTOA)
 arret,Centre Aéré de la Béséyaawoo,lieu_centre_aere_de_la_beseyaawoo.wav,Centre Aéré de la BCEAO
 arret,Cfao Technologies,lieu_cfao_technologies.wav,Cfao Technologies
-arret,Cinquante-six,lieu_cinquante_six.wav,56
 arret,Cité Assemblée,lieu_cite_assemblee.wav,Cité Assemblée
 arret,Cité Comico,lieu_cite_comico.wav,Cité Comico | Comico
 arret,Cité Derklé,lieu_cite_derkle.wav,Cité Derklé
@@ -71,7 +70,6 @@ arret,Des Parcelles,lieu_des_parcelles.wav,Des Parcelles
 arret,Deux Voies,lieu_deux_voies.wav,2 Voies
 arret,Deux Voies Jaxaay,lieu_deux_voies_jaxaay.wav,2 Voies Jaxaay
 arret,Deux Voies Vers Camp Leclerc,lieu_deux_voies_vers_camp_leclerc.wav,Deux Voies Vers Camp Leclerc
-arret,Deux cent vingt et un,lieu_deux_cent_vingt_et_un.wav,221 (Gadaye)
 arret,Dial Diop,lieu_dial_diop.wav,Dial Diop (Ex Rue 10)
 arret,Diamniadio Yenne,lieu_diamniadio_yenne.wav,Diamniadio Yenne
 arret,Difoncé,lieu_difonce.wav,Difoncé
@@ -92,7 +90,7 @@ arret,Gorom zéro un,lieu_gorom_zero_un.wav,Gorom 01
 arret,Grand Moulin de Dakar,lieu_grand_moulin_de_dakar.wav,Grand Moulin de Dakar | Grands Moulin de Dakar
 arret,Grand Théâtre,lieu_grand_theatre.wav,Grand Théâtre
 arret,Grande Mosquée,lieu_grande_mosquee.wav,Grande Mosquée
-arret,Gàddaay,lieu_gaddaay.wav,Gadaye | Gadaye (Guédiawaye) | Gadaye (Filaos)
+arret,Gàddaay,lieu_gaddaay.wav,Gadaye | Gadaye (Guédiawaye) | 221 (Gadaye) | Gadaye (Filaos)
 arret,HLM Fass,lieu_hlm_fass.wav,HLM Fass
 arret,HLM Grand Médine,lieu_hlm_grand_medine.wav,HLM Grand Médine
 arret,HLM Sipres,lieu_hlm_sipres.wav,HLM Sipres
@@ -197,6 +195,10 @@ arret,Sotiba,lieu_sotiba.wav,Sotiba (SERAS)
 arret,Station Castors,lieu_station_castors.wav,Station Castor | Station Castors
 arret,Station Shell,lieu_station_shell.wav,Station Shell
 arret,Tally Icotaf dix Route des Niayes,lieu_tally_icotaf_dix_route_des_niayes.wav,Tally Icotaf X Rte des Niayes (Pikine)
+arret,Terminus cinquante-six,lieu_terminus_cinquante_six.wav,56
+arret,Terminus quarante-neuf,lieu_terminus_quarante_neuf.wav,49
+arret,Terminus soixante-douze,lieu_terminus_soixante_douze.wav,72
+arret,Terminus soixante-trois,lieu_terminus_soixante_trois.wav,63
 arret,Terrain Acapes,lieu_terrain_acapes.wav,Terrain Acapes
 arret,Tolou Abdoulaye Wade,lieu_tolou_abdoulaye_wade.wav,Tolou Abdoulaye Wade
 arret,Travaux Communaux,lieu_travaux_communaux.wav,Travaux Communaux

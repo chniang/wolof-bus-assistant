@@ -284,10 +284,10 @@ def nom_lieu_parle(
     """
     texte = str(arret if arret is not None else "")
     if avec_alias:
-        # « Terminus 221 (Gadaye) » : le numéro est celui d'une ligne, le lieu est
-        # entre parenthèses.
+        # « Terminus 221 (Gadaye) », affiché « 221 (Gadaye) » : le numéro est celui
+        # d'une ligne, le lieu est entre parenthèses.
         trouve = re.fullmatch(
-            r"\s*terminus\s+\d+\s*\(([^()]+)\)\s*", texte, flags=re.IGNORECASE
+            r"\s*(?:terminus\s+)?\d+\s*\(([^()]+)\)\s*", texte, flags=re.IGNORECASE
         )
         if trouve:
             texte = trouve.group(1)
@@ -299,6 +299,9 @@ def nom_lieu_parle(
     numero_seul = re.fullmatch(r"[\d\s]+", sans_terminus) is not None
     if sans_terminus.strip() and not (avec_alias and numero_seul):
         texte = sans_terminus
+    if avec_alias and re.fullmatch(r"\s*\d+\s*", texte):
+        # Affiché « 56 » (l'écran retire « Terminus ») : on le dit quand même.
+        texte = f"Terminus {texte.strip()}"
     texte = re.sub(r"\bAv\.?(?=\s|$)", "Avenue", texte, flags=re.IGNORECASE)
     texte = re.sub(r"\bBd\.?(?=\s|$)", "Boulevard", texte, flags=re.IGNORECASE)
     texte = re.sub(r"\bBld\.?(?=\s|$)", "Boulevard", texte, flags=re.IGNORECASE)

@@ -1630,6 +1630,9 @@ def test_lieux() -> tuple[int, int]:
         "Croisement Gadaye": "Croisement Gàddaay",
         "Terminus 221 (Gadaye)": "Gàddaay",
         "Terminus 56": "Terminus cinquante-six",
+        # Les mêmes, sous leur nom affiché (l'écran retire « Terminus »).
+        "221 (Gadaye)": "Gàddaay",
+        "56": "Terminus cinquante-six",
         "Police 4em": "Police quatrième",
         "National 1": "Nationale un",
         "Vdn-Foire": "V D N Foire",

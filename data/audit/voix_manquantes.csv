@@ -8,6 +8,9 @@ ligne,Dakar Dem Dikk Ligne 503,"Jëlal bus bu Dem Dikk, numero juróomi téemée
 ligne,Dakar Dem Dikk TAF TAF OUAKAM (TO1),"Jëlal bus bu Dem Dikk, TAF TAF Wakaam.",dakar_dem_dikk_taf_taf_ouakam_to1.wav
 arret,2 Voies,Deux Voies,lieu_deux_voies.wav
 arret,2 Voies Jaxaay,Deux Voies Jaxaay,lieu_deux_voies_jaxaay.wav
+arret,49,Terminus quarante-neuf,lieu_terminus_quarante_neuf.wav
+arret,63,Terminus soixante-trois,lieu_terminus_soixante_trois.wav
+arret,72,Terminus soixante-douze,lieu_terminus_soixante_douze.wav
 arret,Acapes,Acapes,lieu_acapes.wav
 arret,Albert Sarraut,Albert Sarraut,lieu_albert_sarraut.wav
 arret,Arrêt Dial Mbaye,Arrêt Dial Mbaye,lieu_arret_dial_mbaye.wav
@@ -234,8 +237,8 @@ arret,Station Castors,Station Castors,lieu_station_castors.wav
 arret,Station Castor,Station Castors,lieu_station_castors.wav
 arret,Station Shell,Station Shell,lieu_station_shell.wav
 arret,Tally Icotaf X Rte des Niayes (Pikine),Tally Icotaf dix Route des Niayes,lieu_tally_icotaf_dix_route_des_niayes.wav
-arret,221 (Gadaye),Deux cent vingt et un,lieu_deux_cent_vingt_et_un.wav
-arret,56,Cinquante-six,lieu_cinquante_six.wav
+arret,221 (Gadaye),Gàddaay,lieu_gaddaay.wav
+arret,56,Terminus cinquante-six,lieu_terminus_cinquante_six.wav
 arret,Gadaye (Filaos),Gàddaay,lieu_gaddaay.wav
 arret,Terrain Acapes,Terrain Acapes,lieu_terrain_acapes.wav
 arret,Tolou Abdoulaye Wade,Tolou Abdoulaye Wade,lieu_tolou_abdoulaye_wade.wav
