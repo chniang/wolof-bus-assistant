@@ -1,0 +1,11 @@
+Voix native d'Oolel-Voices : 869 audios régénérés avec la voix de référence
+8_1_c.wav (Space soynade-research/Oolel-Voices-Demo), à partir des textes
+finaux de data/audit/voix_complete.csv.
+
+L'app lit CE dossier en premier (src/tts/speak.py, chemin_audio), puis
+data/tts_cache_ajouts/ (ajouts Adia) puis data/tts_cache/ (plan des 637) :
+tant que les 869 audios ne sont pas là, l'ancien cache joue encore.
+data/tts_cache/ et data/tts_cache_ajouts/ ne sont jamais modifiés.
+
+Installation : décompresser tts_cache_oolel.zip du Colab ici, ou lancer
+    python scripts/installer_voix_oolel.py tts_cache_oolel.zip

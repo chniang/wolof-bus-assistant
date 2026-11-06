@@ -1,0 +1,870 @@
+type,texte_a_prononcer,fichier_wav,origine
+ligne,"Jëlal bus bu Dem Dikk, numero benn.",dakar_dem_dikk_1.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaar.",dakar_dem_dikk_2.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñeent.",dakar_dem_dikk_4.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero juróom.",dakar_dem_dikk_5.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero juróom benn.",dakar_dem_dikk_6.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero juróom ñaar.",dakar_dem_dikk_7.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero juróom ñett.",dakar_dem_dikk_8.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero juróom ñeent.",dakar_dem_dikk_9.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero fukk.",dakar_dem_dikk_10.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero fukk ak benn.",dakar_dem_dikk_11.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero fukk ak ñaar.",dakar_dem_dikk_12.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero fukk ak ñett.",dakar_dem_dikk_13.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero fukk ak juróom A.",dakar_dem_dikk_15a.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero fukk ak juróom B.",dakar_dem_dikk_15b.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero fukk ak juróom benn A.",dakar_dem_dikk_16a.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero fukk ak juróom benn B.",dakar_dem_dikk_16b.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero fukk ak juróom ñett.",dakar_dem_dikk_18.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaar fukk.",dakar_dem_dikk_20.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaar fukk ak ñett.",dakar_dem_dikk_23.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero téeméer ak ñaar fukk ak benn.",dakar_dem_dikk_121.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak juróom ñett.",dakar_dem_dikk_208.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak ñett.",dakar_dem_dikk_213.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñaar.",dakar_dem_dikk_217.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñett.",dakar_dem_dikk_218.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñeent.",dakar_dem_dikk_219.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk.",dakar_dem_dikk_220.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn",dakar_dem_dikk_221.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak juróom ñaar.",dakar_dem_dikk_227.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak juróom ñett.",dakar_dem_dikk_228.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñaar.",dakar_dem_dikk_232.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñett.",dakar_dem_dikk_233.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñeent.",dakar_dem_dikk_234.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak benn.",dakar_dem_dikk_501.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñaar A.",dakar_dem_dikk_502a.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñaar B.",dakar_dem_dikk_502b.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñett A.",dakar_dem_dikk_503a.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñett B.",dakar_dem_dikk_503b.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñeent A.",dakar_dem_dikk_504a.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñeent B.",dakar_dem_dikk_504b.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero benn.",tata_aftu_1.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñaar.",tata_aftu_2.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñett.",tata_aftu_3.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñeent.",tata_aftu_4.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom.",tata_aftu_5.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñaar fukk ak ñeent.",tata_aftu_24.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñaar fukk ak juróom.",tata_aftu_25.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñaar fukk ak juróom benn.",tata_aftu_26.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñaar fukk ak juróom ñaar.",tata_aftu_27.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñaar fukk ak juróom ñett.",tata_aftu_28.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñaar fukk ak juróom ñeent.",tata_aftu_29.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero fanweer.",tata_aftu_30.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero fanweer ak benn.",tata_aftu_31.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero fanweer ak ñaar.",tata_aftu_32.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero fanweer ak ñett.",tata_aftu_33.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero fanweer ak ñeent.",tata_aftu_34.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero fanweer ak juróom.",tata_aftu_35.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero fanweer ak juróom benn.",tata_aftu_36.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero fanweer ak juróom ñaar.",tata_aftu_37.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero fanweer ak juróom ñett.",tata_aftu_38.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero fanweer ak juróom ñeent.",tata_aftu_39.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñeent fukk.",tata_aftu_40.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak benn.",tata_aftu_41.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak ñaar.",tata_aftu_42.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak ñett.",tata_aftu_43.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak ñeent.",tata_aftu_44.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak juróom.",tata_aftu_45.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak juróom benn.",tata_aftu_46.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak juróom ñaar.",tata_aftu_47.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak juróom ñett.",tata_aftu_48.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak juróom ñeent.",tata_aftu_49.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom fukk.",tata_aftu_50.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom fukk ak benn.",tata_aftu_51.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom fukk ak ñaar.",tata_aftu_52.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom fukk ak ñett.",tata_aftu_53.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom fukk ak ñeent.",tata_aftu_54.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom fukk ak juróom.",tata_aftu_55.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom fukk ak juróom benn.",tata_aftu_56.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom fukk ak juróom ñaar.",tata_aftu_57.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom fukk ak juróom ñett.",tata_aftu_58.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom fukk ak juróom ñeent.",tata_aftu_59.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom benn fukk.",tata_aftu_60.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak benn.",tata_aftu_61.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak ñaar.",tata_aftu_62.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak ñett.",tata_aftu_63.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak ñeent.",tata_aftu_64.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak juróom.",tata_aftu_65.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak juróom benn.",tata_aftu_66.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak juróom ñaar.",tata_aftu_67.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak juróom ñett.",tata_aftu_68.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak juróom ñeent.",tata_aftu_69.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk.",tata_aftu_70.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak benn.",tata_aftu_71.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak ñaar.",tata_aftu_72.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak ñett.",tata_aftu_73.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak ñeent.",tata_aftu_74.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom.",tata_aftu_75.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom benn.",tata_aftu_76.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom ñaar.",tata_aftu_77.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom ñett.",tata_aftu_78.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom ñeent.",tata_aftu_79.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk.",tata_aftu_80.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak benn.",tata_aftu_81.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak ñaar.",tata_aftu_82.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak ñett.",tata_aftu_83.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak ñeent.",tata_aftu_84.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom.",tata_aftu_85.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom benn.",tata_aftu_86.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom ñaar.",tata_aftu_87.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom ñett.",tata_aftu_88.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom ñeent.",tata_aftu_89.wav,tts_cache
+ligne,"Jëlal bus bu Tataa, numero juróom ñeent fukk ak benn.",tata_aftu_91.wav,tts_cache
+service,"Baal ma, gisuma bus bu dem fa.",aucune_ligne.wav,tts_cache
+service,walla,walla.wav,tts_cache
+service,walla,walla_autre.wav,tts_cache
+service,"Ci ginnaaw,",correspondance_liaison.wav,tts_cache
+service,moo lay yóbbu ba,moo_lay_yobbu_ba.wav,tts_cache
+service,nga wàcc,nga_wacc.wav,tts_cache
+ligne,"Jëlal bus bu Dem Dikk, Taf Taf.",dakar_dem_dikk_taf_taf.wav,tts_cache
+lieu,Aéroport,lieu_aeroport.wav,tts_cache
+lieu,Aéroport Léopold Sédar Senghor,lieu_aeroport_l_s_senghor.wav,tts_cache
+lieu,Aéroport Léopold Sédar Senghor,lieu_aeroport_lss.wav,tts_cache
+lieu,AIBD,lieu_aibd.wav,tts_cache
+lieu,Allées Ababacar Sy,lieu_allees_ababacar_sy.wav,tts_cache
+lieu,Allées Cheikh Sidaty Aïdara,lieu_allees_cheikh_sidaty_aidara.wav,tts_cache
+lieu,Allées Cherif Macky Sall,lieu_allees_cherif_macky_sall.wav,tts_cache
+lieu,Allées Médina Zac,lieu_allees_medina_zac.wav,tts_cache
+lieu,Allées Papa Gueye Fall,lieu_allees_papa_gueye_fall.wav,tts_cache
+lieu,Almadies,lieu_almadies.wav,tts_cache
+lieu,Ancienne Piste,lieu_ancienne_piste.wav,tts_cache
+lieu,Ancienne Piste d'Envol,lieu_ancienne_piste_d_envol.wav,tts_cache
+lieu,Apix,lieu_apix.wav,tts_cache
+lieu,Arafat,lieu_arafat.wav,tts_cache
+lieu,Arrêt Chérif,lieu_arret_cherif.wav,tts_cache
+lieu,Auchan Keur Massar,lieu_auchan_keur_massar.wav,tts_cache
+lieu,Auto Route,lieu_auto_route.wav,tts_cache
+lieu,Autoroute,lieu_autoroute.wav,tts_cache
+lieu,Autoroute A Péage,lieu_autoroute_a_peage.wav,tts_cache
+lieu,Autoroute Seydina Limamou Laye,lieu_autoroute_seydina_l.wav,tts_cache
+lieu,Autoroute Seydina Limamoulaye,lieu_autoroute_seydina_limamoulaye.wav,tts_cache
+lieu,Autoroute Seydinalimamoulaye,lieu_autoroute_seydinalimamoulaye.wav,tts_cache
+lieu,Avenue Blaise Diagne,lieu_avenue_blaise_diagne.wav,tts_cache
+lieu,Avenue Bourguiba,lieu_avenue_bourguiba.wav,tts_cache
+lieu,Avenue Cardinal Hyacinthe Thiandoum,lieu_avenue_cardinal_hyacinthe_thiandoum.wav,tts_cache
+lieu,Avenue Cheikh Ahmadou Bamba,lieu_avenue_cheikh_ahmadou_bamba.wav,tts_cache
+lieu,Avenue Cheikh Amadou Bamba,lieu_avenue_cheikh_amadou_bamba.wav,tts_cache
+lieu,Avenue Cheikh Amadou Bamba Mbacke,lieu_avenue_cheikh_amadou_bamba_mbacke.wav,tts_cache
+lieu,Avenue Cheikh Anta Diop,lieu_avenue_cheikh_anta_diop.wav,tts_cache
+lieu,Avenue Cheikh Antadiop,lieu_avenue_cheikh_antadiop.wav,tts_cache
+lieu,Avenue Emile Badiane,lieu_avenue_emile_badiane.wav,tts_cache
+lieu,Avenue Hyacinthe Thiandom,lieu_avenue_hyacinthe_thiandom.wav,tts_cache
+lieu,Avenue Hyacinthe Thiandoum,lieu_avenue_hyacinthe_thiandoum.wav,tts_cache
+lieu,Avenue Malick Sy,lieu_avenue_malick_sy.wav,tts_cache
+lieu,Avenue Malicksy,lieu_avenue_malicksy.wav,tts_cache
+lieu,Avenue Oumar Foutiyou Tall,lieu_avenue_oumar_foutiyou_tall.wav,tts_cache
+lieu,Bambilor,lieu_bambilor.wav,tts_cache
+lieu,Banoba,lieu_banoba.wav,tts_cache
+lieu,Bargny,lieu_bargny.wav,tts_cache
+lieu,Baux Maraîchers,lieu_baux_maraichers.wav,tts_cache
+lieu,Bayakh,lieu_bayakh.wav,tts_cache
+lieu,Baye Laye,lieu_baye_laye.wav,tts_cache
+lieu,Beaux Maraîchers,lieu_beaux_maraichers.wav,tts_cache
+lieu,Bene Baraque,lieu_bene_baraque.wav,tts_cache
+lieu,Bène Tally,lieu_bene_tally.wav,tts_cache
+lieu,Boulevard Centenaire de la Commune de Dakar,lieu_bld_centenaire_de_la_commune_de_dakar.wav,tts_cache
+lieu,Boulevard des Martyrs,lieu_bld_des_martyrs.wav,tts_cache
+lieu,Boulevard du Centenaire de la Commune de Dakar,lieu_bld_du_centenaire_de_la_commune_de_dakar.wav,tts_cache
+lieu,Boulevard Maurice Gueye,lieu_bld_maurice_gueye.wav,tts_cache
+lieu,Boulevard de la Gueule Tapée,lieu_boulevard_de_la_gueule_tapee.wav,tts_cache
+lieu,Boulevard Dial Diop,lieu_boulevard_dial_diop.wav,tts_cache
+lieu,Boulevard du Centenaire de la Commune de Dakar,lieu_boulevard_du_centenaire_de_la_commune_de_dakar.wav,tts_cache
+lieu,Boulevard du Général de Gaulle,lieu_boulevard_du_general_de_gaulle.wav,tts_cache
+lieu,Boulevard Maurice Gueye,lieu_boulevard_maurice_gueye.wav,tts_cache
+lieu,Boune,lieu_boune.wav,tts_cache
+lieu,Bountou Pikine,lieu_bountou_pikine.wav,tts_cache
+lieu,Bourguiba,lieu_bourguiba.wav,tts_cache
+lieu,Boutikou Diallo,lieu_boutikou_diallo.wav,tts_cache
+lieu,Boutique Diallo,lieu_boutique_diallo.wav,tts_cache
+lieu,Branche Est Autoroute,lieu_branche_est_autoroute.wav,tts_cache
+lieu,Cafeteria,lieu_cafeteria.wav,tts_cache
+lieu,Cambérène,lieu_camberene.wav,tts_cache
+lieu,Cambérène deux,lieu_camberene_deux.wav,tts_cache
+lieu,Camp Marchand,lieu_camp_marchand.wav,tts_cache
+lieu,Camp Marchand Rufisque,lieu_camp_marchand_rufisque.wav,tts_cache
+lieu,Canada,lieu_canada.wav,tts_cache
+lieu,Canal de la Gueule Tapée,lieu_canal_de_la_gueule_tapee.wav,tts_cache
+lieu,Canal quatre,lieu_canal_quatre.wav,tts_cache
+lieu,Cap des Biches,lieu_cap_des_biches.wav,tts_cache
+lieu,Capa,lieu_capa.wav,tts_cache
+lieu,Carrefour HLM Grand Médine Diamalaye,lieu_carrefour_hlm_gd_medine_diamalaye.wav,tts_cache
+lieu,Carrefour Serigne Assane,lieu_carrefour_serigne_assane.wav,tts_cache
+lieu,Carrefour Seydou Nourou Tall,lieu_carrefour_seydou_n_tall.wav,tts_cache
+lieu,Case Ba,lieu_case_ba.wav,tts_cache
+lieu,Case de Cambérène,lieu_case_de_camberene.wav,tts_cache
+lieu,Caserne Sapeurs Pompiers,lieu_caserne_sapeurs_pompiers.wav,tts_cache
+lieu,Caserne Sapeurs Pompiers Parcelles,lieu_caserne_sapeurs_pompiers_parcelles.wav,tts_cache
+lieu,Castors,lieu_castors.wav,tts_cache
+lieu,Centre Aéré de la BCEAO,lieu_centre_aere_de_la_bceao.wav,tts_cache
+lieu,Centre de Jaxaay,lieu_centre_de_jaxaay.wav,tts_cache
+lieu,Centre-Ville,lieu_centre_ville.wav,tts_cache
+lieu,Cheikh Sidatyaidara,lieu_cheikh_sidatyaidara.wav,tts_cache
+lieu,Cinéma Parcelles,lieu_cinema_parcelles.wav,tts_cache
+lieu,Cité Ainoumady,lieu_cite_ainoumady.wav,tts_cache
+lieu,Cité Apix,lieu_cite_apix.wav,tts_cache
+lieu,Cité Asecna,lieu_cite_asecna.wav,tts_cache
+lieu,Cité Assurance,lieu_cite_assurance.wav,tts_cache
+lieu,Cité Avion,lieu_cite_avion.wav,tts_cache
+lieu,Cité Baba Guisse,lieu_cite_baba_guisse.wav,tts_cache
+lieu,Cité Capec,lieu_cite_capec.wav,tts_cache
+lieu,Cité Cocéhas,lieu_cite_cocehas.wav,tts_cache
+lieu,Cité des Eaux,lieu_cite_des_eaux.wav,tts_cache
+lieu,Cité des Enseignants,lieu_cite_des_enseignants.wav,tts_cache
+lieu,Cité Enseignants,lieu_cite_enseignants.wav,tts_cache
+lieu,Cité Fadia,lieu_cite_fadia.wav,tts_cache
+lieu,Cité Gendarmerie,lieu_cite_gendarmerie.wav,tts_cache
+lieu,Cité Lobatt Fall,lieu_cite_lobatt_fall.wav,tts_cache
+lieu,Cité Lobattfall,lieu_cite_lobattfall.wav,tts_cache
+lieu,Cité Mame Dior,lieu_cite_mame_dior.wav,tts_cache
+lieu,Cité Nations Unies,lieu_cite_nations_unies.wav,tts_cache
+lieu,Cité Safco,lieu_cite_safco.wav,tts_cache
+lieu,Cité Sagef,lieu_cite_sagef.wav,tts_cache
+lieu,Cité Serigne Mansour,lieu_cite_serigne_mansour.wav,tts_cache
+lieu,Cité Socabeg,lieu_cite_socabeg.wav,tts_cache
+lieu,Cité Sotrac,lieu_cite_sotrac.wav,tts_cache
+lieu,Cité Yacine Diop,lieu_cite_yacine_diop.wav,tts_cache
+lieu,Claudel,lieu_claudel.wav,tts_cache
+lieu,Collège la Liberté,lieu_college_la_liberte.wav,tts_cache
+lieu,Colobane,lieu_colobane.wav,tts_cache
+lieu,Colobane Rufisque,lieu_colobane_rufisque.wav,tts_cache
+lieu,Comico Yeumbeul,lieu_comico_yeumbeul.wav,tts_cache
+lieu,Corniche,lieu_corniche.wav,tts_cache
+lieu,Corniche Fadia,lieu_corniche_fadia.wav,tts_cache
+lieu,Corniche Guédiawaye,lieu_corniche_guediawaye.wav,tts_cache
+lieu,Croisement Bethio,lieu_croisement_bethio.wav,tts_cache
+lieu,Croisement Cambérène,lieu_croisement_camberene.wav,tts_cache
+lieu,Croisement Cheikh Bethio,lieu_croisement_cheikh_bethio.wav,tts_cache
+lieu,Croisement Dial Mbaye,lieu_croisement_dial_mbaye.wav,tts_cache
+lieu,Croisement Dior,lieu_croisement_dior.wav,tts_cache
+lieu,Croisement Gaddaay,lieu_croisement_gadaye.wav,tts_cache
+lieu,Croisement Grand Mbao,lieu_croisement_grand_mbao.wav,tts_cache
+lieu,Croisement Keur Massar,lieu_croisement_keur_massar.wav,tts_cache
+lieu,Croisement Keurmassar,lieu_croisement_keurmassar.wav,tts_cache
+lieu,Croisement Mame Abdou,lieu_croisement_mame_abdou.wav,tts_cache
+lieu,Croisement Niague,lieu_croisement_niague.wav,tts_cache
+lieu,Croisement Niagues,lieu_croisement_niagues.wav,tts_cache
+lieu,Croisement PAI,lieu_croisement_pai.wav,tts_cache
+lieu,Croisement Tally Diallo,lieu_croisement_tally_diallo.wav,tts_cache
+lieu,Croisement Tivaouane Peulh,lieu_croisement_tivaouane_peulh.wav,tts_cache
+lieu,Croisement vingt-deux,lieu_croisement_vingt_deux.wav,tts_cache
+lieu,Croisement Yeumbeul,lieu_croisement_yeumbeul.wav,tts_cache
+lieu,Croisement Zac Mbao,lieu_croisement_zac_mbao.wav,tts_cache
+lieu,CTO,lieu_cto.wav,tts_cache
+lieu,Dangou,lieu_dangou.wav,tts_cache
+lieu,Darou Missel,lieu_darou_missel.wav,tts_cache
+lieu,Darou Thioub,lieu_darou_thioub.wav,tts_cache
+lieu,Daroukhane,lieu_daroukhane.wav,tts_cache
+lieu,Daroukhane Keur Serigne Assane,lieu_daroukhane_keur_serigne_assane.wav,tts_cache
+lieu,Derklé,lieu_derkle.wav,tts_cache
+lieu,Deux Voies de Liberté six,lieu_deux_voies_de_liberte_six.wav,tts_cache
+lieu,Deux Voies Liberté six,lieu_deux_voies_liberte_six.wav,tts_cache
+lieu,Deux Voies Notaire,lieu_deux_voies_notaire.wav,tts_cache
+lieu,Dial Mbaay,lieu_dial_mbaay.wav,tts_cache
+lieu,Dial Mbaye,lieu_dial_mbaye.wav,tts_cache
+lieu,Diamaguène,lieu_diamaguene.wav,tts_cache
+lieu,Diamalaye,lieu_diamalaye.wav,tts_cache
+lieu,Diamniadio,lieu_diamniadio.wav,tts_cache
+lieu,Dieuppeul,lieu_dieuppeul.wav,tts_cache
+lieu,Dior,lieu_dior.wav,tts_cache
+lieu,Dioutyba,lieu_dioutyba.wav,tts_cache
+lieu,Dispensaire Nabil Choucair,lieu_dispensaire_nabil_choucair.wav,tts_cache
+lieu,Djiddah Thiaroye Kao,lieu_djiddah_thiaroye_kao.wav,tts_cache
+lieu,Dougar,lieu_dougar.wav,tts_cache
+lieu,Echangeur Cyrnos,lieu_echangeur_cyrnos.wav,tts_cache
+lieu,Echangeur de Hann,lieu_echangeur_de_hann.wav,tts_cache
+lieu,Echangeur de la Foire,lieu_echangeur_de_la_foire.wav,tts_cache
+lieu,Echangeur Hann,lieu_echangeur_hann.wav,tts_cache
+lieu,Echangeur Patte d'Oie,lieu_echangeur_patte_d_oie.wav,tts_cache
+lieu,Echangeur Rufisque-Ouest,lieu_echangeur_rufisque_ouest.wav,tts_cache
+lieu,Ecobank,lieu_ecobank.wav,tts_cache
+lieu,École Dior,lieu_ecole_dior.wav,tts_cache
+lieu,École Japonaise,lieu_ecole_japonaise.wav,tts_cache
+lieu,École Normale,lieu_ecole_normale.wav,tts_cache
+lieu,École Police,lieu_ecole_police.wav,tts_cache
+lieu,Église,lieu_eglise.wav,tts_cache
+lieu,Église Parcelles,lieu_eglise_parcelles.wav,tts_cache
+lieu,Église Saint-Joseph,lieu_eglise_saint_joseph.wav,tts_cache
+lieu,Entrée Ouakam,lieu_entree_ouakam.wav,tts_cache
+lieu,Espace HLM Grand Médine,lieu_espace_hlm_gd_medine.wav,tts_cache
+lieu,Étage Madiale,lieu_etage_madiale.wav,tts_cache
+lieu,Fadia,lieu_fadia.wav,tts_cache
+lieu,Fass,lieu_fass.wav,tts_cache
+lieu,Fass Mbao,lieu_fass_mbao.wav,tts_cache
+lieu,Fass Rufisque,lieu_fass_rufisque.wav,tts_cache
+lieu,Fassmbao,lieu_fassmbao.wav,tts_cache
+lieu,Foire,lieu_foire.wav,tts_cache
+lieu,Front de Terre,lieu_front_de_terre.wav,tts_cache
+lieu,Grand Dakar,lieu_g_dakar.wav,tts_cache
+lieu,Gaddaay,lieu_gadaye.wav,tts_cache
+lieu,Garage Guédiawaye,lieu_garage_guediawaye.wav,tts_cache
+lieu,Gare de Colobane,lieu_gare_de_colobane.wav,tts_cache
+lieu,Gare de Dakar,lieu_gare_de_dakar.wav,tts_cache
+lieu,Gare de Diamniadio,lieu_gare_de_diamniadio.wav,tts_cache
+lieu,Gare de Petersen,lieu_gare_de_petersen.wav,tts_cache
+lieu,Gare des Baux Maraîchers,lieu_gare_des_baux_maraichers.wav,tts_cache
+lieu,Gare des Parcelles Assainies,lieu_gare_des_parcelles_assainies.wav,tts_cache
+lieu,Gare Lat Dior,lieu_gare_lat_dior.wav,tts_cache
+lieu,Gare Petersen,lieu_gare_petersen.wav,tts_cache
+lieu,Gare routière de Colobane,lieu_gare_routiere_de_colobane.wav,tts_cache
+lieu,Giratoire de Liberté six,lieu_giratoire_de_liberte_six.wav,tts_cache
+lieu,Giratoire Liberté six,lieu_giratoire_liberte_six.wav,tts_cache
+lieu,Golf,lieu_golf.wav,tts_cache
+lieu,Golf Fadia,lieu_golf_fadia.wav,tts_cache
+lieu,Gorom deux,lieu_gorom_deux.wav,tts_cache
+lieu,Gorom un,lieu_gorom_un.wav,tts_cache
+lieu,Grand Dakar,lieu_grand_dakar.wav,tts_cache
+lieu,Grand Mbao,lieu_grand_mbao.wav,tts_cache
+lieu,Grand Yoff,lieu_grand_yoff.wav,tts_cache
+lieu,Groupement National des Sapeurs-Pompiers,lieu_groupement_national_des_sapeurs_pompiers.wav,tts_cache
+lieu,Guédiawaye,lieu_guediawaye.wav,tts_cache
+lieu,Guédiawaye Cité des Enseignants,lieu_guediawaye_cite_des_enseignants.wav,tts_cache
+lieu,Gueule Tapée,lieu_gueule_tapee.wav,tts_cache
+lieu,Gueule Tapée Claudel,lieu_gueule_tapee_claudel.wav,tts_cache
+lieu,Hamo cinq six,lieu_hamo_cinq_six.wav,tts_cache
+lieu,Hamo quatre,lieu_hamo_quatre.wav,tts_cache
+lieu,Hamo six,lieu_hamo_six.wav,tts_cache
+lieu,Hamo trois,lieu_hamo_trois.wav,tts_cache
+lieu,HLM,lieu_hlm.wav,tts_cache
+lieu,HLM Grand Yoff,lieu_hlm_grand_yoff.wav,tts_cache
+lieu,HLM Guédiawaye,lieu_hlm_guediawaye.wav,tts_cache
+lieu,HLM Rufisque,lieu_hlm_rufisque.wav,tts_cache
+lieu,Hôpital Abass Ndao,lieu_hopital_abass_ndao.wav,tts_cache
+lieu,Hôpital Keur Massar,lieu_hopital_keur_massar.wav,tts_cache
+lieu,Hôpital Principal,lieu_hopital_principal.wav,tts_cache
+lieu,Hôpital Roi Baudouin,lieu_hopital_roi_baudouin.wav,tts_cache
+lieu,Hôpital Youssou Mbargane,lieu_hopital_youssou_mbargane.wav,tts_cache
+lieu,Hôpital Youssou Mbargane Diop,lieu_hopital_youssou_mbargane_diop.wav,tts_cache
+lieu,Hôtel de Ville,lieu_hotel_de_ville.wav,tts_cache
+lieu,Hydrocarbures,lieu_hydrocarbures.wav,tts_cache
+lieu,Imprimerie Nationale,lieu_imprimerie_nationale.wav,tts_cache
+lieu,Jaxaay,lieu_jaxaay.wav,tts_cache
+lieu,Jaxaay deux,lieu_jaxaay_deux.wav,tts_cache
+lieu,Jaxaay un,lieu_jaxaay_un.wav,tts_cache
+lieu,JVC,lieu_jvc.wav,tts_cache
+lieu,Keur Daouda Sarr,lieu_keur_daouda_sarr.wav,tts_cache
+lieu,Keur Massar,lieu_keur_massar.wav,tts_cache
+lieu,Keur Massar Extension,lieu_keur_massar_extension.wav,tts_cache
+lieu,Keur Mbaye Fall,lieu_keur_mbaye_fall.wav,tts_cache
+lieu,Keur Ndiaye Lo,lieu_keur_ndiaye_lo.wav,tts_cache
+lieu,Keur Ngoor,lieu_keur_ngoor.wav,tts_cache
+lieu,Keurmassar,lieu_keurmassar.wav,tts_cache
+lieu,Keurmbaye Fall,lieu_keurmbaye_fall.wav,tts_cache
+lieu,Khaar,lieu_khaar.wav,tts_cache
+lieu,Khar Yalla,lieu_khar_yalla.wav,tts_cache
+lieu,Kharyalla,lieu_kharyalla.wav,tts_cache
+lieu,Khourounar,lieu_khourounar.wav,tts_cache
+lieu,Kounoune,lieu_kounoune.wav,tts_cache
+lieu,Kounoune Cité Assurance,lieu_kounoune_cite_assurance.wav,tts_cache
+lieu,Kounoune Ngalam,lieu_kounoune_ngalam.wav,tts_cache
+lieu,Lac Rose,lieu_lac_rose.wav,tts_cache
+lieu,Lat Dior,lieu_lat_dior.wav,tts_cache
+lieu,Les Mamelles,lieu_les_mamelles.wav,tts_cache
+lieu,Liberté cinq,lieu_liberte_cinq.wav,tts_cache
+lieu,Liberté six,lieu_liberte_six.wav,tts_cache
+lieu,Lobatt Fall,lieu_lobatt_fall.wav,tts_cache
+lieu,Lycée Canada,lieu_lycee_canada.wav,tts_cache
+lieu,Lycée Jaxaay,lieu_lycee_jaxaay.wav,tts_cache
+lieu,Lycée Kennedy,lieu_lycee_kennedy.wav,tts_cache
+lieu,Lycée Limamou Laye,lieu_lycee_limamou_laye.wav,tts_cache
+lieu,Lycée Limamoulaye,lieu_lycee_limamoulaye.wav,tts_cache
+lieu,Maison du Parti,lieu_maison_du_parti.wav,tts_cache
+lieu,Malika,lieu_malika.wav,tts_cache
+lieu,Malika Cimetière,lieu_malika_cimetiere.wav,tts_cache
+lieu,Malika Montagne,lieu_malika_montagne.wav,tts_cache
+lieu,Malika Plage,lieu_malika_plage.wav,tts_cache
+lieu,Malika Terminus,lieu_malika_terminus.wav,tts_cache
+lieu,Mamelles,lieu_mamelles.wav,tts_cache
+lieu,Marché aux Poissons,lieu_marche_aux_poissons.wav,tts_cache
+lieu,Marché Boubess,lieu_marche_boubess.wav,tts_cache
+lieu,Marché Cambérène,lieu_marche_camberene.wav,tts_cache
+lieu,Marché Chavanel,lieu_marche_chavanel.wav,tts_cache
+lieu,Marché Colobane Rufisque,lieu_marche_colobane_rufisque.wav,tts_cache
+lieu,Marché Grand Yoff,lieu_marche_grand_yoff.wav,tts_cache
+lieu,Marché Jeudi,lieu_marche_jeudi.wav,tts_cache
+lieu,Marché Khelcom,lieu_marche_khelcom.wav,tts_cache
+lieu,Marché Mardi,lieu_marche_mardi.wav,tts_cache
+lieu,Marché Ndiarème,lieu_marche_ndiareme.wav,tts_cache
+lieu,Marché Tilène,lieu_marche_tilene.wav,tts_cache
+lieu,Marine Française,lieu_marine_francaise.wav,tts_cache
+lieu,Maristes,lieu_maristes.wav,tts_cache
+lieu,Mbédou Fass,lieu_mbedou_fass.wav,tts_cache
+lieu,Médina,lieu_medina.wav,tts_cache
+lieu,Mermoz,lieu_mermoz.wav,tts_cache
+lieu,Mermoz Rond-Point Cheikh Bethio,lieu_mermoz_rond_point_cheikh_bethio.wav,tts_cache
+lieu,Môle dix,lieu_mole_dix.wav,tts_cache
+lieu,Môle huit,lieu_mole_huit.wav,tts_cache
+lieu,Monument Serigne Saliou,lieu_monument_serigne_saliou.wav,tts_cache
+lieu,Mosquée Massalikoul Djinane,lieu_mosquee_massalikoul_djinane.wav,tts_cache
+lieu,MTOA,lieu_mtoa.wav,tts_cache
+lieu,Namora,lieu_namora.wav,tts_cache
+lieu,Ndiakhirate,lieu_ndiakhirate.wav,tts_cache
+lieu,Ngor,lieu_ngor.wav,tts_cache
+lieu,Niacourab,lieu_niacourab.wav,tts_cache
+lieu,Niakourab,lieu_niakourab.wav,tts_cache
+lieu,Niary Tally,lieu_niary_tally.wav,tts_cache
+lieu,Nord Foire,lieu_nord_foire.wav,tts_cache
+lieu,Notaire,lieu_notaire.wav,tts_cache
+lieu,Ouakam,lieu_ouakam.wav,tts_cache
+lieu,Ouakam Baye,lieu_ouakam_baye.wav,tts_cache
+lieu,P onze,lieu_p_onze.wav,tts_cache
+lieu,P onze Keur Massar,lieu_p_onze_keur_massar.wav,tts_cache
+lieu,PAI,lieu_pai.wav,tts_cache
+lieu,Palais deux,lieu_palais_deux.wav,tts_cache
+lieu,Palais un,lieu_palais_un.wav,tts_cache
+lieu,Parc Lambaye,lieu_parc_lambaye.wav,tts_cache
+lieu,Parcelles Assainies,lieu_parcelles_assainies.wav,tts_cache
+lieu,Parcelles Dior,lieu_parcelles_dior.wav,tts_cache
+lieu,Parcelles Église,lieu_parcelles_eglise.wav,tts_cache
+lieu,Passage A Niveau,lieu_passage_a_niveau.wav,tts_cache
+lieu,Patte d'Oie,lieu_patte_d_oie.wav,tts_cache
+lieu,Pattesd'oie,lieu_pattesd_oie.wav,tts_cache
+lieu,Péage,lieu_peage.wav,tts_cache
+lieu,Penc Mi,lieu_penc_mi.wav,tts_cache
+lieu,Petersen,lieu_petersen.wav,tts_cache
+lieu,Petit Mbao,lieu_petit_mbao.wav,tts_cache
+lieu,Pharmacie Golf,lieu_pharmacie_golf.wav,tts_cache
+lieu,Pharmicie Abdourahmane,lieu_pharmicie_abdourahmane.wav,tts_cache
+lieu,Pikine Rue dix,lieu_pikine_rue_dix.wav,tts_cache
+lieu,Pikine Texaco,lieu_pikine_texaco.wav,tts_cache
+lieu,Piste d'Envol,lieu_piste_d_envol.wav,tts_cache
+lieu,Place Bakou,lieu_place_bakou.wav,tts_cache
+lieu,Place de l'Indépendance,lieu_place_de_l_independance.wav,tts_cache
+lieu,Place de l'Obélisque,lieu_place_de_l_obelisque.wav,tts_cache
+lieu,Place Leclerc,lieu_place_leclerc.wav,tts_cache
+lieu,Police des Parcelles Assainies,lieu_police_des_parcelles_assainies.wav,tts_cache
+lieu,Police Guédiawaye,lieu_police_guediawaye.wav,tts_cache
+lieu,Police Parcelles,lieu_police_parcelles.wav,tts_cache
+lieu,Police Thiaroye,lieu_police_thiaroye.wav,tts_cache
+lieu,Police Wakhinane,lieu_police_wakhinane.wav,tts_cache
+lieu,Pont Dangou,lieu_pont_dangou.wav,tts_cache
+lieu,Pont de Colobane,lieu_pont_de_colobane.wav,tts_cache
+lieu,Pont de l'Émergence,lieu_pont_de_l_emergence.wav,tts_cache
+lieu,Pont Hann,lieu_pont_hann.wav,tts_cache
+lieu,Pont Stade Léopold Sédar Senghor,lieu_pont_stade_lss.wav,tts_cache
+lieu,Port,lieu_port.wav,tts_cache
+lieu,Port de Dakar,lieu_port_de_dakar.wav,tts_cache
+lieu,Poste Courant,lieu_poste_courant.wav,tts_cache
+lieu,Poste de Guédiawaye,lieu_poste_de_guediawaye.wav,tts_cache
+lieu,Poste de Police Thiaroye,lieu_poste_de_police_thiaroye.wav,tts_cache
+lieu,Poste Fann,lieu_poste_fann.wav,tts_cache
+lieu,Poste Médina,lieu_poste_medina.wav,tts_cache
+lieu,Poste Médine,lieu_poste_medine.wav,tts_cache
+lieu,Poste Thiaroye,lieu_poste_thiaroye.wav,tts_cache
+lieu,Préfecture,lieu_prefecture.wav,tts_cache
+lieu,Préfecture Guédiawaye,lieu_prefecture_guediawaye.wav,tts_cache
+lieu,Prolongement Rue dix,lieu_prolongement_rue_dix.wav,tts_cache
+lieu,Quarante-neuf,lieu_quarante_neuf.wav,tts_cache
+lieu,Quartier Cheikh Wade,lieu_quartier_cheikh_wade.wav,tts_cache
+lieu,Rond-Point Seydou Nourou Tall,lieu_rd_point_seydou_n_tall.wav,tts_cache
+lieu,Retour Rue dix-sept,lieu_retour_rue_dix_sept.wav,tts_cache
+lieu,Retour Rue trente-sept,lieu_retour_rue_trente_sept.wav,tts_cache
+lieu,Rocade Fann Bel Air,lieu_rocade_fann_bel_air.wav,tts_cache
+lieu,Rocade Fannbel-Air,lieu_rocade_fannbel_air.wav,tts_cache
+lieu,Rond-Point Almadies,lieu_rond_point_almadies.wav,tts_cache
+lieu,Rond-Point Arafat,lieu_rond_point_arafat.wav,tts_cache
+lieu,Rond-Point Caisse de Sécurité Sociale,lieu_rond_point_caisse_de_securite_sociale.wav,tts_cache
+lieu,Rond-Point Cambérène,lieu_rond_point_camberene.wav,tts_cache
+lieu,Rond-Point Case Bi,lieu_rond_point_case_bi.wav,tts_cache
+lieu,Rond-Point Cité Pénitence,lieu_rond_point_cite_penitence.wav,tts_cache
+lieu,Rond-Point Colobane,lieu_rond_point_colobane.wav,tts_cache
+lieu,Rond-Point de Cambérène,lieu_rond_point_de_camberene.wav,tts_cache
+lieu,Rond-Point Dial Mbaay,lieu_rond_point_dial_mbaay.wav,tts_cache
+lieu,Rond-Point Dioutyba,lieu_rond_point_dioutyba.wav,tts_cache
+lieu,Rond-Point Djouti Ba Rufisque,lieu_rond_point_djouti_ba_rufisque.wav,tts_cache
+lieu,Rond-Point Fann,lieu_rond_point_fann.wav,tts_cache
+lieu,Rond-Point Jet d'Eau,lieu_rond_point_jet_d_eau.wav,tts_cache
+lieu,Rond-Point Keur Massar,lieu_rond_point_keur_massar.wav,tts_cache
+lieu,Rond-Point le Virage,lieu_rond_point_le_virage.wav,tts_cache
+lieu,Rond-Point Liberté six,lieu_rond_point_liberte_six.wav,tts_cache
+lieu,Rond-Point Malibu,lieu_rond_point_malibu.wav,tts_cache
+lieu,Rond-Point Môle huit,lieu_rond_point_mole_huit.wav,tts_cache
+lieu,Rond-Point Scoa,lieu_rond_point_scoa.wav,tts_cache
+lieu,Rond-Point Seven Up,lieu_rond_point_seven_up.wav,tts_cache
+lieu,Rond-Point Shell Keur Massar,lieu_rond_point_shell_keur_massar.wav,tts_cache
+lieu,Rond-Point Station Shell Keur Massar,lieu_rond_point_station_shell_keur_massar.wav,tts_cache
+lieu,Route de Boune,lieu_route_de_boune.wav,tts_cache
+lieu,Route de Front de Terre,lieu_route_de_front_de_terre.wav,tts_cache
+lieu,Route de Hann,lieu_route_de_hann.wav,tts_cache
+lieu,Route de Jaxaay,lieu_route_de_jaxaay.wav,tts_cache
+lieu,Route de Jaxxay,lieu_route_de_jaxxay.wav,tts_cache
+lieu,Route de l'Aéroport,lieu_route_de_l_aeroport.wav,tts_cache
+lieu,Route de l'Église,lieu_route_de_l_eglise.wav,tts_cache
+lieu,Route de l'Hôpital Général de Grand Yoff,lieu_route_de_l_hopital_general_de_gd_yoff.wav,tts_cache
+lieu,Route de Malika,lieu_route_de_malika.wav,tts_cache
+lieu,Route de Ngor,lieu_route_de_ngor.wav,tts_cache
+lieu,Route de Ouakam,lieu_route_de_ouakam.wav,tts_cache
+lieu,Route de Rufisque,lieu_route_de_rufisque.wav,tts_cache
+lieu,Route de Sangalkam,lieu_route_de_sangalkam.wav,tts_cache
+lieu,Route de Yarakh,lieu_route_de_yarakh.wav,tts_cache
+lieu,Route de Yeumbeul,lieu_route_de_yeumbeul.wav,tts_cache
+lieu,Route des HLM Rufisque,lieu_route_des_hlm_rufisque.wav,tts_cache
+lieu,Route des Niayes,lieu_route_des_niayes.wav,tts_cache
+lieu,Route des Niayes Prolongée,lieu_route_des_niayes_prolongee.wav,tts_cache
+lieu,Route du Collège Sacré Cœur,lieu_route_du_college_sacre_c_ur.wav,tts_cache
+lieu,Route du Front de Terre,lieu_route_du_front_de_terre.wav,tts_cache
+lieu,Route du Marché des Parcelles Assainies,lieu_route_du_marche_des_parcelles_assainies.wav,tts_cache
+lieu,Route du Stade,lieu_route_du_stade.wav,tts_cache
+lieu,Route du Stade Léopold Sédar Senghor,lieu_route_du_stade_lss.wav,tts_cache
+lieu,Route HLM Grand Médine,lieu_route_hlm_grand_medine.wav,tts_cache
+lieu,Route Nationale,lieu_route_nationale.wav,tts_cache
+lieu,Route Nationale numéro un,lieu_route_nationale_n_un.wav,tts_cache
+lieu,Route Nationale un,lieu_route_nationale_un.wav,tts_cache
+lieu,Route Principale de Grand Yoff,lieu_route_principale_de_grand_yoff.wav,tts_cache
+lieu,Route Principale de Ouakam,lieu_route_principale_de_ouakam.wav,tts_cache
+lieu,Route Principale des Parcelles Assainies,lieu_route_principale_des_parcelles_assainies.wav,tts_cache
+lieu,Route Corniche de HLM Grand Médine,lieu_rte_corniche_de_hlm_gd_medine.wav,tts_cache
+lieu,Route des Niayes,lieu_rte_des_niayes.wav,tts_cache
+lieu,Route des Niayes Prolongée,lieu_rte_des_niayes_prolongee.wav,tts_cache
+lieu,RTS,lieu_rts.wav,tts_cache
+lieu,Rue Abebebikila,lieu_rue_abebebikila.wav,tts_cache
+lieu,Rue Cheik Ahmadou Bamba Prolongée,lieu_rue_cheik_ahmadou_bamba_prolongee.wav,tts_cache
+lieu,Rue Cheikh Wade,lieu_rue_cheikh_wade.wav,tts_cache
+lieu,Rue de la Somme,lieu_rue_de_la_somme.wav,tts_cache
+lieu,Rue de Reims Prolongée,lieu_rue_de_reims_prolongee.wav,tts_cache
+lieu,Rue des Dardanelles,lieu_rue_des_dardanelles.wav,tts_cache
+lieu,Rue dix,lieu_rue_dix.wav,tts_cache
+lieu,Rue dix Grand Dakar,lieu_rue_dix_grand_dakar.wav,tts_cache
+lieu,Rue dix Pikine,lieu_rue_dix_pikine.wav,tts_cache
+lieu,Rue dix Pikine Ouest,lieu_rue_dix_pikine_ouest.wav,tts_cache
+lieu,Rue dix Prolongée,lieu_rue_dix_prolongee.wav,tts_cache
+lieu,Rue El Hadj Amadou Malick Gaye,lieu_rue_el_hadj_amadou_malick_gaye.wav,tts_cache
+lieu,Rue Mangin,lieu_rue_mangin.wav,tts_cache
+lieu,Rue Marsat,lieu_rue_marsat.wav,tts_cache
+lieu,Rue neuf,lieu_rue_neuf.wav,tts_cache
+lieu,Rue neuf bis,lieu_rue_neuf_bis.wav,tts_cache
+lieu,Rue onze,lieu_rue_onze.wav,tts_cache
+lieu,Rue P,lieu_rue_p.wav,tts_cache
+lieu,Rue Sandiniery,lieu_rue_sandiniery.wav,tts_cache
+lieu,Rue six,lieu_rue_six.wav,tts_cache
+lieu,Rue trente-neuf,lieu_rue_trente_neuf.wav,tts_cache
+lieu,Rue trente-quatre,lieu_rue_trente_quatre.wav,tts_cache
+lieu,Rue trente-sept,lieu_rue_trente_sept.wav,tts_cache
+lieu,Rue un Pikine Ouest,lieu_rue_un_pikine_ouest.wav,tts_cache
+lieu,Rue vingt-cinq,lieu_rue_vingt_cinq.wav,tts_cache
+lieu,Rue vingt-deux,lieu_rue_vingt_deux.wav,tts_cache
+lieu,Rues sept cent cinquante-quatre et sept cent cinquante-neuf,lieu_rues_sept_cent_cinquante_quatre_et_sept_cent_cinquante_neuf.wav,tts_cache
+lieu,Rufisque,lieu_rufisque.wav,tts_cache
+lieu,Rufisque Arafat,lieu_rufisque_arafat.wav,tts_cache
+lieu,Rufisque Cité Tacco,lieu_rufisque_cite_tacco.wav,tts_cache
+lieu,Rufisque Gouye Mouride,lieu_rufisque_gouye_mouride.wav,tts_cache
+lieu,Rufisque Nord soixante-treize,lieu_rufisque_nord_soixante_treize.wav,tts_cache
+lieu,Rufisque Sonadis,lieu_rufisque_sonadis.wav,tts_cache
+lieu,Sacré Cœur,lieu_sacre_c_ur.wav,tts_cache
+lieu,Safco,lieu_safco.wav,tts_cache
+lieu,Sahm,lieu_sahm.wav,tts_cache
+lieu,Sam Notaire,lieu_sam_notaire.wav,tts_cache
+lieu,Sangalkam,lieu_sangalkam.wav,tts_cache
+lieu,Sapeurs-Pompiers de Guédiawaye,lieu_sapeurs_pompiers_de_gw.wav,tts_cache
+lieu,Sapeurs-Pompiers Parcelles,lieu_sapeurs_pompiers_parcelles.wav,tts_cache
+lieu,Scat Urbam,lieu_scat_urbam.wav,tts_cache
+lieu,Scoa,lieu_scoa.wav,tts_cache
+lieu,Score Liberté,lieu_score_liberte.wav,tts_cache
+lieu,SDE Guédiawaye,lieu_sde_guediawaye.wav,tts_cache
+lieu,SDE Serigne Assane,lieu_sde_serigne_assane.wav,tts_cache
+lieu,Sébikotane,lieu_sebikotane.wav,tts_cache
+lieu,Sédima,lieu_sedima.wav,tts_cache
+lieu,Séras,lieu_seras.wav,tts_cache
+lieu,Serigne Assane,lieu_serigne_assane.wav,tts_cache
+lieu,Serigneassane,lieu_serigneassane.wav,tts_cache
+lieu,Service d'Hygiène,lieu_service_d_hygiene.wav,tts_cache
+lieu,Sam,lieu_sham.wav,tts_cache
+lieu,Shell Sédima,lieu_shell_sedima.wav,tts_cache
+lieu,Sicap Mbao,lieu_sicap_mbao.wav,tts_cache
+lieu,Siège Expresso Ouakam,lieu_siege_expresso_ouakam.wav,tts_cache
+lieu,Sipres,lieu_sipres.wav,tts_cache
+lieu,Sips,lieu_sips.wav,tts_cache
+lieu,Sococim,lieu_sococim.wav,tts_cache
+lieu,Soixante-douze,lieu_soixante_douze.wav,tts_cache
+lieu,Soixante-trois,lieu_soixante_trois.wav,tts_cache
+lieu,Sonadis,lieu_sonadis.wav,tts_cache
+lieu,Sonadis Rufisque,lieu_sonadis_rufisque.wav,tts_cache
+lieu,Sortie Pikine,lieu_sortie_pikine.wav,tts_cache
+lieu,Sphère ministérielle,lieu_sphere_ministerielle.wav,tts_cache
+lieu,Stade Amadou Barry,lieu_stade_amadou_barry.wav,tts_cache
+lieu,Stade de Rufisque,lieu_stade_de_rufisque.wav,tts_cache
+lieu,Stade Dembadiop,lieu_stade_dembadiop.wav,tts_cache
+lieu,Stade Léopold Sédar Senghor,lieu_stade_l_s_s.wav,tts_cache
+lieu,Station Keur Massar,lieu_station_keur_massar.wav,tts_cache
+lieu,Station Keurmassar,lieu_station_keurmassar.wav,tts_cache
+lieu,Station MTOA,lieu_station_mtoa.wav,tts_cache
+lieu,Station Toure,lieu_station_toure.wav,tts_cache
+lieu,Station Yeumbeul,lieu_station_yeumbeul.wav,tts_cache
+lieu,Tableau Ferrailles,lieu_tableau_ferrailles.wav,tts_cache
+lieu,Tally Bou Bess,lieu_tally_bou_bess.wav,tts_cache
+lieu,Tally Boubess,lieu_tally_boubess.wav,tts_cache
+lieu,Tally Boumack,lieu_tally_boumack.wav,tts_cache
+lieu,Tally Diallo,lieu_tally_diallo.wav,tts_cache
+lieu,Tally Icotaf,lieu_tally_icotaf.wav,tts_cache
+lieu,Tally Icotaf dix Route des Niayes,lieu_tally_icotaf_dix_rte_des_niayes.wav,tts_cache
+lieu,Tally Icotaf Pikine,lieu_tally_icotaf_pikine.wav,tts_cache
+lieu,Tallyboumack,lieu_tallyboumack.wav,tts_cache
+lieu,Tallyicotaf,lieu_tallyicotaf.wav,tts_cache
+lieu,Tawfeex,lieu_tawfeex.wav,tts_cache
+lieu,Technopole,lieu_technopole.wav,tts_cache
+lieu,Tenn Bi,lieu_tenn_bi.wav,tts_cache
+lieu,Thiaroye,lieu_thiaroye.wav,tts_cache
+lieu,Thiawlène,lieu_thiawlene.wav,tts_cache
+lieu,Thierno Ndiaye,lieu_thierno_ndiaye.wav,tts_cache
+lieu,Tivaouane Peul,lieu_tivaouane_peul.wav,tts_cache
+lieu,Tivaouane Peulh,lieu_tivaouane_peulh.wav,tts_cache
+lieu,Toubab Dialaw,lieu_toubab_dialaw.wav,tts_cache
+lieu,Tournal Boune,lieu_tournal_boune.wav,tts_cache
+lieu,Trente et quarante-deux,lieu_trente_et_quarante_deux.wav,tts_cache
+lieu,Tribunal de Pikine,lieu_tribunal_de_pikine.wav,tts_cache
+lieu,Ucad,lieu_ucad.wav,tts_cache
+lieu,UE zéro deux,lieu_ue_zero_deux.wav,tts_cache
+lieu,Unité quinze,lieu_unite_quinze.wav,tts_cache
+lieu,Unité trois Cinéma,lieu_unite_trois_cinema.wav,tts_cache
+lieu,Unités cinq,lieu_unites_cinq.wav,tts_cache
+lieu,Unités de Voisinage : dix,lieu_unites_de_voisinage_dix.wav,tts_cache
+lieu,Université,lieu_universite.wav,tts_cache
+lieu,Université Cheikh Anta Diop,lieu_universite_cheikh_anta_diop.wav,tts_cache
+lieu,VDN,lieu_vdn.wav,tts_cache
+lieu,VDN Prolongée,lieu_vdn_prolongee.wav,tts_cache
+lieu,VDN trois,lieu_vdn_trois.wav,tts_cache
+lieu,Village de Ngor,lieu_village_de_ngor.wav,tts_cache
+lieu,Village de Ouakam,lieu_village_de_ouakam.wav,tts_cache
+lieu,Virage Gauche Torino,lieu_virage_gauche_torino.wav,tts_cache
+lieu,Voie de Dégagement Nord,lieu_voie_de_degagement_nord.wav,tts_cache
+lieu,Wakhinanenimzatt,lieu_wakhinanenimzatt.wav,tts_cache
+lieu,Yenne,lieu_yenne.wav,tts_cache
+lieu,Yeumbeul,lieu_yeumbeul.wav,tts_cache
+lieu,Yeumbeul Bene Baraque,lieu_yeumbeul_bene_baraque.wav,tts_cache
+lieu,Yoff,lieu_yoff.wav,tts_cache
+lieu,Yoff Village,lieu_yoff_village.wav,tts_cache
+lieu,Zac Mbao,lieu_zac_mbao.wav,tts_cache
+lieu,Zac trois Bis Kounoune,lieu_zac_trois_bis_kounoune.wav,tts_cache
+lieu,Zone B,lieu_zone_b.wav,tts_cache
+lieu,Zone de Captage,lieu_zone_de_captage.wav,tts_cache
+conversation,Ba beneen yoon !,conversation_au_revoir.wav,tts_cache_ajouts
+conversation,"Baal ma, bus yi rekk laa xam. Wax ma fan nga nekk ak fan nga bëgga dem.",conversation_hors_sujet.wav,tts_cache_ajouts
+conversation,Cheikh Niang moo ma defar.,conversation_createur.wav,tts_cache_ajouts
+conversation,"Maa ngi fi rekk, jërëjëf. Yaw nag ? Fan nga bëgga dem ?",conversation_ca_va.wav,tts_cache_ajouts
+conversation,Maa ngi tudd GuindiMa. Damay won nit ñi bus bi ñuy jël ci Ndakaaru.,conversation_role.wav,tts_cache_ajouts
+conversation,Maalekum salaam ! Fan nga bëgga dem ?,conversation_salutation.wav,tts_cache_ajouts
+conversation,"Wax ma fan nga nekk ak fan nga bëgga dem, ma won la bus bi nga wara jël.",conversation_capacites.wav,tts_cache_ajouts
+conversation,"Ñoo ko bokk ! Soo ma soxlaa, maa ngi lay déglu.",conversation_merci.wav,tts_cache_ajouts
+ligne,"Jëlal bus bu Dem Dikk, TAF TAF Wakaam.",dakar_dem_dikk_taf_taf_ouakam_to1.wav,tts_cache_ajouts
+ligne,"Jëlal bus bu Dem Dikk, numero fukk ak juróom.",dakar_dem_dikk_15.wav,tts_cache_ajouts
+ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñaar.",dakar_dem_dikk_502.wav,tts_cache_ajouts
+ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñett.",dakar_dem_dikk_503.wav,tts_cache_ajouts
+ligne,"Jëlal bus bu Dem Dikk, numero ñetti téeméer ak fukk ak benn.",dakar_dem_dikk_311.wav,tts_cache_ajouts
+ligne,"Jëlal bus bu Dem Dikk, numero ñetti téeméer ak fukk ak juróom ñeent.",dakar_dem_dikk_319.wav,tts_cache_ajouts
+ligne,"Jëlal bus bu Dem Dikk, numero ñetti téeméer ak ñaar fukk ak juróom ñaar.",dakar_dem_dikk_327.wav,tts_cache_ajouts
+arret,ASECNA,lieu_asecna.wav,tts_cache_ajouts
+arret,Acapes,lieu_acapes.wav,tts_cache_ajouts
+arret,Albert Sarraut,lieu_albert_sarraut.wav,tts_cache_ajouts
+arret,Arrêt Dial Mbaye,lieu_arret_dial_mbaye.wav,tts_cache_ajouts
+arret,Arsenal,lieu_arsenal.wav,tts_cache_ajouts
+arret,Assemblée Nationale,lieu_assemblee_nationale.wav,tts_cache_ajouts
+arret,Avenue Faidherbe,lieu_avenue_faidherbe.wav,tts_cache_ajouts
+arret,Avenue Jean Jaurès,lieu_avenue_jean_jaures.wav,tts_cache_ajouts
+arret,Avenue Lamine Gueye,lieu_avenue_lamine_gueye.wav,tts_cache_ajouts
+arret,Avenue Léopold Sédar Senghor,lieu_avenue_leopold_sedar_senghor.wav,tts_cache_ajouts
+arret,Avenue Nelson Mandela,lieu_avenue_nelson_mandela.wav,tts_cache_ajouts
+arret,Avenue Peytavin,lieu_avenue_peytavin.wav,tts_cache_ajouts
+arret,Avenue Pompidou,lieu_avenue_pompidou.wav,tts_cache_ajouts
+arret,Bel Air,lieu_bel_air.wav,tts_cache_ajouts
+arret,Blaise Diagne,lieu_blaise_diagne.wav,tts_cache_ajouts
+arret,Bopp,lieu_bopp.wav,tts_cache_ajouts
+arret,Boulangerie Jaune,lieu_boulangerie_jaune.wav,tts_cache_ajouts
+arret,Boulangerie N'wely,lieu_boulangerie_n_wely.wav,tts_cache_ajouts
+arret,Boulangerie Zone,lieu_boulangerie_zone.wav,tts_cache_ajouts
+arret,Boulevard Centenaire de la Commune de Dakar,lieu_boulevard_centenaire_de_la_commune_de_dakar.wav,tts_cache_ajouts
+arret,Boulevard de l'Arsenal,lieu_boulevard_de_l_arsenal.wav,tts_cache_ajouts
+arret,Boulevard de la République,lieu_boulevard_de_la_republique.wav,tts_cache_ajouts
+arret,Boulevard des Martyrs,lieu_boulevard_des_martyrs.wav,tts_cache_ajouts
+arret,Brioche d'Orée Ouakam,lieu_brioche_d_oree_ouakam.wav,tts_cache_ajouts
+arret,Béséyaawoo,lieu_beseyaawoo.wav,tts_cache_ajouts
+arret,C E M Dieuppeul trois,lieu_c_e_m_dieuppeul_trois.wav,tts_cache_ajouts
+arret,C E M Ousmane Socé Diop,lieu_c_e_m_ousmane_soce_diop.wav,tts_cache_ajouts
+arret,C E S Canada,lieu_c_e_s_canada.wav,tts_cache_ajouts
+arret,C S S,lieu_c_s_s.wav,tts_cache_ajouts
+arret,CAPA Virmaud,lieu_capa_virmaud.wav,tts_cache_ajouts
+arret,Camp Penal,lieu_camp_penal.wav,tts_cache_ajouts
+arret,Carrefour HLM Grand Médine Diamalaye,lieu_carrefour_hlm_grand_medine_diamalaye.wav,tts_cache_ajouts
+arret,Case,lieu_case.wav,tts_cache_ajouts
+arret,Case Bi,lieu_case_bi.wav,tts_cache_ajouts
+arret,Case Pa,lieu_case_pa.wav,tts_cache_ajouts
+arret,Case des Tous Petit,lieu_case_des_tous_petit.wav,tts_cache_ajouts
+arret,Centenaire,lieu_centenaire.wav,tts_cache_ajouts
+arret,Central Bel Air,lieu_central_bel_air.wav,tts_cache_ajouts
+arret,Centre Aéré de la Béséyaawoo,lieu_centre_aere_de_la_beseyaawoo.wav,tts_cache_ajouts
+arret,Cfao Technologies,lieu_cfao_technologies.wav,tts_cache_ajouts
+arret,Cité Assemblée,lieu_cite_assemblee.wav,tts_cache_ajouts
+arret,Cité Comico,lieu_cite_comico.wav,tts_cache_ajouts
+arret,Cité Derklé,lieu_cite_derkle.wav,tts_cache_ajouts
+arret,Cité Isra,lieu_cite_isra.wav,tts_cache_ajouts
+arret,Cité Keur Gorgui,lieu_cite_keur_gorgui.wav,tts_cache_ajouts
+arret,Cité Marine,lieu_cite_marine.wav,tts_cache_ajouts
+arret,Cité Port,lieu_cite_port.wav,tts_cache_ajouts
+arret,Collège Hyacinthe Thiandoum,lieu_college_hyacinthe_thiandoum.wav,tts_cache_ajouts
+arret,Collège Sacré Cœur,lieu_college_sacre_c_ur.wav,tts_cache_ajouts
+arret,Corniche Daroukhane,lieu_corniche_daroukhane.wav,tts_cache_ajouts
+arret,Corniche Ouest,lieu_corniche_ouest.wav,tts_cache_ajouts
+arret,Corniche des HLM,lieu_corniche_des_hlm.wav,tts_cache_ajouts
+arret,Cours Sainte Marie de Hann,lieu_cours_sainte_marie_de_hann.wav,tts_cache_ajouts
+arret,Croisement Almadies,lieu_croisement_almadies.wav,tts_cache_ajouts
+arret,Croisement Bountou Pikine,lieu_croisement_bountou_pikine.wav,tts_cache_ajouts
+arret,Croisement Gàddaay,lieu_croisement_gaddaay.wav,tts_cache_ajouts
+arret,Croisement Petit Mbao,lieu_croisement_petit_mbao.wav,tts_cache_ajouts
+arret,Cyrnos,lieu_cyrnos.wav,tts_cache_ajouts
+arret,Daf,lieu_daf.wav,tts_cache_ajouts
+arret,Dakar Sacré Cœur,lieu_dakar_sacre_c_ur.wav,tts_cache_ajouts
+arret,Des Parcelles,lieu_des_parcelles.wav,tts_cache_ajouts
+arret,Deux Voies,lieu_deux_voies.wav,tts_cache_ajouts
+arret,Deux Voies Jaxaay,lieu_deux_voies_jaxaay.wav,tts_cache_ajouts
+arret,Deux Voies Vers Camp Leclerc,lieu_deux_voies_vers_camp_leclerc.wav,tts_cache_ajouts
+arret,Dial Diop,lieu_dial_diop.wav,tts_cache_ajouts
+arret,Diamniadio Yenne,lieu_diamniadio_yenne.wav,tts_cache_ajouts
+arret,Difoncé,lieu_difonce.wav,tts_cache_ajouts
+arret,Direction Générale D D D,lieu_direction_generale_d_d_d.wav,tts_cache_ajouts
+arret,Dispensaire Norade,lieu_dispensaire_norade.wav,tts_cache_ajouts
+arret,Djoutiba,lieu_djoutiba.wav,tts_cache_ajouts
+arret,Douta Seck,lieu_douta_seck.wav,tts_cache_ajouts
+arret,Dépôt Thiaroye,lieu_depot_thiaroye.wav,tts_cache_ajouts
+arret,Embarcadère,lieu_embarcadere.wav,tts_cache_ajouts
+arret,Espace HLM Grand Médine,lieu_espace_hlm_grand_medine.wav,tts_cache_ajouts
+arret,Esso Port,lieu_esso_port.wav,tts_cache_ajouts
+arret,Esso Port Embarcadère,lieu_esso_port_embarcadere.wav,tts_cache_ajouts
+arret,G M D,lieu_g_m_d.wav,tts_cache_ajouts
+arret,Gare Ter,lieu_gare_ter.wav,tts_cache_ajouts
+arret,Gare de Rufisque,lieu_gare_de_rufisque.wav,tts_cache_ajouts
+arret,Gorom zéro deux,lieu_gorom_zero_deux.wav,tts_cache_ajouts
+arret,Gorom zéro un,lieu_gorom_zero_un.wav,tts_cache_ajouts
+arret,Grand Moulin de Dakar,lieu_grand_moulin_de_dakar.wav,tts_cache_ajouts
+arret,Grand Théâtre,lieu_grand_theatre.wav,tts_cache_ajouts
+arret,Grande Mosquée,lieu_grande_mosquee.wav,tts_cache_ajouts
+arret,Gàddaay,lieu_gaddaay.wav,tts_cache_ajouts
+arret,HLM Fass,lieu_hlm_fass.wav,tts_cache_ajouts
+arret,HLM Grand Médine,lieu_hlm_grand_medine.wav,tts_cache_ajouts
+arret,HLM Sipres,lieu_hlm_sipres.wav,tts_cache_ajouts
+arret,Hamo,lieu_hamo.wav,tts_cache_ajouts
+arret,Hampathé Ba,lieu_hampathe_ba.wav,tts_cache_ajouts
+arret,Hôpital Dalal Diam,lieu_hopital_dalal_diam.wav,tts_cache_ajouts
+arret,Hôpital Général Idrissa Pouye,lieu_hopital_general_idrissa_pouye.wav,tts_cache_ajouts
+arret,Hôpital Iho,lieu_hopital_iho.wav,tts_cache_ajouts
+arret,Hôpital Mame Abdou,lieu_hopital_mame_abdou.wav,tts_cache_ajouts
+arret,Hôpital Militaire de Ouakam,lieu_hopital_militaire_de_ouakam.wav,tts_cache_ajouts
+arret,Hôpital le Dantec,lieu_hopital_le_dantec.wav,tts_cache_ajouts
+arret,Hôtel Terrou,lieu_hotel_terrou.wav,tts_cache_ajouts
+arret,I P G,lieu_i_p_g.wav,tts_cache_ajouts
+arret,Icotaf,lieu_icotaf.wav,tts_cache_ajouts
+arret,Ifan,lieu_ifan.wav,tts_cache_ajouts
+arret,Immeuble Mariama,lieu_immeuble_mariama.wav,tts_cache_ajouts
+arret,Institut Pasteur,lieu_institut_pasteur.wav,tts_cache_ajouts
+arret,Intendance,lieu_intendance.wav,tts_cache_ajouts
+arret,Jet d'Eau,lieu_jet_d_eau.wav,tts_cache_ajouts
+arret,L G I Mbao,lieu_l_g_i_mbao.wav,tts_cache_ajouts
+arret,Lac Rose Croisement Niague,lieu_lac_rose_croisement_niague.wav,tts_cache_ajouts
+arret,Leclerc,lieu_leclerc.wav,tts_cache_ajouts
+arret,Les Deux Voies de Sipres,lieu_les_deux_voies_de_sipres.wav,tts_cache_ajouts
+arret,Lycée Blaise Diagne,lieu_lycee_blaise_diagne.wav,tts_cache_ajouts
+arret,Lycée Delafosse,lieu_lycee_delafosse.wav,tts_cache_ajouts
+arret,Lycée d'Excellence Privée,lieu_lycee_d_excellence_privee.wav,tts_cache_ajouts
+arret,Mairie Grand Yoff,lieu_mairie_grand_yoff.wav,tts_cache_ajouts
+arret,Malibu,lieu_malibu.wav,tts_cache_ajouts
+arret,Marché Fass,lieu_marche_fass.wav,tts_cache_ajouts
+arret,Marché Grand Médine,lieu_marche_grand_medine.wav,tts_cache_ajouts
+arret,Marché HLM,lieu_marche_hlm.wav,tts_cache_ajouts
+arret,Marché Jeudi Corniche,lieu_marche_jeudi_corniche.wav,tts_cache_ajouts
+arret,Marché Ouakam,lieu_marche_ouakam.wav,tts_cache_ajouts
+arret,Marché SAHM,lieu_marche_sahm.wav,tts_cache_ajouts
+arret,Marché Sandika,lieu_marche_sandika.wav,tts_cache_ajouts
+arret,Masalikul Djinane,lieu_masalikul_djinane.wav,tts_cache_ajouts
+arret,Ministère de la Santé,lieu_ministere_de_la_sante.wav,tts_cache_ajouts
+arret,Monument de la Renaissance,lieu_monument_de_la_renaissance.wav,tts_cache_ajouts
+arret,Mosquée Seydou Nourrou Tall,lieu_mosquee_seydou_nourrou_tall.wav,tts_cache_ajouts
+arret,Nationale un,lieu_nationale_un.wav,tts_cache_ajouts
+arret,Ngor Village,lieu_ngor_village.wav,tts_cache_ajouts
+arret,Noflaye,lieu_noflaye.wav,tts_cache_ajouts
+arret,Obélisque,lieu_obelisque.wav,tts_cache_ajouts
+arret,Ouagou Niayes,lieu_ouagou_niayes.wav,tts_cache_ajouts
+arret,Parcelles,lieu_parcelles.wav,tts_cache_ajouts
+arret,Pentola,lieu_pentola.wav,tts_cache_ajouts
+arret,Pharmacie Cité Avion,lieu_pharmacie_cite_avion.wav,tts_cache_ajouts
+arret,Pharmacie Mame Seynabou,lieu_pharmacie_mame_seynabou.wav,tts_cache_ajouts
+arret,Pharmacie Patte d'Oie,lieu_pharmacie_patte_d_oie.wav,tts_cache_ajouts
+arret,Place Onu,lieu_place_onu.wav,tts_cache_ajouts
+arret,Place de l'Indépendance Avenue Sarraut,lieu_place_de_l_independance_avenue_sarraut.wav,tts_cache_ajouts
+arret,Point E,lieu_point_e.wav,tts_cache_ajouts
+arret,Police Bel Air,lieu_police_bel_air.wav,tts_cache_ajouts
+arret,Police Grand Yoff,lieu_police_grand_yoff.wav,tts_cache_ajouts
+arret,Police Pa,lieu_police_pa.wav,tts_cache_ajouts
+arret,Police quatrième,lieu_police_quatrieme.wav,tts_cache_ajouts
+arret,Pont Emergent,lieu_pont_emergent.wav,tts_cache_ajouts
+arret,Pont Foire,lieu_pont_foire.wav,tts_cache_ajouts
+arret,Pont Sénégal Emergent,lieu_pont_senegal_emergent.wav,tts_cache_ajouts
+arret,Pont Sénégal quatre-vingt-douze,lieu_pont_senegal_quatre_vingt_douze.wav,tts_cache_ajouts
+arret,Prison Rebeus,lieu_prison_rebeus.wav,tts_cache_ajouts
+arret,Péage Pikine,lieu_peage_pikine.wav,tts_cache_ajouts
+arret,Ravin,lieu_ravin.wav,tts_cache_ajouts
+arret,Retour Vers Lac Rose,lieu_retour_vers_lac_rose.wav,tts_cache_ajouts
+arret,Rond Point,lieu_rond_point.wav,tts_cache_ajouts
+arret,Rond Point Assemblée Nationale,lieu_rond_point_assemblee_nationale.wav,tts_cache_ajouts
+arret,Rond Point Bel Air,lieu_rond_point_bel_air.wav,tts_cache_ajouts
+arret,Rond Point Boulangerie Jaune,lieu_rond_point_boulangerie_jaune.wav,tts_cache_ajouts
+arret,Rond Point Cheikh Bethio,lieu_rond_point_cheikh_bethio.wav,tts_cache_ajouts
+arret,Rond Point Grand Mbao,lieu_rond_point_grand_mbao.wav,tts_cache_ajouts
+arret,Rond Point JVC,lieu_rond_point_jvc.wav,tts_cache_ajouts
+arret,Rond Point Lobatt Fall,lieu_rond_point_lobatt_fall.wav,tts_cache_ajouts
+arret,Rond Point Ngor,lieu_rond_point_ngor.wav,tts_cache_ajouts
+arret,Rond Point RTS,lieu_rond_point_rts.wav,tts_cache_ajouts
+arret,Rond Point Sahm,lieu_rond_point_sahm.wav,tts_cache_ajouts
+arret,Rond Point Sandaga,lieu_rond_point_sandaga.wav,tts_cache_ajouts
+arret,Rond Point vingt-six,lieu_rond_point_vingt_six.wav,tts_cache_ajouts
+arret,Route Corniche de HLM Grand Médine,lieu_route_corniche_de_hlm_grand_medine.wav,tts_cache_ajouts
+arret,Route de l'Hôpital Général de Grand Yoff,lieu_route_de_l_hopital_general_de_grand_yoff.wav,tts_cache_ajouts
+arret,Route de la Corniche,lieu_route_de_la_corniche.wav,tts_cache_ajouts
+arret,Route des Almadies,lieu_route_des_almadies.wav,tts_cache_ajouts
+arret,Route des Mamelles,lieu_route_des_mamelles.wav,tts_cache_ajouts
+arret,Rue Aimé Césaire,lieu_rue_aime_cesaire.wav,tts_cache_ajouts
+arret,Rue vingt-deux Prolongée,lieu_rue_vingt_deux_prolongee.wav,tts_cache_ajouts
+arret,S D E,lieu_s_d_e.wav,tts_cache_ajouts
+arret,S D E Guédiawaye,lieu_s_d_e_guediawaye.wav,tts_cache_ajouts
+arret,S D E Serigne Assane,lieu_s_d_e_serigne_assane.wav,tts_cache_ajouts
+arret,SICAP Karack,lieu_sicap_karack.wav,tts_cache_ajouts
+arret,SICAP Rue dix,lieu_sicap_rue_dix.wav,tts_cache_ajouts
+arret,Sandaga,lieu_sandaga.wav,tts_cache_ajouts
+arret,Sapeur Pompiers,lieu_sapeur_pompiers.wav,tts_cache_ajouts
+arret,Sapeurs-Pompiers de Guédiawaye,lieu_sapeurs_pompiers_de_guediawaye.wav,tts_cache_ajouts
+arret,Service des Mines,lieu_service_des_mines.wav,tts_cache_ajouts
+arret,Sipses,lieu_sipses.wav,tts_cache_ajouts
+arret,Sofrigal,lieu_sofrigal.wav,tts_cache_ajouts
+arret,Sorano,lieu_sorano.wav,tts_cache_ajouts
+arret,Sortie Croisement Cambérène,lieu_sortie_croisement_camberene.wav,tts_cache_ajouts
+arret,Sortie Mariste,lieu_sortie_mariste.wav,tts_cache_ajouts
+arret,Sortie Ouakam,lieu_sortie_ouakam.wav,tts_cache_ajouts
+arret,Sortie Rufisque,lieu_sortie_rufisque.wav,tts_cache_ajouts
+arret,Sotiba,lieu_sotiba.wav,tts_cache_ajouts
+arret,Station Castors,lieu_station_castors.wav,tts_cache_ajouts
+arret,Station Shell,lieu_station_shell.wav,tts_cache_ajouts
+arret,Tally Icotaf dix Route des Niayes,lieu_tally_icotaf_dix_route_des_niayes.wav,tts_cache_ajouts
+arret,Terminus cinquante-six,lieu_terminus_cinquante_six.wav,tts_cache_ajouts
+arret,Terminus quarante-neuf,lieu_terminus_quarante_neuf.wav,tts_cache_ajouts
+arret,Terminus soixante-douze,lieu_terminus_soixante_douze.wav,tts_cache_ajouts
+arret,Terminus soixante-trois,lieu_terminus_soixante_trois.wav,tts_cache_ajouts
+arret,Terrain Acapes,lieu_terrain_acapes.wav,tts_cache_ajouts
+arret,Tolou Abdoulaye Wade,lieu_tolou_abdoulaye_wade.wav,tts_cache_ajouts
+arret,Travaux Communaux,lieu_travaux_communaux.wav,tts_cache_ajouts
+arret,Tunnel de Soumbédioune,lieu_tunnel_de_soumbedioune.wav,tts_cache_ajouts
+arret,Turbinal de Dakar,lieu_turbinal_de_dakar.wav,tts_cache_ajouts
+arret,Unité onze,lieu_unite_onze.wav,tts_cache_ajouts
+arret,Unités vingt-deux vingt-quatre,lieu_unites_vingt_deux_vingt_quatre.wav,tts_cache_ajouts
+arret,Unités zéro neuf dix quinze,lieu_unites_zero_neuf_dix_quinze.wav,tts_cache_ajouts
+arret,Université Amphate Ba,lieu_universite_amphate_ba.wav,tts_cache_ajouts
+arret,Usine des Eaux,lieu_usine_des_eaux.wav,tts_cache_ajouts
+arret,V D N Foire,lieu_v_d_n_foire.wav,tts_cache_ajouts
+arret,Village Artisanal de Soumbédioune,lieu_village_artisanal_de_soumbedioune.wav,tts_cache_ajouts
+arret,Ville de Rufisque,lieu_ville_de_rufisque.wav,tts_cache_ajouts
+arret,Yarakh,lieu_yarakh.wav,tts_cache_ajouts
+arret,Yoff Tonghor,lieu_yoff_tonghor.wav,tts_cache_ajouts
+arret,Zone Industrielle,lieu_zone_industrielle.wav,tts_cache_ajouts
+arret,École Canada,lieu_ecole_canada.wav,tts_cache_ajouts
+arret,École Hyacinthe Thiandoum,lieu_ecole_hyacinthe_thiandoum.wav,tts_cache_ajouts
+arret,École Normale Supérieure,lieu_ecole_normale_superieure.wav,tts_cache_ajouts
+arret,Église Martyrs de l'Ouganda,lieu_eglise_martyrs_de_l_ouganda.wav,tts_cache_ajouts
+arret,Église Pa,lieu_eglise_pa.wav,tts_cache_ajouts
+arret,Église Sainte Thérèse,lieu_eglise_sainte_therese.wav,tts_cache_ajouts
+arret,Énaa,lieu_enaa.wav,tts_cache_ajouts
+arret,Énéa,lieu_enea.wav,tts_cache_ajouts

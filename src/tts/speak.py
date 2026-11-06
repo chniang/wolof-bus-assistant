@@ -1,12 +1,14 @@
 """Voix wolof de l'app : assemble les segments Oolel-Voices pré-générés.
 
 Les 637 réponses sont générées à l'avance avec Oolel-Voices (soynade-research),
-qui clone la voix d'Adia_TTS (CONCREE) à partir de `aucune_ligne.wav`, puis
-assemblées ici en WAV. Aucun modèle TTS n'est chargé au runtime : si un segment
-manque, on joue les morceaux présents et on journalise le fichier à produire.
-Le plan des phrases est dans `scripts/phrases_voix.json`, les prononciations
-dans `scripts/prononciations_wolof.json` et la génération dans
-`notebooks/voix_oolel_colab.ipynb`.
+puis assemblées ici en WAV. Aucun modèle TTS n'est chargé au runtime : si un
+segment manque, on joue les morceaux présents et on journalise le fichier à
+produire. Le plan des phrases est dans `scripts/phrases_voix.json`, les
+prononciations dans `scripts/prononciations_wolof.json` et la génération dans
+`notebooks/voix_oolel_complete.ipynb` (voix native Oolel, `8_1_c.wav` du Space
+Oolel-Voices-Demo). Le texte envoyé à la voix passe par le lexique de
+prononciation (`src/tts/lexique_prononciation.py`) ; l'écran, lui, garde le
+texte affiché tel quel.
 
 Le module ne dépend d'aucune interface : on peut l'utiliser seul.
 """
@@ -17,6 +19,8 @@ import io
 import re
 import unicodedata
 from pathlib import Path
+
+from tts.lexique_prononciation import appliquer
 
 # Le modèle lit les chiffres un peu n'importe comment, on les écrit donc en mots.
 UNITES = {
@@ -65,9 +69,14 @@ CACHE_DIR = Path(__file__).resolve().parents[2] / "data" / "tts_cache"
 # du plan sont là ; il documente l'état du cache, sans déclencher de synthèse.
 MARQUEUR = CACHE_DIR / "cache_complet.txt"
 # Les audios générés plus tard (nouvelles lignes Dem Dikk, nouveaux arrêts) vont
-# ici, avec les mêmes noms de fichier : data/tts_cache/ reste intact.  Un fichier
-# est cherché d'abord dans data/tts_cache/, puis ici.
+# ici, avec les mêmes noms de fichier : data/tts_cache/ reste intact.
 CACHE_AJOUTS = CACHE_DIR.parent / "tts_cache_ajouts"
+# La voix native d'Oolel-Voices (8_1_c.wav, celle du Space Oolel-Voices-Demo)
+# régénère TOUTES les réponses dans data/tts_cache_oolel/ : l'app la lit en
+# premier, puis les ajouts Adia, puis le cache des 637 en dernier recours.
+# data/tts_cache/ et data/tts_cache_ajouts/ restent intacts et servent tant que
+# la nouvelle voix n'est pas complète.
+CACHE_OOLEL = CACHE_DIR.parent / "tts_cache_oolel"
 AUCUNE_LIGNE = "aucune_ligne.wav"
 WALLA = "walla.wav"
 # « Walla, » sépare deux possibilités AVEC changement ; un fichier distinct de
@@ -425,12 +434,24 @@ def _dit_ligne(match: dict) -> str:
     return f"Jëlal bus bu {compagnie}, numero {nombre_en_wolof(numero)}{fin}."
 
 
+def texte_parle(texte: str) -> str:
+    """Le texte tel que la voix doit le lire : lexique de prononciation appliqué.
+
+    C'est ici — et nulle part ailleurs — que ce qui s'énonce est réécrit :
+    l'affichage (`matching.lieux.joli`, les cartes) garde le nom officiel. Et
+    c'est ce même passage qui sert à préparer la liste des audios à générer
+    (data/audit/voix_complete.csv), pour que la voix et ce module construisent
+    toujours la même phrase.
+    """
+    return appliquer(texte)
+
+
 def phrase_reponse(lignes: list[dict]) -> str:
     """La phrase à dire pour des lignes directes, dans l'ordre affiché."""
     morceaux = [_dit_ligne(match) for match in lignes_annoncees(lignes)]
     if not morceaux:
-        return "Baal ma, gisuma bus bu dem fa."
-    return " walla ".join(morceaux)
+        return texte_parle("Baal ma, gisuma bus bu dem fa.")
+    return texte_parle(" walla ".join(morceaux))
 
 
 def _dit_etape(etape: dict) -> str:
@@ -463,7 +484,7 @@ def phrase_correspondance(trajet: dict) -> str:
     fin = f"Ci ginnaaw, jëlal {second}"
     if descente:
         fin += f", moo lay yóbbu ba {descente}"
-    return f"{debut}. {fin}."
+    return texte_parle(f"{debut}. {fin}.")
 
 
 def phrase_correspondances(correspondances: list[dict]) -> str:
@@ -477,8 +498,8 @@ def phrase_correspondances(correspondances: list[dict]) -> str:
         for trajet in correspondances[:MAX_POSSIBILITES]
     ]
     if not phrases:
-        return "Baal ma, gisuma bus bu dem fa."
-    return " Walla, ".join(phrases)
+        return texte_parle("Baal ma, gisuma bus bu dem fa.")
+    return texte_parle(" Walla, ".join(phrases))
 
 
 def _slug(texte: str) -> str:
@@ -545,16 +566,23 @@ def assembler(
 
 
 def chemin_audio(dossier: Path, nom: str) -> Path:
-    """Le fichier `nom` : dans `dossier`, sinon dans data/tts_cache_ajouts/.
+    """Le fichier `nom` : dans `dossier`, sinon dans les caches prévus en secours.
 
-    Le second dossier ne sert qu'au cache de l'app : un dossier passé par un test
-    reste seul consulté.  Sans fichier nulle part, on rend le chemin principal.
+    Ordre de lecture de la voix pour le cache de l'app : data/tts_cache_oolel/
+    (« voix native Oolel », 8_1_c.wav), puis data/tts_cache_ajouts/ (les ajouts
+    Adia), puis data/tts_cache/ (le plan des 637) en dernier. data/tts_cache/
+    reste consultable en entier : tant que la nouvelle voix n'est pas complète,
+    chaque segment absent de oolel/ajouts rejoue l'ancien audio. Un dossier
+    passé par un test reste seul consulté. Sans fichier nulle part, on rend
+    data/tts_cache/, le chemin qu'il faudra générer.
     """
-    principal = dossier / nom
-    if principal.is_file() or dossier != CACHE_DIR:
-        return principal
-    ajout = CACHE_AJOUTS / nom
-    return ajout if ajout.is_file() else principal
+    if dossier != CACHE_DIR:
+        return dossier / nom
+    for secondaire in (CACHE_OOLEL, CACHE_AJOUTS):
+        candidat = secondaire / nom
+        if candidat.is_file():
+            return candidat
+    return CACHE_DIR / nom
 
 
 def voix_conversation(fichier: str, cache_dir: Path | None = None) -> bytes | None:

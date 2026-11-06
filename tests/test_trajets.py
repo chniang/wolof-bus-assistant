@@ -1086,11 +1086,15 @@ def test_conversation() -> tuple[int, int]:
         absent is None and present is not None and present.startswith(b"RIFF"),
     )
 
-    with (RACINE / "data" / "audit" / "voix_a_generer.csv").open(encoding="utf-8") as fichier:
+    # La liste complète des audios (data/audit/voix_complete.csv, alimentée par
+    # scripts/preparer_regen_oolel.py) a remplacé voix_a_generer.csv, vide
+    # depuis que rien ne manque : les 8 réponses de conversation y figurent
+    # avec leur phrase exacte.
+    with (RACINE / "data" / "audit" / "voix_complete.csv").open(encoding="utf-8") as fichier:
         liste = list(csv.DictReader(fichier))
     conversation = {r["fichier_wav"]: r["texte_a_prononcer"] for r in liste if r["type"] == "conversation"}
     verifie(
-        "les 8 phrases sont dans la liste des audios à générer",
+        "les 8 phrases sont dans la liste complète des audios",
         conversation == {i.fichier: i.reponse for i in INTENTIONS + (HORS_SUJET,)},
         conversation,
     )
@@ -1103,9 +1107,13 @@ def test_conversation() -> tuple[int, int]:
     portee: dict = {}
     exec(plan, portee)
     verifie(
-        "notebook : exactement les audios de voix_a_generer.csv",
+        "notebook : ce sont les 232 ajouts (ligne à ligne de la liste complète)",
         [(p["fichier"], p["phrase"]) for p in portee["PHRASES"]]
-        == [(r["fichier_wav"], r["texte_a_prononcer"]) for r in liste],
+        == [
+            (r["fichier_wav"], r["texte_a_prononcer"])
+            for r in liste
+            if r["origine"] == "tts_cache_ajouts"
+        ],
         len(portee["PHRASES"]),
     )
     origine = json.loads((RACINE / "notebooks" / "voix_oolel_colab.ipynb").read_text(encoding="utf-8"))
@@ -1577,30 +1585,87 @@ def test_voix() -> tuple[int, int]:
         == "lieu_stade_l_s_s.wav",
     )
 
-    # Un audio absent de data/tts_cache/ est cherché dans data/tts_cache_ajouts/.
+    # La voix lit trois caches dans cet ordre : data/tts_cache_oolel/ (voix
+    # native), puis data/tts_cache_ajouts/, puis data/tts_cache/ en dernier.
     ancien_ajouts = speak.CACHE_AJOUTS
+    ancien_oolel = speak.CACHE_OOLEL
     with tempfile.TemporaryDirectory() as dossier_ajouts:
-        speak.CACHE_AJOUTS = Path(dossier_ajouts)
+        dossier_ajouts = Path(dossier_ajouts)
+        speak.CACHE_AJOUTS = dossier_ajouts
         try:
             nom_to1 = speak.nom_cache_match(to1[0])
             sans_ajout = speak.voix_depuis_cache(to1)
-            (Path(dossier_ajouts) / nom_to1).write_bytes(
+            (dossier_ajouts / nom_to1).write_bytes(
                 (speak.CACHE_DIR / "dakar_dem_dikk_taf_taf.wav").read_bytes()
             )
             avec_ajout = speak.voix_depuis_cache(to1)
-            # Le premier dossier passe avant : un fichier présent aux deux endroits
-            # vient de data/tts_cache/.
-            (Path(dossier_ajouts) / "dakar_dem_dikk_1.wav").write_bytes(b"faux")
-            prioritaire = speak.chemin_audio(speak.CACHE_DIR, "dakar_dem_dikk_1.wav")
+            # Présent aux DEUX endroits (ajouts et ancien cache) : c'est maintenant
+            # data/tts_cache_ajouts/ qui gagne, seul le cache natif Oolel passe
+            # devant lui.
+            (dossier_ajouts / "dakar_dem_dikk_1.wav").write_bytes(b"faux")
+            dans_ajouts = speak.chemin_audio(speak.CACHE_DIR, "dakar_dem_dikk_1.wav")
+            # Seulement dans le cache des 637 : il reste le recours final.
+            dans_cache = speak.chemin_audio(speak.CACHE_DIR, "aucune_ligne.wav")
         finally:
             speak.CACHE_AJOUTS = ancien_ajouts
     verifie(
-        "audio cherché aussi dans data/tts_cache_ajouts/, après data/tts_cache/",
+        "audio cherché dans tts_cache_oolel/, puis tts_cache_ajouts/, puis tts_cache/",
         sans_ajout is None
         and avec_ajout is not None
         and avec_ajout.startswith(b"RIFF")
-        and prioritaire == speak.CACHE_DIR / "dakar_dem_dikk_1.wav",
-        (sans_ajout is None, avec_ajout is not None, prioritaire),
+        and dans_ajouts == Path(dossier_ajouts) / "dakar_dem_dikk_1.wav"
+        and dans_cache == speak.CACHE_DIR / "aucune_ligne.wav",
+        (sans_ajout is None, avec_ajout is not None, dans_ajouts, dans_cache),
+    )
+
+    # La voix native Oolel (data/tts_cache_oolel/) passe devant tous les autres.
+    with tempfile.TemporaryDirectory() as dossier_oolel:
+        dossier_oolel = Path(dossier_oolel)
+        (dossier_oolel / "aucune_ligne.wav").write_bytes(
+            (speak.CACHE_DIR / "aucune_ligne.wav").read_bytes()
+        )
+        speak.CACHE_OOLEL = dossier_oolel
+        try:
+            dans_oolel = speak.chemin_audio(speak.CACHE_DIR, "aucune_ligne.wav")
+            absent_partout = speak.chemin_audio(speak.CACHE_DIR, "fichier_test_absent.wav")
+        finally:
+            speak.CACHE_OOLEL = ancien_oolel
+    verifie(
+        "voix native : tts_cache_oolel d'abord, chemin du fichier à générer sinon",
+        dans_oolel == Path(dossier_oolel) / "aucune_ligne.wav"
+        and absent_partout == speak.CACHE_DIR / "fichier_test_absent.wav",
+        (dans_oolel, absent_partout),
+    )
+
+    # Le lexique de prononciation : mot entier, insensible à la casse, une
+    # seule passe, et seulement pour le texte envoyé à la voix.
+    from tts.lexique_prononciation import LEXIQUE, appliquer
+
+    verifie(
+        "lexique vide : le texte part tel quel chez la voix",
+        LEXIQUE == {}
+        and appliquer("Baal ma, biis yi rekk laa xam.") == "Baal ma, biis yi rekk laa xam."
+        and phrase_reponse(taf_taf) == "Jëlal bus bu Dem Dikk, TAF TAF.",
+        (LEXIQUE, appliquer("Baal ma, biis yi rekk laa xam."),),
+    )
+    ancien_lexique = dict(LEXIQUE)
+    try:
+        LEXIQUE["biis"] = "bis"
+        LEXIQUE["Taf Taf Wakaam"] = "Taaf Taaf Wakaam"
+        tout_ou_rien = appliquer("Baal ma, Biis biisbiis yi rekk laa xam.")
+        phrase_ligne = appliquer(phrase_reponse(to1))
+    finally:
+        LEXIQUE.clear()
+        LEXIQUE.update(ancien_lexique)
+    verifie(
+        "lexique : mot entier, casse oubliée, phrase entière, une seule passe",
+        tout_ou_rien == "Baal ma, bis biisbiis yi rekk laa xam."
+        and phrase_ligne == "Jëlal bus bu Dem Dikk, Taaf Taaf Wakaam.",
+        (tout_ou_rien, phrase_ligne, dict(LEXIQUE) == ancien_lexique),
+    )
+    verifie(
+        "lexique restauré : vide comme avant la manœuvre",
+        LEXIQUE == ancien_lexique and phrase_reponse(taf_taf) == "Jëlal bus bu Dem Dikk, TAF TAF.",
     )
 
     suffixe = [{"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 15A"}]
@@ -1942,8 +2007,40 @@ def test_lieux() -> tuple[int, int]:
     return echecs, total
 
 
+def _phrases_ajouts_notebook() -> dict[str, str]:
+    """Les 232 ajouts : fichier -> phrase, lues du PLAN embarqué dans le notebook.
+
+    Colab n'a pas accès au dépôt ; la liste est copiée dans le notebook même,
+    généré par scripts/preparer_notebook_ajouts.py. C'est là qu'elle reste
+    exacte.
+    """
+    import json
+
+    notebook = json.loads(
+        (RACINE / "notebooks" / "voix_ajouts_colab.ipynb").read_text(encoding="utf-8")
+    )
+    source = next(
+        "".join(cellule["source"])
+        for cellule in notebook["cells"]
+        if cellule["cell_type"] == "code"
+        and "".join(cellule["source"]).startswith("PLAN = ")
+    )
+    portee: dict = {}
+    exec(source, portee)  # noqa: S102 - une cellule de ce dépôt, pas une entrée
+    return {p["fichier"]: p["phrase"] for p in portee["PHRASES"]}
+
+
 def test_prononciations() -> tuple[int, int]:
-    """Le plan porte le texte exact préparé pour la génération Oolel-Voices."""
+    """Le plan porte le texte exact préparé pour la génération Oolel-Voices.
+
+    La voix passe à la voix native d'Oolel (8_1_c.wav du Space
+    Oolel-Voices-Demo) : la liste complète des 869 audios régénérables
+    (data/audit/voix_complete.csv, texte final après lexique) doit couvrir
+    exactement ce que l'app peut jouer aujourd'hui, et les deux notebooks de
+    génération (test de prononciation et complet) doivent suivre les mêmes
+    réglages que les séries précédentes.
+    """
+    import csv
     import json
 
     plan = json.loads(
@@ -2132,6 +2229,160 @@ def test_prononciations() -> tuple[int, int]:
         ),
         bene,
     )
+
+    # --- La régénération complète (voix native Oolel, 8_1_c.wav) ------------ #
+
+    complete = list(
+        csv.DictReader(
+            (RACINE / "data" / "audit" / "voix_complete.csv").open(encoding="utf-8")
+        )
+    )
+    fichiers_complete = [r["fichier_wav"] for r in complete]
+    verifie(
+        "voix_complete.csv : 869 audios, 637 du plan + 232 ajouts, sans doublon",
+        len(complete) == 869
+        and len(set(fichiers_complete)) == 869
+        and sum(1 for r in complete if r["origine"] == "tts_cache") == 637
+        and sum(1 for r in complete if r["origine"] == "tts_cache_ajouts") == 232,
+        (len(complete), len(set(fichiers_complete))),
+    )
+    import os as _os
+
+    def _voix_d_aujourdhui(fichier: str) -> bool:
+        return _os.path.isfile(RACINE / "data" / "tts_cache" / fichier) or _os.path.isfile(
+            RACINE / "data" / "tts_cache_ajouts" / fichier
+        )
+
+    manquants_d_aujourdhui = [f for f in fichiers_complete if not _voix_d_aujourdhui(f)]
+    verifie(
+        "voix_complete.csv : chaque audio est jouable aujourd'hui",
+        not manquants_d_aujourdhui,
+        manquants_d_aujourdhui[:5],
+    )
+    # Texte final = phrase du plan / des ajouts, lexique vide ou pas : même
+    # écriture parlée telle quelle quand le lexique ne retouche rien.
+    par_fichier = {r["fichier_wav"]: r for r in complete}
+    from tts.lexique_prononciation import LEXIQUE, appliquer
+
+    ecarts = []
+    sources_textes = {e["fichier"]: e["phrase"] for e in plan["phrases"]}
+    for fichier, phrase in _phrases_ajouts_notebook().items():
+        sources_textes.setdefault(fichier, phrase)
+    for fichier, phrase in sources_textes.items():
+        attendu = appliquer(phrase)
+        if par_fichier.get(fichier, {}).get("texte_a_prononcer") != attendu:
+            ecarts.append(
+                (fichier, par_fichier.get(fichier, {}).get("texte_a_prononcer"), attendu)
+            )
+    verifie(
+        "voix_complete.csv : le texte final suit phrases + lexique",
+        not ecarts and LEXIQUE == {},
+        ecarts[:3],
+    )
+
+    # Notebook complet : liste exacte du CSV, mêmes réglages, voix du Space.
+    complet = json.loads(
+        (RACINE / "notebooks" / "voix_oolel_complete.ipynb").read_text(encoding="utf-8")
+    )
+    sources_complet = [
+        "".join(c["source"]) if isinstance(c["source"], list) else str(c["source"])
+        for c in complet["cells"]
+        if c["cell_type"] == "code"
+    ]
+    plan_complet_src = next(s for s in sources_complet if s.startswith("PLAN = "))
+    portee_complet: dict = {}
+    exec(plan_complet_src, portee_complet)
+    verifie(
+        "notebook complet : exactement les 869 audios de voix_complete.csv",
+        [(p["fichier"], p["phrase"]) for p in portee_complet["PHRASES"]]
+        == [(r["fichier_wav"], r["texte_a_prononcer"]) for r in complete]
+        and portee_complet["GRAINE"] == 1234,
+        len(portee_complet.get("PHRASES", [])),
+    )
+    gen_637 = "".join(
+        json.loads((RACINE / "notebooks" / "voix_oolel_colab.ipynb").read_text(encoding="utf-8"))["cells"][7]["source"]
+    )
+    gen_complet = next(s for s in sources_complet if s.startswith("# Générer"))
+    verifie(
+        "notebook complet : génération identique aux 637 (3 essais, reprise)",
+        gen_complet == gen_637,
+    )
+    tout_complet = "\n".join(sources_complet)
+    verifie(
+        "notebook complet : jeton dans les secrets Colab, jamais écrit",
+        'userdata.get("HF_TOKEN")' in tout_complet
+        and not re.search(r"hf_[A-Za-z0-9]{20,}", tout_complet),
+    )
+    drive_complet = next(s for s in sources_complet if s.startswith("# Google Drive"))
+    verifie(
+        "notebook complet : la voix se télécharge du Space, jamais l'audio Adia importé",
+        "hf_hub_download" in drive_complet
+        and "repo_type='space'" in drive_complet
+        and "8_1_c.wav" in drive_complet
+        and "aucune_ligne" not in drive_complet
+        and "Adia_TTS" not in tout_complet,
+        (drive_complet[:160]),
+    )
+    verifie(
+        "notebook complet : écrit dans Drive guindima_oolel_complete/tts_cache_oolel",
+        "/content/drive/MyDrive/guindima_oolel_complete" in tout_complet
+        and "tts_cache_oolel" in tout_complet,
+    )
+
+    # Notebook du test de prononciation : 12 variantes à écouter, mêmes réglages.
+    test_nb = json.loads(
+        (RACINE / "notebooks" / "voix_test_prononciation_colab.ipynb").read_text(encoding="utf-8")
+    )
+    sources_test = [
+        "".join(c["source"]) if isinstance(c["source"], list) else str(c["source"])
+        for c in test_nb["cells"]
+        if c["cell_type"] == "code"
+    ]
+    plan_test_src = next(s for s in sources_test if s.startswith("PLAN = "))
+    portee_test: dict = {}
+    exec(plan_test_src, portee_test)
+    variantes = [
+        ("Baal ma, biis yi rekk laa xam.", "test_biis.wav"),
+        ("Baal ma, bis yi rekk laa xam.", "test_bis.wav"),
+        ("Jëlal biis bu Dem Dikk, Taaf Taaf Wakaam.", "test_biis_taaf_taaf_wakaam.wav"),
+        ("Jëlal bis bu Dem Dikk, Taf Taf Wakaam.", "test_bis_taf_taf_wakaam.wav"),
+        ("Jëlal biis bu Dem Dikk, Tafe Tafe Wakaam.", "test_biis_tafe_tafe_wakaam.wav"),
+        ("Akapes", "test_akapes.wav"),
+        ("Akaapes", "test_akaapes.wav"),
+        ("Albeer Saróo", "test_albeer_saroo.wav"),
+        ("Alber Saroo", "test_alber_saroo.wav"),
+        ("Aseknaa", "test_aseknaa.wav"),
+        ("Asekna", "test_asekna.wav"),
+        ("Maalekum salaam ! Fan nga bëgga dem ?", "test_maalekum.wav"),
+    ]
+    verifie(
+        "notebook de test : les 12 variantes, une par fichier, graine 1234",
+        [(p["phrase"], p["fichier"]) for p in portee_test["PHRASES"]] == variantes
+        and portee_test["GRAINE"] == 1234,
+        len(portee_test.get("PHRASES", [])),
+    )
+    tout_test = "\n".join(sources_test)
+    verifie(
+        "notebook de test : génération partagée avec les 637, voix du Space, Drive dédié",
+        gen_637 in sources_test
+        and "8_1_c.wav" in tout_test
+        and "guindima_test_prononciation" in tout_test
+        and "aucune_ligne" not in tout_test
+        and "Adia" not in tout_test,
+    )
+    verifie(
+        "notebook de test : jeton dans les secrets Colab, jamais écrit",
+        'userdata.get("HF_TOKEN")' in tout_test
+        and not re.search(r"hf_[A-Za-z0-9]{20,}", tout_test),
+    )
+    for numero, source in enumerate(sources_test + sources_complet, 1):
+        lignes = [
+            ligne for ligne in source.splitlines() if not ligne.lstrip().startswith("!")
+        ]
+        try:
+            compile("\n".join(lignes), f"cellule {numero}", "exec")
+        except SyntaxError as exc:
+            verifie("notebooks voix native : cellules valides", False, exc)
 
     return echecs, total
 
