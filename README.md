@@ -25,7 +25,7 @@ app_file: app.py
 - [🧭 Architecture](#-architecture)
 - [🗣️ Wolof, by a native speaker](#-wolof-by-a-native-speaker)
 - [📊 Key results](#-key-results)
-- [🕰️ Built before vs during the hackathon](#-built-before-vs-during-the-hackathon)
+- [🕰️ Timeline](#-timeline)
 - [⚠️ Limitations](#-limitations)
 - [🚀 Run it yourself](#-run-it-yourself)
 - [🔮 Next steps](#-next-steps)
@@ -155,14 +155,13 @@ when local extraction cannot find the trip.
 
 ---
 
-## 🕰️ BUILT BEFORE VS DURING THE HACKATHON
+## 🕰️ TIMELINE
 
-This section is about the **GOMYCODE x NVIDIA hackathon** (27 Sept 2026), where
-GuindiMa won **2nd place in Senegal** and the **NVIDIA Brev Breakthrough Award**.
-
-| Before the hackathon | During the hackathon |
+| When | What |
 | --- | --- |
-| The route data: **65 official AFTU route traces**, **Dem Dikk official itineraries** (demdikk.sn), OpenStreetMap stops; the Wolof voice dataset and the fine-tuned Whisper built from it. | Everything else in this repository: the previous matching engine and app, then the **route engine v2**, the **native Oolel voice pipeline** (869-audio plan + pronunciation lexicon), **basic Wolof conversation**, and the 530-check test suite. |
+| 27 Sept 2026 | First prototype built at the GOMYCODE x NVIDIA hackathon: 2nd place in Senegal and NVIDIA Brev Breakthrough Award. |
+| October 2026 | Whisper small fine-tuned on Dakar Wolof speech (`TIJAANI/whisper-small-wolof-dakar-essai3`); pre-generated Wolof voice answers. |
+| November 2026 | Route engine v2 (Dijkstra/A\*, speeds per operator); reliable route data (65 official AFTU traces, official Dem Dikk itineraries, OpenStreetMap); basic Wolof conversation; native Oolel voice pipeline with a pronunciation lexicon; 530-check test suite. |
 
 ---
 
