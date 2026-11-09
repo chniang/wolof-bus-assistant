@@ -980,6 +980,89 @@ def test_moteur_v2() -> tuple[int, int]:
         and bool(troncons),
         almadies["correspondances"],
     )
+
+    # Le choix du moteur se dit franchement : v2 par défaut, v1 sur demande
+    # explicite, et surtout plus jamais un repli v1 en douce quand v2 casse.
+    # On exécute la pellicule de app.py (l'assignation MOTEUR + la construction)
+    # sous de faux modules : aucun réseau, aucun modèle chargé.
+    import sys
+    import types
+
+    source_app = (RACINE / "app.py").read_text(encoding="utf-8")
+    pellicule = source_app[source_app.index("MOTEUR = os.getenv") :]
+    pellicule = pellicule[: pellicule.index("MATCHER = _construire_matcher()")]
+
+    class V1Fausse:
+        """Fausse classe de l'ancien moteur, juste un repère d'identité."""
+
+    class V2Fausse:
+        """Faux moteur v2 : sa construction fait semblant d'échouer."""
+
+        def __init__(self, _repli):
+            raise Exception("graphe impossible : dépendance absente")
+
+    module_matching = types.ModuleType("matching")
+    module_stops = types.ModuleType("matching.stops_matcher")
+    module_stops.StopsMatcher = V1Fausse
+    module_routing = types.ModuleType("routing")
+    module_adapter = types.ModuleType("routing.adapter")
+    module_adapter.MoteurV2 = V2Fausse
+
+    anciens = {
+        nom: sys.modules.get(nom)
+        for nom in ("matching", "matching.stops_matcher", "routing", "routing.adapter")
+    }
+    env_ancien = os.environ.get("GUINDIMA_MOTEUR")
+    recus: list[object] = []
+    try:
+        for nom, module in (
+            ("matching", module_matching),
+            ("matching.stops_matcher", module_stops),
+            ("routing", module_routing),
+            ("routing.adapter", module_adapter),
+        ):
+            sys.modules[nom] = module
+        # Trois scénarios : variable absente (= défaut), « v1 », valeur inconnue.
+        for scenario in (None, "v1", "v9"):
+            if scenario is None:
+                os.environ.pop("GUINDIMA_MOTEUR", None)
+            else:
+                os.environ["GUINDIMA_MOTEUR"] = scenario
+            portee: dict = {"os": os, "StopsMatcher": V1Fausse}
+            exec(pellicule, portee)
+            try:
+                recus.append(portee["_construire_matcher"]())
+            except Exception as plantage:
+                recus.append(plantage)
+    finally:
+        # On rend tout : les vrais modules, l'environnement tel qu'il était.
+        for nom, module in anciens.items():
+            if module is None:
+                sys.modules.pop(nom, None)
+            else:
+                sys.modules[nom] = module
+        if env_ancien is None:
+            os.environ.pop("GUINDIMA_MOTEUR", None)
+        else:
+            os.environ["GUINDIMA_MOTEUR"] = env_ancien
+
+    verifie(
+        "sans GUINDIMA_MOTEUR : v2 démarre, sinon l'échec est franc (jamais v1 en douce)",
+        isinstance(recus[0], RuntimeError)
+        and "v2" in str(recus[0])
+        and recus[0].__cause__ is not None,
+        recus[0],
+    )
+    verifie(
+        "GUINDIMA_MOTEUR=v1 : l'ancien moteur, exprès",
+        recus[1].__class__ is V1Fausse,
+        recus[1],
+    )
+    verifie(
+        "GUINDIMA_MOTEUR=v9 : valeur inconnue, défaut v2 et son échec franc",
+        isinstance(recus[2], RuntimeError) and "v2" in str(recus[2]),
+        recus[2],
+    )
     return echecs, total
 
 
@@ -2860,7 +2943,8 @@ def test_securite() -> tuple[int, int]:
         and "python-dotenv==1.2.2" in requirements_train,
     )
 
-    # 7. Déploiement : pas de copie automatique du token, .claude exclu.
+    # 7. Déploiement : pas de copie du token, .claude exclu, dry-run sans
+    # réseau, dossiers du projet obligatoires, relecture anti-secret.
     upload = (RACINE / "upload_space.py").read_text(encoding="utf-8")
     ignore = (RACINE / ".gitignore").read_text(encoding="utf-8")
     verifie(
@@ -2869,6 +2953,17 @@ def test_securite() -> tuple[int, int]:
         and "get_token" not in upload
         and ".claude/*" in upload
         and ".claude/" in ignore,
+    )
+    verifie(
+        "dry-run fidèle, dossiers obligatoires, double filet anti-secret",
+        "--dry-run" in upload
+        and "filter_repo_objects" in upload
+        and "verifier_secrets" in upload
+        and ".ipynb_checkpoints" in upload
+        and all(
+            dossier in upload
+            for dossier in ("data/corrections", "data/sources", "data/tts_cache_oolel")
+        ),
     )
 
     return echecs, total
@@ -3158,6 +3253,25 @@ def test_interface_micro() -> tuple[int, int]:
     verifie(
         "README sans démos audio",
         "demo_audio" not in readme and "rejoue un enregistrement" not in readme,
+    )
+    verifie(
+        "README crédits : voix native Oolel, ASR à vérifier, sources des données, corrections",
+        "Crédits et licences" in readme
+        and "Oolel-Voices-Demo" in readme
+        and "8_1_c" in readme
+        and "AGPL-3.0" in readme
+        and "odèle TTS ne tourne dans l'app" in readme
+        and "aftu-senegal.org" in readme
+        and "ODbL 1.0" in readme
+        and "data/corrections" in readme
+        and "voir fiche du modèle (TODO vérifier)" in readme,
+    )
+    verifie(
+        "README : GUINDIMA_MOTEUR documenté (v2 par défaut, v1 exprès, pas de repli silencieux)",
+        "GUINDIMA_MOTEUR" in readme
+        and "v2" in readme
+        and "v1" in readme
+        and "silencieusement" in readme,
     )
     # upload_space.py est volontairement exclu de Git (réglages locaux) : on le
     # vérifie quand il est là, sans rendre la suite impossible sur un clone nu.

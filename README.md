@@ -26,19 +26,22 @@ avec le numéro de ligne énoncé en wolof plutôt qu'en chiffres.
 | 1. Transcription | `AIHubSN/Kiriku-Wolof-ASR` (en ligne, GPU) · `TIJAANI/whisper-small-wolof-dakar-essai3` (secours et local, CPU) | Transcrit la demande vocale wolof. Kiriku (AI Hub Sénégal) reconnaît bien mieux les noms d'arrêts (~9 sur 10 contre 1 sur 10 au banc d'essai micro, voir `kiriku_test/`). Quand le GPU gratuit de Hugging Face n'est pas attribué, l'app bascule seule sur notre whisper fine-tuné sur les voix collectées (WER 89,7 % → 74,1 % sur 22 vocaux de voix jamais vues), quantifié en int8 sur CPU, qui sert aussi en local (Kiriku, taille Whisper large, ne tient pas sur un laptop). Dépôt privé : il faut le secret `HF_TOKEN`, sinon l'app repart seule de `M9and2M/whisper-small-wolof`. |
 | 2. Extraction | extraction locale, puis `meta/llama-3.2-11b-vision-instruct` (NVIDIA Build) | Repère `depart` et `arrivee`. D'abord en local, par correspondance floue sur les lieux du réseau, en tenant compte des écritures phonétiques de l'ASR (« wakaam », « liberti sënk », « pale ») et des numéros dits en lettres ou en wolof. Le LLM n'intervient que si ce repérage ne donne pas de trajet complet ; son prompt contient la liste des lieux du réseau. |
 | 3. Correspondance | — | Recherche arrêt par arrêt sur 112 lignes : une ligne convient si elle passe par le départ puis par l'arrivée, pas seulement si ce sont ses terminus. Sans ligne directe, propose un trajet avec un changement. Tolère l'orthographe phonétique et les variantes (« wakaam » → Ouakam, « Liberté VI » → Liberté 6) ; Palais 1 et Palais 2 valent tous deux « Palais ». |
-| 4. Réponse | Oolel-Voices (voix Adia, CONCREE), pré-généré | Affiche le trajet en texte **et** joue les segments wolof déjà générés dans `data/tts_cache/`. |
+| 4. Réponse | Oolel-Voices (voix native), pré-généré | Affiche le trajet en texte **et** joue les segments wolof déjà générés : `data/tts_cache_oolel/` d'abord, puis caches de secours `data/tts_cache_ajouts/` et `data/tts_cache/`. |
 
-La voix est entièrement pré-générée : **637 audios Oolel-Voices**, construits
-depuis `scripts/phrases_voix.json` et `scripts/prononciations_wolof.json`. La
-génération se fait dans `notebooks/voix_oolel_colab.ipynb` : trois prises par
-segment, puis la meilleure est choisie avec un contrôle Whisper. Aucun modèle TTS
-n'est chargé au runtime ; si un segment manque, l'app joue les morceaux présents
-et laisse le reste silencieux. `scripts/installer_voix_adia.py tts_cache_oolel.zip`
-installe l'archive complète dans `data/tts_cache/`.
-
-Crédits voix : **Oolel-Voices par soynade-research (AGPL-3.0), utilisé hors ligne
-pour pré-générer les audios** ; la **voix de référence CONCREE/Adia_TTS
-(Apache 2.0)** est clonée à partir de `data/tts_cache/aucune_ligne.wav`.
+La voix est entièrement pré-générée : **869 audios Oolel-Voices** (637 réponses
+de voyage + 232 phrases de conversation), décrits ligne à ligne dans
+`data/audit/voix_complete.csv` et régénérés avec la voix native `8_1_c` du
+Space Oolel-Voices-Demo dans `notebooks/voix_oolel_complete.ipynb` : trois
+prises par segment, puis la meilleure est choisie avec un contrôle Whisper.
+Le texte envoyé à la voix passe par le lexique de prononciation
+`src/tts/lexique_prononciation.py` ; l'écran, lui, garde les noms tels quels.
+Aucun modèle TTS n'est chargé au runtime ; si un segment manque, l'app joue
+les morceaux présents et laisse le reste silencieux.
+`scripts/installer_voix_oolel.py tts_cache_oolel.zip` installe l'archive
+complète dans `data/tts_cache_oolel/`, lue en premier par l'app : tant que la
+nouvelle voix n'est pas complète, chaque audio absent y replonge dans les
+caches de secours `data/tts_cache_ajouts/`, puis `data/tts_cache/` (les 637
+premiers audios, générés au départ avec la voix Adia de CONCREE clonée).
 
 ## Données
 
@@ -77,6 +80,12 @@ pour l'extraction départ / arrivée :
 cp .env.example .env
 # puis éditer .env : NVIDIA_API_KEY=xxxx
 ```
+
+La variable `GUINDIMA_MOTEUR` choisit le moteur de recherche d'itinéraires :
+`v2` (nouveau moteur) par défaut — rien à définir pour l'obtenir ;
+`GUINDIMA_MOTEUR=v1` force l'ancien moteur, expressément. Si le moteur v2
+échoue à démarrer, l'app lève une erreur franche au lieu de repartir
+silencieusement sur v1.
 
 ## Lancer l'application
 
@@ -179,6 +188,35 @@ Pour changer de matériel : installer la version CUDA de PyTorch
 (`pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu124`)
 puis relancer l'application. Le reste du code est inchangé — les modèles sont
 chargés par `transformers` et suivent le matériel disponible.
+
+## Crédits et licences
+
+**Voix** : Oolel-Voices de soynade-research — **AGPL-3.0** —, utilisé hors
+ligne pour pré-générer les audios, à partir de l'échantillon vocal natif
+`8_1_c` du Space
+[soynade-research/Oolel-Voices-Demo](https://huggingface.co/spaces/soynade-research/Oolel-Voices-Demo).
+Seuls des **WAV pré-générés hors ligne** sont livrés avec l'app : **aucun
+modèle TTS ne tourne dans l'app**.
+
+**Transcription (ASR)** :
+
+- [`AIHubSN/Kiriku-Wolof-ASR`](https://huggingface.co/AIHubSN/Kiriku-Wolof-ASR)
+  (transcription GPU en ligne) — licence : voir fiche du modèle (TODO vérifier) ;
+- [`M9and2M/whisper-small-wolof`](https://huggingface.co/M9and2M/whisper-small-wolof)
+  (repli CPU quand le GPU n'est pas là) — licence : voir fiche du modèle (TODO vérifier) ;
+- [`TIJAANI/whisper-small-wolof-dakar-essai3`](https://huggingface.co/TIJAANI/whisper-small-wolof-dakar-essai3)
+  (notre fine-tuning sur la collecte de Dakar, dépôt privé) — licence : voir
+  fiche du modèle (TODO vérifier).
+
+**Données** :
+
+- Itinéraires AFTU officiels : [aftu-senegal.org](https://aftu-senegal.org/infos-pratiques/) ;
+- Itinéraires Dakar Dem Dikk officiels : [demdikk.sn](https://demdikk.sn/info-voyageurs/) ;
+- Cartes et arrêts : OpenStreetMap, via Overpass et Nominatim —
+  « © OpenStreetMap contributors, ODbL 1.0 ».
+
+Les CSV d'origine ne sont jamais modifiés : les corrections vivent dans
+`data/corrections/`, avec leur source.
 
 ## Licence
 

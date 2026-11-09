@@ -192,9 +192,10 @@ LIBELLE_VOIX = "Oolel-Voices (voix Adia, CONCREE)"
 # --------------------------------------------------------------------------- #
 
 # Moteur de recherche : « v2 » (nouveau moteur d'itinéraires) par défaut,
-# « v1 » pour revenir à l'ancien sans toucher au code. Le moteur v2 est enveloppé
-# pour garder exactement l'interface de StopsMatcher et retomber sur v1 s'il ne
-# trouve rien ou s'il échoue.
+# « v1 » pour revenir à l'ancien sans toucher au code : GUINDIMA_MOTEUR=v1.
+# Plus de repli silencieux : si v2 ne démarre pas, l'app le dit franchement
+# (RuntimeError). Avant, une dépendance manquante renvoyait tranquillement
+# l'ancien moteur : un v2 cassé passait pour un v2 en bonne santé.
 MOTEUR = os.getenv("GUINDIMA_MOTEUR", "v2").strip().lower()
 if MOTEUR not in {"v1", "v2"}:
     MOTEUR = "v2"
@@ -209,11 +210,16 @@ def _construire_matcher():
         print("[moteur] v2 actif", flush=True)
         return MoteurV2(StopsMatcher())
     except Exception as exc:
-        # Un souci d'import (dépendance manquante sur le Space) ne doit jamais
-        # empêcher l'app de démarrer : on garde l'ancien moteur.
+        # On n'avale plus l'erreur : un import raté (dépendance absente du
+        # Space, disque plein…) doit s'entendre, pas faire repartir l'app sur
+        # v1 en murmurant. Le repli v1 reste un choix explicite du deployeur.
         message = f"{type(exc).__name__} : {exc}"[:160]
-        print(f"[moteur] v2 indisponible ({message}), repli v1", flush=True)
-        return StopsMatcher()
+        raise RuntimeError(
+            "Impossible de démarrer le moteur v2 "
+            "(GUINDIMA_MOTEUR non défini, ou défini à « v2 ») — pas de repli "
+            "silencieux sur v1 : mettez GUINDIMA_MOTEUR=v1 pour revenir à "
+            f"l'ancien moteur. Cause : {message}"
+        ) from exc
 
 
 MATCHER = _construire_matcher()
