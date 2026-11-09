@@ -5,220 +5,321 @@ sdk_version: 6.30.0
 app_file: app.py
 ---
 
-# GuindiMa AI
+# 🚌 GuindiMa AI
 
-**Assistant vocal en wolof pour trouver sa ligne de bus à Dakar.**
+### Wolof voice assistant that tells Dakar riders which bus to take
 
-🚀 **Démo en ligne :** [huggingface.co/spaces/TIJAANI/guindima-ai](https://huggingface.co/spaces/TIJAANI/guindima-ai) (parle ou écris ton trajet en wolof)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Gradio 6.30](https://img.shields.io/badge/Gradio-6.30-F97316?logo=gradio&logoColor=white)](https://www.gradio.app/)
+[![Hugging Face - Live demo](https://img.shields.io/badge/Hugging%20Face-Live%20demo-FFD21E?logo=huggingface&logoColor=white)](https://huggingface.co/spaces/TIJAANI/guindima-ai)
+[![ASR Kiriku-Wolof-ASR](https://img.shields.io/badge/ASR-Kiriku--Wolof--ASR-8CAAE6)](#-how-it-uses-the-models)
+[![Voice Oolel-Voices](https://img.shields.io/badge/Voice-Oolel--Voices-FF7F7F)](#-how-it-uses-the-models)
+[![License All rights reserved](https://img.shields.io/badge/License-All%20rights%20reserved-yellow)](LICENSE)
 
-On lui parle, il répond en wolof. GuindiMa AI écoute une demande de trajet
-parlée en wolof, la transcrit, en extrait le départ et l'arrivée, puis indique
-les lignes de bus (Dakar Dem Dikk / Tata AFTU) qui relient les deux points.
+## 📑 Table of contents
 
-L'interface est pensée aussi pour les personnes qui ne lisent pas, ou lisent peu
-couramment : on peut tout faire à la voix, et la réponse est donnée en parlé,
-avec le numéro de ligne énoncé en wolof plutôt qu'en chiffres.
+- [📋 Context & problem](#-context--problem)
+- [🎯 Solution](#-solution)
+- [📸 Preview](#-preview)
+- [🧠 How it uses the models](#-how-it-uses-the-models)
+- [🧭 Architecture](#-architecture)
+- [🗣️ Wolof, by a native speaker](#-wolof-by-a-native-speaker)
+- [📊 Key results](#-key-results)
+- [🕰️ Built before vs during the hackathon](#-built-before-vs-during-the-hackathon)
+- [⚠️ Limitations](#-limitations)
+- [🚀 Run it yourself](#-run-it-yourself)
+- [🔮 Next steps](#-next-steps)
+- [👨‍💻 Author](#-author)
+- [💚 Credits and licenses](#-credits-and-licenses)
+- [📄 License](#-license)
+- [🙏 Acknowledgements](#-acknowledgements)
 
-## Pipeline
+---
 
-| Étape | Modèle | Rôle |
-| ----- | ------ | ---- |
-| 1. Transcription | `AIHubSN/Kiriku-Wolof-ASR` (en ligne, GPU) · `TIJAANI/whisper-small-wolof-dakar-essai3` (secours et local, CPU) | Transcrit la demande vocale wolof. Kiriku (AI Hub Sénégal) reconnaît bien mieux les noms d'arrêts (~9 sur 10 contre 1 sur 10 au banc d'essai micro, voir `kiriku_test/`). Quand le GPU gratuit de Hugging Face n'est pas attribué, l'app bascule seule sur notre whisper fine-tuné sur les voix collectées (WER 89,7 % → 74,1 % sur 22 vocaux de voix jamais vues), quantifié en int8 sur CPU, qui sert aussi en local (Kiriku, taille Whisper large, ne tient pas sur un laptop). Dépôt privé : il faut le secret `HF_TOKEN`, sinon l'app repart seule de `M9and2M/whisper-small-wolof`. |
-| 2. Extraction | extraction locale, puis `meta/llama-3.2-11b-vision-instruct` (NVIDIA Build) | Repère `depart` et `arrivee`. D'abord en local, par correspondance floue sur les lieux du réseau, en tenant compte des écritures phonétiques de l'ASR (« wakaam », « liberti sënk », « pale ») et des numéros dits en lettres ou en wolof. Le LLM n'intervient que si ce repérage ne donne pas de trajet complet ; son prompt contient la liste des lieux du réseau. |
-| 3. Correspondance | — | Recherche arrêt par arrêt sur 112 lignes : une ligne convient si elle passe par le départ puis par l'arrivée, pas seulement si ce sont ses terminus. Sans ligne directe, propose un trajet avec un changement. Tolère l'orthographe phonétique et les variantes (« wakaam » → Ouakam, « Liberté VI » → Liberté 6) ; Palais 1 et Palais 2 valent tous deux « Palais ». |
-| 4. Réponse | Oolel-Voices (voix native), pré-généré | Affiche le trajet en texte **et** joue les segments wolof déjà générés : `data/tts_cache_oolel/` d'abord, puis caches de secours `data/tts_cache_ajouts/` et `data/tts_cache/`. |
+## 📋 CONTEXT & PROBLEM
 
-La voix est entièrement pré-générée : **869 audios Oolel-Voices** (637 réponses
-de voyage + 232 phrases de conversation), décrits ligne à ligne dans
-`data/audit/voix_complete.csv` et régénérés avec la voix native `8_1_c` du
-Space Oolel-Voices-Demo dans `notebooks/voix_oolel_complete.ipynb` : trois
-prises par segment, puis la meilleure est choisie avec un contrôle Whisper.
-Le texte envoyé à la voix passe par le lexique de prononciation
-`src/tts/lexique_prononciation.py` ; l'écran, lui, garde les noms tels quels.
-Aucun modèle TTS n'est chargé au runtime ; si un segment manque, l'app joue
-les morceaux présents et laisse le reste silencieux.
-`scripts/installer_voix_oolel.py tts_cache_oolel.zip` installe l'archive
-complète dans `data/tts_cache_oolel/`, lue en premier par l'app : tant que la
-nouvelle voix n'est pas complète, chaque audio absent y replonge dans les
-caches de secours `data/tts_cache_ajouts/`, puis `data/tts_cache/` (les 637
-premiers audios, générés au départ avec la voix Adia de CONCREE clonée).
+GuindiMa tells people in Dakar which bus to take, by voice, in Wolof. It was
+built for the **GOMYCODE x NVIDIA hackathon** (27 Sept 2026), where it won
+**2nd place in Senegal** and the **NVIDIA Brev Breakthrough Award**.
 
-## Données
+Many bus riders in Dakar speak Wolof and cannot read, or read little. The
+information they need is spread across sources, not always written in the
+language they use. Tata AFTU minibuses and Dakar Dem Dikk buses serve
+overlapping routes, and a rider often has to ask people at the stop.
 
-- `data/lignes_dakar.csv` — 112 lignes : 40 Dakar Dem Dikk (urbaines, banlieue,
-  dessertes du TER, TAF TAF) et 72 Tata AFTU, avec leurs terminus officiels.
-  Sources : [demdikk.sn/info-voyageurs](https://demdikk.sn/info-voyageurs/) et
-  [aftu-senegal.org](https://aftu-senegal.org/infos-pratiques/), relevées le 07/10/2026.
-- `data/itineraires_dakar.csv` — les arrêts de chaque ligne, dans l'ordre
-  (environ 1 150). Généré par `python data/sources/build_dataset.py` à partir de
-  `data/sources/` : itinéraires officiels AFTU, et arrêts DDD relevés dans
-  OpenStreetMap (© contributeurs OpenStreetMap, ODbL). Les lignes DDD sans
-  itinéraire publié ne sont connues que par leurs terminus.
-- `data/tts_cache/` — les **637 audios Oolel-Voices** de réponse pré-générés (112 lignes,
-  6 services, 519 lieux), versionnés pour que la démo n'ait rien à télécharger.
-- `data/trajets_frequents.json` — les trajets proposés dans la liste avec
-  recherche de l'onglet « Écrire ».
+---
 
-## Installation
+## 🎯 SOLUTION
 
-```bash
+Say, or type, in Wolof where you are and where you go. GuindiMa answers both
+out loud and on screen: which line (Dakar Dem Dikk or Tata AFTU), where to
+board, where to get off, the direction, possible transfers and walking. The
+screen shows the same route as simple trip cards, in French. It was built so
+that riders who read little can use it entirely by voice.
+
+**Links:**
+
+- 🌐 **Live demo:** **https://huggingface.co/spaces/TIJAANI/guindima-ai**
+- 🎥 **Demo video:** <!-- TODO: add the demo video link -->
+- 💻 **Code:** <!-- TODO: add the public repository link -->
+- 🚏 **Dataset:** built from official AFTU route traces, Dem Dikk official
+  itineraries ([demdikk.sn](https://demdikk.sn/info-voyageurs/)) and
+  OpenStreetMap <!-- TODO: add a published dataset link -->
+
+Honest note: the live Space still runs the **previous version**. The new route
+engine (v2) and the native Oolel voice go live after the voice generation.
+
+---
+
+## 📸 PREVIEW
+
+<!-- TODO: add two screenshots — the Wolof voice answer and the trip cards -->
+
+---
+
+## 🧠 HOW IT USES THE MODELS
+
+| Part | Model | What it does |
+| --- | --- | --- |
+| Speech to text, GPU | `AIHubSN/Kiriku-Wolof-ASR` | Transcribes the Wolof recording; recognizes stop names far better than a generic Whisper. |
+| Speech to text, CPU | `TIJAANI/whisper-small-wolof-dakar-essai3` | Our own Whisper, fine-tuned on Wolof voices we collected in Dakar (int8, CPU). Runs when the free GPU is not granted. |
+| Speech to text, fallback | `M9and2M/whisper-small-wolof` | Public fallback loaded if our private fine-tuned repo is unavailable. |
+
+The other parts are clearly non-ASR:
+
+| Part | Model or code | Why it is used |
+| --- | --- | --- |
+| Route engine | Our own Python code: graph of (line, direction, stop), Dijkstra/A\*, at most two transfers, walking transfers | Finds bus legs, transfers and walking from the public line data. |
+| Spoken reply | Oolel-Voices by `soynade-research` (AGPL-3.0), native voice sample `8_1_c` | Pre-generated WAV files; no TTS model runs inside the app. |
+| Place extraction, last resort | `meta/llama-3.2-11b-vision-instruct` on NVIDIA Build | Only called when the local, dictionary-based extraction finds no complete trip. |
+| Small talk | Rule-based, basic Wolof conversation | Greetings, thanks, "who are you". |
+
+---
+
+## 🧭 ARCHITECTURE
+
+```mermaid
+%%{init: {"flowchart": {"htmlLabels": false, "useMaxWidth": true}, "themeVariables": {"fontSize": "14px"}}}%%
+flowchart TD
+  A[Wolof speech] --> B[Kiriku ASR GPU · our Whisper CPU fallback] --> C[Place aliases + intent] --> D[Route engine v2]
+  D <--> E[Dem Dikk 20 km/h · Tata 15 km/h]
+  D --> F[Answer + trip cards] --> G[Pre-generated Oolel WAVs]
+```
+
+- **Speech to text:** Kiriku-Wolof-ASR on GPU at startup; our
+  `whisper-small-wolof-dakar-essai3` (fine-tuned in Dakar, int8, CPU) takes over
+  and also serves the second transcription chance; `M9and2M/whisper-small-wolof`
+  as fallback.
+- **Understanding:** place aliasing and Wolof numbers first, locally; Llama 3.2
+  on NVIDIA Build only if the extraction finds no complete trip.
+- **Route engine v2 (default):** the graph over (line, direction, stop) is built
+  once at startup; Dijkstra/A* search; walking transfers; Dem Dikk at 20 km/h,
+  Tata at 15 km/h; the fastest direct trip comes first. `GUINDIMA_MOTEUR=v1`
+  brings back the old engine, on purpose.
+- **Reply:** pre-generated WAVs with the native Oolel voice `8_1_c`; the
+  pronunciation lexicon was written by a native Wolof speaker.
+
+---
+
+## 🗣️ WOLOF, BY A NATIVE SPEAKER
+
+The Wolof answers were checked by native speakers, and the pronunciation
+lexicon is written by a native Wolof speaker. The app uses reviewed sentence
+templates instead of free-form spoken text, so the spoken answer stays short
+and predictable.
+
+The spoken spellings are separate from the displayed names. For example,
+`TAF TAF OUAKAM (TO1)` is spoken as `TAF TAF Wakaam`, and line numbers are
+spoken as Wolof words ("numero benn"), never as French digits. A word-level
+pronunciation lexicon (`src/tts/lexique_prononciation.py`) lets the native
+speaker fix a word once, for every answer.
+
+When two possibilities exist, the app says both, separated by "Walla,", and
+shows the same two options on screen.
+
+---
+
+## 📊 KEY RESULTS
+
+From the on-disk audit of **304 trip pairs**:
+
+- ✅ **0 absurd answer.**
+- ✅ **71%** of pairs find a direct line.
+- ✅ mean trip duration **54.4 min**.
+- ✅ **Test suite: 530 checks** across 7 suites, using fakes only: no real model
+  downloads, no real voice calls, no network access.
+
+Per suite: `test_trajets.py` 388 · `test_collecte.py` 99 · `test_itineraires.py`
+9 · `test_evaluer_modele.py` 6 · `test_finetune_whisper.py` 14 ·
+`test_seconde_chance.py` 7 · `test_asr_secours.py` 7.
+
+No personal data is stored. The transcript is sent to the NVIDIA Build API only
+when local extraction cannot find the trip.
+
+---
+
+## 🕰️ BUILT BEFORE VS DURING THE HACKATHON
+
+| Before the hackathon | During the hackathon |
+| --- | --- |
+| The route data: **65 official AFTU route traces**, **Dem Dikk official itineraries** (demdikk.sn), OpenStreetMap stops; the Wolof voice dataset and the fine-tuned Whisper built from it. | Everything else in this repository: the previous matching engine and app, then the **route engine v2**, the **native Oolel voice pipeline** (869-audio plan + pronunciation lexicon), **basic Wolof conversation**, and the 530-check test suite. |
+
+---
+
+## ⚠️ LIMITATIONS
+
+- The route data is incomplete: intermediate stops are known for the Tata AFTU
+  lines and 7 Dem Dikk lines; other Dem Dikk lines are found terminus to
+  terminus only.
+- The live demo still runs the previous engine; v2 and the native voice go live
+  after the voice generation (see Solution).
+- On the free Hugging Face GPU (ZeroGPU), authenticated visitors rarely get a
+  slot; everyone else falls back to our CPU Whisper: answer in ~5-25 s, a bit
+  less accurate, but trips are still found thanks to phonetic aliasing.
+- The ASR makes mistakes: noisy street recordings, Wolof speech to text is
+  imperfect, hence the fuzzy place matching.
+- Wolof only: display is French, but no French or multilingual input is taken.
+- **Pillow 12.3.0**: Gradio 6.30 (pinned by `sdk_version` in the Space README)
+  requires `pillow<13.0`, so the version fixing the 37 known CVEs cannot be
+  installed. The app uses no image component; the upgrade will follow Gradio.
+
+---
+
+## 🚀 RUN IT YOURSELF
+
+GuindiMa needs Python 3.12.
+
+```powershell
 python -m venv .venv
-# Windows
-.venv\\Scripts\\activate
-# macOS / Linux
-source .venv/bin/activate
-
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-## Configuration
+Copy `.env.example` to `.env` and fill in your own key. Variable names only;
+no secrets are included in this repository:
 
-Copier `.env.example` vers `.env` et renseigner la clé NVIDIA Build, utilisée
-pour l'extraction départ / arrivée :
+- `NVIDIA_API_KEY` — the NVIDIA Build key, used only by the last-resort
+  extraction.
+- `HF_TOKEN` — read from the environment at launch (Space secret in
+  production), to load our private fine-tuned Whisper.
 
-```bash
-cp .env.example .env
-# puis éditer .env : NVIDIA_API_KEY=xxxx
-```
+Start the local app:
 
-La variable `GUINDIMA_MOTEUR` choisit le moteur de recherche d'itinéraires :
-`v2` (nouveau moteur) par défaut — rien à définir pour l'obtenir ;
-`GUINDIMA_MOTEUR=v1` force l'ancien moteur, expressément. Si le moteur v2
-échoue à démarrer, l'app lève une erreur franche au lieu de repartir
-silencieusement sur v1.
-
-## Lancer l'application
-
-Version en ligne (Gradio, celle du Space Hugging Face) :
-
-```bash
+```powershell
 python app.py
 ```
 
-Puis ouvrir l'URL affichée et dire son trajet en wolof, ou l'écrire.
+The engine choice: `v2` (new engine) by default — set nothing to get it;
+`GUINDIMA_MOTEUR=v1` forces the old engine, on purpose. If v2 fails to start,
+the app raises a clear error instead of silently falling back to v1.
 
-Le premier lancement télécharge les modèles de transcription (Whisper CPU et
-Kiriku GPU) et peut prendre quelques minutes. Les suivants démarrent
-immédiatement ; la voix Oolel-Voices est déjà dans `data/tts_cache/`.
+Run the tests, no model loading, no network:
 
-## Tests
-
-Les suites locales couvrent les trajets de référence, la collecte de voix, la
-seconde chance ASR et le repli Whisper CPU :
-
-```bash
-# Local, sans télécharger ni charger de modèle
-python tests/test_trajets.py
-python tests/test_collecte.py
-python tests/test_seconde_chance.py
-python tests/test_asr_secours.py
-
-# App publiée, comme un visiteur : trajets et audios envoyés au Space
-python tests/test_trajets.py --en-ligne
+```powershell
+python tests\test_trajets.py
+python tests\test_itineraires.py
+python tests\test_collecte.py
+python tests\test_seconde_chance.py
+python tests\test_asr_secours.py
+python tests\test_evaluer_modele.py
+python tests\test_finetune_whisper.py
 ```
 
-Le mode local se lance après chaque modification du code ou des données, le mode
-en ligne après chaque déploiement. Code de sortie 0 si tout passe.
+The suite has **530 checks** across those 7 suites.
 
-## IA responsable
+---
 
-### Modèles et licences
+## 🔮 NEXT STEPS
 
-| Modèle | Licence |
-| ------ | ------- |
-| `AIHubSN/Kiriku-Wolof-ASR` (transcription en ligne) | modèle protégé de l'AI Hub Sénégal : accès après acceptation de ses conditions |
-| `TIJAANI/whisper-small-wolof-dakar-essai3` (transcription de secours et locale) | fine-tuning de `M9and2M/whisper-small-wolof` (MIT), dépôt privé |
-| `M9and2M/whisper-small-wolof` (repli si le dépôt fine-tuné est inaccessible) | MIT |
-| `soynade-research/Oolel-Voices` (voix, génération hors ligne) | AGPL-3.0 |
-| `CONCREE/Adia_TTS` (voix de référence clonée) | Apache 2.0 |
-| `meta/llama-3.2-11b-vision-instruct` (extraction, en dernier recours) | Llama 3.2 Community License, servi par NVIDIA Build selon ses conditions d'utilisation |
+- [ ] Generate the **869 native-voice WAVs**
+  (`notebooks/voix_oolel_complete.ipynb` is ready) and switch the live Space to
+  engine v2 + native voice.
+- [ ] Publish the route data as an open dataset.
+- [ ] More field corrections from riders and drivers (`data/corrections/`).
+- [x] Basic Wolof conversation (greetings, thanks, who are you).
 
-La transcription tourne sur la machine qui héberge l'app (le Space Hugging Face
-en ligne, ou le PC en local). La voix Oolel-Voices est pré-générée : aucun modèle TTS
-n'est chargé au runtime. La phrase transcrite n'est envoyée à l'API NVIDIA Build
-que si l'extraction locale ne trouve pas le trajet.
+---
 
-### Données collectées
+## 👨‍💻 AUTHOR
 
-Aucune donnée personnelle n'est enregistrée. La phrase transcrite n'est envoyée
-à l'API NVIDIA Build que si l'extraction locale ne trouve pas le trajet. Les
-journaux techniques du Space ne contiennent ni transcription, ni lieux, ni texte
-utilisateur : seulement le modèle ASR, la durée, le nombre de lignes trouvées et
-un code d'erreur générique. Pas de compte utilisateur, pas de cookie.
+**Cheikh Niang** — Data Scientist, Dakar.
 
-Les entrées sont bornées : texte à 300 caractères, audio à 10 Mo et 30 secondes.
-Les fichiers audio trop gros ou trop longs sont refusés avant transcription, et
-les WAV de réponse temporaires sont purgés.
+- 📧 <!-- TODO: add email link -->
+- 💼 <!-- TODO: add LinkedIn link -->
+- 🌐 <!-- TODO: add portfolio link -->
 
-### Plutôt qu'inventer
+---
 
-Quand un lieu dit n'existe pas dans le réseau, l'application le dit et propose
-le lieu le plus proche avec son score de similarité. Elle n'invente jamais un
-quartier, et n'annonce jamais une ligne qui ne relie pas les deux points.
+## 💚 CREDITS AND LICENSES
 
-### Limites connues
-
-- **GPU partagé** : en ligne, le GPU gratuit de Hugging Face (ZeroGPU) est
-  rarement attribué aux visiteurs non connectés à un compte Hugging Face. Ils
-  passent alors par notre whisper fine-tuné sur CPU : réponse en ~5 à 25 s,
-  transcription moins précise que Kiriku, mais trajets toujours retrouvés grâce
-  à la normalisation phonétique.
-- **Couverture partielle** : 112 lignes DDD et AFTU, mais les arrêts
-  intermédiaires ne sont connus que pour les lignes AFTU et 7 lignes DDD ; les
-  autres lignes DDD ne sont trouvées que d'un terminus à l'autre. Les lieux
-  absents des itinéraires publiés (Sandaga, par exemple) ne sont pas reconnus.
-- **Un seul changement** : au-delà d'une correspondance, aucun trajet n'est proposé.
-- **L'ASR se trompe** : la reconnaissance wolof est imparfaite, d'où le matching
-  flou et la normalisation phonétique.
-- **Wolof uniquement** : ni le français, ni le multilingue ne sont pris en charge,
-  et le numéro de ligne est énoncé en wolof, pas en chiffres.
-- **Pillow 12.3.0** : Gradio 6.30 (fixé par `sdk_version` dans l'en-tête du
-  README du Space, jamais par `requirements.txt`) exige `pillow<13.0`, donc la
-  version corrigeant les 37 CVE connues n'est pas installable. L'application
-  n'utilise aucun composant image ; la montée de version suivra celle de Gradio.
-
-## Déploiement GPU
-
-L'application a été prévue pour tenir sur un CPU ordinaire, mais la transcription
-est le goulot d'étranglement. Sur une instance NVIDIA Brev (GPU),
-`TIJAANI/whisper-small-wolof-dakar-essai3` se charge vite et transcrit en moins
-d'une seconde, ce qui rend la démonstration fluide de bout en bout.
-
-Pour changer de matériel : installer la version CUDA de PyTorch
-(`pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu124`)
-puis relancer l'application. Le reste du code est inchangé — les modèles sont
-chargés par `transformers` et suivent le matériel disponible.
-
-## Crédits et licences
-
-**Voix** : Oolel-Voices de soynade-research — **AGPL-3.0** —, utilisé hors
-ligne pour pré-générer les audios, à partir de l'échantillon vocal natif
-`8_1_c` du Space
+**Voice**: Oolel-Voices by soynade-research — **AGPL-3.0** —, used offline to
+pre-generate the audio, from the native voice sample `8_1_c` of the Space
 [soynade-research/Oolel-Voices-Demo](https://huggingface.co/spaces/soynade-research/Oolel-Voices-Demo).
-Seuls des **WAV pré-générés hors ligne** sont livrés avec l'app : **aucun
-modèle TTS ne tourne dans l'app**.
+Only **offline pre-generated WAV files** ship with the app: **no TTS model
+runs inside the app**.
 
-**Transcription (ASR)** :
+**Transcription (ASR)**:
 
 - [`AIHubSN/Kiriku-Wolof-ASR`](https://huggingface.co/AIHubSN/Kiriku-Wolof-ASR)
-  (transcription GPU en ligne) — licence : voir fiche du modèle (TODO vérifier) ;
+  (GPU transcription online) — license: see model card (TODO verify);
 - [`M9and2M/whisper-small-wolof`](https://huggingface.co/M9and2M/whisper-small-wolof)
-  (repli CPU quand le GPU n'est pas là) — licence : voir fiche du modèle (TODO vérifier) ;
+  (CPU fallback when the GPU is not there) — license: see model card (TODO verify);
 - [`TIJAANI/whisper-small-wolof-dakar-essai3`](https://huggingface.co/TIJAANI/whisper-small-wolof-dakar-essai3)
-  (notre fine-tuning sur la collecte de Dakar, dépôt privé) — licence : voir
-  fiche du modèle (TODO vérifier).
+  (our fine-tuning on the Dakar collection, private repo) — license: see model
+  card (TODO verify).
 
-**Données** :
+**Data**:
 
-- Itinéraires AFTU officiels : [aftu-senegal.org](https://aftu-senegal.org/infos-pratiques/) ;
-- Itinéraires Dakar Dem Dikk officiels : [demdikk.sn](https://demdikk.sn/info-voyageurs/) ;
-- Cartes et arrêts : OpenStreetMap, via Overpass et Nominatim —
-  « © OpenStreetMap contributors, ODbL 1.0 ».
+- AFTU official route maps:
+  [aftu-senegal.org](https://aftu-senegal.org/infos-pratiques/);
+- Dakar Dem Dikk official routes:
+  [demdikk.sn](https://demdikk.sn/info-voyageurs/);
+- Maps and stops: OpenStreetMap, via
+  [Overpass](https://overpass-api.de/) and
+  [Nominatim](https://nominatim.org/) — « © OpenStreetMap contributors, ODbL 1.0 ».
 
-Les CSV d'origine ne sont jamais modifiés : les corrections vivent dans
-`data/corrections/`, avec leur source.
+The original CSV files are never edited: corrections live in
+`data/corrections/`, with their source.
 
-## Licence
+---
 
-Code © 2026 Cheikh Niang — tous droits réservés (voir `LICENSE`) : consultable, mais aucune réutilisation, copie ou modification sans autorisation écrite ; les modèles tiers gardent les licences déjà listées plus haut.
+## 📄 LICENSE
 
+GuindiMa's code is © 2026 Cheikh Niang — all rights reserved; see
+[`LICENSE`](LICENSE): consultable, but no reuse, copy or modification without
+written permission. Third-party models keep their own licenses, listed in
+[Credits and licenses](#-credits-and-licenses).
+
+---
+
+## 🙏 ACKNOWLEDGEMENTS
+
+- **AI Hub Sénégal** — Kiriku-Wolof-ASR.
+- **soynade-research** — Oolel-Voices.
+- **M9and2M** — whisper-small-wolof.
+- **CONCREE** — the first-generation voice, cloned from Adia_TTS (today's
+  fallback cache).
+- **AFTU and Dakar Dem Dikk** — public line information.
+- **OpenStreetMap contributors** — ODbL 1.0.
+- **GOMYCODE x NVIDIA** — the hackathon, and the NVIDIA Brev Breakthrough Award.
+- **Hugging Face** — hosting for the live demo.
+
+---
+
+## 🌍 EN FRANÇAIS
+
+GuindiMa est un assistant vocal pour les bus de Dakar : dites (ou écrivez) en
+wolof où vous êtes et où vous allez, et l'app répond à voix haute avec la
+ligne, où monter, où descendre, les correspondances et la marche à pied.
+L'affichage reste en français, pensé aussi pour ceux qui ne lisent pas.
+Le Space en ligne tourne encore avec la version précédente : le nouveau moteur
+d'itinéraires et la voix native partent en ligne après la génération des
+audios. Code consultable, tous droits réservés — voir [`LICENSE`](LICENSE).
+
+---
+
+<div align="center">
+
+**GuindiMa AI · GOMYCODE x NVIDIA hackathon 2026 · 2nd place Senegal, NVIDIA Brev Breakthrough Award · Built in Dakar, for Dakar**
+
+</div>

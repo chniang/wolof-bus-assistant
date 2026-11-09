@@ -3255,23 +3255,24 @@ def test_interface_micro() -> tuple[int, int]:
         "demo_audio" not in readme and "rejoue un enregistrement" not in readme,
     )
     verifie(
-        "README crédits : voix native Oolel, ASR à vérifier, sources des données, corrections",
-        "Crédits et licences" in readme
+        "README credits: native Oolel voice, ASR licenses to verify, data sources, corrections",
+        "Credits and licenses" in readme
         and "Oolel-Voices-Demo" in readme
         and "8_1_c" in readme
         and "AGPL-3.0" in readme
-        and "odèle TTS ne tourne dans l'app" in readme
+        and "TTS model" in readme
+        and "runs inside the app" in readme
         and "aftu-senegal.org" in readme
         and "ODbL 1.0" in readme
         and "data/corrections" in readme
-        and "voir fiche du modèle (TODO vérifier)" in readme,
+        and "see model card (TODO verify)" in readme,
     )
     verifie(
         "README : GUINDIMA_MOTEUR documenté (v2 par défaut, v1 exprès, pas de repli silencieux)",
         "GUINDIMA_MOTEUR" in readme
         and "v2" in readme
         and "v1" in readme
-        and "silencieusement" in readme,
+        and "silently falling back" in readme,
     )
     # upload_space.py est volontairement exclu de Git (réglages locaux) : on le
     # vérifie quand il est là, sans rendre la suite impossible sur un clone nu.
