@@ -61,10 +61,7 @@ that riders who read little can use it entirely by voice.
 
 - 🌐 **Live demo:** **https://huggingface.co/spaces/TIJAANI/guindima-ai**
 - 🎥 **Demo video:** <!-- TODO: add the demo video link -->
-- 💻 **Code:** <!-- TODO: add the public repository link -->
-- 🚏 **Dataset:** built from official AFTU route traces, Dem Dikk official
-  itineraries ([demdikk.sn](https://demdikk.sn/info-voyageurs/)) and
-  OpenStreetMap <!-- TODO: add a published dataset link -->
+- 💻 **Code:** **https://github.com/chniang/wolof-bus-assistant**
 
 Honest note: the live Space still runs the **previous version**. The new route
 engine (v2) and the native Oolel voice go live after the voice generation.
@@ -160,6 +157,9 @@ when local extraction cannot find the trip.
 
 ## 🕰️ BUILT BEFORE VS DURING THE HACKATHON
 
+This section is about the **GOMYCODE x NVIDIA hackathon** (27 Sept 2026), where
+GuindiMa won **2nd place in Senegal** and the **NVIDIA Brev Breakthrough Award**.
+
 | Before the hackathon | During the hackathon |
 | --- | --- |
 | The route data: **65 official AFTU route traces**, **Dem Dikk official itineraries** (demdikk.sn), OpenStreetMap stops; the Wolof voice dataset and the fine-tuned Whisper built from it. | Everything else in this repository: the previous matching engine and app, then the **route engine v2**, the **native Oolel voice pipeline** (869-audio plan + pronunciation lexicon), **basic Wolof conversation**, and the 530-check test suite. |
@@ -242,11 +242,12 @@ The suite has **530 checks** across those 7 suites.
 
 ## 👨‍💻 AUTHOR
 
-**Cheikh Niang** — Data Scientist, Dakar.
+**Cheikh Niang** — Junior Data Scientist, Dakar (Senegal).
 
-- 📧 <!-- TODO: add email link -->
-- 💼 <!-- TODO: add LinkedIn link -->
-- 🌐 <!-- TODO: add portfolio link -->
+- 📧 [cheikhniang159@gmail.com](mailto:cheikhniang159@gmail.com)
+- 💼 [LinkedIn](https://www.linkedin.com/in/cheikh-niang-5370091b5/)
+- 🤗 [Hugging Face](https://huggingface.co/TIJAANI)
+- 🐙 [GitHub](https://github.com/chniang)
 
 ---
 
