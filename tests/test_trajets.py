@@ -1151,22 +1151,41 @@ def test_conversation() -> tuple[int, int]:
     )
     verifie("« salam » compris : pas de seconde transcription", app._phrase_donne_un_trajet("salam"))
 
-    # La voix vient de data/tts_cache_ajouts/ quand l'audio y est.
-    ancien = speak.CACHE_AJOUTS
-    with tempfile.TemporaryDirectory() as dossier:
-        speak.CACHE_AJOUTS = Path(dossier)
+    # La voix de conversation suit le même ordre que le reste : oolel d'abord,
+    # puis data/tts_cache_ajouts/. Les deux caches sont remplacés par des
+    # dossiers temporaires : on teste l'ordre de lecture, pas ce qui est
+    # installé sur le disque ce jour-là.
+    ancien_ajouts = speak.CACHE_AJOUTS
+    ancien_oolel = speak.CACHE_OOLEL
+    with tempfile.TemporaryDirectory() as brut_ajouts, tempfile.TemporaryDirectory() as brut_oolel:
+        dossier_ajouts, dossier_oolel = Path(brut_ajouts), Path(brut_oolel)
+        speak.CACHE_AJOUTS = dossier_ajouts
+        speak.CACHE_OOLEL = dossier_oolel
         try:
             with contextlib.redirect_stdout(io.StringIO()):
                 absent = speak.voix_conversation("conversation_salutation.wav")
-            (Path(dossier) / "conversation_salutation.wav").write_bytes(
-                (speak.CACHE_DIR / "aucune_ligne.wav").read_bytes()
-            )
-            present = speak.voix_conversation("conversation_salutation.wav")
+                # La voix native et les ajouts ont des copies différentes.
+                contenu = (speak.CACHE_DIR / "aucune_ligne.wav").read_bytes()
+                (dossier_oolel / "conversation_salutation.wav").write_bytes(contenu)
+                (dossier_ajouts / "conversation_salutation.wav").write_bytes(contenu)
+                natif = speak.voix_conversation("conversation_salutation.wav")
+                chemin_natif = speak.chemin_audio(
+                    speak.CACHE_DIR,
+                    "conversation_salutation.wav",
+                )
+                (dossier_oolel / "conversation_salutation.wav").unlink()
+                en_ajout = speak.voix_conversation("conversation_salutation.wav")
         finally:
-            speak.CACHE_AJOUTS = ancien
+            speak.CACHE_AJOUTS = ancien_ajouts
+            speak.CACHE_OOLEL = ancien_oolel
     verifie(
-        "voix de conversation lue depuis data/tts_cache_ajouts/",
-        absent is None and present is not None and present.startswith(b"RIFF"),
+        "conversation : cache oolel d'abord, sinon data/tts_cache_ajouts/",
+        absent is None
+        and natif is not None
+        and natif.startswith(b"RIFF")
+        and chemin_natif == Path(dossier_oolel) / "conversation_salutation.wav"
+        and en_ajout is not None
+        and en_ajout.startswith(b"RIFF"),
     )
 
     # La liste complète des audios (data/audit/voix_complete.csv, alimentée par
@@ -1674,54 +1693,51 @@ def test_voix() -> tuple[int, int]:
 
     # La voix lit trois caches dans cet ordre : data/tts_cache_oolel/ (voix
     # native), puis data/tts_cache_ajouts/, puis data/tts_cache/ en dernier.
+    # Les deux premiers sont remplacés par des dossiers temporaires vides :
+    # l'ordre doit tenir quel que soit ce qui est installé sur le disque le
+    # jour du test, et le recours final courant reste data/tts_cache/.
     ancien_ajouts = speak.CACHE_AJOUTS
     ancien_oolel = speak.CACHE_OOLEL
-    with tempfile.TemporaryDirectory() as dossier_ajouts:
-        dossier_ajouts = Path(dossier_ajouts)
+    with tempfile.TemporaryDirectory() as brut_ajouts, tempfile.TemporaryDirectory() as brut_oolel:
+        dossier_ajouts, dossier_oolel = Path(brut_ajouts), Path(brut_oolel)
         speak.CACHE_AJOUTS = dossier_ajouts
+        speak.CACHE_OOLEL = dossier_oolel
         try:
             nom_to1 = speak.nom_cache_match(to1[0])
-            sans_ajout = speak.voix_depuis_cache(to1)
+            sans_cache = speak.voix_depuis_cache(to1)
+            # Seulement dans le cache des ajouts : l'audio est trouvé là.
             (dossier_ajouts / nom_to1).write_bytes(
                 (speak.CACHE_DIR / "dakar_dem_dikk_taf_taf.wav").read_bytes()
             )
             avec_ajout = speak.voix_depuis_cache(to1)
-            # Présent aux DEUX endroits (ajouts et ancien cache) : c'est maintenant
-            # data/tts_cache_ajouts/ qui gagne, seul le cache natif Oolel passe
-            # devant lui.
-            (dossier_ajouts / "dakar_dem_dikk_1.wav").write_bytes(b"faux")
-            dans_ajouts = speak.chemin_audio(speak.CACHE_DIR, "dakar_dem_dikk_1.wav")
-            # Seulement dans le cache des 637 : il reste le recours final.
-            dans_cache = speak.chemin_audio(speak.CACHE_DIR, "aucune_ligne.wav")
+            chemin_ajout = speak.chemin_audio(speak.CACHE_DIR, nom_to1)
+            # Présent aux TROIS endroits : oolel gagne sur tout le monde…
+            (dossier_ajouts / "dakar_dem_dikk_1.wav").write_bytes(b"ajout")
+            (dossier_oolel / "dakar_dem_dikk_1.wav").write_bytes(b"oolel")
+            natif_dabord = speak.chemin_audio(speak.CACHE_DIR, "dakar_dem_dikk_1.wav")
+            # …puis l'ajouts gagne, et enfin l'ancien cache des 637 répond.
+            (dossier_oolel / "dakar_dem_dikk_1.wav").unlink()
+            ajouts_dapres = speak.chemin_audio(speak.CACHE_DIR, "dakar_dem_dikk_1.wav")
+            (dossier_ajouts / "dakar_dem_dikk_1.wav").unlink()
+            recours_final = speak.chemin_audio(speak.CACHE_DIR, "dakar_dem_dikk_1.wav")
+            absent_partout = speak.chemin_audio(
+                speak.CACHE_DIR, "fichier_test_absent.wav"
+            )
         finally:
             speak.CACHE_AJOUTS = ancien_ajouts
-    verifie(
-        "audio cherché dans tts_cache_oolel/, puis tts_cache_ajouts/, puis tts_cache/",
-        sans_ajout is None
-        and avec_ajout is not None
-        and avec_ajout.startswith(b"RIFF")
-        and dans_ajouts == Path(dossier_ajouts) / "dakar_dem_dikk_1.wav"
-        and dans_cache == speak.CACHE_DIR / "aucune_ligne.wav",
-        (sans_ajout is None, avec_ajout is not None, dans_ajouts, dans_cache),
-    )
-
-    # La voix native Oolel (data/tts_cache_oolel/) passe devant tous les autres.
-    with tempfile.TemporaryDirectory() as dossier_oolel:
-        dossier_oolel = Path(dossier_oolel)
-        (dossier_oolel / "aucune_ligne.wav").write_bytes(
-            (speak.CACHE_DIR / "aucune_ligne.wav").read_bytes()
-        )
-        speak.CACHE_OOLEL = dossier_oolel
-        try:
-            dans_oolel = speak.chemin_audio(speak.CACHE_DIR, "aucune_ligne.wav")
-            absent_partout = speak.chemin_audio(speak.CACHE_DIR, "fichier_test_absent.wav")
-        finally:
             speak.CACHE_OOLEL = ancien_oolel
     verifie(
-        "voix native : tts_cache_oolel d'abord, chemin du fichier à générer sinon",
-        dans_oolel == Path(dossier_oolel) / "aucune_ligne.wav"
+        "audio cherché dans tts_cache_oolel/, puis tts_cache_ajouts/, puis tts_cache/",
+        sans_cache is None
+        and avec_ajout is not None
+        and avec_ajout.startswith(b"RIFF")
+        and chemin_ajout == Path(dossier_ajouts) / nom_to1
+        and natif_dabord == Path(dossier_oolel) / "dakar_dem_dikk_1.wav"
+        and ajouts_dapres == Path(dossier_ajouts) / "dakar_dem_dikk_1.wav"
+        and recours_final == speak.CACHE_DIR / "dakar_dem_dikk_1.wav"
+        and recours_final.is_file()
         and absent_partout == speak.CACHE_DIR / "fichier_test_absent.wav",
-        (dans_oolel, absent_partout),
+        (sans_cache, chemin_ajout, natif_dabord, ajouts_dapres, recours_final, absent_partout),
     )
 
     # Le lexique de prononciation : mot entier, insensible à la casse, une
@@ -2369,6 +2385,28 @@ def test_prononciations() -> tuple[int, int]:
         "voix_complete.csv : chaque audio est jouable aujourd'hui",
         not manquants_d_aujourdhui,
         manquants_d_aujourdhui[:5],
+    )
+
+    # Couverture de la voix native : chaque nom que l'app peut jouer — les
+    # 869 de la liste complète + les phrases fixes du module de voix
+    # (aucune_ligne, walla, …) — doit exister dans data/tts_cache_oolel/.
+    # Les rares manquants, s'il y en a un jour, se listent ICI, nom par nom :
+    # jamais devinés, jamais générés à la volée. Aujourd'hui : liste vide.
+    import tts.speak as speak
+
+    fixe_a_jouer = sorted(
+        getattr(speak, nom)
+        for nom in dir(speak)
+        if re.fullmatch(r"[A-Z][A-Z_0-9]*", nom)
+        and isinstance(getattr(speak, nom), str)
+        and str(getattr(speak, nom)).endswith(".wav")
+    )
+    installes_oolel = {f.name for f in (RACINE / "data" / "tts_cache_oolel").glob("*.wav")}
+    sans_voix = sorted(set(fichiers_complete).union(fixe_a_jouer) - installes_oolel)
+    verifie(
+        "voix native : tts_cache_oolel couvre la liste complète et les phrases fixes",
+        not sans_voix,
+        sans_voix[:10],
     )
     # Texte final = phrase du plan / des ajouts, avec le lexique de l'écoute
     # appliqué : le CSV porte exactement ce que la voix doit lire.
