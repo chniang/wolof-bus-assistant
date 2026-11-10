@@ -2467,6 +2467,302 @@ def test_prononciations() -> tuple[int, int]:
         except SyntaxError as exc:
             verifie("notebooks voix native : cellules valides", False, exc)
 
+    # --- Variante Brev : Jupyter simple, sans Google Drive ------------------ #
+
+    def _sources_code(nom_notebook: str) -> list[str]:
+        nb = json.loads(
+            (RACINE / "notebooks" / nom_notebook).read_text(encoding="utf-8")
+        )
+        return [
+            "".join(c["source"]) if isinstance(c["source"], list) else str(c["source"])
+            for c in nb["cells"]
+            if c["cell_type"] == "code"
+        ]
+
+    nb_test_brev = json.loads(
+        (RACINE / "notebooks" / "voix_test_prononciation_brev.ipynb").read_text(encoding="utf-8")
+    )
+    nb_complet_brev = json.loads(
+        (RACINE / "notebooks" / "voix_oolel_complete_brev.ipynb").read_text(encoding="utf-8")
+    )
+    sources_test_brev = _sources_code("voix_test_prononciation_brev.ipynb")
+    sources_complet_brev = _sources_code("voix_oolel_complete_brev.ipynb")
+    tout_test_brev = "\n".join(sources_test_brev)
+    tout_complet_brev = "\n".join(sources_complet_brev)
+    tout_brev = tout_test_brev + tout_complet_brev
+
+    verifie(
+        "Brev (test + complet) : plus de Google Drive, secrets ou redémarrage forcé",
+        not any(
+            reste in tout_brev
+            for reste in ("google.colab", "drive.mount", "userdata", "os.kill", "files.download")
+        ),
+        [
+            reste
+            for reste in ("google.colab", "drive.mount", "userdata", "os.kill", "files.download")
+            if reste in tout_brev
+        ],
+    )
+    verifie(
+        "Brev (test + complet) : jeton HF saisie cachée, jamais affiché ni écrit",
+        "getpass.getpass(" in tout_brev
+        and 'os.environ.get("HF_TOKEN"' in tout_brev
+        and not re.search(r"hf_[A-Za-z0-9]{20,}", tout_brev)
+        and not re.search(r"print\([^)]*HF_TOKEN", tout_brev),
+    )
+    verifie(
+        "Brev (test + complet) : tout dans ./sortie_voix, zip à côté du notebook",
+        "./sortie_voix" in tout_test_brev
+        and "./sortie_voix" in tout_complet_brev
+        and "shutil.make_archive('./sortie_voix/voix_test', 'zip', SORTIE)" in tout_test_brev
+        and "shutil.make_archive('./sortie_voix/tts_cache_oolel', 'zip', SORTIE)"
+        in tout_complet_brev,
+    )
+    verifie(
+        "Brev : pip via %pip (mêmes paquets que Colab) + note de redémarrage",
+        "%pip -q install" in tout_brev
+        and "'librosa>=0.10.2'" in tout_brev
+        and "transformers==4.46.3" in tout_brev
+        and "diffusers==0.29.0" in tout_brev
+        and any(
+            "redémarrage" in "".join(c["source"])
+            for nb in (nb_test_brev, nb_complet_brev)
+            for c in nb["cells"]
+            if c["cell_type"] == "markdown"
+        ),
+    )
+
+    plan_test_brev = next(s for s in sources_test_brev if s.startswith("PLAN = "))
+    portee_test_brev: dict = {}
+    exec(plan_test_brev, portee_test_brev)
+    verifie(
+        "Brev test : les 12 variantes, graine 1234, génération partagée avec les 637",
+        [(p["phrase"], p["fichier"]) for p in portee_test_brev["PHRASES"]] == variantes
+        and portee_test_brev["GRAINE"] == 1234
+        and gen_637 in sources_test_brev,
+        len(portee_test_brev.get("PHRASES", [])),
+    )
+    plan_complet_brev = next(s for s in sources_complet_brev if s.startswith("PLAN = "))
+    portee_complet_brev: dict = {}
+    exec(plan_complet_brev, portee_complet_brev)
+    verifie(
+        "Brev complet : les 869 audios du CSV, graine 1234, génération identique aux 637",
+        [(p["fichier"], p["phrase"]) for p in portee_complet_brev["PHRASES"]]
+        == [(r["fichier_wav"], r["texte_a_prononcer"]) for r in complete]
+        and portee_complet_brev["GRAINE"] == 1234
+        and gen_637 in sources_complet_brev,
+        len(portee_complet_brev.get("PHRASES", [])),
+    )
+    verifie(
+        "Brev (test + complet) : voix du Space, jamais la voix Adia",
+        "8_1_c.wav" in tout_brev
+        and "soynade-research/Oolel-Voices-Demo" in tout_brev
+        and "Adia" not in tout_brev,
+    )
+
+    # Même plan, mêmes outils, même génération : seules les 4 cellules qui
+    # dépendent de Colab ont été réécrites, le reste doit être octet pour octet.
+    def _cellules_colab_gardes(sources: list[str]) -> list[str]:
+        reecrites = (
+            "!pip -q install",
+            "from google.colab import drive",
+            "from google.colab import userdata",
+            "files.download(",
+        )
+        return [s for s in sources if not any(m in s for m in reecrites)]
+
+    def _cellules_brev_gardes(sources: list[str]) -> list[str]:
+        reecrites = ("%pip -q install", "Tout atterrit ici", "getpass.getpass(", "shutil.make_archive(")
+        return [s for s in sources if not any(m in s for m in reecrites)]
+
+    def _ecart_cellules(colab: list[str], brev: list[str]) -> list:
+        return [
+            (i, colab[i][:80], brev[i][:80])
+            for i in range(min(len(colab), len(brev)))
+            if colab[i] != brev[i]
+        ] + ([(len(colab), len(brev))] if len(colab) != len(brev) else [])
+
+    colab_restes = (_cellules_colab_gardes(sources_test), _cellules_colab_gardes(sources_complet))
+    brev_restes = (_cellules_brev_gardes(sources_test_brev), _cellules_brev_gardes(sources_complet_brev))
+    ecart_reste = (
+        []
+        if colab_restes[0] == brev_restes[0] and colab_restes[1] == brev_restes[1]
+        else _ecart_cellules(colab_restes[0], brev_restes[0])
+        + _ecart_cellules(colab_restes[1], brev_restes[1])
+    )
+    verifie(
+        "Brev : hors des 4 cellules réécrites, notebooks identiques au Colab",
+        not ecart_reste,
+        ecart_reste or "",
+    )
+    # Les magies (%, !) ne se compilent pas : on les retire, comme pour les
+    # versions Colab, puis on vérifie le reste cellule par cellule.
+    for numero, source in enumerate(sources_test_brev + sources_complet_brev, 1):
+        lignes = [
+            ligne
+            for ligne in source.splitlines()
+            if not ligne.lstrip().startswith(("!", "%"))
+        ]
+        try:
+            compile("\n".join(lignes), f"cellule Brev {numero}", "exec")
+        except SyntaxError as exc:
+            verifie("notebooks Brev : cellules valides", False, exc)
+
+    lire_moi = (RACINE / "notebooks" / "BREV_LIRE_MOI.md").read_text(encoding="utf-8")
+    verifie(
+        "BREV_LIRE_MOI.md : les deux notebooks, le jeton caché, l'installer --zip, machine à éteindre",
+        "voix_oolel_complete_brev.ipynb" in lire_moi
+        and "voix_test_prononciation_brev.ipynb" in lire_moi
+        and "getpass" in lire_moi
+        and "--zip" in lire_moi
+        and "Éteins" in lire_moi,
+    )
+    installer_src = (RACINE / "scripts" / "installer_voix_oolel.py").read_text(encoding="utf-8")
+    verifie(
+        "installer : option --zip (dossier du notebook Brev), mêmes attentes voix_complete.csv",
+        "--zip" in installer_src
+        and "def installer(" in installer_src
+        and "fichiers_attendus()" in installer_src
+        and "voix_oolel_complete_brev.ipynb" in installer_src,
+    )
+
+    # Installation réelle, sans réseau ni gros fichier : une mini-archive avec
+    # deux noms réels de voix_complete.csv, deux WAV de silence, un cache
+    # temporaire. Le script doit les recopier… et refuser une archive incomplète.
+    import contextlib
+    import importlib.util
+    import io
+    import tempfile
+    import wave as _wave
+    import zipfile as _zipfile
+
+    specification = importlib.util.spec_from_file_location(
+        "installer_voix_oolel", RACINE / "scripts" / "installer_voix_oolel.py"
+    )
+    installeur = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(installeur)
+
+    with tempfile.TemporaryDirectory(prefix="installer_voix_") as dossier_temp:
+        tmp_installer = Path(dossier_temp)
+        deux = fichiers_complete[:2]
+        sons = tmp_installer / "tts_cache_oolel"
+        sons.mkdir()
+        for nom in deux:
+            with _wave.open(str(sons / nom), "wb") as wav:
+                wav.setnchannels(1)
+                wav.setsampwidth(2)
+                wav.setframerate(16000)
+                wav.writeframes(b"\x00\x00" * 160)
+        archive_mini = tmp_installer / "mini.zip"
+        with _zipfile.ZipFile(archive_mini, "w") as boite:
+            for nom in deux:
+                boite.write(sons / nom, arcname=f"tts_cache_oolel/{nom}")
+        cache_test = tmp_installer / "cache_test"
+
+        verifie(
+            "installer : mini-archive réelle installée (2 noms de voix_complete.csv)",
+            installeur.installer(archive_mini, deux, cache=cache_test) == 0
+            and all((cache_test / nom).is_file() for nom in deux),
+        )
+        refle = io.StringIO()
+        with contextlib.redirect_stderr(refle):
+            refus = installeur.installer(
+                archive_mini, installeur.fichiers_attendus(), cache=cache_test
+            )
+        verifie(
+            "installer : archive incomplète refusée (les 869 attendus, 2 fournis)",
+            refus == 1
+            and "manquant(s)" in refle.getvalue()
+            and not (cache_test / fichiers_complete[5]).is_file(),
+            (refus, refle.getvalue()[:120]),
+        )
+
+    return echecs, total
+
+
+def test_notebooks_brev() -> tuple[int, int]:
+    """Les notebooks Brev et Colab se rejouent, mot pour mot, depuis les scripts.
+
+    On ne fait pas confiance au fichier écrit à la main : on régénère chaque
+    notebook dans un dossier temporaire (preparer --brev, preparer défaut,
+    brev.py --dossier) et on compare octet pour octet avec la version du dépôt.
+    """
+    import os
+    import subprocess
+    import tempfile
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | notebooks Brev {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    environnement = {**os.environ, "PYTHONIOENCODING": "utf-8"}
+    with tempfile.TemporaryDirectory(prefix="brev_regen_") as dossier_temp:
+        tmp = Path(dossier_temp)
+        tutoriels = (
+            (
+                "preparer --brev",
+                [
+                    sys.executable,
+                    "scripts/preparer_notebook_oolel.py",
+                    "--brev",
+                    "--sortie",
+                    str(tmp / "complet_brev.ipynb"),
+                ],
+                tmp / "complet_brev.ipynb",
+                RACINE / "notebooks" / "voix_oolel_complete_brev.ipynb",
+            ),
+            (
+                "preparer Colab",
+                [
+                    sys.executable,
+                    "scripts/preparer_notebook_oolel.py",
+                    "--sortie",
+                    str(tmp / "complet_colab.ipynb"),
+                ],
+                tmp / "complet_colab.ipynb",
+                RACINE / "notebooks" / "voix_oolel_complete.ipynb",
+            ),
+        )
+        for nom, commande, genere, attente in tutoriels:
+            lance = subprocess.run(
+                commande,
+                cwd=RACINE,
+                capture_output=True,
+                encoding="utf-8",
+                env=environnement,
+            )
+            ok = (
+                lance.returncode == 0
+                and genere.exists()
+                and genere.read_text(encoding="utf-8") == attente.read_text(encoding="utf-8")
+            )
+            verifie(f"régénération {nom} identique au dépôt", ok, (lance.returncode, lance.stdout, lance.stderr[:400]))
+
+        lance = subprocess.run(
+            [sys.executable, "scripts/brev.py", "--dossier", str(tmp / "regen")],
+            cwd=RACINE,
+            capture_output=True,
+            encoding="utf-8",
+            env=environnement,
+        )
+        regeneres = tmp / "regen"
+        ok = lance.returncode == 0 and all(
+            (regeneres / nom).read_text(encoding="utf-8")
+            == (RACINE / "notebooks" / nom).read_text(encoding="utf-8")
+            for nom in (
+                "voix_test_prononciation_brev.ipynb",
+                "voix_oolel_complete_brev.ipynb",
+            )
+        )
+        verifie("régénération brev.py --dossier identique au dépôt", ok, (lance.returncode, lance.stderr[:400]))
+
     return echecs, total
 
 
@@ -3553,6 +3849,7 @@ if __name__ == "__main__":
         echecs_voix, total_voix = test_voix()
         echecs_lieux, total_lieux = test_lieux()
         echecs_prononciations, total_prononciations = test_prononciations()
+        echecs_brev, total_brev = test_notebooks_brev()
         echecs_verification, total_verification = test_verification_voix()
         echecs_generiques, total_generiques = test_mots_generiques()
         echecs_distance, total_distance = test_distance_courte()
@@ -3569,6 +3866,7 @@ if __name__ == "__main__":
             + echecs_voix
             + echecs_lieux
             + echecs_prononciations
+            + echecs_brev
             + echecs_verification
             + echecs_generiques
             + echecs_distance
@@ -3586,6 +3884,7 @@ if __name__ == "__main__":
             + total_voix
             + total_lieux
             + total_prononciations
+            + total_brev
             + total_verification
             + total_generiques
             + total_distance

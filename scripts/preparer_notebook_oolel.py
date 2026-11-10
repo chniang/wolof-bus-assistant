@@ -12,7 +12,12 @@ Liste : ``data/audit/voix_complete.csv`` (texte final, lexique appliqué — voi
 de ``notebooks/voix_test_prononciation_colab.ipynb`` : la liste est embarquée
 dans le notebook, Colab n'a pas accès au dépôt.
 
-    .\.venv\Scripts\python.exe scripts\preparer_notebook_oolel.py
+    .\.venv\Scripts\python.exe scripts\preparer_notebook_oolel.py            # version Colab
+    .\.venv\Scripts\python.exe scripts\preparer_notebook_oolel.py --brev     # version Jupyter/Brev
+
+``--brev`` applique les adaptations de ``scripts/brev.py`` (pas de Google
+Drive, jeton caché via getpass…) ; ``--sortie`` écrit ailleurs (pour comparer
+à ce qui est dans notebooks/ sans l'écraser).
 """
 
 from __future__ import annotations
@@ -147,9 +152,23 @@ files.download('/content/tts_cache_oolel.zip')
 
 
 def main() -> int:
+    import argparse
+
+    parseur = argparse.ArgumentParser(description="Construit le notebook des 869 audios (Colab ou Brev).")
+    parseur.add_argument("--brev", action="store_true", help="adapte pour une machine Brev (Jupyter, pas Google Drive)")
+    parseur.add_argument("--sortie", type=Path, default=None, help="fichier .ipynb à écrire (par défaut la version Colab ou Brev)")
+    args = parseur.parse_args()
+
     notebook = construire()
-    SORTIE.write_text(json.dumps(notebook, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    print(f"{SORTIE.name} : {len(phrases_a_generer())} audios à générer")
+    if args.brev:
+        import brev
+
+        notebook = brev.adapter_complet(notebook)
+    cible = args.sortie or RACINE / "notebooks" / (
+        "voix_oolel_complete_brev.ipynb" if args.brev else "voix_oolel_complete.ipynb"
+    )
+    cible.write_text(json.dumps(notebook, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"{cible.name} : {len(phrases_a_generer())} audios à générer")
     return 0
 
 

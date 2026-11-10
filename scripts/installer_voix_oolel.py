@@ -1,10 +1,12 @@
 r"""Installe la voix native Oolel (8_1_c.wav) dans data/tts_cache_oolel/.
 
 À lancer en local, une fois `tts_cache_oolel.zip` récupéré depuis le notebook
-`notebooks/voix_oolel_complete.ipynb` (869 audios : les 637 du plan + les 232
-ajouts, générés avec la voix du Space soynade-research/Oolel-Voices-Demo). Le
-script vérifie que l'archive contient bien chacun des fichiers attendus (la
-liste est dans data/audit/voix_complete.csv), puis recopie les WAV.
+`notebooks/voix_oolel_complete.ipynb` (Colab) ou
+`notebooks/voix_oolel_complete_brev.ipynb` (Brev — dans sortie_voix/) :
+869 audios, les 637 du plan + les 232 ajouts, générés avec la voix du Space
+soynade-research/Oolel-Voices-Demo. Le script vérifie que l'archive contient
+bien chacun des fichiers attendus (la liste est dans
+data/audit/voix_complete.csv), puis recopie les WAV.
 
 data/tts_cache/ et data/tts_cache_ajouts/ ne sont jamais touchés : ils restent
 en secours tant que data/tts_cache_oolel/ n'est pas complet (l'app lit les trois
@@ -12,7 +14,8 @@ dossiers dans cet ordre, voir src/tts/speak.py).
 
 Il ne lance rien tout seul : c'est un outil qu'on exécute à la main.
 
-    python scripts/installer_voix_oolel.py tts_cache_oolel.zip
+    python scripts/installer_voix_oolel.py tts_cache_oolel.zip              # Colab
+    python scripts/installer_voix_oolel.py --zip sortie_voix/tts_cache_oolel.zip
 """
 
 from __future__ import annotations
@@ -35,24 +38,13 @@ def fichiers_attendus() -> list[str]:
         return [rangee["fichier_wav"] for rangee in csv.DictReader(fichier)]
 
 
-def main() -> int:
-    parseur = argparse.ArgumentParser(
-        description="Installe la voix native d'Oolel (8_1_c.wav) dans data/tts_cache_oolel/."
-    )
-    parseur.add_argument(
-        "archive",
-        nargs="?",
-        default=str(RACINE / "tts_cache_oolel.zip"),
-        help="archive .zip produite par le notebook Colab",
-    )
-    args = parseur.parse_args()
+def installer(archive: Path, attendus: list[str], cache: Path = CACHE) -> int:
+    """Vérifie le contenu de l'archive puis l'installe ; 0 si tout va bien, 1 sinon.
 
-    archive = Path(args.archive)
-    if not archive.is_file():
-        print(f"archive introuvable : {archive}", file=sys.stderr)
-        return 1
-
-    attendus = fichiers_attendus()
+    Les noms attendus sont passés en clair (voix_complete.csv par défaut) :
+    ainsi les tests peuvent essayer le script sur une archive de deux WAV
+    sans que rien ne se déverse un jour dans le vrai cache du dépôt.
+    """
     with zipfile.ZipFile(archive) as boite:
         par_nom = {Path(nom).name: nom for nom in boite.namelist() if nom.lower().endswith(".wav")}
         manquants = [nom for nom in attendus if nom not in par_nom]
@@ -60,13 +52,40 @@ def main() -> int:
             print(f"{len(manquants)} fichier(s) manquant(s) dans l'archive, ex. : {manquants[:5]}", file=sys.stderr)
             return 1
 
-        CACHE.mkdir(parents=True, exist_ok=True)
+        cache.mkdir(parents=True, exist_ok=True)
         for nom in attendus:
-            with boite.open(par_nom[nom]) as source, open(CACHE / nom, "wb") as cible:
+            with boite.open(par_nom[nom]) as source, open(cache / nom, "wb") as cible:
                 shutil.copyfileobj(source, cible)
 
-    print(f"{len(attendus)} audios installés dans {CACHE} (voix native Oolel, 8_1_c.wav)")
+    print(f"{len(attendus)} audios installés dans {cache} (voix native Oolel, 8_1_c.wav)")
     return 0
+
+
+def main() -> int:
+    parseur = argparse.ArgumentParser(
+        description="Installe la voix native d'Oolel (8_1_c.wav) dans data/tts_cache_oolel/."
+    )
+    parseur.add_argument(
+        "archive",
+        nargs="?",
+        default=None,
+        help="archive .zip produite par le notebook (Colab ou Brev)",
+    )
+    parseur.add_argument(
+        "--zip",
+        dest="zip",
+        default=None,
+        help="même archive, orthographe du notebook Brev (--zip sortie_voix/tts_cache_oolel.zip)",
+    )
+    args = parseur.parse_args()
+
+    chemin = args.zip or args.archive or "tts_cache_oolel.zip"
+    archive = Path(chemin)
+    if not archive.is_file():
+        print(f"archive introuvable : {archive}", file=sys.stderr)
+        return 1
+
+    return installer(archive, fichiers_attendus())
 
 
 if __name__ == "__main__":
