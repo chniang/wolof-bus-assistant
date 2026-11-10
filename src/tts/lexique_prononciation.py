@@ -11,25 +11,32 @@ casse ; une clé de plusieurs mots est remplacée en bloc, avant les mots seuls.
 La substitution est faite en une seule passe : une valeur n'est jamais
 ré-interprétée par une autre entrée du lexique.
 
-En l'état : le lexique est vide, tant que les variantes proposées par
-`notebooks/voix_test_prononciation_colab.ipynb` n'ont pas été écoutées.
-Après l'écoute, remplir `LEXIQUE`, puis regénérer la liste complète des audios
-(scripts/preparer_regen_oolel.py) et le notebook de génération
-(scripts/preparer_notebook_oolel.py) : le texte final est calculé au moment de
-préparer la liste, jamais au moment de l'app, qui ne joue que des audios
-pré-générés.
+Après l'écoute des variantes de `notebooks/voix_test_prononciation_colab.ipynb`,
+le locuteur natif a rempli `LEXIQUE`. Rejouer ensuite la liste complète des
+audios (scripts/preparer_regen_oolel.py pour le CSV, puis
+scripts/preparer_notebook_oolel.py pour le notebook) : le texte final est
+calculé au moment de préparer la liste, jamais au moment de l'app, qui ne joue
+que des audios pré-générés.
 """
 
 from __future__ import annotations
 
 import re
 
-# « écran » -> « orthographe parlée ». Vide pour l'instant : chaque entrée doit
-# être validée à l'oreille (écoute comparative des deux variantes générées).
-# Exemples du format attendu :
-#   "Acapes": "Akaapes",            # mot seul
-#   "Albeer Saroo": "Alber Saróo",  # phrase entière, renversée d'un coup
-LEXIQUE: dict[str, str] = {}
+# « écran » -> « orthographe parlée ». Choix validés à l'oreille par un locuteur
+# natif, après l'écoute comparative des variantes du notebook de test (biis/bis,
+# Taaf/Taf, Akapes…) : le mot entier remplace la lecture à l'aveugle d'Oolel.
+LEXIQUE: dict[str, str] = {
+    # « bus » se fait dire « biis » : c'est le mot wolof, pas une lettre lue.
+    "bus": "biis",
+    # Les majuscules isolées ont une lecture hasardeuse chez Oolel ; on écrit
+    # « Taf Taf » comme on le dit.
+    "TAF TAF": "Taf Taf",
+    # Lieux dits : orthographes que la voix sait lire, validées à l'écoute.
+    "Acapes": "Akaapes",
+    "Albert Sarraut": "Alber Saroo",
+    "ASECNA": "Aseknaa",
+}
 
 
 def appliquer(texte: str) -> str:

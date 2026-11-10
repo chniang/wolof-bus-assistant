@@ -1175,10 +1175,14 @@ def test_conversation() -> tuple[int, int]:
     # avec leur phrase exacte.
     with (RACINE / "data" / "audit" / "voix_complete.csv").open(encoding="utf-8") as fichier:
         liste = list(csv.DictReader(fichier))
+    # Les réponses écran contiennent encore « bus » ; le texte de la voix
+    # (voix_complete.csv) passe par le lexique de prononciation, donc « biis ».
+    from tts.lexique_prononciation import appliquer
+
     conversation = {r["fichier_wav"]: r["texte_a_prononcer"] for r in liste if r["type"] == "conversation"}
     verifie(
         "les 8 phrases sont dans la liste complète des audios",
-        conversation == {i.fichier: i.reponse for i in INTENTIONS + (HORS_SUJET,)},
+        conversation == {i.fichier: appliquer(i.reponse) for i in INTENTIONS + (HORS_SUJET,)},
         conversation,
     )
 
@@ -1191,7 +1195,7 @@ def test_conversation() -> tuple[int, int]:
     exec(plan, portee)
     verifie(
         "notebook : ce sont les 232 ajouts (ligne à ligne de la liste complète)",
-        [(p["fichier"], p["phrase"]) for p in portee["PHRASES"]]
+        [(p["fichier"], appliquer(p["phrase"])) for p in portee["PHRASES"]]
         == [
             (r["fichier_wav"], r["texte_a_prononcer"])
             for r in liste
@@ -1555,7 +1559,7 @@ def test_voix() -> tuple[int, int]:
     verifie(
         "1 ligne directe",
         phrase_reponse(une)
-        == "Jëlal bus bu Dem Dikk, numero juróom ñaar.",
+        == "Jëlal biis bu Dem Dikk, numero juróom ñaar.",
         phrase_reponse(une),
     )
 
@@ -1566,8 +1570,8 @@ def test_voix() -> tuple[int, int]:
     verifie(
         "2 lignes directes",
         phrase_reponse(deux)
-        == "Jëlal bus bu Tata, numero juróom ñaar. walla "
-        "Jëlal bus bu Dem Dikk, numero juróom ñett.",
+        == "Jëlal biis bu Tata, numero juróom ñaar. walla "
+        "Jëlal biis bu Dem Dikk, numero juróom ñett.",
         phrase_reponse(deux),
     )
 
@@ -1590,7 +1594,7 @@ def test_voix() -> tuple[int, int]:
     taf_taf = [{"compagnie": "Dakar Dem Dikk", "ligne": "TAF TAF"}]
     verifie(
         "ligne sans numéro (TAF TAF)",
-        phrase_reponse(taf_taf) == "Jëlal bus bu Dem Dikk, TAF TAF.",
+        phrase_reponse(taf_taf) == "Jëlal biis bu Dem Dikk, Taf Taf.",
         phrase_reponse(taf_taf),
     )
     # L'itinéraire officiel de TAF TAF ne dessert pas les Parcelles, mais Ngor et Yoff.
@@ -1612,8 +1616,8 @@ def test_voix() -> tuple[int, int]:
     )
 
     verifie(
-        "TAF TAF OUAKAM (TO1) se dit « TAF TAF Wakaam »",
-        phrase_reponse(to1) == "Jëlal bus bu Dem Dikk, TAF TAF Wakaam.",
+        "TAF TAF OUAKAM (TO1) se dit « Taf Taf Wakaam »",
+        phrase_reponse(to1) == "Jëlal biis bu Dem Dikk, Taf Taf Wakaam.",
         phrase_reponse(to1),
     )
 
@@ -1723,13 +1727,32 @@ def test_voix() -> tuple[int, int]:
     # Le lexique de prononciation : mot entier, insensible à la casse, une
     # seule passe, et seulement pour le texte envoyé à la voix.
     from tts.lexique_prononciation import LEXIQUE, appliquer
+    from tts.speak import nom_fichier_lieu, nom_lieu_parle
 
     verifie(
-        "lexique vide : le texte part tel quel chez la voix",
-        LEXIQUE == {}
-        and appliquer("Baal ma, biis yi rekk laa xam.") == "Baal ma, biis yi rekk laa xam."
-        and phrase_reponse(taf_taf) == "Jëlal bus bu Dem Dikk, TAF TAF.",
-        (LEXIQUE, appliquer("Baal ma, biis yi rekk laa xam."),),
+        "lexique de l'écoute : les 5 choix du locuteur natif",
+        LEXIQUE
+        == {
+            "bus": "biis",
+            "TAF TAF": "Taf Taf",
+            "Acapes": "Akaapes",
+            "Albert Sarraut": "Alber Saroo",
+            "ASECNA": "Aseknaa",
+        },
+        LEXIQUE,
+    )
+    verifie(
+        "la voix dit le lexique ; le nom affiché, lui, ne change jamais",
+        appliquer("Terrain Acapes") == "Terrain Akaapes"
+        and appliquer("Place de l'Indépendance Avenue Sarraut")
+        == "Place de l'Indépendance Avenue Sarraut"
+        and nom_lieu_parle("Terrain Acapes") == "Terrain Acapes"
+        and nom_fichier_lieu("Terrain Acapes") == "lieu_terrain_acapes.wav",
+        (
+            appliquer("Terrain Acapes"),
+            nom_lieu_parle("Terrain Acapes"),
+            nom_fichier_lieu("Terrain Acapes"),
+        ),
     )
     ancien_lexique = dict(LEXIQUE)
     try:
@@ -1743,19 +1766,24 @@ def test_voix() -> tuple[int, int]:
     verifie(
         "lexique : mot entier, casse oubliée, phrase entière, une seule passe",
         tout_ou_rien == "Baal ma, bis biisbiis yi rekk laa xam."
-        and phrase_ligne == "Jëlal bus bu Dem Dikk, Taaf Taaf Wakaam.",
+        # phrase_reponse applique déjà le lexique une fois (biis, Taaf) ; le
+        # second passage ne re-sellingue pas ce qui vient d'être remplacé,
+        # mais « biis » reste un mot du vocabulaire dans la nouvelle phrase.
+        and phrase_ligne == "Jëlal bis bu Dem Dikk, Taaf Taaf Wakaam.",
         (tout_ou_rien, phrase_ligne, dict(LEXIQUE) == ancien_lexique),
     )
     verifie(
-        "lexique restauré : vide comme avant la manœuvre",
-        LEXIQUE == ancien_lexique and phrase_reponse(taf_taf) == "Jëlal bus bu Dem Dikk, TAF TAF.",
+        "lexique restauré : les 5 entrées du dépôt, la ligne Taf Taf dit ce qu'il faut",
+        LEXIQUE == ancien_lexique
+        and phrase_reponse(taf_taf) == "Jëlal biis bu Dem Dikk, Taf Taf.",
+        (LEXIQUE, phrase_reponse(taf_taf)),
     )
 
     suffixe = [{"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 15A"}]
     verifie(
         "suffixe de ligne (15A) dit et fichier distinct",
         phrase_reponse(suffixe)
-        == "Jëlal bus bu Dem Dikk, numero fukk ak juróom A."
+        == "Jëlal biis bu Dem Dikk, numero fukk ak juróom A."
         and nom_cache_match(suffixe[0]) == "dakar_dem_dikk_15a.wav",
         (phrase_reponse(suffixe), nom_cache_match(suffixe[0])),
     )
@@ -1785,22 +1813,22 @@ def test_voix() -> tuple[int, int]:
     )
     phrase_corr = phrase_correspondances(corr)
     attendu_corr = (
-        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
-        "nga wàcc Gàddaay. Ci ginnaaw, jëlal bus bu Tata, numero fanweer ak "
+        "Jëlal biis bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
+        "nga wàcc Gàddaay. Ci ginnaaw, jëlal biis bu Tata, numero fanweer ak "
         "juróom ñaar, moo lay yóbbu ba Malika. Walla, "
-        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
-        "nga wàcc Gàddaay. Ci ginnaaw, jëlal bus bu Tata, numero juróom ñaar "
+        "Jëlal biis bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
+        "nga wàcc Gàddaay. Ci ginnaaw, jëlal biis bu Tata, numero juróom ñaar "
         "fukk ak juróom ñeent, moo lay yóbbu ba Malika."
     )
     # Moteur v2, itinéraires officiels de Dem Dikk (221 + 16A, 221 + 220).  Wolof
     # validé par l'équipe : « fukk ak juróom benn A », « Walla », et jamais
     # « Terminus » dans la phrase (« ba Malika »).
     attendu_corr_officiel = (
-        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
-        "nga wàcc Gàddaay. Ci ginnaaw, jëlal bus bu Dem Dikk, numero fukk ak "
+        "Jëlal biis bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
+        "nga wàcc Gàddaay. Ci ginnaaw, jëlal biis bu Dem Dikk, numero fukk ak "
         "juróom benn A, moo lay yóbbu ba Malika. Walla, "
-        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
-        "nga wàcc Gàddaay. Ci ginnaaw, jëlal bus bu Dem Dikk, numero ñaari "
+        "Jëlal biis bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
+        "nga wàcc Gàddaay. Ci ginnaaw, jëlal biis bu Dem Dikk, numero ñaari "
         "téeméer ak ñaar fukk, moo lay yóbbu ba Malika."
     )
     verifie(
@@ -2005,8 +2033,8 @@ def test_lieux() -> tuple[int, int]:
         "changement": "Gadaye",
     }
     attendu_phrase = (
-        "Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
-        "nga wàcc Gàddaay. Ci ginnaaw, jëlal bus bu Tata, numero fanweer ak "
+        "Jëlal biis bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
+        "nga wàcc Gàddaay. Ci ginnaaw, jëlal biis bu Tata, numero fanweer ak "
         "juróom ñaar, moo lay yóbbu ba Malika."
     )
     verifie(
@@ -2342,8 +2370,8 @@ def test_prononciations() -> tuple[int, int]:
         not manquants_d_aujourdhui,
         manquants_d_aujourdhui[:5],
     )
-    # Texte final = phrase du plan / des ajouts, lexique vide ou pas : même
-    # écriture parlée telle quelle quand le lexique ne retouche rien.
+    # Texte final = phrase du plan / des ajouts, avec le lexique de l'écoute
+    # appliqué : le CSV porte exactement ce que la voix doit lire.
     par_fichier = {r["fichier_wav"]: r for r in complete}
     from tts.lexique_prononciation import LEXIQUE, appliquer
 
@@ -2359,8 +2387,35 @@ def test_prononciations() -> tuple[int, int]:
             )
     verifie(
         "voix_complete.csv : le texte final suit phrases + lexique",
-        not ecarts and LEXIQUE == {},
+        not ecarts,
         ecarts[:3],
+    )
+    lexiques = [
+        fichier
+        for fichier, phrase in sources_textes.items()
+        if appliquer(phrase) != phrase
+    ]
+    verifie(
+        "lexique : le CSV porte le texte retouché, la phrase affichée reste la sienne",
+        all(
+            par_fichier[f]["texte_a_prononcer"] != sources_textes[f]
+            for f in lexiques
+        ),
+        lexiques[:5],
+    )
+    terrain_acapes = par_fichier.get("lieu_terrain_acapes.wav", {})
+    verifie(
+        "lexique : écran « Terrain Acapes » se dit « Terrain Akaapes » dans le CSV",
+        terrain_acapes.get("texte_a_prononcer") == "Terrain Akaapes"
+        and sources_textes.get("lieu_terrain_acapes.wav") == "Terrain Acapes",
+        terrain_acapes,
+    )
+    place_sarraut = par_fichier.get("lieu_place_de_l_independance_avenue_sarraut.wav", {})
+    verifie(
+        "lexique : « Avenue Sarraut » sans « Albert » n'est pas touché",
+        place_sarraut.get("texte_a_prononcer")
+        == "Place de l'Indépendance Avenue Sarraut",
+        place_sarraut,
     )
 
     # Notebook complet : liste exacte du CSV, mêmes réglages, voix du Space.
@@ -2492,21 +2547,35 @@ def test_prononciations() -> tuple[int, int]:
     tout_brev = tout_test_brev + tout_complet_brev
 
     verifie(
-        "Brev (test + complet) : plus de Google Drive, secrets ou redémarrage forcé",
+        "Brev (test + complet) : plus de Google Drive, secrets, saisie clavier ou redémarrage forcé",
         not any(
             reste in tout_brev
-            for reste in ("google.colab", "drive.mount", "userdata", "os.kill", "files.download")
+            for reste in (
+                "google.colab",
+                "drive.mount",
+                "userdata",
+                "os.kill",
+                "files.download",
+                "getpass",
+            )
         ),
         [
             reste
-            for reste in ("google.colab", "drive.mount", "userdata", "os.kill", "files.download")
+            for reste in (
+                "google.colab",
+                "drive.mount",
+                "userdata",
+                "os.kill",
+                "files.download",
+                "getpass",
+            )
             if reste in tout_brev
         ],
     )
     verifie(
-        "Brev (test + complet) : jeton HF saisie cachée, jamais affiché ni écrit",
-        "getpass.getpass(" in tout_brev
-        and 'os.environ.get("HF_TOKEN"' in tout_brev
+        "Brev (test + complet) : jeton HF lu dans la variable d'environnement, jamais affiché ni écrit",
+        'os.environ.get("HF_TOKEN"' in tout_brev
+        and "WHISPER_PRINCIPAL = WHISPER_SECOURS" in tout_brev
         and not re.search(r"hf_[A-Za-z0-9]{20,}", tout_brev)
         and not re.search(r"print\([^)]*HF_TOKEN", tout_brev),
     )
@@ -2518,18 +2587,43 @@ def test_prononciations() -> tuple[int, int]:
         and "shutil.make_archive('./sortie_voix/tts_cache_oolel', 'zip', SORTIE)"
         in tout_complet_brev,
     )
+    # Brev : le Jupyter démarre nu (pas de pip, pas de torch, pas de numpy). La
+    # première cellule installe pip via ensurepip (sans -q : il refuse les
+    # options) puis le pip du noyau ; la note impose le redémarrage (sinon
+    # « Numpy is not available » dès que torch est chargé).
+    cells_pip = [
+        "".join(c["source"])
+        for nb in (nb_test_brev, nb_complet_brev)
+        for c in nb["cells"]
+        if c["cell_type"] == "code" and "-m ensurepip" in "".join(c["source"])
+    ]
     verifie(
-        "Brev : pip via %pip (mêmes paquets que Colab) + note de redémarrage",
-        "%pip -q install" in tout_brev
-        and "'librosa>=0.10.2'" in tout_brev
-        and "transformers==4.46.3" in tout_brev
-        and "diffusers==0.29.0" in tout_brev
+        "Brev : pip via ensurepip + pip du noyau, pile torch/numpy d'abord, note de redémarrage",
+        len(cells_pip) == 2
+        and all(
+            c.startswith("# Brev : le Jupyter de base démarre sans pip")
+            and "import sys" in c
+            and "!{sys.executable} -m ensurepip --upgrade" in c
+            and "-q" not in c
+            and "!{sys.executable} -m pip install torch torchaudio torchcodec huggingface_hub numpy omegaconf einops scipy safetensors resemble-perth pyloudnorm"
+            in c
+            and "'librosa>=0.10.2'" in c
+            and "transformers==4.46.3" in c
+            and "diffusers==0.29.0" in c
+            for c in cells_pip
+        )
         and any(
-            "redémarrage" in "".join(c["source"])
+            "Kernel -> Restart Kernel, puis Run All" in "".join(c["source"])
+            and "Numpy is not available" in "".join(c["source"])
             for nb in (nb_test_brev, nb_complet_brev)
             for c in nb["cells"]
             if c["cell_type"] == "markdown"
         ),
+    )
+    verifie(
+        "Brev (test + complet) : Whisper-small public secours du préprocesseur du dépôt privé",
+        'WhisperProcessor.from_pretrained(\n                    "openai/whisper-small", token=jeton\n                )' in tout_brev
+        and tout_brev.count("Sans preprocessor_config.json dans le dépôt") == 2,
     )
 
     plan_test_brev = next(s for s in sources_test_brev if s.startswith("PLAN = "))
@@ -2572,7 +2666,12 @@ def test_prononciations() -> tuple[int, int]:
         return [s for s in sources if not any(m in s for m in reecrites)]
 
     def _cellules_brev_gardes(sources: list[str]) -> list[str]:
-        reecrites = ("%pip -q install", "Tout atterrit ici", "getpass.getpass(", "shutil.make_archive(")
+        reecrites = (
+            "-m ensurepip",
+            "Tout atterrit ici",
+            'os.environ.get("HF_TOKEN"',
+            "shutil.make_archive(",
+        )
         return [s for s in sources if not any(m in s for m in reecrites)]
 
     def _ecart_cellules(colab: list[str], brev: list[str]) -> list:
@@ -2610,10 +2709,12 @@ def test_prononciations() -> tuple[int, int]:
 
     lire_moi = (RACINE / "notebooks" / "BREV_LIRE_MOI.md").read_text(encoding="utf-8")
     verifie(
-        "BREV_LIRE_MOI.md : les deux notebooks, le jeton caché, l'installer --zip, machine à éteindre",
+        "BREV_LIRE_MOI.md : les deux notebooks, jeton en variable d'environnement, exécution sans interface, installer --zip, machine à éteindre",
         "voix_oolel_complete_brev.ipynb" in lire_moi
         and "voix_test_prononciation_brev.ipynb" in lire_moi
-        and "getpass" in lire_moi
+        and "getpass" not in lire_moi
+        and "variable d'environnement" in lire_moi
+        and "--ExecutePreprocessor.timeout=-1" in lire_moi
         and "--zip" in lire_moi
         and "Éteins" in lire_moi,
     )

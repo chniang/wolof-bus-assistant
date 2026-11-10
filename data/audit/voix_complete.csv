@@ -1,122 +1,122 @@
 type,texte_a_prononcer,fichier_wav,origine
-ligne,"Jëlal bus bu Dem Dikk, numero benn.",dakar_dem_dikk_1.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaar.",dakar_dem_dikk_2.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñeent.",dakar_dem_dikk_4.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero juróom.",dakar_dem_dikk_5.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero juróom benn.",dakar_dem_dikk_6.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero juróom ñaar.",dakar_dem_dikk_7.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero juróom ñett.",dakar_dem_dikk_8.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero juróom ñeent.",dakar_dem_dikk_9.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero fukk.",dakar_dem_dikk_10.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero fukk ak benn.",dakar_dem_dikk_11.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero fukk ak ñaar.",dakar_dem_dikk_12.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero fukk ak ñett.",dakar_dem_dikk_13.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero fukk ak juróom A.",dakar_dem_dikk_15a.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero fukk ak juróom B.",dakar_dem_dikk_15b.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero fukk ak juróom benn A.",dakar_dem_dikk_16a.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero fukk ak juróom benn B.",dakar_dem_dikk_16b.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero fukk ak juróom ñett.",dakar_dem_dikk_18.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaar fukk.",dakar_dem_dikk_20.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaar fukk ak ñett.",dakar_dem_dikk_23.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero téeméer ak ñaar fukk ak benn.",dakar_dem_dikk_121.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak juróom ñett.",dakar_dem_dikk_208.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak ñett.",dakar_dem_dikk_213.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñaar.",dakar_dem_dikk_217.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñett.",dakar_dem_dikk_218.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñeent.",dakar_dem_dikk_219.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk.",dakar_dem_dikk_220.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn",dakar_dem_dikk_221.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak juróom ñaar.",dakar_dem_dikk_227.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak juróom ñett.",dakar_dem_dikk_228.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñaar.",dakar_dem_dikk_232.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñett.",dakar_dem_dikk_233.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñeent.",dakar_dem_dikk_234.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak benn.",dakar_dem_dikk_501.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñaar A.",dakar_dem_dikk_502a.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñaar B.",dakar_dem_dikk_502b.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñett A.",dakar_dem_dikk_503a.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñett B.",dakar_dem_dikk_503b.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñeent A.",dakar_dem_dikk_504a.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñeent B.",dakar_dem_dikk_504b.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero benn.",tata_aftu_1.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñaar.",tata_aftu_2.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñett.",tata_aftu_3.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñeent.",tata_aftu_4.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom.",tata_aftu_5.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñaar fukk ak ñeent.",tata_aftu_24.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñaar fukk ak juróom.",tata_aftu_25.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñaar fukk ak juróom benn.",tata_aftu_26.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñaar fukk ak juróom ñaar.",tata_aftu_27.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñaar fukk ak juróom ñett.",tata_aftu_28.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñaar fukk ak juróom ñeent.",tata_aftu_29.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero fanweer.",tata_aftu_30.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero fanweer ak benn.",tata_aftu_31.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero fanweer ak ñaar.",tata_aftu_32.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero fanweer ak ñett.",tata_aftu_33.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero fanweer ak ñeent.",tata_aftu_34.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero fanweer ak juróom.",tata_aftu_35.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero fanweer ak juróom benn.",tata_aftu_36.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero fanweer ak juróom ñaar.",tata_aftu_37.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero fanweer ak juróom ñett.",tata_aftu_38.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero fanweer ak juróom ñeent.",tata_aftu_39.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñeent fukk.",tata_aftu_40.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak benn.",tata_aftu_41.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak ñaar.",tata_aftu_42.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak ñett.",tata_aftu_43.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak ñeent.",tata_aftu_44.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak juróom.",tata_aftu_45.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak juróom benn.",tata_aftu_46.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak juróom ñaar.",tata_aftu_47.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak juróom ñett.",tata_aftu_48.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero ñeent fukk ak juróom ñeent.",tata_aftu_49.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom fukk.",tata_aftu_50.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom fukk ak benn.",tata_aftu_51.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom fukk ak ñaar.",tata_aftu_52.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom fukk ak ñett.",tata_aftu_53.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom fukk ak ñeent.",tata_aftu_54.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom fukk ak juróom.",tata_aftu_55.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom fukk ak juróom benn.",tata_aftu_56.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom fukk ak juróom ñaar.",tata_aftu_57.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom fukk ak juróom ñett.",tata_aftu_58.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom fukk ak juróom ñeent.",tata_aftu_59.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom benn fukk.",tata_aftu_60.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak benn.",tata_aftu_61.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak ñaar.",tata_aftu_62.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak ñett.",tata_aftu_63.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak ñeent.",tata_aftu_64.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak juróom.",tata_aftu_65.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak juróom benn.",tata_aftu_66.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak juróom ñaar.",tata_aftu_67.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak juróom ñett.",tata_aftu_68.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom benn fukk ak juróom ñeent.",tata_aftu_69.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk.",tata_aftu_70.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak benn.",tata_aftu_71.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak ñaar.",tata_aftu_72.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak ñett.",tata_aftu_73.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak ñeent.",tata_aftu_74.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom.",tata_aftu_75.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom benn.",tata_aftu_76.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom ñaar.",tata_aftu_77.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom ñett.",tata_aftu_78.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñaar fukk ak juróom ñeent.",tata_aftu_79.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk.",tata_aftu_80.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak benn.",tata_aftu_81.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak ñaar.",tata_aftu_82.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak ñett.",tata_aftu_83.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak ñeent.",tata_aftu_84.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom.",tata_aftu_85.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom benn.",tata_aftu_86.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom ñaar.",tata_aftu_87.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom ñett.",tata_aftu_88.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñett fukk ak juróom ñeent.",tata_aftu_89.wav,tts_cache
-ligne,"Jëlal bus bu Tataa, numero juróom ñeent fukk ak benn.",tata_aftu_91.wav,tts_cache
-service,"Baal ma, gisuma bus bu dem fa.",aucune_ligne.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero benn.",dakar_dem_dikk_1.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaar.",dakar_dem_dikk_2.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñeent.",dakar_dem_dikk_4.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero juróom.",dakar_dem_dikk_5.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero juróom benn.",dakar_dem_dikk_6.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero juróom ñaar.",dakar_dem_dikk_7.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero juróom ñett.",dakar_dem_dikk_8.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero juróom ñeent.",dakar_dem_dikk_9.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero fukk.",dakar_dem_dikk_10.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero fukk ak benn.",dakar_dem_dikk_11.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero fukk ak ñaar.",dakar_dem_dikk_12.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero fukk ak ñett.",dakar_dem_dikk_13.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero fukk ak juróom A.",dakar_dem_dikk_15a.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero fukk ak juróom B.",dakar_dem_dikk_15b.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero fukk ak juróom benn A.",dakar_dem_dikk_16a.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero fukk ak juróom benn B.",dakar_dem_dikk_16b.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero fukk ak juróom ñett.",dakar_dem_dikk_18.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaar fukk.",dakar_dem_dikk_20.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaar fukk ak ñett.",dakar_dem_dikk_23.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero téeméer ak ñaar fukk ak benn.",dakar_dem_dikk_121.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaari téeméer ak juróom ñett.",dakar_dem_dikk_208.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaari téeméer ak fukk ak ñett.",dakar_dem_dikk_213.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñaar.",dakar_dem_dikk_217.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñett.",dakar_dem_dikk_218.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaari téeméer ak fukk ak juróom ñeent.",dakar_dem_dikk_219.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaari téeméer ak ñaar fukk.",dakar_dem_dikk_220.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn",dakar_dem_dikk_221.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak juróom ñaar.",dakar_dem_dikk_227.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak juróom ñett.",dakar_dem_dikk_228.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñaar.",dakar_dem_dikk_232.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñett.",dakar_dem_dikk_233.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero ñaari téeméer ak fanweer ak ñeent.",dakar_dem_dikk_234.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero juróomi téeméer ak benn.",dakar_dem_dikk_501.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero juróomi téeméer ak ñaar A.",dakar_dem_dikk_502a.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero juróomi téeméer ak ñaar B.",dakar_dem_dikk_502b.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero juróomi téeméer ak ñett A.",dakar_dem_dikk_503a.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero juróomi téeméer ak ñett B.",dakar_dem_dikk_503b.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero juróomi téeméer ak ñeent A.",dakar_dem_dikk_504a.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, numero juróomi téeméer ak ñeent B.",dakar_dem_dikk_504b.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero benn.",tata_aftu_1.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñaar.",tata_aftu_2.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñett.",tata_aftu_3.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñeent.",tata_aftu_4.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom.",tata_aftu_5.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñaar fukk ak ñeent.",tata_aftu_24.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñaar fukk ak juróom.",tata_aftu_25.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñaar fukk ak juróom benn.",tata_aftu_26.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñaar fukk ak juróom ñaar.",tata_aftu_27.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñaar fukk ak juróom ñett.",tata_aftu_28.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñaar fukk ak juróom ñeent.",tata_aftu_29.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero fanweer.",tata_aftu_30.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero fanweer ak benn.",tata_aftu_31.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero fanweer ak ñaar.",tata_aftu_32.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero fanweer ak ñett.",tata_aftu_33.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero fanweer ak ñeent.",tata_aftu_34.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero fanweer ak juróom.",tata_aftu_35.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero fanweer ak juróom benn.",tata_aftu_36.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero fanweer ak juróom ñaar.",tata_aftu_37.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero fanweer ak juróom ñett.",tata_aftu_38.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero fanweer ak juróom ñeent.",tata_aftu_39.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñeent fukk.",tata_aftu_40.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñeent fukk ak benn.",tata_aftu_41.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñeent fukk ak ñaar.",tata_aftu_42.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñeent fukk ak ñett.",tata_aftu_43.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñeent fukk ak ñeent.",tata_aftu_44.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñeent fukk ak juróom.",tata_aftu_45.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñeent fukk ak juróom benn.",tata_aftu_46.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñeent fukk ak juróom ñaar.",tata_aftu_47.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñeent fukk ak juróom ñett.",tata_aftu_48.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero ñeent fukk ak juróom ñeent.",tata_aftu_49.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom fukk.",tata_aftu_50.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom fukk ak benn.",tata_aftu_51.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom fukk ak ñaar.",tata_aftu_52.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom fukk ak ñett.",tata_aftu_53.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom fukk ak ñeent.",tata_aftu_54.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom fukk ak juróom.",tata_aftu_55.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom fukk ak juróom benn.",tata_aftu_56.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom fukk ak juróom ñaar.",tata_aftu_57.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom fukk ak juróom ñett.",tata_aftu_58.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom fukk ak juróom ñeent.",tata_aftu_59.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom benn fukk.",tata_aftu_60.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom benn fukk ak benn.",tata_aftu_61.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom benn fukk ak ñaar.",tata_aftu_62.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom benn fukk ak ñett.",tata_aftu_63.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom benn fukk ak ñeent.",tata_aftu_64.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom benn fukk ak juróom.",tata_aftu_65.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom benn fukk ak juróom benn.",tata_aftu_66.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom benn fukk ak juróom ñaar.",tata_aftu_67.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom benn fukk ak juróom ñett.",tata_aftu_68.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom benn fukk ak juróom ñeent.",tata_aftu_69.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñaar fukk.",tata_aftu_70.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñaar fukk ak benn.",tata_aftu_71.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñaar fukk ak ñaar.",tata_aftu_72.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñaar fukk ak ñett.",tata_aftu_73.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñaar fukk ak ñeent.",tata_aftu_74.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñaar fukk ak juróom.",tata_aftu_75.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñaar fukk ak juróom benn.",tata_aftu_76.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñaar fukk ak juróom ñaar.",tata_aftu_77.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñaar fukk ak juróom ñett.",tata_aftu_78.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñaar fukk ak juróom ñeent.",tata_aftu_79.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñett fukk.",tata_aftu_80.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñett fukk ak benn.",tata_aftu_81.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñett fukk ak ñaar.",tata_aftu_82.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñett fukk ak ñett.",tata_aftu_83.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñett fukk ak ñeent.",tata_aftu_84.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñett fukk ak juróom.",tata_aftu_85.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñett fukk ak juróom benn.",tata_aftu_86.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñett fukk ak juróom ñaar.",tata_aftu_87.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñett fukk ak juróom ñett.",tata_aftu_88.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñett fukk ak juróom ñeent.",tata_aftu_89.wav,tts_cache
+ligne,"Jëlal biis bu Tataa, numero juróom ñeent fukk ak benn.",tata_aftu_91.wav,tts_cache
+service,"Baal ma, gisuma biis bu dem fa.",aucune_ligne.wav,tts_cache
 service,walla,walla.wav,tts_cache
 service,walla,walla_autre.wav,tts_cache
 service,"Ci ginnaaw,",correspondance_liaison.wav,tts_cache
 service,moo lay yóbbu ba,moo_lay_yobbu_ba.wav,tts_cache
 service,nga wàcc,nga_wacc.wav,tts_cache
-ligne,"Jëlal bus bu Dem Dikk, Taf Taf.",dakar_dem_dikk_taf_taf.wav,tts_cache
+ligne,"Jëlal biis bu Dem Dikk, Taf Taf.",dakar_dem_dikk_taf_taf.wav,tts_cache
 lieu,Aéroport,lieu_aeroport.wav,tts_cache
 lieu,Aéroport Léopold Sédar Senghor,lieu_aeroport_l_s_senghor.wav,tts_cache
 lieu,Aéroport Léopold Sédar Senghor,lieu_aeroport_lss.wav,tts_cache
@@ -202,7 +202,7 @@ lieu,Cheikh Sidatyaidara,lieu_cheikh_sidatyaidara.wav,tts_cache
 lieu,Cinéma Parcelles,lieu_cinema_parcelles.wav,tts_cache
 lieu,Cité Ainoumady,lieu_cite_ainoumady.wav,tts_cache
 lieu,Cité Apix,lieu_cite_apix.wav,tts_cache
-lieu,Cité Asecna,lieu_cite_asecna.wav,tts_cache
+lieu,Cité Aseknaa,lieu_cite_asecna.wav,tts_cache
 lieu,Cité Assurance,lieu_cite_assurance.wav,tts_cache
 lieu,Cité Avion,lieu_cite_avion.wav,tts_cache
 lieu,Cité Baba Guisse,lieu_cite_baba_guisse.wav,tts_cache
@@ -637,23 +637,23 @@ lieu,Zac trois Bis Kounoune,lieu_zac_trois_bis_kounoune.wav,tts_cache
 lieu,Zone B,lieu_zone_b.wav,tts_cache
 lieu,Zone de Captage,lieu_zone_de_captage.wav,tts_cache
 conversation,Ba beneen yoon !,conversation_au_revoir.wav,tts_cache_ajouts
-conversation,"Baal ma, bus yi rekk laa xam. Wax ma fan nga nekk ak fan nga bëgga dem.",conversation_hors_sujet.wav,tts_cache_ajouts
+conversation,"Baal ma, biis yi rekk laa xam. Wax ma fan nga nekk ak fan nga bëgga dem.",conversation_hors_sujet.wav,tts_cache_ajouts
 conversation,Cheikh Niang moo ma defar.,conversation_createur.wav,tts_cache_ajouts
 conversation,"Maa ngi fi rekk, jërëjëf. Yaw nag ? Fan nga bëgga dem ?",conversation_ca_va.wav,tts_cache_ajouts
-conversation,Maa ngi tudd GuindiMa. Damay won nit ñi bus bi ñuy jël ci Ndakaaru.,conversation_role.wav,tts_cache_ajouts
+conversation,Maa ngi tudd GuindiMa. Damay won nit ñi biis bi ñuy jël ci Ndakaaru.,conversation_role.wav,tts_cache_ajouts
 conversation,Maalekum salaam ! Fan nga bëgga dem ?,conversation_salutation.wav,tts_cache_ajouts
-conversation,"Wax ma fan nga nekk ak fan nga bëgga dem, ma won la bus bi nga wara jël.",conversation_capacites.wav,tts_cache_ajouts
+conversation,"Wax ma fan nga nekk ak fan nga bëgga dem, ma won la biis bi nga wara jël.",conversation_capacites.wav,tts_cache_ajouts
 conversation,"Ñoo ko bokk ! Soo ma soxlaa, maa ngi lay déglu.",conversation_merci.wav,tts_cache_ajouts
-ligne,"Jëlal bus bu Dem Dikk, TAF TAF Wakaam.",dakar_dem_dikk_taf_taf_ouakam_to1.wav,tts_cache_ajouts
-ligne,"Jëlal bus bu Dem Dikk, numero fukk ak juróom.",dakar_dem_dikk_15.wav,tts_cache_ajouts
-ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñaar.",dakar_dem_dikk_502.wav,tts_cache_ajouts
-ligne,"Jëlal bus bu Dem Dikk, numero juróomi téeméer ak ñett.",dakar_dem_dikk_503.wav,tts_cache_ajouts
-ligne,"Jëlal bus bu Dem Dikk, numero ñetti téeméer ak fukk ak benn.",dakar_dem_dikk_311.wav,tts_cache_ajouts
-ligne,"Jëlal bus bu Dem Dikk, numero ñetti téeméer ak fukk ak juróom ñeent.",dakar_dem_dikk_319.wav,tts_cache_ajouts
-ligne,"Jëlal bus bu Dem Dikk, numero ñetti téeméer ak ñaar fukk ak juróom ñaar.",dakar_dem_dikk_327.wav,tts_cache_ajouts
-arret,ASECNA,lieu_asecna.wav,tts_cache_ajouts
-arret,Acapes,lieu_acapes.wav,tts_cache_ajouts
-arret,Albert Sarraut,lieu_albert_sarraut.wav,tts_cache_ajouts
+ligne,"Jëlal biis bu Dem Dikk, Taf Taf Wakaam.",dakar_dem_dikk_taf_taf_ouakam_to1.wav,tts_cache_ajouts
+ligne,"Jëlal biis bu Dem Dikk, numero fukk ak juróom.",dakar_dem_dikk_15.wav,tts_cache_ajouts
+ligne,"Jëlal biis bu Dem Dikk, numero juróomi téeméer ak ñaar.",dakar_dem_dikk_502.wav,tts_cache_ajouts
+ligne,"Jëlal biis bu Dem Dikk, numero juróomi téeméer ak ñett.",dakar_dem_dikk_503.wav,tts_cache_ajouts
+ligne,"Jëlal biis bu Dem Dikk, numero ñetti téeméer ak fukk ak benn.",dakar_dem_dikk_311.wav,tts_cache_ajouts
+ligne,"Jëlal biis bu Dem Dikk, numero ñetti téeméer ak fukk ak juróom ñeent.",dakar_dem_dikk_319.wav,tts_cache_ajouts
+ligne,"Jëlal biis bu Dem Dikk, numero ñetti téeméer ak ñaar fukk ak juróom ñaar.",dakar_dem_dikk_327.wav,tts_cache_ajouts
+arret,Aseknaa,lieu_asecna.wav,tts_cache_ajouts
+arret,Akaapes,lieu_acapes.wav,tts_cache_ajouts
+arret,Alber Saroo,lieu_albert_sarraut.wav,tts_cache_ajouts
 arret,Arrêt Dial Mbaye,lieu_arret_dial_mbaye.wav,tts_cache_ajouts
 arret,Arsenal,lieu_arsenal.wav,tts_cache_ajouts
 arret,Assemblée Nationale,lieu_assemblee_nationale.wav,tts_cache_ajouts
@@ -844,7 +844,7 @@ arret,Terminus cinquante-six,lieu_terminus_cinquante_six.wav,tts_cache_ajouts
 arret,Terminus quarante-neuf,lieu_terminus_quarante_neuf.wav,tts_cache_ajouts
 arret,Terminus soixante-douze,lieu_terminus_soixante_douze.wav,tts_cache_ajouts
 arret,Terminus soixante-trois,lieu_terminus_soixante_trois.wav,tts_cache_ajouts
-arret,Terrain Acapes,lieu_terrain_acapes.wav,tts_cache_ajouts
+arret,Terrain Akaapes,lieu_terrain_acapes.wav,tts_cache_ajouts
 arret,Tolou Abdoulaye Wade,lieu_tolou_abdoulaye_wade.wav,tts_cache_ajouts
 arret,Travaux Communaux,lieu_travaux_communaux.wav,tts_cache_ajouts
 arret,Tunnel de Soumbédioune,lieu_tunnel_de_soumbedioune.wav,tts_cache_ajouts

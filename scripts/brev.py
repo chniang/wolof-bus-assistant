@@ -1,14 +1,22 @@
 r"""Adapte les notebooks voix « Colab » pour une machine GPU NVIDIA Brev.
 
-Chez Brev, c'est du Jupyter tout court : pas de Google Drive à monter, pas de
-secrets « userdata », et le redémarrage forcé du kernel (`os.kill`) n'a pas
-lieu d'être. Ce module reprend les notebooks Colab déposés dans notebooks/
-et réécrit, cellule par cellule, les quatre endroits qui dépendent de Colab :
+Chez Brev, c'est du Jupyter tout court, et son Jupyter démarre nu : pas de pip
+dans le noyau (d'où ensurepip), pas de torch ni de numpy. Pas de Google Drive à
+monter, pas de secrets « userdata », pas de saisie possible (getpass bloquerait
+le noyau en exécution sans interface), et le redémarrage forcé du kernel
+(`os.kill`) n'a pas lieu d'être. Ce module reprend les notebooks Colab déposés
+dans notebooks/ et réécrit, cellule par cellule, les endroits qui changent :
 
-  - l'intro (markdown) : mode d'emploi Brev (machine, dossier, zip) ;
-  - le pip : `%pip` sans redémarrage forcé, plus une note de redémarrage ;
+  - l'intro (markdown) : mode d'emploi Brev (machine, redirection de sortie,
+    jeton en variable d'environnement, Run All, exécution sans interface) ;
+  - le pip : `ensurepip` puis `{sys.executable} -m pip install`, suivis d'une
+    note (Restart Kernel avant la suite : « Numpy is not available » sinon) ;
   - la cellule Drive : remplacée par un dossier local ./sortie_voix/ ;
-  - la cellule Whisper : jeton HF lu caché (getpass / variable HF_TOKEN) ;
+  - la cellule Whisper : jeton lu dans la variable d'environnement `HF_TOKEN`
+    uniquement (aucun getpass — il n'y a pas de clavier au premier plan) ;
+    sans jeton, direction directement le Whisper wolof public ; si le dépôt
+    privé n'embarque pas de preprocessor_config.json, le préprocesseur vient
+    du Whisper-small d'origine (les poids restent les nôtres) ;
   - la cellule finale : zip dans sortie_voix/, pas de téléchargement auto.
 
 Toutes les autres cellules (plan, outils de vérification, Oolel, génération)
@@ -34,16 +42,37 @@ TEST_COLAB = NOTEBOOKS / "voix_test_prononciation_colab.ipynb"
 COMPLET_COLAB = NOTEBOOKS / "voix_oolel_complete.ipynb"
 
 # Ce qui ne doit PLUS apparaître dans un notebook Brev (ce sont des choses
-# propres à Colab). La moindre trace = bug de transformation.
-RESTES_COLAB = ("google.colab", "drive.mount", "userdata", "os.kill", "files.download")
+# propres à Colab, ou impossibles là-bas ; getpass n'a pas de clavier au
+# premier plan et bloquerait le noyau en exécution sans interface). La moindre
+# trace = bug de transformation.
+RESTES_COLAB = (
+    "google.colab",
+    "drive.mount",
+    "userdata",
+    "os.kill",
+    "files.download",
+    "getpass",
+)
 
 PIPS_PREFIXE = "!pip -q install "
 
+# Chez Brev, le noyau démarre sans pip du tout : ensurepip d'abord (sans -q :
+# ensurepip refuse les options), puis pip du noyau pour tout le monde. torch
+# et numpy sont réinstallés via pip — mêmes noms qu'en Colab, torchcodec en
+# premier suffit (le pip Colab l'avait aussi dans sa liste, on dédoublonne).
+ENSUREPIP = "!{sys.executable} -m ensurepip --upgrade"
+PIPS_BASE = (
+    "torch torchaudio torchcodec huggingface_hub numpy omegaconf einops "
+    "scipy safetensors resemble-perth pyloudnorm"
+)
+
 NOTE_PIP = """\
-> **Après la cellule pip :** si Jupyter demande un **redémarrage du noyau**
-> (Kernel → Restart Kernel), accepte-le puis relance tout depuis le début :
-> la reprise saute les audios déjà écrits dans `sortie_voix/`. Sans demande
-> de Jupyter, rien à faire, continue normalement.
+> **Après cette cellule : Kernel -> Restart Kernel, puis Run All.**
+>
+> Pourquoi : une fois torch chargé, numpy du même noyau plante avec
+> « Numpy is not available ». Le redémarrage remet les deux d'accord, et la
+> reprise saute les audios déjà écrits dans `sortie_voix/` : rien n'est refait
+> pour rien.
 """
 
 DOSSIER_TEST = """\
@@ -91,22 +120,24 @@ print('déjà faits :', len(glob.glob(f'{SORTIE}/*.wav')), '/ 869')
 
 # Le bloc « Secret Colab » de la cellule Whisper est remplacé entre les lignes
 # « try: ... google.colab » et « print("Secret HF_TOKEN ... » : on ne réécrit
-# que le jeton, le reste de la cellule (chargement du modèle public de repli)
+# que le jeton, le reste de la cellule (chargement du modèle, repli public)
 # reste identique.
+#
+# Pas de saisie cachée du tout : sur une machine Brev il n'y a pas de fenêtre
+# au premier plan (surtout en exécution sans interface), getpass bloquerait le
+# noyau pour de bon. On lit la variable d'environnement HF_TOKEN ; sans jeton,
+# on passe directement au Whisper wolof public, sans essai inutile sur le
+# dépôt privé.
 TOKEN_NOUVEAU = """\
-# Jeton caché : variable d'environnement d'abord, saisie masquée ensuite.
-# Jamais affiché, jamais écrit dans le notebook.
-import getpass
-
-HF_TOKEN = os.environ.get("HF_TOKEN", "").strip()
-if not HF_TOKEN:
-    HF_TOKEN = getpass.getpass(
-        'Jeton Hugging Face (saisie cachée, vide pour passer) : '
-    ).strip()
-HF_TOKEN = HF_TOKEN or None
+# Jeton uniquement dans la variable d'environnement HF_TOKEN : pas de saisie
+# cachée ici, il n'y a pas de clavier au premier plan (surtout sans interface).
+HF_TOKEN = (os.environ.get("HF_TOKEN") or "").strip() or None
 
 if HF_TOKEN is None:
-    print('Jeton absent : repli sur le modèle public', WHISPER_SECOURS)
+    # Sans jeton, le dépôt privé est inaccessible de toute façon : direction
+    # directement le Whisper wolof public de contrôle.
+    print("Jeton absent : Whisper wolof public de contrôle directement.")
+    WHISPER_PRINCIPAL = WHISPER_SECOURS
 """
 
 GPU_ANCIEN = "assert torch.cuda.is_available(), 'Active le GPU T4'"
@@ -148,14 +179,19 @@ graine 1234) — les mêmes réglages que les autres séries.
 **Machine :** GPU NVIDIA (T4 ou L4) chez Brev — pas de Google Drive : tout est
 écrit dans `sortie_voix/`, à côté du notebook. Voir `notebooks/BREV_LIRE_MOI.md`.
 
-**Jeton 🔑 :** la cellule Whisper demande le jeton `HF_TOKEN` en saisie cachée
-(getpass), ou le lit dans la variable d'environnement `HF_TOKEN`. Rien ne
-s'affiche, rien n'est écrit dans le notebook. Jeton vide → repli sur le
-Whisper wolof public.
+**Jeton 🔑 :** la cellule Whisper lit le jeton dans la **variable
+d'environnement `HF_TOKEN`** de la machine — pas de saisie cachée : sans
+interface, il n'y a pas de clavier au premier plan. Jeton absent → Whisper
+wolof public de contrôle directement (le dépôt privé ne serait de toute façon
+pas accessible).
 
-**Lancer :** Run All. La cellule pip installe les paquets sans redémarrer le
-noyau ; si Jupyter demande malgré tout un redémarrage (note sous la cellule),
-accepte-le et refais Run All : la reprise saute ce qui est déjà fait.
+**Lancer :** la première cellule installe pip (ensurepip) et les paquets, puis
+**Kernel -> Restart Kernel** et Run All — voir la note sous le pip : sans
+redémarrage, numpy plante avec « Numpy is not available ». Sans interface :
+
+    jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=-1 voix_test_prononciation_brev.ipynb
+
+La reprise saute ce qui est déjà fait dans `sortie_voix/`.
 
 **À l'écoute :** les audios arrivent dans `sortie_voix/audios/`, le zip final
 est `sortie_voix/voix_test.zip` (téléchargeable depuis le panneau de gauche
@@ -181,15 +217,19 @@ Whisper wolof garde le meilleur. Liste : `data/audit/voix_complete.csv`
 audios s'écrivent dans `sortie_voix/tts_cache_oolel/`, à côté du notebook.
 Voir `notebooks/BREV_LIRE_MOI.md`.
 
-**Jeton 🔑 :** la cellule Whisper demande le jeton `HF_TOKEN` en saisie cachée
-(getpass), ou le lit dans la variable d'environnement `HF_TOKEN`. Rien ne
-s'affiche, rien n'est écrit dans le notebook. Jeton vide → repli sur le
-Whisper wolof public.
+**Jeton 🔑 :** la cellule Whisper lit le jeton dans la **variable
+d'environnement `HF_TOKEN`** de la machine — pas de saisie cachée : sans
+interface, il n'y a pas de clavier au premier plan. Jeton absent → Whisper
+wolof public de contrôle directement (le dépôt privé ne serait de toute façon
+pas accessible).
 
-**Lancer :** Run All. La cellule pip installe les paquets sans redémarrer le
-noyau ; si Jupyter demande malgré tout un redémarrage (note sous la cellule),
-accepte-le et refais Run All : la reprise saute les audios déjà dans
-`sortie_voix/tts_cache_oolel/`.
+**Lancer :** la première cellule installe pip (ensurepip) et les paquets, puis
+**Kernel -> Restart Kernel** et Run All — voir la note sous le pip : sans
+redémarrage, numpy plante avec « Numpy is not available ». Sans interface :
+
+    jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=-1 voix_oolel_complete_brev.ipynb
+
+La reprise saute les audios déjà dans `sortie_voix/tts_cache_oolel/`.
 
 Durée : environ 2 h 30 à 3 h 30 (869 audios × 3 essais, Whisper écoute).
 À la fin, télécharge `sortie_voix/tts_cache_oolel.zip` (panneau de gauche de
@@ -233,6 +273,43 @@ def _remplace_token(src: str) -> str:
     return src[:i] + TOKEN_NOUVEAU + src[k:]
 
 
+# Le dépôt privé du Whisper finetuné, cité dans les commentaires du notebook
+# Brev pour expliquer le repli du préprocesseur (le même nom vit dans la
+# cellule Whisper des notebooks Colab, constante WHISPER_PRINCIPAL).
+WHISPER_PRIVE = "TIJAANI/whisper-small-wolof-dakar-essai3"
+
+
+def _ajoute_fallback_processeur(src: str) -> str:
+    """Encadre la ligne du préprocesseur par un repli sur Whisper-small public.
+
+    TIJAANI/whisper-small-wolof-dakar-essai3 ne contient pas de
+    preprocessor_config.json (le script d'entraînement n'a pas sauvegardé le
+    tokenizer) : le chargement du préprocesseur plante, alors qu'il ne manque
+    que ça au dépôt. Le repli lit le préprocesseur du Whisper-small d'origine,
+    public ; les poids, eux, restent ceux du dépôt demandé. Si le modèle
+    lui-même refuse de charger, le try/except de la boucle passe au dépôt
+    suivant, comme avant.
+    """
+    ancien = (
+        "            processeur = WhisperProcessor.from_pretrained(depot, token=jeton)\n"
+    )
+    if ancien not in src:
+        raise ValueError("cellule Whisper : ligne du processeur introuvable")
+    nouveau = """\
+            try:
+                processeur = WhisperProcessor.from_pretrained(depot, token=jeton)
+            except Exception:
+                # Sans preprocessor_config.json dans le dépôt (c'est le cas de
+                # {prive}), on lit celui du Whisper-small d'origine, public.
+                # Les poids restent ceux du dépôt demandé, seule la recette de
+                # spectrogramme vient d'ailleurs — elle est la même.
+                processeur = WhisperProcessor.from_pretrained(
+                    "openai/whisper-small", token=jeton
+                )
+""".replace("{prive}", WHISPER_PRIVE)
+    return src.replace(ancien, nouveau)
+
+
 def _adapter(nb: dict, intro: str, dossier: str, fin: str) -> dict:
     # 1) intro markdown : mode d'emploi Brev
     cells = nb["cells"]
@@ -243,17 +320,26 @@ def _adapter(nb: dict, intro: str, dossier: str, fin: str) -> dict:
     else:
         raise ValueError("notebook : cellule markdown d'intro introuvable")
 
-    # 2) pip : %pip, sans os.kill ; on garde la liste de paquets telle quelle
+    # 2) pip : Brev démarre sans pip dans le noyau — ensurepip d'abord, puis
+    #    pip du noyau pour la pile torch/numpy ET la liste des versions Colab.
     i_pip = _cel(cells, "!pip -q install", "pip")
     old_pip = _source(cells[i_pip])
     if "os.kill" not in old_pip:
         raise ValueError("pip : la version Colab devrait redémarrer (os.kill)")
-    paquets = old_pip.splitlines()[0][len(PIPS_PREFIXE):]
+    paquets = old_pip.splitlines()[0][len(PIPS_PREFIXE):].split()
+    deja = set(PIPS_BASE.split())
+    suite = [p for p in paquets if p not in deja]
     cells[i_pip]["source"] = (
-        "# Les paquets des versions Colab, à l'identique. %pip installe dans le\n"
-        "# noyau courant : pas de redémarrage lancé ici — si Jupyter en demande\n"
-        "# un malgré tout, voir la note juste en dessous.\n"
-        f"{PIPS_PREFIXE}{paquets}\n".replace("!pip", "%pip")
+        "# Brev : le Jupyter de base démarre sans pip, sans torch, sans numpy.\n"
+        "# ensurepip installe pip dans le noyau, sans option (il refuse les\n"
+        "# options de pip) ; le pip du noyau installe ensuite la pile\n"
+        "# torch/numpy + les paquets des versions Colab, à l'identique.\n"
+        "import sys\n"
+        "\n"
+        f"{ENSUREPIP}\n"
+        f"!{{sys.executable}} -m pip install {PIPS_BASE}"
+        + (f" {' '.join(suite)}" if suite else "")
+        + "\n"
     ).splitlines(keepends=True)
     cells.insert(i_pip + 1, _md(NOTE_PIP))
 
@@ -261,9 +347,10 @@ def _adapter(nb: dict, intro: str, dossier: str, fin: str) -> dict:
     i_dos = _cel(cells, "from google.colab import drive", "dossier")
     cells[i_dos]["source"] = dossier.splitlines(keepends=True)
 
-    # 4) la cellule Whisper : jeton caché + message GPU Brev
+    # 4) la cellule Whisper : jeton en variable d'environnement (plus de
+    #    saisie cachée), repli du préprocesseur, message GPU Brev
     i_tok = _cel(cells, "from google.colab import userdata", "jeton")
-    nouveau = _remplace_token(_source(cells[i_tok]))
+    nouveau = _ajoute_fallback_processeur(_remplace_token(_source(cells[i_tok])))
     if GPU_ANCIEN not in nouveau:
         raise ValueError("cellule Whisper : assert GPU T4 introuvable")
     nouveau = nouveau.replace(GPU_ANCIEN, GPU_NOUVEAU)
