@@ -57,11 +57,13 @@ Astuce PowerShell : un script Python passé en « here-string » perd les accent
      « Département de X » compte seulement pour Guédiawaye, Pikine, Rufisque.
 4. **Réponse** (`app.py`)
    - Cartes HTML (montée, descente, arrêts du trajet, quartier si sûr, lien AFTU).
-   - Voix : Oolel-Voices (voix Adia, CONCREE), **637 réponses pré-générées** dans `data/tts_cache/`.
+   - Voix : Oolel-Voices, voix native (soynade-research), **869 réponses pré-générées**
+     dans `data/tts_cache_oolel/` ; en dernier recours, les ajouts Adia puis le
+     plan des 637 dans `data/tts_cache/`.
      À l'oral on dit « numero » (pas « ligne ») et « Tata » / « Dem Dikk ».
      Pour régénérer : `scripts/phrases_voix.json` + `scripts/prononciations_wolof.json`
      + `notebooks/voix_oolel_colab.ipynb` (Colab GPU, 3 prises, meilleure choisie avec Whisper).
-     Installation : `scripts/installer_voix_adia.py tts_cache_oolel.zip`. Aucun modèle TTS n'est chargé au runtime :
+     Installation : `scripts/installer_voix_oolel.py tts_cache_oolel.zip`. Aucun modèle TTS n'est chargé au runtime :
      un segment absent est sauté, jamais synthétisé en direct.
 
 ## Données

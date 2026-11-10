@@ -1895,8 +1895,9 @@ def test_voix() -> tuple[int, int]:
             partiel,
         )
 
-    # La voix ne doit jamais retomber sur une synthèse directe : le cache Adia
-    # est la seule source, même incomplet.
+    # La voix ne doit jamais retomber sur une synthèse directe : les caches
+    # audio (oolel d'abord, puis ajouts, puis le plan des 637) sont les seules
+    # sources, même incomplets.
     import tts.speak as speak
 
     interdits = ("load_tts", "synthetiser", "Tts", "MODEL_TTS", "VOCODEUR")

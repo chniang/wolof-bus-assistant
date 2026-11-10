@@ -184,8 +184,9 @@ if not MODE_TEST:
 # Le whisper CPU est notre fine-tuning sur la collecte dakaroise ; Kiriku sert
 # sur GPU, avec repli sur le même whisper quand ZeroGPU refuse la carte.
 LIBELLE_ASR = "Whisper wolof fine-tuné à Dakar + Kiriku-Wolof-ASR"
-# Voix des réponses pré-générées (voir scripts/phrases_voix.json).
-LIBELLE_VOIX = "Oolel-Voices (voix Adia, CONCREE)"
+# Voix des réponses pré-générées : la voix native 8_1_c du Space
+# Oolel-Voices-Demo, dans data/tts_cache_oolel/ (869 audios).
+LIBELLE_VOIX = "Oolel-Voices, voix native (soynade-research)"
 
 # --------------------------------------------------------------------------- #
 # Clients et objets reconstruits une fois

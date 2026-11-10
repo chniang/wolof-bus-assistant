@@ -62,8 +62,9 @@ CENTAINES = {
 # Au-delà, on n'a pas de formulation : on lit les chiffres tels quels.
 MAX_ECRIT = 999
 
-# Audios pré-générés avec Oolel-Voices (voix Adia, CONCREE), versionnés pour que
-# la démo n'ait rien à télécharger ni à synthétiser.
+# Audios pré-générés avec Oolel-Voices (voix Adia, CONCREE — l'ancienne voix,
+# recours final), versionnés pour que la démo n'ait rien à télécharger ni à
+# synthétiser.
 CACHE_DIR = Path(__file__).resolve().parents[2] / "data" / "tts_cache"
 # `scripts/installer_voix_adia.py` n'écrit ce marqueur que si les 637 fichiers
 # du plan sont là ; il documente l'état du cache, sans déclencher de synthèse.
