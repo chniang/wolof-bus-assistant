@@ -18,11 +18,16 @@ Le petit notebook voix_ajouts_conversation_brev.ipynb produit un zip séparé
 réponses de l'app, jamais les fichiers d'essai, et l'archive complète n'est pas
 requise : les deux zips se posent l'un après l'autre dans le même cache.
 
+Avec --tata, on ne remplace que les 72 phrases de ligne Tata (tata_aftu_*.wav),
+régénérées avec « Tattaa », l'écriture choisie par un locuteur natif. Le CSV
+de rapport du zip est ignoré, et aucun autre audio du cache n'est touché.
+
 Il ne lance rien tout seul : c'est un outil qu'on exécute à la main.
 
     python scripts/installer_voix_oolel.py tts_cache_oolel.zip              # Colab
     python scripts/installer_voix_oolel.py --zip sortie_voix/tts_cache_oolel.zip
     python scripts/installer_voix_oolel.py --conversation sortie_voix/ajouts_conversation.zip
+    python scripts/installer_voix_oolel.py --tata tata_tattaa.zip
 """
 
 from __future__ import annotations
@@ -104,6 +109,40 @@ def installer_conversation(archive: Path, cache: Path = CACHE) -> int:
     return 0
 
 
+def fichiers_tata() -> list[str]:
+    """Les 72 phrases de ligne Tata, d'après voix_complete.csv."""
+    return [nom for nom in fichiers_attendus() if nom.startswith("tata_aftu_")]
+
+
+def installer_tata(archive: Path, attendus: list[str], cache: Path = CACHE) -> int:
+    """Remplace les phrases de ligne Tata ; 0 si tout va bien, 1 sinon.
+
+    Tout ou rien : s'il manque une seule ligne dans le zip, on ne touche à rien,
+    sinon la voix dirait « Tattaa » pour une ligne et « Tataa » pour la voisine.
+    Seuls les noms tata_aftu_* attendus sont recopiés ; le reste du zip est ignoré.
+    """
+    if not attendus or not all(nom.startswith("tata_aftu_") for nom in attendus):
+        print("liste Tata invalide : seuls les tata_aftu_*.wav sont remplaçables", file=sys.stderr)
+        return 1
+    with zipfile.ZipFile(archive) as boite:
+        par_nom = {Path(nom).name: nom for nom in boite.namelist() if nom.lower().endswith(".wav")}
+        manquants = [nom for nom in attendus if nom not in par_nom]
+        if manquants:
+            print(f"{len(manquants)} fichier(s) manquant(s) dans l'archive, ex. : {manquants[:5]}", file=sys.stderr)
+            return 1
+
+        cache.mkdir(parents=True, exist_ok=True)
+        for nom in attendus:
+            with boite.open(par_nom[nom]) as source, open(cache / nom, "wb") as cible:
+                shutil.copyfileobj(source, cible)
+
+    ignores = sorted(nom for nom in boite.namelist() if Path(nom).name not in attendus)
+    if ignores:
+        print(f"ignoré(s) : {', '.join(ignores)}")
+    print(f"{len(attendus)} lignes Tata installées dans {cache} (« Tattaa »)")
+    return 0
+
+
 def main() -> int:
     parseur = argparse.ArgumentParser(
         description="Installe la voix native d'Oolel (8_1_c.wav) dans data/tts_cache_oolel/."
@@ -126,7 +165,20 @@ def main() -> int:
         default=None,
         help="petit zip des réponses de conversation (--conversation sortie_voix/ajouts_conversation.zip)",
     )
+    parseur.add_argument(
+        "--tata",
+        dest="tata",
+        default=None,
+        help="zip des 72 lignes Tata régénérées avec « Tattaa » (--tata tata_tattaa.zip)",
+    )
     args = parseur.parse_args()
+
+    if args.tata:
+        archive = Path(args.tata)
+        if not archive.is_file():
+            print(f"archive introuvable : {archive}", file=sys.stderr)
+            return 1
+        return installer_tata(archive, fichiers_tata())
 
     if args.conversation:
         archive = Path(args.conversation)

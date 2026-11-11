@@ -1282,6 +1282,38 @@ def _pipeline(
     ), trouve
 
 
+# Les dossiers où Gradio dépose l'audio reçu du navigateur. Seuls les
+# fichiers rangés là sont effacés : un chemin pris ailleurs (un audio de
+# data/demo_audio/ passé par un test) n'est jamais touché.
+def _dossiers_audio_recu() -> list[Path]:
+    dossiers = [Path(tempfile.gettempdir()) / "gradio"]
+    if os.getenv("GRADIO_TEMP_DIR"):
+        dossiers.append(Path(os.environ["GRADIO_TEMP_DIR"]))
+    return [dossier.resolve() for dossier in dossiers]
+
+
+def _effacer_audio_recu(audio: str | None) -> bool:
+    """Efface l'enregistrement de l'usager dès qu'il est en mémoire.
+
+    « Ta voix n'est pas enregistrée » : une fois l'audio décodé, la
+    transcription (et sa seconde chance) travaillent sur le tableau en
+    mémoire, le fichier ne sert plus. Vrai si un fichier a été effacé.
+    """
+    if not audio:
+        return False
+    try:
+        chemin = Path(audio).resolve()
+    except (OSError, ValueError):
+        return False
+    if not any(chemin.is_relative_to(dossier) for dossier in _dossiers_audio_recu()):
+        return False
+    try:
+        chemin.unlink(missing_ok=True)
+    except OSError:
+        return False
+    return True
+
+
 def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str = "") -> tuple:
     """Le pipeline complet, du micro ou du texte jusqu'à la réponse.
 
@@ -1297,8 +1329,10 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
         try:
             son = _decoder_audio(audio)
         except AudioRefuse as exc:
+            _effacer_audio_recu(audio)
             return ("", "", f"### 🎤 {_echapper(str(exc))}", None, "")
         except Exception as exc:
+            _effacer_audio_recu(audio)
             return (
                 "",
                 "",
@@ -1306,6 +1340,8 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
                 None,
                 "",
             )
+        # Décodé, l'audio est en mémoire : le fichier de l'usager disparaît.
+        _effacer_audio_recu(audio)
         if son is None or len(son) < SAMPLE_RATE * 0.3:
             # Moins de 0,3 s : clic involontaire sur le micro, rien à chercher.
             return vide
@@ -1342,6 +1378,12 @@ def _court(exc: Exception, longueur: int = 160) -> str:
     """Un message d'erreur court : les exceptions techniques font plusieurs lignes."""
     return f"{type(exc).__name__} : {exc}"[:longueur]
 
+
+# Affichée sous la saisie : ce qui part, et où.
+NOTE_VIE_PRIVEE = (
+    "Ta voix n'est pas enregistrée. Pour comprendre ton trajet, le texte peut "
+    "être envoyé à un service d'IA (NVIDIA) et les noms de lieux à OpenStreetMap."
+)
 
 MESSAGE_DEMANDE_VIDE = "Écris ton trajet ou choisis un trajet fréquent"
 
@@ -1702,7 +1744,10 @@ I18N_GUINDIMA = (
 
 
 def _construire():
-    with gr.Blocks(title="GuindiMa AI 🚌") as interface:
+    # delete_cache : en plus de l'effacement juste après la transcription,
+    # Gradio vide toutes les 10 min ses fichiers de plus de 10 min (filet de
+    # sécurité si un audio n'arrive jamais jusqu'à la transcription).
+    with gr.Blocks(title="GuindiMa AI 🚌", delete_cache=(600, 600)) as interface:
         gr.Markdown("# GuindiMa AI 🚌\n### Wax ma fi nga jëm, ma won la bus bi")
         gr.Markdown(
             "Dis-moi où tu vas, je te montre le bus. "
@@ -1747,6 +1792,12 @@ def _construire():
                 allow_custom_value=False,
                 elem_id="trajets_frequents",
             )
+
+        gr.Markdown(
+            "<div style='color:#6B7A72;font-size:12px;margin:2px 0 6px 0;'>"
+            f"{NOTE_VIE_PRIVEE}</div>",
+            elem_id="note_vie_privee",
+        )
 
         compagnie_in = gr.Radio(
             choices=[("Tous", ""), ("Tata", "Tata AFTU"), ("Dem Dikk", "Dakar Dem Dikk")],

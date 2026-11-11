@@ -650,6 +650,18 @@ def _ajoute_lieu(
     morceaux.append((audio_lieu, pause_lieu))
 
 
+def descente_dite(etape: dict) -> object:
+    """Le lieu que la voix nomme à la descente.
+
+    Arrêt à plus de 600 m du lieu demandé (``descend_a_vague``) : la voix dit
+    le lieu nommé par l'usager (« moo lay yóbbu ba Rufisque »), jamais l'arrêt
+    lointain. Sans WAV pour ce lieu, le morceau est tu, pas remplacé.
+    """
+    if etape.get("descend_a_vague"):
+        return etape.get("lieu_arrivee_dit") or ""
+    return etape.get("descend_a")
+
+
 def plan_correspondance(
     trajet: dict, cache_dir: Path | None = None
 ) -> list[tuple[Path, float]]:
@@ -663,7 +675,7 @@ def plan_correspondance(
     etape_1 = trajet["etape_1"]
     etape_2 = trajet["etape_2"]
     changement = trajet.get("changement") or etape_1.get("descend_a")
-    descente = etape_2.get("descend_a")
+    descente = descente_dite(etape_2)
 
     morceaux: list[tuple[Path, float]] = []
     _ajoute_segment(morceaux, dossier, nom_cache_match(etape_1), SILENCE_ENTRE)
@@ -752,9 +764,14 @@ def plan_trajet_2(
             morceaux.extend(_lieu_du_plan(dossier, NGA_WACC, changement))
             _ajoute_segment_plan(morceaux, dossier, LIAISON_CORRESPONDANCE)
         else:
-            morceaux.extend(
-                _lieu_du_plan(dossier, MOO_LAY_YOBBU_BA, etape.get("descend_a"))
-            )
+            descente = descente_dite(etape)
+            # Lieu dit sans WAV : on tait « moo lay yóbbu ba » et le lieu,
+            # plutôt que de rendre toute la réponse muette.
+            if etape.get("descend_a_vague") and not (
+                str(descente).strip() and chemin_lieu(dossier, descente).is_file()
+            ):
+                continue
+            morceaux.extend(_lieu_du_plan(dossier, MOO_LAY_YOBBU_BA, descente))
     return morceaux
 
 

@@ -1300,10 +1300,9 @@ def test_alias_lieux() -> tuple[int, int]:
 
     Les formes parlées (hann écrit « anne » ou « hane » par l'ASR, Teunguej en
     graphies phonétiques) rejoignent les arrêts qui existent dans les données.
-    « Hann Bel Air », lui, n'a pas d'arrêt dans les données (les seuls « Bel
-    Air » du réseau sont les « Rocade Fann Bel-Air », à Fann, plusieurs
-    kilomètres plus au sud) : aucune réécriture, mieux vaut ne rien répondre
-    que d'envoyer l'usager à Fann.
+    « Hann Bel Air » n'a pas d'arrêt à son nom : un usager natif le place à
+    côté de Hann Maristes, près de Colobane, donc même arrêt « Maristes »,
+    jamais les « Rocade Fann Bel-Air » de Fann.
     """
     from intent.extract_intent import extract_local
     from matching.lieux import score
@@ -1335,11 +1334,20 @@ def test_alias_lieux() -> tuple[int, int]:
     verifie("alias matcher : « Hann Maristes » vaut « Maristes »", score("Hann Maristes", "Maristes") == 1.0)
     verifie("alias matcher : « Teungedj » vaut « Rufisque »", score("Teungedj", "Rufisque") == 1.0)
 
-    bel_air = extract_local("Maa ngi hann bel air, dama bëgga dem")
+    for forme in (
+        "hane belair", "hann bel air", "anne bel air", "hann belair", "hane bel air",
+        "Hann Bel-Air",
+    ):
+        bel_air = extract_local(f"Maa ngi {forme}, bëgg naa dem Colobane")
+        verifie(
+            f"« {forme} » -> Maristes (à côté de Hann Maristes)",
+            bel_air.get("depart") == "Maristes" and bel_air.get("arrivee") == "Colobane",
+            bel_air,
+        )
+        verifie(f"alias matcher : « {forme} » vaut « Maristes »", score(forme, "Maristes") == 1.0)
     verifie(
-        "« hann bel air » : rien n'est inventé (l'arrêt n'existe pas)",
-        not bel_air.get("depart") and not bel_air.get("arrivee"),
-        bel_air,
+        "alias matcher : « Hann Bel Air » ne vaut jamais « Rocade Fann Bel Air »",
+        score("Hann Bel Air", "Rocade Fann Bel Air") == 0.0,
     )
 
     matcher = _matcher()
@@ -1679,6 +1687,254 @@ def test_arret_vague() -> tuple[int, int]:
         carte,
     )
     verifie("carte : montée sûre -> arrêt conseillé nommé", "arrêt conseillé : <b" in carte)
+    return echecs, total
+
+
+def test_unite_15() -> tuple[int, int]:
+    """« Unité 15 » des Parcelles est reconnu, mais seul, et au chiffre près.
+
+    L'arrêt existe (Tata 80, position « bonne ») ; les noms « Unité … » restaient
+    hors de LIEUX. On ne remet que celui-là, nom exact : « Unité 1 » et
+    « Unité 5 » ne doivent jamais tomber dessus par ressemblance.
+    """
+    from intent.extract_intent import extract_local
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | unité 15 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    for phrase in ("Maa ngi Unité 15, bëgg naa dem Liberté 5", "maa ngi unite 15 bëgg naa dem Liberté 5"):
+        lieux = extract_local(phrase)
+        verifie(
+            f"« {phrase} » -> départ Unité 15",
+            lieux.get("depart") == "Unité 15" and lieux.get("arrivee") == "Liberté 5",
+            lieux,
+        )
+    for numero in ("1", "5", "10", "16"):
+        lieux = extract_local(f"Maa ngi Unité {numero}, bëgg naa dem Médina")
+        verifie(
+            f"« Unité {numero} » ne devient jamais Unité 15",
+            lieux.get("depart") != "Unité 15" and lieux.get("arrivee") == "Médina",
+            lieux,
+        )
+    lieux = extract_local("Maa ngi Parcelles Unité 15, bëgg naa dem Colobane")
+    verifie(
+        "deux lieux avant « dem » : l'arrivée reste Colobane",
+        lieux.get("arrivee") == "Colobane",
+        lieux,
+    )
+    resultat = _matcher_hors_ligne().find_line("Unité 15", "Liberté 5")
+    verifie(
+        "Unité 15 -> Liberté 5 : un trajet, la Tata 80 part de l'arrêt Unité 15",
+        any(
+            c["etape_1"]["ligne"] == "Ligne 80" and c["etape_1"]["monte_a"] == "Unité 15"
+            for c in resultat.get("correspondances") or []
+        )
+        or any(l["monte_a"] == "Unité 15" for l in resultat.get("lignes") or []),
+        _detail(resultat),
+    )
+    return echecs, total
+
+
+def test_vague_voix_partage() -> tuple[int, int]:
+    """Arrêt lointain (> 600 m) : ni la voix ni WhatsApp ne le nomment.
+
+    WhatsApp écrit le lieu dit et « cherche l'arrêt de la ligne N le plus
+    proche ». La voix dit le lieu nommé par l'usager (« moo lay yóbbu ba
+    Rufisque ») avec les WAV déjà là ; sans WAV pour ce lieu, elle se tait sur
+    ce morceau, sans rien synthétiser.
+    """
+    import tempfile
+    import wave as _wave
+
+    from app.partage import texte_partage
+    import tts.speak as speak
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | vague voix/partage {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    ligne = {
+        "ligne": "Ligne 62", "compagnie": "Tata AFTU",
+        "monte_a": "UCAD", "descend_a": "Fass Rufisque",
+        "monte_a_vague": False, "descend_a_vague": True,
+    }
+    texte = texte_partage("UCAD", "Rufisque", {"lignes": [ligne]})
+    verifie(
+        "WhatsApp direct : lieu dit + conseil, jamais l'arrêt lointain",
+        "descends à Rufisque (cherche l'arrêt de la ligne 62 le plus proche)" in texte
+        and "Fass Rufisque" not in texte
+        and "monte à UCAD" in texte,
+        texte,
+    )
+    corr = {
+        "etape_1": {
+            "ligne": "Ligne 40", "compagnie": "Tata AFTU", "monte_a": "Keur Ngoor",
+            "descend_a": "Colobane", "monte_a_vague": True,
+        },
+        "etape_2": {
+            "ligne": "Ligne 62", "compagnie": "Tata AFTU", "monte_a": "Colobane",
+            "descend_a": "Fass Rufisque", "descend_a_vague": True,
+        },
+    }
+    texte = texte_partage("Maristes", "Rufisque", {"correspondances": [corr]})
+    verifie(
+        "WhatsApp changement : bouts vagues remplacés, le changement reste nommé",
+        "monte à Maristes (cherche l'arrêt de la ligne 40 le plus proche)" in texte
+        and "descends à Rufisque (cherche l'arrêt de la ligne 62 le plus proche)" in texte
+        and "Keur Ngoor" not in texte
+        and "Fass Rufisque" not in texte
+        and "Colobane" in texte,
+        texte,
+    )
+    ligne_sure = {**ligne, "descend_a_vague": False}
+    verifie(
+        "WhatsApp : arrêt proche toujours nommé",
+        "descends à Fass Rufisque." in texte_partage("UCAD", "Rufisque", {"lignes": [ligne_sure]}),
+    )
+
+    verifie(
+        "voix : descente vague -> lieu dit",
+        speak.descente_dite({"descend_a": "Fass Rufisque", "descend_a_vague": True,
+                             "lieu_arrivee_dit": "Rufisque"}) == "Rufisque",
+    )
+    verifie(
+        "voix : descente proche -> arrêt",
+        speak.descente_dite({"descend_a": "Fass Rufisque", "lieu_arrivee_dit": "Rufisque"})
+        == "Fass Rufisque",
+    )
+
+    # Un petit cache factice : le bus, les connecteurs, mais aucun WAV de lieu.
+    with tempfile.TemporaryDirectory() as dossier_tmp:
+        dossier = Path(dossier_tmp)
+        etape_1 = {**corr["etape_1"]}
+        etape_2 = {**corr["etape_2"], "lieu_arrivee_dit": "Rufisque"}
+        for nom in (
+            speak.nom_cache_match(etape_1), speak.nom_cache_match(etape_2),
+            speak.NGA_WACC, speak.LIAISON_CORRESPONDANCE, speak.MOO_LAY_YOBBU_BA,
+        ):
+            with _wave.open(str(dossier / nom), "wb") as wav:
+                wav.setnchannels(1)
+                wav.setsampwidth(2)
+                wav.setframerate(16000)
+                wav.writeframes(b"\x00\x00" * 160)
+        trajet_2 = {"etapes": [etape_1, etape_2], "changements": ["Colobane"]}
+        plan = speak.plan_trajet_2(trajet_2, dossier)
+        noms = [chemin.name for chemin, _ in plan]
+        verifie(
+            "voix 2 changements : lieu dit sans WAV -> « moo lay yóbbu ba » tu, jamais l'arrêt lointain",
+            speak.MOO_LAY_YOBBU_BA not in noms
+            and speak.nom_fichier_lieu("Fass Rufisque") not in noms,
+            noms,
+        )
+        plan_c = speak.plan_correspondance({"etape_1": etape_1, "etape_2": etape_2}, dossier)
+        noms_c = [chemin.name for chemin, _ in plan_c]
+        verifie(
+            "voix changement : jamais l'arrêt lointain",
+            speak.nom_fichier_lieu("Fass Rufisque") not in noms_c,
+            noms_c,
+        )
+        lieu_dit = speak.chemin_lieu(dossier, "Rufisque")
+        with _wave.open(str(dossier / lieu_dit.name), "wb") as wav:
+            wav.setnchannels(1)
+            wav.setsampwidth(2)
+            wav.setframerate(16000)
+            wav.writeframes(b"\x00\x00" * 160)
+        noms = [chemin.name for chemin, _ in speak.plan_trajet_2(trajet_2, dossier)]
+        verifie(
+            "voix : WAV du lieu dit présent -> « moo lay yóbbu ba Rufisque »",
+            noms[-2:] == [speak.MOO_LAY_YOBBU_BA, lieu_dit.name],
+            noms,
+        )
+
+    # Le vrai moteur porte le lieu dit sur la descente.
+    resultat = _matcher_hors_ligne().find_line("UCAD", "Rufisque")
+    etapes_fin = [l for l in resultat.get("lignes") or []] + [
+        c["etape_2"] for c in resultat.get("correspondances") or []
+    ]
+    verifie(
+        "moteur : chaque descente porte le lieu dit",
+        bool(etapes_fin) and all(e.get("lieu_arrivee_dit") == "Rufisque" for e in etapes_fin),
+        _detail(resultat),
+    )
+    return echecs, total
+
+
+def test_vie_privee() -> tuple[int, int]:
+    """L'audio de l'usager est effacé dès qu'il est décodé ; la note est affichée.
+
+    Seuls les fichiers du dossier temporaire de Gradio sont effacés : un audio
+    pris ailleurs (data/demo_audio/, data/collecte/) n'est jamais touché.
+    """
+    import os
+    import shutil
+    import tempfile
+    import wave as _wave
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_vie_privee")
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | vie privée {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    def petit_wav(chemin: Path) -> None:
+        chemin.parent.mkdir(parents=True, exist_ok=True)
+        with _wave.open(str(chemin), "wb") as wav:
+            wav.setnchannels(1)
+            wav.setsampwidth(2)
+            wav.setframerate(16000)
+            wav.writeframes(b"\x00\x00" * 800)  # 0,05 s : trop court, rien à chercher
+
+    dossier_gradio = Path(tempfile.gettempdir()) / "gradio" / "test_guindima_vie_privee"
+    recu = dossier_gradio / "micro.wav"
+    petit_wav(recu)
+    try:
+        app.trouver_le_bus(str(recu), "", "")
+        verifie("audio reçu par Gradio : effacé après décodage", not recu.exists())
+    finally:
+        shutil.rmtree(dossier_gradio, ignore_errors=True)
+
+    ailleurs = Path(tempfile.mkdtemp(prefix="guindima_hors_gradio_")) / "garde.wav"
+    petit_wav(ailleurs)
+    try:
+        app.trouver_le_bus(str(ailleurs), "", "")
+        verifie("audio hors du dossier Gradio : jamais effacé", ailleurs.exists())
+        verifie("effacement refusé hors Gradio", app._effacer_audio_recu(str(ailleurs)) is False)
+    finally:
+        shutil.rmtree(ailleurs.parent, ignore_errors=True)
+    verifie("rien à effacer sans audio", app._effacer_audio_recu(None) is False)
+
+    source = (RACINE / "app.py").read_text(encoding="utf-8")
+    verifie(
+        "note sous la saisie, mot pour mot",
+        app.NOTE_VIE_PRIVEE
+        == "Ta voix n'est pas enregistrée. Pour comprendre ton trajet, le texte peut "
+        "être envoyé à un service d'IA (NVIDIA) et les noms de lieux à OpenStreetMap."
+        and "NOTE_VIE_PRIVEE}" in source,
+    )
+    verifie("Gradio vide son cache (delete_cache)", "delete_cache=(600, 600)" in source)
     return echecs, total
 
 
@@ -2722,7 +2978,7 @@ def test_prononciations() -> tuple[int, int]:
     entrees = {entree["fichier"]: entree for entree in plan["phrases"]}
     lignes = [entree for entree in plan["phrases"] if entree["type"] == "ligne"]
     lignes_tata = [
-        entree for entree in lignes if "bus bu Tataa" in entree["phrase"]
+        entree for entree in lignes if "bus bu Tattaa" in entree["phrase"]
     ]
     verifie(
         "aucune ligne ne dit encore « bus bu Tata, »",
@@ -2743,9 +2999,11 @@ def test_prononciations() -> tuple[int, int]:
         ],
     )
     verifie(
-        "les 72 lignes Tata disent Tataa",
+        # « Tattaa » : l'écriture choisie par un locuteur natif à l'écoute
+        # (« Tataa » se lisait trop court).
+        "les 72 lignes Tata disent Tattaa",
         len(lignes_tata) == 72
-        and all("bus bu Tataa" in entree["phrase"] for entree in lignes_tata),
+        and all("bus bu Tattaa" in entree["phrase"] for entree in lignes_tata),
         [entree["fichier"] for entree in lignes_tata],
     )
 
@@ -2806,21 +3064,17 @@ def test_prononciations() -> tuple[int, int]:
     )
     import os as _os
 
+    # Jouable aujourd'hui : dans l'un des trois dossiers que lit l'app
+    # (tts_cache_oolel d'abord, puis les ajouts Adia et le plan des 637).
     def _voix_d_aujourdhui(fichier: str) -> bool:
-        return _os.path.isfile(RACINE / "data" / "tts_cache" / fichier) or _os.path.isfile(
-            RACINE / "data" / "tts_cache_ajouts" / fichier
+        return any(
+            _os.path.isfile(RACINE / "data" / dossier / fichier)
+            for dossier in ("tts_cache_oolel", "tts_cache_ajouts", "tts_cache")
         )
 
-    # Les 4 réponses de conversation validées après la série Adia : leur texte
-    # est dans la liste, mais elles partent du petit notebook Brev
-    # (voix_ajouts_conversation_brev.ipynb), pas encore tourné — donc pas encore
-    # jouables. Dès qu'elles sont installées, cette liste redevient vide.
-    EN_ATTENTE_CONVERSATION = {
-        "conversation_ci_lo_nekk.wav",
-        "conversation_liggeey.wav",
-        "conversation_dekk.wav",
-        "conversation_wolof.wav",
-    }
+    # Les 4 réponses de conversation du petit notebook Brev sont installées
+    # (installer_voix_oolel.py --conversation) : plus rien n'est en attente.
+    EN_ATTENTE_CONVERSATION: set[str] = set()
     manquants_d_aujourdhui = [
         f for f in fichiers_complete if not _voix_d_aujourdhui(f)
     ]
@@ -2834,8 +3088,7 @@ def test_prononciations() -> tuple[int, int]:
     # 873 de la liste complète + les phrases fixes du module de voix
     # (aucune_ligne, walla, …) — doit exister dans data/tts_cache_oolel/.
     # Les rares manquants, s'il y en a un jour, se listent ICI, nom par nom :
-    # jamais devinés, jamais générés à la volée. Aujourd'hui : uniquement les
-    # 4 réponses de conversation en attente du zip de Brev.
+    # jamais devinés, jamais générés à la volée. Aujourd'hui : aucun.
     import tts.speak as speak
 
     fixe_a_jouer = sorted(
@@ -3354,6 +3607,45 @@ def test_prononciations() -> tuple[int, int]:
             "installer --conversation : une réponse manquante est refusée (4 attendues)",
             refus_conv == 1 and "manquant(s)" in refle_manque.getvalue(),
             (refus_conv, refle_manque.getvalue()[:120]),
+        )
+
+        # Le zip « tata_tattaa » : les lignes Tata seules sont remplacées, le
+        # CSV de rapport est ignoré, et rien n'est posé s'il en manque une.
+        tata = ("tata_aftu_1.wav", "tata_aftu_2.wav")
+        for nom in tata:
+            with _wave.open(str(sons_conv / nom), "wb") as wav:
+                wav.setnchannels(1)
+                wav.setsampwidth(2)
+                wav.setframerate(16000)
+                wav.writeframes(b"\x00\x00" * 160)
+        archive_tata = tmp_installer / "tata_tattaa.zip"
+        with _zipfile.ZipFile(archive_tata, "w") as boite:
+            for nom in tata + ("conversation_dekk.wav",):
+                boite.write(sons_conv / nom, arcname=nom)
+            boite.writestr("rapport_tata_final.csv", "fichier,score\n")
+        cache_tata = tmp_installer / "cache_tata"
+        with contextlib.redirect_stdout(io.StringIO()):
+            pose_tata = installeur.installer_tata(archive_tata, list(tata), cache=cache_tata)
+        verifie(
+            "installer --tata : seules les lignes Tata posées, CSV et autres WAV ignorés",
+            pose_tata == 0
+            and sorted(p.name for p in cache_tata.iterdir()) == sorted(tata),
+            (pose_tata, sorted(p.name for p in cache_tata.iterdir())),
+        )
+        with contextlib.redirect_stderr(io.StringIO()):
+            refus_tata = installeur.installer_tata(
+                archive_tata, ["tata_aftu_1.wav", "tata_aftu_3.wav"], cache=tmp_installer / "vide"
+            )
+            refus_autre = installeur.installer_tata(
+                archive_tata, ["conversation_dekk.wav"], cache=tmp_installer / "vide"
+            )
+        verifie(
+            "installer --tata : ligne manquante ou nom non Tata refusés, rien posé",
+            refus_tata == 1 and refus_autre == 1 and not (tmp_installer / "vide").exists(),
+        )
+        verifie(
+            "installer --tata : la liste réelle compte les 72 lignes Tata",
+            len(installeur.fichiers_tata()) == 72,
         )
 
     return echecs, total
@@ -4534,6 +4826,9 @@ if __name__ == "__main__":
         echecs_etudiants, total_etudiants = test_trajets_etudiants()
         echecs_proches, total_proches = test_noms_proches()
         echecs_vague, total_vague = test_arret_vague()
+        echecs_unite, total_unite = test_unite_15()
+        echecs_vp, total_vp = test_vague_voix_partage()
+        echecs_prive, total_prive = test_vie_privee()
         echecs_prononciations, total_prononciations = test_prononciations()
         echecs_brev, total_brev = test_notebooks_brev()
         echecs_verification, total_verification = test_verification_voix()
@@ -4557,6 +4852,9 @@ if __name__ == "__main__":
             + echecs_etudiants
             + echecs_proches
             + echecs_vague
+            + echecs_unite
+            + echecs_vp
+            + echecs_prive
             + echecs_prononciations
             + echecs_brev
             + echecs_verification
@@ -4581,6 +4879,9 @@ if __name__ == "__main__":
             + total_etudiants
             + total_proches
             + total_vague
+            + total_unite
+            + total_vp
+            + total_prive
             + total_prononciations
             + total_brev
             + total_verification

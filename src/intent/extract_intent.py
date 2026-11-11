@@ -394,11 +394,12 @@ REPLACEMENTS_PHRASE = (
     # l'extraction ; les mêmes noms vivent dans ALIAS de matching/lieux.py,
     # pour le chemin LLM. « Hann Maristes » n'existe pas tel quel dans le
     # réseau : l'arrêt s'appelle « Maristes » (lignes 37/40/75). Teunguej est
-    # le quartier des gares de Rufisque. « Hann Bel Air », lui, n'a pas d'arrêt
-    # dans les données (les seuls « Bel Air » du réseau sont les « Rocade Fann
-    # Bel-Air », à Fann, plusieurs kilomètres plus au sud) : aucune réécriture,
-    # mieux vaut ne rien répondre que d'envoyer l'usager à Fann.
+    # le quartier des gares de Rufisque. « Hann Bel Air » n'a pas d'arrêt à
+    # son nom, mais un usager natif le place juste à côté de Hann Maristes,
+    # près de Colobane : même arrêt « Maristes ». Jamais « Rocade Fann Bel-Air »,
+    # qui est à Fann, plusieurs kilomètres plus au sud.
     (r"\b(?:hann|hane|anne)\s+maristes?\b", " maristes "),
+    (r"\b(?:hann|hane|anne)\s+bel\s*-?\s*air\b", " maristes "),
     (r"\b(?:teungueth|teungedj|tengedj|tengeej)\b", " rufisque "),
     # L'université comme les étudiants la disent, et telle que l'ASR l'entend :
     # « la fac », « yuniversite » (vu dans la collecte) → « UCAD », le nom que
@@ -437,6 +438,10 @@ LIEUX_SUPPLEMENTAIRES = (
     # Alias sûrs (nom d'arrêt connu).
     "Université", "Sam", "Dalale Diame", "Dalal Diam", "Yoff Tonghor",
     "Wakhinane Nimzatt", "HLM Grand Médine",
+    # Les noms « Unité … » sont écartés de LIEUX (« Unités de voisinage : 10 »
+    # n'est pas un lieu qu'on dit). « Unité 15 » des Parcelles est un vrai arrêt
+    # (Tata 80, position « bonne ») : on le remet, lui seul, nom exact.
+    "Unité 15",
     # Lieux incertains, situés par leur position.
     "Mbao", "Yarakh", "Point E", "Cité Soprim", "Soprim", "Cité Keur Gorgui",
 )
@@ -695,7 +700,12 @@ def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
                 continue
             if len(gramme) < LONGUEUR_MIN and not exact:
                 continue
+            numeros = re.findall(r"\d+", gramme)
             for lieu_normalise, lieu_exact in _CIBLES:
+                # Un numéro se compare exactement, jamais par ressemblance :
+                # « unite 1 » et « unite 5 » tombaient sur « Unité 15 ».
+                if re.findall(r"\d+", lieu_normalise) != numeros:
+                    continue
                 score = _score(gramme, lieu_normalise)
                 if score >= SEUIL_FUZZY:
                     candidats.append((score, debut, debut + taille, lieu_exact))
@@ -736,6 +746,23 @@ def _depart_marque(mots: list[str], trouves: list[tuple[int, int, str]]) -> str 
     return None
 
 
+def _arrivee_apres_dem(
+    mots: list[str], trouves: list[tuple[int, int, str]], depart: str
+) -> str:
+    """L'arrivée : le premier lieu dit après « dem », sinon le premier autre lieu.
+
+    « Maa ngi Parcelles Unité 15, bëgg naa dem Colobane » donnait « Unité 15 »
+    comme arrivée (le lieu suivant dans la phrase) au lieu de Colobane.
+    """
+    autres = [(debut, lieu) for debut, _, lieu in trouves if lieu != depart]
+    if "dem" in mots:
+        position_dem = mots.index("dem")
+        apres = [lieu for debut, lieu in autres if debut > position_dem]
+        if apres:
+            return apres[0]
+    return autres[0][1]
+
+
 def extract_local(phrase: str) -> dict:
     """Extrait départ et arrivée sans LLM, par correspondance floue sur le CSV.
 
@@ -760,7 +787,7 @@ def extract_local(phrase: str) -> dict:
     if len(trouves) >= 2:
         depart = _depart_marque(mots, trouves)
         if depart:
-            arrivee = next(lieu for _, _, lieu in trouves if lieu != depart)
+            arrivee = _arrivee_apres_dem(mots, trouves, depart)
             return {
                 "depart": depart,
                 "arrivee": arrivee,
@@ -780,7 +807,7 @@ def extract_local(phrase: str) -> dict:
             None,
         )
         if depart_explicite:
-            arrivee = next(lieu for _, _, lieu in trouves if lieu != depart_explicite)
+            arrivee = _arrivee_apres_dem(mots, trouves, depart_explicite)
             return {
                 "depart": depart_explicite,
                 "arrivee": arrivee,

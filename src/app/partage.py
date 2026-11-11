@@ -13,15 +13,28 @@ from urllib.parse import quote
 LIEN_APP = "https://huggingface.co/spaces/TIJAANI/guindima-ai"
 
 
-def _phrase_bus(match: dict) -> str:
+def _bout(match: dict, cle: str, lieu_dit: str) -> str:
+    """L'arrêt à nommer, ou le lieu dit avec un conseil si l'arrêt est loin.
+
+    Un arrêt à plus de 600 m du lieu dit (``monte_a_vague``) n'est jamais
+    écrit : le contact irait l'attendre à l'autre bout du quartier.
+    """
+    if match.get(f"{cle}_vague") and lieu_dit:
+        numero = str(match.get("ligne", "")).replace("Ligne", "").strip()
+        return f"{lieu_dit} (cherche l'arrêt de la ligne {numero} le plus proche)"
+    return str(match.get(cle, ""))
+
+
+def _phrase_bus(match: dict, depart: str = "", arrivee: str = "") -> str:
     """« Ligne 7 (Dakar Dem Dikk) : monte à Ouakam, descends à Palais 2. »"""
     return (
         f"{match.get('ligne', '')} ({match.get('compagnie', '')}) : "
-        f"monte à {match.get('monte_a', '')}, descends à {match.get('descend_a', '')}."
+        f"monte à {_bout(match, 'monte_a', depart)}, "
+        f"descends à {_bout(match, 'descend_a', arrivee)}."
     )
 
 
-def _lignes_changement(etapes, marches=()) -> list[str]:
+def _lignes_changement(etapes, marches=(), depart: str = "", arrivee: str = "") -> list[str]:
     """Les bus numérotés, et ce qu'il faut faire entre deux bus.
 
     Même arrêt : un seul nom des deux côtés, celui où l'on descend, car les lignes
@@ -39,7 +52,11 @@ def _lignes_changement(etapes, marches=()) -> list[str]:
             )
         elif precedent is not None:
             etape = {**etape, "monte_a": precedent.get("descend_a", "")}
-        morceaux.append(f"{i}. {_phrase_bus(etape)}")
+        # Seuls les deux bouts portent un lieu dit : le changement est un
+        # vrai arrêt du réseau, toujours nommé.
+        morceaux.append(
+            f"{i}. {_phrase_bus(etape, depart if i == 1 else '', arrivee if i == len(etapes) else '')}"
+        )
         precedent = etape
     return morceaux
 
@@ -61,17 +78,20 @@ def texte_partage(
     trajets_2 = resultat.get("trajets_2") or []
     if trajet is not None:
         etapes = trajet.get("etapes") or (trajet["etape_1"], trajet["etape_2"])
-        morceaux = _lignes_changement(etapes, trajet.get("marches") or ())
+        morceaux = _lignes_changement(etapes, trajet.get("marches") or (), depart, arrivee)
     elif lignes:
-        morceaux = [_phrase_bus(ligne) for ligne in lignes]
+        morceaux = [_phrase_bus(ligne, depart, arrivee) for ligne in lignes]
     elif correspondances:
         etapes = correspondances[0]
         morceaux = _lignes_changement(
-            (etapes["etape_1"], etapes["etape_2"]), etapes.get("marches") or ()
+            (etapes["etape_1"], etapes["etape_2"]),
+            etapes.get("marches") or (),
+            depart,
+            arrivee,
         )
     elif trajets_2:
         morceaux = _lignes_changement(
-            trajets_2[0]["etapes"], trajets_2[0].get("marches") or ()
+            trajets_2[0]["etapes"], trajets_2[0].get("marches") or (), depart, arrivee
         )
     else:
         return ""

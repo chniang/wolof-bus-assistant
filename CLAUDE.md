@@ -58,12 +58,12 @@ Astuce PowerShell : un script Python passé en « here-string » perd les accent
 4. **Réponse** (`app.py`)
    - Cartes HTML (montée, descente, arrêts du trajet, quartier si sûr, lien AFTU).
    - Voix : Oolel-Voices, voix native (soynade-research), **873 réponses pré-générées**
-     dans `data/audit/voix_complete.csv` (liste de référence ; 869 WAV déjà installés dans
-     `data/tts_cache_oolel/`, les 4 nouvelles réponses de conversation partent du petit
-     notebook `notebooks/voix_ajouts_conversation_brev.ipynb`, installées avec
-     `installer_voix_oolel.py --conversation`) ; en dernier recours, les ajouts Adia puis le
-     plan des 637 dans `data/tts_cache/`.
-     À l'oral on dit « numero » (pas « ligne ») et « Tata » / « Dem Dikk ».
+     dans `data/audit/voix_complete.csv` (liste de référence ; les 873 WAV sont installés dans
+     `data/tts_cache_oolel/` ; `installer_voix_oolel.py --conversation` pose les réponses de
+     conversation, `--tata` remplace les 72 lignes Tata) ; en dernier recours, les ajouts
+     Adia puis le plan des 637 dans `data/tts_cache/`.
+     À l'oral on dit « numero » (pas « ligne ») et « Tattaa » (écriture choisie par un
+     locuteur natif) / « Dem Dikk ».
      Pour régénérer : `scripts/phrases_voix.json` + `scripts/prononciations_wolof.json`
      + `notebooks/voix_oolel_colab.ipynb` (Colab GPU, 3 prises, meilleure choisie avec Whisper).
      Installation : `scripts/installer_voix_oolel.py tts_cache_oolel.zip`. Aucun modèle TTS n'est chargé au runtime :

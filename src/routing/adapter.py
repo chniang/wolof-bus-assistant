@@ -568,6 +568,12 @@ def chercher_v2(
             trajet["etapes"][-1]["descend_a_vague"] = _vague(
                 arr, trajet["etapes"][-1]["descend_a_reseau"]
             )
+    # La voix lit le lieu de descente : pour un arrêt vague, elle dira le lieu
+    # que l'usager a nommé, jamais l'arrêt lointain.
+    for etape in list(lignes) + [
+        c["etape_2"] for c in correspondances
+    ] + [t["etapes"][-1] for t in trajets_2 if t["etapes"]]:
+        etape["lieu_arrivee_dit"] = arrivee
 
     resultat.update(
         {
