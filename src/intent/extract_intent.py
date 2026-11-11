@@ -442,6 +442,9 @@ LIEUX_SUPPLEMENTAIRES = (
     # n'est pas un lieu qu'on dit). « Unité 15 » des Parcelles est un vrai arrêt
     # (Tata 80, position « bonne ») : on le remet, lui seul, nom exact.
     "Unité 15",
+    # Quartier de arrets_geo.csv (Giratoire Liberté VI, Hamo VI) : sans lui,
+    # « Liberté 6 Extension » perdait « Extension » et tombait sur Liberté 6.
+    "Liberté 6 Extension",
     # Lieux incertains, situés par leur position.
     "Mbao", "Yarakh", "Point E", "Cité Soprim", "Soprim", "Cité Keur Gorgui",
 )
@@ -722,7 +725,35 @@ def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
         retenus.append((debut, fin, lieu_exact))
 
     retenus.sort(key=lambda r: r[0])
-    return retenus
+    return _le_precis_gagne(retenus)
+
+
+# Quartiers et communes qui en contiennent d'autres. Dit juste avant un lieu
+# plus précis (« Parcelles Unité 15 »), le grand nom ne fait que situer le petit.
+ZONES_LARGES = {
+    "parcelles", "parcelles assainies", "grand yoff", "grand-yoff", "pikine",
+    "guediawaye", "keur massar", "rufisque", "medina", "ouakam", "yoff", "liberte",
+}
+
+
+def _le_precis_gagne(trouves: list[tuple[int, int, str]]) -> list[tuple[int, int, str]]:
+    """« Parcelles Unité 15 » : le lieu précis l'emporte sur le quartier qui le contient.
+
+    Test en ligne : « Maa ngi Parcelles Unité 15, bëgg naa dem Colobane »
+    gardait « Parcelles » (premier lieu après « maa ngi ») et la carte n'avait
+    plus d'arrêt de montée. Quand un grand nom est immédiatement suivi d'un
+    autre lieu, on garde le second, sur toute la longueur des deux : le
+    marqueur « maa ngi » reste ainsi juste devant lui.
+    """
+    resultat: list[tuple[int, int, str]] = []
+    for debut, fin, lieu in trouves:
+        if resultat:
+            p_debut, p_fin, p_lieu = resultat[-1]
+            if p_fin == debut and _sans_accents(p_lieu).lower() in ZONES_LARGES:
+                resultat[-1] = (p_debut, fin, lieu)
+                continue
+        resultat.append((debut, fin, lieu))
+    return resultat
 
 
 # « maa ngi Ouakam » / « man gui Ouakam » (je suis à) et « Ouakam laa nekk » (c'est à

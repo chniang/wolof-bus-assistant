@@ -1109,7 +1109,8 @@ def test_conversation() -> tuple[int, int]:
         "salutation": "Maalekum salaam ! Fan nga bëgga dem ?",
         "ca_va": "Maa ngi fi rekk, jërëjëf. Yaw nag ? Fan nga bëgga dem ?",
         "ci_lo_nekk": "Maa ngi ci jàmm, alxamdulilaay. Yaw nag ?",
-        "liggeey": "Sama liggéey mooy won nit ñi biis bi ñuy jël ci Ndakaaru.",
+        # « bus » à l'écran ; la voix dit « biis » par le lexique (même audio).
+        "liggeey": "Sama liggéey mooy won nit ñi bus bi ñuy jël ci Ndakaaru.",
         "role": "Maa ngi tudd GuindiMa. Damay won nit ñi bus bi ñuy jël ci Ndakaaru.",
         "dekk": "Ci Ndakaaru laa dëkk, ci biir sa telefon.",
         "wolof": "Waaw, dégg naa wolof. Wax ma fan nga bëgga dem.",
@@ -2158,6 +2159,114 @@ def test_yoff_tata_2() -> tuple[int, int]:
     resultat = matcher.find_line("Sandaga", "Pikine")
     verifie("Sandaga -> Pikine : Petersen (Tata 55/56) toujours proposé",
             {"Ligne 55", "Ligne 56"} & {t["ligne"] for t in resultat["lignes"]}, _detail(resultat))
+    return echecs, total
+
+
+def test_terrain_en_ligne() -> tuple[int, int]:
+    """Retours du test en ligne : titres lisibles, lieu précis, options trop lentes, « bus »."""
+    import csv
+
+    from app.cartes import TITRE_FOND, TITRE_TEXTE, titre_autre_possibilite, titre_section
+    from intent.conversation import INTENTIONS
+    from intent.extract_intent import extract_local
+    from tts.lexique_prononciation import appliquer
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | terrain {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    # 1. Titres : vert foncé sur fond bleu nuit (thème sombre) était illisible.
+    # Le titre porte son propre fond clair : contraste WCAG >= 7 dans les deux thèmes.
+    def luminance(hexa: str) -> float:
+        canaux = [int(hexa[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+        lin = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in canaux]
+        return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+
+    claire, foncee = sorted((luminance(TITRE_FOND), luminance(TITRE_TEXTE)), reverse=True)
+    contraste = (claire + 0.05) / (foncee + 0.05)
+    verifie("titres : contraste texte/fond >= 7", contraste >= 7, round(contraste, 2))
+    for html in (titre_section("Pas de bus direct : un changement suffit"), titre_autre_possibilite(2)):
+        verifie("titre avec son propre fond clair", f"background:{TITRE_FOND}" in html, html)
+
+    # 2. Le lieu précis l'emporte sur le quartier qui le contient.
+    for phrase, depart, arrivee in (
+        ("Maa ngi Parcelles Unité 15, bëgg naa dem Colobane", "Unité 15", "Colobane"),
+        ("Parcelles Unité 15 laa nekk, dem Colobane", "Unité 15", "Colobane"),
+        ("Maa ngi Colobane, bëgg naa dem Parcelles Unité 15", "Colobane", "Unité 15"),
+        # Unité 26 n'est dans aucun CSV : on garde Parcelles (vrai, mais large),
+        # jamais une autre unité devinée par ressemblance.
+        ("Maa ngi Parcelles Unité 26, bëgg naa dem Colobane", "Parcelles", "Colobane"),
+        ("Maa ngi HLM Grand Yoff, bëgg naa dem Colobane", "HLM Grand Yoff", "Colobane"),
+        ("Maa ngi Liberté 6 Extension, bëgg naa dem Colobane", "Liberté 6 Extension", "Colobane"),
+        # Deux lieux séparés par « dem » ne fusionnent jamais.
+        ("Maa ngi Parcelles, bëgg naa dem Colobane", "Parcelles", "Colobane"),
+    ):
+        r = extract_local(phrase)
+        verifie(f"{phrase!r} -> {depart} / {arrivee}",
+                (r["depart"], r["arrivee"]) == (depart, arrivee), r)
+    matcher = _matcher_hors_ligne()
+    r = matcher.find_line("Unité 15", "Colobane")
+    montees = [t["monte_a_reseau"] for t in r.get("lignes") or []] + [
+        c["etape_1"]["monte_a_reseau"] for c in r.get("correspondances") or []
+    ]
+    verifie("Unité 15 -> Colobane : un arrêt de montée", bool(montees) and all(montees), _detail(r))
+    r = matcher.find_line("Liberté 6 Extension", "Colobane")
+    verifie("Liberté 6 Extension -> Colobane : un trajet", bool(r.get("lignes") or r.get("correspondances")), _detail(r))
+
+    # 3. Une option 1,8 fois plus longue ET 30 min de plus que la meilleure disparaît.
+    def options(resultat: dict) -> list[tuple[str, str, int]]:
+        sortie = [(t["compagnie"], t["ligne"], t["minutes"]) for t in resultat.get("lignes") or []]
+        sortie += [("corr", c["etape_1"]["ligne"] + "+" + c["etape_2"]["ligne"], c["minutes"])
+                   for c in resultat.get("correspondances") or []]
+        sortie += [("2 chg", "", t["minutes"]) for t in resultat.get("trajets_2") or []]
+        return sortie
+
+    tous = options(matcher.find_line("Yoff", "Sandaga"))
+    verifie("Yoff -> Sandaga (Tous) : plus de Tata 3", ("Tata AFTU", "Ligne 3") not in {o[:2] for o in tous}, tous)
+    verifie("Yoff -> Sandaga (Tous) : DDD 8 et Tata 4 restent",
+            {("Dakar Dem Dikk", "Ligne 8"), ("Tata AFTU", "Ligne 4")} <= {o[:2] for o in tous}, tous)
+    for dep, arr, filtre in (
+        ("Yoff", "Sandaga", None), ("Yoff", "Sandaga", {"Tata AFTU"}),
+        ("Maristes", "Rufisque", None), ("Almadies", "Malika", None),
+        ("Parcelles Assainies", "Petersen", None), ("Université", "Rufisque", {"Dakar Dem Dikk"}),
+    ):
+        opts = options(matcher.find_line(dep, arr, filtre) if filtre else matcher.find_line(dep, arr))
+        if not opts:
+            continue
+        meilleure = min(o[2] for o in opts)
+        lentes = [o for o in opts if o[2] > 1.8 * meilleure and o[2] - meilleure > 30]
+        verifie(f"{dep} -> {arr} {sorted(filtre or [])} : aucune option trop lente", not lentes, opts)
+    # Sous filtre, la seule option de la compagnie reste, même lente.
+    from routing.adapter import _sans_les_trop_lents
+    seule = [{"compagnie": "Tata AFTU", "ligne": "Ligne 3", "minutes": 88}]
+    verifie("option seule : jamais retirée", _sans_les_trop_lents(seule, [], [])[0] == seule)
+    deux = [{"minutes": 40}, {"minutes": 88}, {"minutes": 69}]
+    verifie("88 min retirée (> 1,8 x 40 et +48), 69 min gardée (+29)",
+            [t["minutes"] for t in _sans_les_trop_lents(deux, [], [])[0]] == [40, 69])
+
+    # 4. À l'écran toujours « bus » ; la voix dit « biis » par le lexique, l'audio ne change pas.
+    sources = [RACINE / "app.py", *sorted((RACINE / "src" / "app").glob("*.py")),
+               RACINE / "src" / "intent" / "conversation.py", RACINE / "src" / "tts" / "speak.py"]
+    restes = [f"{s.name}:{n}" for s in sources
+              for n, ligne in enumerate(s.read_text(encoding="utf-8").splitlines(), 1)
+              if re.search(r"\bbiis\b", ligne, re.IGNORECASE) and not ligne.lstrip().startswith("#")]
+    verifie("aucun « biis » affiché (app, cartes, conversation, voix)", not restes, restes)
+    with (RACINE / "data" / "audit" / "voix_complete.csv").open(encoding="utf-8-sig", newline="") as f:
+        phrases = {r["fichier_wav"]: r["texte_a_prononcer"] for r in csv.DictReader(f)}
+    for intention in INTENTIONS:
+        verifie(f"conversation {intention.nom} : « bus » à l'écran, pas « biis »",
+                not re.search(r"\bbiis\b", intention.reponse, re.IGNORECASE), intention.reponse)
+        if intention.fichier in phrases:
+            verifie(f"conversation {intention.nom} : la voix garde son audio",
+                    appliquer(intention.reponse) == phrases[intention.fichier],
+                    (appliquer(intention.reponse), phrases[intention.fichier]))
     return echecs, total
 
 
@@ -5247,6 +5356,7 @@ if __name__ == "__main__":
         echecs_t2, total_t2 = test_yoff_tata_2()
         echecs_gare, total_gare = test_gare_gaar()
         echecs_hf, total_hf = test_compte_hugging_face()
+        echecs_terrain, total_terrain = test_terrain_en_ligne()
         echecs_prononciations, total_prononciations = test_prononciations()
         echecs_brev, total_brev = test_notebooks_brev()
         echecs_verification, total_verification = test_verification_voix()
@@ -5278,6 +5388,7 @@ if __name__ == "__main__":
             + echecs_t2
             + echecs_gare
             + echecs_hf
+            + echecs_terrain
             + echecs_prononciations
             + echecs_brev
             + echecs_verification
@@ -5310,6 +5421,7 @@ if __name__ == "__main__":
             + total_t2
             + total_gare
             + total_hf
+            + total_terrain
             + total_prononciations
             + total_brev
             + total_verification

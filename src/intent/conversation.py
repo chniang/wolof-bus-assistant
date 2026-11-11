@@ -73,7 +73,9 @@ INTENTIONS: tuple[Intention, ...] = (
     ),
     Intention(
         "liggeey",
-        "Sama liggéey mooy won nit ñi biis bi ñuy jël ci Ndakaaru.",
+        # À l'écran on écrit toujours « bus » (comme les autres réponses) ;
+        # le lexique fait dire « biis » à la voix, l'audio ne change pas.
+        "Sama liggéey mooy won nit ñi bus bi ñuy jël ci Ndakaaru.",
         "conversation_liggeey.wav",
         (
             "lan mooy sa liggeey", "lan mooy sa ligeey", "lane mooy sa ligeey",

@@ -462,6 +462,48 @@ def _equilibrer(
     return ordre + reste
 
 
+# Une option bien plus lente que la meilleure n'aide personne : Yoff -> Sandaga
+# montrait Tata 3 (88 min, sans arrêt de descente) à côté de DDD 8 (40 min).
+# Écartée seulement si elle est à la fois 1,8 fois plus longue ET 30 min de plus :
+# 15 min contre 30 min reste un vrai choix.
+RAPPORT_TROP_LENT = 1.8
+ECART_TROP_LENT_MIN = 30
+
+
+def _sans_les_trop_lents(
+    lignes: list[dict],
+    correspondances: list[dict],
+    trajets_2: list[dict],
+) -> tuple[list[dict], list[dict], list[dict]]:
+    """Retire les options bien plus lentes que la meilleure, tous types confondus.
+
+    Sous un filtre Tata ou Dem Dikk, la meilleure est de la même compagnie et
+    n'est jamais retirée : l'option seule de sa compagnie reste donc affichée.
+    Sous « Tous », une compagnie peut disparaître si toutes ses options sont
+    bien plus lentes — c'est voulu (Tata 3 à 88 min contre DDD 8 à 40 min).
+    """
+    toutes = lignes + correspondances + trajets_2
+    minutes = [t["minutes"] for t in toutes if t.get("minutes") is not None]
+    if len(minutes) <= 1:
+        return lignes, correspondances, trajets_2
+    meilleure = min(minutes)
+
+    def trop_lent(trajet: dict) -> bool:
+        duree = trajet.get("minutes")
+        return (
+            duree is not None
+            and duree > RAPPORT_TROP_LENT * meilleure
+            and duree - meilleure > ECART_TROP_LENT_MIN
+        )
+
+    garder = {id(t) for t in toutes if not trop_lent(t)}
+    return (
+        [t for t in lignes if id(t) in garder],
+        [t for t in correspondances if id(t) in garder],
+        [t for t in trajets_2 if id(t) in garder],
+    )
+
+
 def _vague(lieu: dict, arret: str) -> bool:
     """Arrêt non garanti près du lieu dit : la carte doit le dire.
 
@@ -672,6 +714,9 @@ def chercher_v2(
     # meilleur Tata passent devant le reste, qui suit l'ordre du temps. Le
     # plafond d'affichage vient après, sur la liste équilibrée.
     filtre_actif = compagnies is not None
+    lignes, correspondances, trajets_2 = _sans_les_trop_lents(
+        lignes, correspondances, trajets_2
+    )
     lignes = _equilibrer(lignes, lambda t: {t["compagnie"]}, filtre_actif)
     correspondances = _equilibrer(
         correspondances,
