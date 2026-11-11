@@ -44,7 +44,7 @@ RACINE = Path(__file__).resolve().parent
 # que src/ soit dans le chemin, y compris quand app.py est lancé depuis la racine.
 sys.path.insert(0, str(RACINE / "src"))
 
-from app.cartes import titre_autre_possibilite  # noqa: E402
+from app.cartes import titre_autre_possibilite, titre_section  # noqa: E402
 from app.partage import bouton_partage  # noqa: E402
 from asr.transcribe import (  # noqa: E402
     MODEL_ASR_GPU,
@@ -1019,7 +1019,7 @@ def _carte(
         return "".join(blocs)
 
     if correspondances:
-        blocs.append("### 🔁 Pas de bus direct : un changement suffit\n")
+        blocs.append(titre_section("🔁 Pas de bus direct : un changement suffit"))
         for numero, trajet in enumerate(
             correspondances[:MAX_POSSIBILITES], start=1
         ):
@@ -1034,7 +1034,7 @@ def _carte(
             blocs.append(bouton_partage(depart, arrivee, resultat, trajet))
 
     if trajets_2:
-        blocs.append("### 🔁 Avec deux changements\n")
+        blocs.append(titre_section("🔁 Avec deux changements"))
         for numero, trajet in enumerate(
             trajets_2[:MAX_POSSIBILITES], start=1
         ):

@@ -310,6 +310,117 @@ print(
 """
 
 
+INTRO_LISTE = """\
+# GuindiMa — régénérer une liste d'audios, voix Oolel native (sur Brev)
+
+Notebook générique : il régénère **n'importe quelle liste** d'audios, sans toucher
+au reste du cache. Exemple : `data/audit/voix_gare.csv` (« Gare » se dit « Gaar »).
+
+**Avant de lancer :** dépose à côté du notebook un fichier **`liste_regen.csv`**
+(colonnes `fichier`, `phrase` ; la phrase est le texte que la voix doit dire,
+lexique déjà appliqué). Un autre nom ? Variable d'environnement `LISTE_REGEN`.
+
+Mêmes réglages que les autres séries : voix `8_1_c.wav` du Space
+soynade-research/Oolel-Voices-Demo, graine 1234, 3 essais par audio, Whisper
+wolof garde le meilleur.
+
+**Machine :** GPU NVIDIA (T4 ou L4) chez Brev — pas de Google Drive : tout est
+écrit dans `sortie_voix/`, à côté du notebook. Voir `notebooks/BREV_LIRE_MOI.md`.
+
+**Jeton 🔑 :** la cellule Whisper lit le jeton dans la **variable
+d'environnement `HF_TOKEN`** de la machine — pas de saisie cachée : sans
+interface, il n'y a pas de clavier au premier plan. Jeton absent → Whisper
+wolof public de contrôle directement.
+
+**Lancer :** la première cellule installe pip (ensurepip) et les paquets, puis
+**Kernel -> Restart Kernel** et Run All. Sans interface :
+
+    jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=-1 voix_regen_liste_brev.ipynb
+
+La reprise saute les audios déjà faits **avec la même phrase** dans
+`sortie_voix/audios_regen/` ; un audio fait avec une autre phrase est refait.
+
+À la fin, télécharge `sortie_voix/regen.zip`, puis sur ton PC (même CSV) :
+
+    python scripts/installer_voix_oolel.py --liste sortie_voix/regen.zip liste_regen.csv
+"""
+
+DOSSIER_LISTE = """\
+# Tout atterrit ici, à côté du notebook : audios, rapport, voix de référence.
+import os, glob, shutil
+
+BASE = './sortie_voix'
+SORTIE = f'{BASE}/audios_regen'
+RAPPORT = f'{BASE}/rapport_regen.csv'
+REF = f'{BASE}/8_1_c.wav'
+os.makedirs(SORTIE, exist_ok=True)
+if not os.path.exists(REF):
+    from huggingface_hub import hf_hub_download
+    telecharge = hf_hub_download(
+        repo_id='soynade-research/Oolel-Voices-Demo',
+        repo_type='space',
+        filename='8_1_c.wav',
+    )
+    shutil.copy(telecharge, REF)
+print('voix de référence :', REF)
+"""
+
+PLAN_LISTE = """\
+# La liste à régénérer : liste_regen.csv à côté du notebook (fichier, phrase).
+import csv
+
+LISTE = os.environ.get('LISTE_REGEN', './liste_regen.csv')
+assert os.path.exists(LISTE), f'{LISTE} introuvable : dépose la liste (colonnes fichier, phrase) à côté du notebook.'
+with open(LISTE, encoding='utf-8-sig', newline='') as f:
+    lues = list(csv.DictReader(f))
+assert lues and {'fichier', 'phrase'} <= set(lues[0]), 'colonnes attendues : fichier, phrase'
+PHRASES = [{'fichier': l['fichier'].strip(), 'phrase': l['phrase'].strip()} for l in lues if l['fichier'].strip()]
+noms = [p['fichier'] for p in PHRASES]
+assert len(noms) == len(set(noms)), 'un fichier apparaît deux fois dans la liste'
+assert all(n.endswith('.wav') and '/' not in n and '\\\\' not in n for n in noms), 'noms de fichiers .wav simples attendus'
+PLAN = {'modele': MODELE, 'voix_reference': '8_1_c.wav (Space soynade-research/Oolel-Voices-Demo)', 'graine': GRAINE_PLAN, 'phrases': PHRASES}
+GRAINE = PLAN['graine']
+
+# Reprise honnête : un audio déjà fait avec une AUTRE phrase (« Gare » avant
+# « Gaar ») est oublié, pour être refait avec la bonne.
+if os.path.exists(RAPPORT):
+    with open(RAPPORT, encoding='utf-8-sig') as f:
+        anciens = list(csv.DictReader(f))
+    voulues = {p['fichier']: p['phrase'] for p in PHRASES}
+    gardes = []
+    for l in anciens:
+        if l['fichier'] in voulues and l['phrase'] != voulues[l['fichier']]:
+            chemin = f"{SORTIE}/{l['fichier']}"
+            if os.path.exists(chemin):
+                os.remove(chemin)
+        else:
+            gardes.append(l)
+    if len(gardes) != len(anciens):
+        with open(RAPPORT, 'w', encoding='utf-8-sig', newline='') as f:
+            w = csv.DictWriter(f, fieldnames=list(anciens[0]))
+            w.writeheader()
+            w.writerows(gardes)
+        print(len(anciens) - len(gardes), 'audio(s) à refaire : la phrase a changé')
+print(len(PHRASES), 'phrases ; déjà faits :', len([n for n in noms if os.path.exists(f'{SORTIE}/{n}')]))
+"""
+
+FIN_LISTE = """\
+# Vérifier le dossier et préparer sortie_voix/regen.zip pour installer_voix_oolel.py --liste
+import zipfile
+
+manquants = [p['fichier'] for p in PHRASES if not os.path.exists(f"{SORTIE}/{p['fichier']}")]
+assert not manquants, f"{len(manquants)} audios manquants (ex. {manquants[:5]}) : relance la cellule de génération."
+# Seulement les audios de la liste (et le rapport) : un audio d'une liste
+# précédente, resté dans le dossier, ne part pas dans le zip.
+archive = f'{BASE}/regen.zip'
+with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as boite:
+    for p in PHRASES:
+        boite.write(f"{SORTIE}/{p['fichier']}", arcname=p['fichier'])
+    boite.write(RAPPORT, arcname='rapport_regen.csv')
+print(len(PHRASES), 'audios OK — sur ton PC : python scripts/installer_voix_oolel.py --liste sortie_voix/regen.zip liste_regen.csv')
+"""
+
+
 def _source(cellule: dict) -> str:
     return "".join(cellule["source"])
 
@@ -527,6 +638,25 @@ def adapter_conversation(nb: dict) -> dict:
     return nb
 
 
+def adapter_liste(nb: dict) -> dict:
+    """Le notebook générique : régénère la liste d'un CSV posé à côté de lui.
+
+    Même base que le complet (pip, Whisper, génération avec 3 essais, reprise) ;
+    seuls le plan (lu dans liste_regen.csv au lancement), le dossier de sortie
+    et le zip final changent. Modèle et graine restent ceux du plan des 637.
+    """
+    nb = _adapter(nb, INTRO_LISTE, DOSSIER_LISTE, FIN_LISTE)
+    cells = nb["cells"]
+    i_plan = _cel(cells, "PLAN = ", "plan")
+    plan_637 = json.loads((RACINE / "scripts" / "phrases_voix.json").read_text(encoding="utf-8"))
+    cells[i_plan]["source"] = (
+        f"MODELE = {plan_637['modele']!r}\n"
+        f"GRAINE_PLAN = {plan_637['graine']!r}\n"
+        + PLAN_LISTE
+    ).splitlines(keepends=True)
+    return nb
+
+
 def _ecrire(nb: dict, cible: Path) -> None:
     cible.parent.mkdir(parents=True, exist_ok=True)
     cible.write_text(json.dumps(nb, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
@@ -549,6 +679,11 @@ def main(argv: list[str] | None = None) -> int:
     conversation = adapter_conversation(preparer.construire())
     _ecrire(conversation, dossier / "voix_ajouts_conversation_brev.ipynb")
     print(f"{dossier / 'voix_ajouts_conversation_brev.ipynb'} : écrit")
+
+    # Le notebook générique : n'importe quelle liste (fichier, phrase).
+    liste = adapter_liste(preparer.construire())
+    _ecrire(liste, dossier / "voix_regen_liste_brev.ipynb")
+    print(f"{dossier / 'voix_regen_liste_brev.ipynb'} : écrit")
 
     test = adapter_test(json.loads(TEST_COLAB.read_text(encoding="utf-8")))
     _ecrire(test, dossier / "voix_test_prononciation_brev.ipynb")

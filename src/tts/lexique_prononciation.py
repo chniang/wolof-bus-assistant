@@ -36,6 +36,9 @@ LEXIQUE: dict[str, str] = {
     "Acapes": "Akaapes",
     "Albert Sarraut": "Alber Saroo",
     "ASECNA": "Aseknaa",
+    # « Gare de Rufisque » sortait comme « heure de Rufisque » : le locuteur
+    # natif fait dire « Gaar » (mot entier ; « Garage » n'est pas touché).
+    "Gare": "Gaar",
 }
 
 

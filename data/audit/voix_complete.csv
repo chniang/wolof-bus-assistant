@@ -297,15 +297,15 @@ lieu,Front de Terre,lieu_front_de_terre.wav,tts_cache
 lieu,Grand Dakar,lieu_g_dakar.wav,tts_cache
 lieu,Gaddaay,lieu_gadaye.wav,tts_cache
 lieu,Garage Guédiawaye,lieu_garage_guediawaye.wav,tts_cache
-lieu,Gare de Colobane,lieu_gare_de_colobane.wav,tts_cache
-lieu,Gare de Dakar,lieu_gare_de_dakar.wav,tts_cache
-lieu,Gare de Diamniadio,lieu_gare_de_diamniadio.wav,tts_cache
-lieu,Gare de Petersen,lieu_gare_de_petersen.wav,tts_cache
-lieu,Gare des Baux Maraîchers,lieu_gare_des_baux_maraichers.wav,tts_cache
-lieu,Gare des Parcelles Assainies,lieu_gare_des_parcelles_assainies.wav,tts_cache
-lieu,Gare Lat Dior,lieu_gare_lat_dior.wav,tts_cache
-lieu,Gare Petersen,lieu_gare_petersen.wav,tts_cache
-lieu,Gare routière de Colobane,lieu_gare_routiere_de_colobane.wav,tts_cache
+lieu,Gaar de Colobane,lieu_gare_de_colobane.wav,tts_cache
+lieu,Gaar de Dakar,lieu_gare_de_dakar.wav,tts_cache
+lieu,Gaar de Diamniadio,lieu_gare_de_diamniadio.wav,tts_cache
+lieu,Gaar de Petersen,lieu_gare_de_petersen.wav,tts_cache
+lieu,Gaar des Baux Maraîchers,lieu_gare_des_baux_maraichers.wav,tts_cache
+lieu,Gaar des Parcelles Assainies,lieu_gare_des_parcelles_assainies.wav,tts_cache
+lieu,Gaar Lat Dior,lieu_gare_lat_dior.wav,tts_cache
+lieu,Gaar Petersen,lieu_gare_petersen.wav,tts_cache
+lieu,Gaar routière de Colobane,lieu_gare_routiere_de_colobane.wav,tts_cache
 lieu,Giratoire de Liberté six,lieu_giratoire_de_liberte_six.wav,tts_cache
 lieu,Giratoire Liberté six,lieu_giratoire_liberte_six.wav,tts_cache
 lieu,Golf,lieu_golf.wav,tts_cache
@@ -732,8 +732,8 @@ arret,Espace HLM Grand Médine,lieu_espace_hlm_grand_medine.wav,tts_cache_ajouts
 arret,Esso Port,lieu_esso_port.wav,tts_cache_ajouts
 arret,Esso Port Embarcadère,lieu_esso_port_embarcadere.wav,tts_cache_ajouts
 arret,G M D,lieu_g_m_d.wav,tts_cache_ajouts
-arret,Gare Ter,lieu_gare_ter.wav,tts_cache_ajouts
-arret,Gare de Rufisque,lieu_gare_de_rufisque.wav,tts_cache_ajouts
+arret,Gaar Ter,lieu_gare_ter.wav,tts_cache_ajouts
+arret,Gaar de Rufisque,lieu_gare_de_rufisque.wav,tts_cache_ajouts
 arret,Gorom zéro deux,lieu_gorom_zero_deux.wav,tts_cache_ajouts
 arret,Gorom zéro un,lieu_gorom_zero_un.wav,tts_cache_ajouts
 arret,Grand Moulin de Dakar,lieu_grand_moulin_de_dakar.wav,tts_cache_ajouts

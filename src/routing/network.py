@@ -37,7 +37,9 @@ FIXED_MINUTES_PER_SEGMENT = 3.0    # fallback when a stop has no coordinates
 UNKNOWN_TWO_STOP_RIDE_MINUTES = 35.0
 TRANSFER_PENALTY_MIN = 6.0        # waiting / walking to the next line
 WALK_SPEED_M_PER_MIN = 80.0
-MAX_TRANSFER_WALK_M = 500.0
+# Une correspondance à pied ne dépasse pas 400 m (5 min) : au-delà, l'usager
+# ne retrouve plus l'arrêt du bus suivant sans aide.
+MAX_TRANSFER_WALK_M = 400.0
 # Correspondances à pied gardées pour deux lignes données : les plus courtes.  Toutes
 # les garder faisait 126 000 arêtes et jusqu'à 44 s par requête, sans bus direct.
 MAX_WALK_TRANSFERS_PER_LINE_PAIR = 2
@@ -243,6 +245,7 @@ class Network:
         line_positions: dict[LineKey, tuple] | None = None,
         line_distances: dict[LineKey, tuple] | None = None,
         legacy_stops: dict[str, str] | None = None,
+        line_sure: dict[LineKey, tuple] | None = None,
     ) -> None:
         self.lines = {line.key: line for line in lines}
         self.stop_coords = dict(stop_coords)
@@ -250,6 +253,10 @@ class Network:
         # Position de chaque arrêt sur sa ligne, et longueur mesurée sur la trace.
         self.line_positions = dict(line_positions or {})
         self.line_distances = dict(line_distances or {})
+        # Position mesurée (arrêt OSM, terminus officiel…) ou devinée
+        # (interpolation le long de la ligne) : seule la première peut porter
+        # une correspondance à pied ou borner une durée.
+        self.line_sure = dict(line_sure or {})
         self.stop_names = sorted(
             {stop for line in self.lines.values() for stop in line.stops}
         )
@@ -346,6 +353,52 @@ class Network:
             return positions[index]
         return self.coords(line.stops[index])
 
+    def position_sure(self, line: Line, index: int) -> bool:
+        """Vrai si la position de cet arrêt sur cette ligne est mesurée, pas devinée.
+
+        « Marché Colobane Rufisque » (Tata 57), placé par interpolation sur
+        ZAC Mbao, faisait changer de bus « à 1 min à pied » de ZAC Mbao.
+        """
+
+        drapeaux = self.line_sure.get(line.key)
+        if drapeaux is not None:
+            return bool(drapeaux[index])
+        return self.stop_confidence.get(line.stops[index]) == "bonne"
+
+    def _plancher_vol_oiseau(
+        self, line: Line, segments: tuple[float | None, ...]
+    ) -> tuple[float | None, ...]:
+        """Une route n'est jamais plus courte que la ligne droite.
+
+        Entre deux arrêts aux positions sûres, la somme des segments est au
+        moins la distance à vol d'oiseau ; sinon les segments sont allongés
+        d'autant. Une trace projetée sur des arrêts mal placés donnait
+        « Route Nationale N°1 -> Marché Colobane Rufisque » en 7 min.
+        """
+
+        surs = [
+            index
+            for index in range(len(line.stops))
+            if self.position_sure(line, index)
+            and self.position_on_line(line, index) is not None
+        ]
+        resultat = list(segments)
+        for gauche, droite in zip(surs, surs[1:]):
+            morceau = resultat[gauche:droite]
+            if any(valeur is None for valeur in morceau):
+                continue
+            longueur = sum(morceau)
+            droite_m = haversine_m(
+                self.position_on_line(line, gauche),
+                self.position_on_line(line, droite),
+            )
+            if longueur <= 0 or longueur >= droite_m:
+                continue
+            facteur = droite_m / longueur
+            for index in range(gauche, droite):
+                resultat[index] = resultat[index] * facteur
+        return tuple(resultat)
+
     def _segment_distances(self, line: Line) -> tuple[float | None, ...]:
         """Longueur de chaque segment, dans l'ordre de la ligne.
 
@@ -355,7 +408,7 @@ class Network:
 
         mesurees = self.line_distances.get(line.key)
         if mesurees is not None:
-            return mesurees
+            return self._plancher_vol_oiseau(line, mesurees)
 
         positions = [
             self.position_on_line(line, index) for index in range(len(line.stops))
@@ -366,7 +419,7 @@ class Network:
             part = haversine_m(positions[gauche], positions[droite]) / (droite - gauche)
             for index in range(gauche, droite):
                 segments[index] = part
-        return tuple(segments)
+        return self._plancher_vol_oiseau(line, tuple(segments))
 
     @staticmethod
     def _ride_estimate(
@@ -461,6 +514,11 @@ class Network:
                 (node for node in nodes_on_line[(line, stop)] if node.direction == 0),
                 key=lambda node: node.index,
             )
+            # Une position devinée ne fait jamais marcher l'usager : « péage »
+            # (Dem Dikk 213), interpolé entre Poste Thiaroye et Patte d'Oie,
+            # tombait « à 1 min » de Bountou Pikine.
+            if not self.position_sure(self.lines[line], first.index):
+                return None
             return self.position_on_line(self.lines[line], first.index)
 
         by_line_pair: dict[
@@ -624,6 +682,7 @@ class Network:
         by_order = getattr(data, "positions_ligne", {})
         sure_by_order = getattr(data, "positions_sures", {})
         raw_positions: dict[LineKey, list] = {}
+        raw_sure: dict[LineKey, list] = {}
         proposals: dict[str, list[tuple[tuple[float, float], bool]]] = defaultdict(list)
         for line in lines:
             orders = line_orders.get(line.key)
@@ -631,6 +690,9 @@ class Network:
             if not per_line or orders is None or len(orders) != len(line.stops):
                 continue
             raw_positions[line.key] = [per_line.get(ordre, ...) for ordre in orders]
+            raw_sure[line.key] = [
+                sure_by_order.get(line.key, {}).get(ordre, ...) for ordre in orders
+            ]
             for stop, ordre in zip(line.stops, orders):
                 position = per_line.get(ordre)
                 if position is not None:
@@ -696,6 +758,17 @@ class Network:
             for key, positions in raw_positions.items()
         }
 
+        # Sûreté de chaque position sur sa ligne : celle du fichier de la ligne,
+        # sinon celle de la position générale (« bonne » seulement).
+        line_sure = {
+            key: tuple(
+                stop_confidence.get(stop) == "bonne" if sure is ... else bool(sure)
+                for stop, sure in zip(by_key[key].stops, flags)
+            )
+            for by_key in [{line.key: line for line in lines}]
+            for key, flags in raw_sure.items()
+        }
+
         # La vraie longueur de route pour les lignes Tata qui ont une trace.
         line_distances: dict[LineKey, tuple] = {}
         traces = getattr(data, "traces", {})
@@ -717,4 +790,5 @@ class Network:
             line_positions,
             line_distances,
             _legacy_stops(data, lines, stop_coords, stop_confidence),
+            line_sure,
         )

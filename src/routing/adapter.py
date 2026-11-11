@@ -20,6 +20,7 @@ from .places import PlaceIndex, normalize_name, terminus_forms
 from .router import (
     Leg,
     NoRouteFoundError,
+    ACCESS_WALK_RADIUS_M,
     PLACE_STOP_RADIUS_M,
     PlaceNotFoundError,
     ResolvedPlace,
@@ -297,15 +298,67 @@ def _resoudre(matcher, lieu: str) -> dict:
     # lui (message vague sinon). Un lieu nommé exactement prend la position de
     # l'arrêt sur le réseau ; un quartier prend son point de lieux_geo.csv. Jamais
     # d'appel réseau ici : pas de position vaut mieux qu'une position devinée.
-    point_sur = None
-    if meilleur and note >= 1.0:
-        for nom in _vers_reseau([meilleur]):
-            coords = _NETWORK.coords(nom)
-            if coords is not None:
-                point_sur = coords
-                break
+    # Un lieu qui porte exactement le nom d'un arrêt se définit par ces arrêts.
+    # - point fiable : un de ces arrêts en position « bonne » ; sinon le point
+    #   de lieux_geo.csv, s'il tombe à moins de 1 km de l'un d'eux (« Yoff » y
+    #   est posé sur l'arrêt Grand Yoff, 2,8 km plus au sud) ; sinon la position
+    #   estimée de l'arrêt. « Rond point Sandaga », estimé à 1,9 km du marché,
+    #   ne sert donc jamais de point à lui seul.
+    exacts = (
+        [a for a in tries if _note_du_nom(lieu, a) >= 1.0]
+        if meilleur and note >= 1.0
+        else []
+    )
+    positions_exactes = [
+        (nom, _NETWORK.coords(nom))
+        for nom in _vers_reseau(exacts)
+        if _NETWORK.coords(nom) is not None
+    ]
+    point_sur = next(
+        (
+            coords
+            for nom, coords in positions_exactes
+            if _NETWORK.stop_confidence.get(nom) == "bonne"
+        ),
+        None,
+    )
     if point_sur is None:
-        point_sur = matcher.geo.point_connu(lieu)
+        point_csv = matcher.geo.point_connu(lieu)
+        if point_csv is not None and (
+            not positions_exactes
+            or any(
+                haversine_m(point_csv, coords) <= ACCORD_POINT_LIEU_M
+                for _, coords in positions_exactes
+            )
+        ):
+            point_sur = point_csv
+        elif positions_exactes:
+            point_sur = positions_exactes[0][1]
+
+    # Un lieu exact ne prend un arrêt par la géographie seule (commune,
+    # quartier) que s'il est à distance de marche de l'un de ses arrêts : la
+    # commune de Yoff couvre la Foire et les HLM Grand Yoff, et la Tata 2, qui
+    # ne passe jamais à Yoff (trace AFTU à 2,2 km), était proposée depuis
+    # « Route HLM Grand Médine ».
+    reperes = [coords for _, coords in positions_exactes]
+    if point_sur is not None:
+        reperes.append(point_sur)
+    if note >= 1.0 and reperes:
+        for arret in tries:
+            if _note_du_nom(lieu, arret) >= MIN_SCORE or notes_v1[arret] <= 0:
+                continue
+            positions = [
+                _NETWORK.coords(nom)
+                for nom in _arrets_du_reseau(arret)
+                if _NETWORK.coords(nom) is not None
+            ]
+            if not positions or min(
+                haversine_m(repere, position)
+                for repere in reperes
+                for position in positions
+            ) > ACCESS_WALK_RADIUS_M:
+                notes_v1[arret] = 0.0
+        tries = sorted(notes_v1, key=lambda arret: -notes_v1[arret])
 
     def place(seuil: float) -> ResolvedPlace:
         # Pas de restriction ici : un arrêt loin du lieu dit garde sa ligne. La
@@ -429,6 +482,89 @@ def _vague(lieu: dict, arret: str) -> bool:
     return haversine_m(point, coords) > PLACE_STOP_RADIUS_M
 
 
+# Le point d'un lieu (lieux_geo.csv) n'est cru que s'il est à 1 km au plus
+# d'un arrêt du même nom.
+ACCORD_POINT_LIEU_M = 1_000.0
+
+# Un changement ne recule jamais vers le départ de plus de 1 km : Maristes ->
+# Rufisque montait vers Liberté 6 (plus à l'ouest) pour reprendre la 213
+# dans l'autre sens.
+RECUL_MAX_M = 1_000.0
+
+
+def _position_sure(leg: Leg, arret: str) -> tuple[float, float] | None:
+    """La position de cet arrêt sur la ligne du tronçon, si elle est mesurée."""
+
+    ligne = _NETWORK.lines.get((leg.operator, leg.line))
+    if ligne is None or arret not in ligne.stops:
+        return None
+    index = ligne.stops.index(arret)
+    if not _NETWORK.position_sure(ligne, index):
+        return None
+    return _NETWORK.position_on_line(ligne, index)
+
+
+def _position_connue(leg: Leg, arret: str) -> tuple[float, float] | None:
+    """La position de cet arrêt sur la ligne du tronçon, même devinée."""
+
+    ligne = _NETWORK.lines.get((leg.operator, leg.line))
+    if ligne is None or arret not in ligne.stops:
+        return None
+    return _NETWORK.position_on_line(ligne, ligne.stops.index(arret))
+
+
+def _dans_le_lieu(lieu: dict, leg: Leg, arret: str) -> bool:
+    """Vrai si cet arrêt fait partie du lieu dit (nom, ou position sûre à 600 m)."""
+
+    if arret in lieu.get("nom_exact", ()) or arret in lieu.get("par_son_nom", ()):
+        return True
+    point, position = lieu.get("point_sur"), _position_sure(leg, arret)
+    return (
+        point is not None
+        and position is not None
+        and haversine_m(point, position) <= PLACE_STOP_RADIUS_M
+    )
+
+
+def _changements_coherents(trip: Trip, dep: dict, arr: dict) -> bool:
+    """Un trajet avec changement qui avance vraiment.
+
+    - jamais un bus de plus une fois arrivé : « Marché Colobane Rufisque » est
+      déjà Rufisque, le 3e bus vers la Gare de Rufisque était de trop ;
+    - jamais un premier bus pour rien : changer dans le lieu de départ veut dire
+      que le 2e bus passait déjà là ;
+    - jamais de recul : chaque changement (aux positions sûres) reste à peu près
+      aussi près de l'arrivée que le précédent.
+    """
+
+    if len(trip.legs) < 2:
+        return True
+    for leg in trip.legs[:-1]:
+        if _dans_le_lieu(arr, leg, leg.alight_stop):
+            return False
+    for leg in trip.legs[1:]:
+        if _dans_le_lieu(dep, leg, leg.board_stop):
+            return False
+
+    cible = arr.get("point_sur") or _position_sure(trip.legs[-1], trip.legs[-1].alight_stop)
+    if cible is None:
+        return True
+    precedent = dep.get("point_sur") or _position_sure(trip.legs[0], trip.legs[0].board_stop)
+    for leg in trip.legs[1:]:
+        # Le sens se juge avec la position connue, même approximative : la
+        # marge de 1 km absorbe l'imprécision (« Rond Point Liberté 6 » de la
+        # 213 n'est placé que par Nominatim, mais il est bien à l'ouest).
+        position = _position_connue(leg, leg.board_stop)
+        if position is None:
+            continue
+        if precedent is not None and (
+            haversine_m(position, cible) > haversine_m(precedent, cible) + RECUL_MAX_M
+        ):
+            return False
+        precedent = position
+    return True
+
+
 def _resultat_vide(depart: str, arrivee: str, dep: dict, arr: dict) -> dict:
     return {
         "found": False,
@@ -513,6 +649,7 @@ def chercher_v2(
             for trip in trips
             if all(leg.operator in compagnies for leg in trip.legs)
         ]
+    trips = [trip for trip in trips if _changements_coherents(trip, dep, arr)]
     if not trips:
         return resultat
 

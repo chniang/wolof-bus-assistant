@@ -1938,6 +1938,359 @@ def test_vie_privee() -> tuple[int, int]:
     return echecs, total
 
 
+def test_correspondances_coherentes() -> tuple[int, int]:
+    """Un changement de bus que l'usager peut vraiment faire.
+
+    Retour du terrain, Maristes -> Rufisque : descendre à Bountou Pikine puis
+    monter à « Péage » (position devinée), changer à Marché Colobane Rufisque
+    (déjà Rufisque) pour un 3e bus parti de ZAC Mbao (en arrière), un tronçon
+    RN1 -> Marché Colobane Rufisque en 7 min. Règles vérifiées sur 6 trajets :
+    - le bus suivant part du même arrêt, ou d'un arrêt à 400 m au plus, et une
+      marche n'existe qu'entre deux positions mesurées ;
+    - jamais un changement dans le lieu d'arrivée (ni dans le lieu de départ) ;
+    - jamais de recul de plus de 1 km vers le départ ;
+    - un tronçon n'est jamais plus court que la ligne droite à la vitesse du bus.
+    """
+    from routing import adapter
+    from routing.network import (
+        MAX_TRANSFER_WALK_M,
+        SPEED_BY_COMPANY_M_PER_MIN,
+        WALK_SPEED_M_PER_MIN,
+        haversine_m,
+    )
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | changements {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    reseau = adapter._NETWORK
+    verifie("marche entre deux bus : 400 m au plus", MAX_TRANSFER_WALK_M <= 400)
+
+    def ligne_de(etape: dict):
+        return reseau.lines.get((etape["compagnie"], etape["ligne"]))
+
+    def position(etape: dict, arret: str, sure: bool):
+        ligne = ligne_de(etape)
+        if ligne is None or arret not in ligne.stops:
+            return None
+        index = ligne.stops.index(arret)
+        if sure and not reseau.position_sure(ligne, index):
+            return None
+        return reseau.position_on_line(ligne, index)
+
+    def etapes_de(trajet: dict) -> list[dict]:
+        return trajet.get("etapes") or [trajet["etape_1"], trajet["etape_2"]]
+
+    matcher = _matcher_hors_ligne()
+    cas = (
+        ("Maristes", "Rufisque"),
+        ("Médina", "Malika"),
+        ("Fann", "Yeumbeul"),
+        ("Point E", "Yeumbeul"),
+        ("Mermoz", "Malika"),
+        ("Almadies", "Rufisque"),
+    )
+    for dep, arr in cas:
+        resultat = matcher.find_line(dep, arr)
+        trajets = (resultat.get("correspondances") or []) + (resultat.get("trajets_2") or [])
+        verifie(f"{dep} -> {arr} : au moins un trajet avec changement", bool(trajets), _detail(resultat))
+        lieu_arr = adapter._resoudre(matcher._repli, arr)
+        lieu_dep = adapter._resoudre(matcher._repli, dep)
+        for trajet in trajets:
+            etapes = etapes_de(trajet)
+            marches = trajet.get("marches") or [0] * (len(etapes) - 1)
+            resume = " | ".join(
+                f"{e['ligne']} {e['monte_a_reseau']} -> {e['descend_a_reseau']} ({e.get('minutes')} min)"
+                for e in etapes
+            )
+            for n in range(1, len(etapes)):
+                avant, apres = etapes[n - 1], etapes[n]
+                marche = marches[n - 1] if n - 1 < len(marches) else 0
+                meme = avant["descend_a_reseau"] == apres["monte_a_reseau"]
+                if not meme and marche:
+                    a = position(avant, avant["descend_a_reseau"], sure=True)
+                    b = position(apres, apres["monte_a_reseau"], sure=True)
+                    ok = (
+                        a is not None
+                        and b is not None
+                        and haversine_m(a, b) <= MAX_TRANSFER_WALK_M + 1
+                        and marche <= MAX_TRANSFER_WALK_M / WALK_SPEED_M_PER_MIN + 1
+                    )
+                else:
+                    ok = marche <= MAX_TRANSFER_WALK_M / WALK_SPEED_M_PER_MIN + 1
+                verifie(f"{dep} -> {arr} : changement {n} faisable à pied", ok, (resume, marches))
+                verifie(
+                    f"{dep} -> {arr} : changement {n} hors du lieu d'arrivée",
+                    avant["descend_a_reseau"] not in lieu_arr["nom_exact"]
+                    and avant["descend_a_reseau"] not in lieu_arr["par_son_nom"],
+                    resume,
+                )
+                verifie(
+                    f"{dep} -> {arr} : bus {n + 1} ne repart pas du lieu de départ",
+                    apres["monte_a_reseau"] not in lieu_dep["nom_exact"]
+                    and apres["monte_a_reseau"] not in lieu_dep["par_son_nom"],
+                    resume,
+                )
+            cible = lieu_arr["point_sur"]
+            if cible is not None:
+                precedent = lieu_dep["point_sur"]
+                for etape in etapes[1:]:
+                    ici = position(etape, etape["monte_a_reseau"], sure=False)
+                    if ici is None:
+                        continue
+                    if precedent is not None:
+                        verifie(
+                            f"{dep} -> {arr} : jamais en arrière ({etape['monte_a_reseau']})",
+                            haversine_m(ici, cible) <= haversine_m(precedent, cible) + adapter.RECUL_MAX_M,
+                            resume,
+                        )
+                    precedent = ici
+            for etape in etapes:
+                a = position(etape, etape["monte_a_reseau"], sure=True)
+                b = position(etape, etape["descend_a_reseau"], sure=True)
+                if a is None or b is None or etape.get("minutes") is None:
+                    continue
+                vitesse = SPEED_BY_COMPANY_M_PER_MIN.get(etape["compagnie"], max(SPEED_BY_COMPANY_M_PER_MIN.values()))
+                verifie(
+                    f"{dep} -> {arr} : {etape['ligne']} pas plus court que la ligne droite",
+                    etape["minutes"] + 1 >= haversine_m(a, b) / vitesse,
+                    (resume, int(haversine_m(a, b))),
+                )
+
+    # Le cas exact du terrain.
+    resultat = matcher.find_line("Maristes", "Rufisque")
+    trajets = (resultat.get("correspondances") or []) + (resultat.get("trajets_2") or [])
+    montees = [e["monte_a_reseau"] for t in trajets for e in etapes_de(t)[1:]]
+    descentes = [e["descend_a_reseau"] for t in trajets for e in etapes_de(t)[:-1]]
+    verifie("Maristes -> Rufisque : jamais « Péage » après Bountou Pikine",
+            not any(m.lower() == "péage" for m in montees), montees)
+    verifie("Maristes -> Rufisque : jamais ZAC Mbao ni 3e bus après Marché Colobane Rufisque",
+            "ZAC Mbao" not in montees and "Marché Colobane Rufisque" not in descentes, (montees, descentes))
+    verifie("Maristes -> Rufisque : jamais le détour par Liberté 6",
+            not any("Liberté 6" in m for m in montees), montees)
+
+    # Les positions devinées ne portent jamais une marche.
+    l57 = reseau.lines[("Tata AFTU", "Ligne 57")]
+    l213 = reseau.lines[("Dakar Dem Dikk", "Ligne 213")]
+    verifie("Tata 57 : Marché Colobane Rufisque a une position devinée",
+            not reseau.position_sure(l57, l57.stops.index("Marché Colobane Rufisque")))
+    verifie("Dem Dikk 213 : « péage » a une position devinée",
+            not reseau.position_sure(l213, l213.stops.index("péage")))
+    return echecs, total
+
+
+def test_titres_markdown() -> tuple[int, int]:
+    """Les titres de section ne s'affichent jamais avec leurs « ### ».
+
+    Collé à la carte précédente (« </div>### … »), le Markdown restait dans le
+    bloc HTML : l'usager voyait « ### Pas de bus direct … ».
+    """
+    import os as _os
+
+    _os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_titres")
+    from app.cartes import titre_section
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | titres {nom}")
+        if not condition and detail:
+            print(f"      {str(detail)[:300]!r}")
+
+    matcher = _matcher_hors_ligne()
+    for dep, arr, titre in (
+        ("Maristes", "Rufisque", "Pas de bus direct"),
+        ("Fann", "Yeumbeul", "Avec deux changements"),
+    ):
+        carte = app._carte(matcher.find_line(dep, arr), dep, arr)
+        verifie(f"{dep} -> {arr} : titre « {titre} » présent, sans « ### »",
+                titre in carte and "###" not in carte, carte)
+    verifie("titre_section : HTML, texte échappé",
+            titre_section("a < b").startswith("<div") and "a &lt; b" in titre_section("a < b"))
+    return echecs, total
+
+
+def test_yoff_tata_2() -> tuple[int, int]:
+    """La Tata 2 ne passe pas à Yoff : jamais proposée pour Yoff.
+
+    Trace officielle AFTU : 1,7 km de Yoff Village au plus près, 2,2 km de
+    l'arrêt Yoff. Elle sortait par « Route HLM Grand Médine », pris dans la
+    commune de Yoff, et parce que lieux_geo.csv pose « Yoff » sur Grand Yoff.
+    Petersen reste proposé pour Sandaga (marché à 750 m).
+    """
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | yoff tata 2 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    matcher = _matcher_hors_ligne()
+    for dep, arr in (("Yoff", "Petersen"), ("Petersen", "Yoff"), ("Yoff", "Médina"), ("Yoff", "Colobane")):
+        resultat = matcher.find_line(dep, arr)
+        lignes = {
+            (t["compagnie"], t["ligne"]) for t in resultat.get("lignes") or []
+        } | {
+            (e["compagnie"], e["ligne"])
+            for c in resultat.get("correspondances") or []
+            for e in (c["etape_1"], c["etape_2"])
+        }
+        montees = {t["monte_a_reseau"] for t in resultat.get("lignes") or []}
+        verifie(f"{dep} -> {arr} : jamais la Tata 2", ("Tata AFTU", "Ligne 2") not in lignes, _detail(resultat))
+        verifie(f"{dep} -> {arr} : jamais monté à Route HLM Grand Médine ni à la Foire",
+                not montees & {"Route HLM Grand Médine", "Foire", "HLM Grand Yoff"}, _detail(resultat))
+    resultat = matcher.find_line("Sandaga", "Pikine")
+    verifie("Sandaga -> Pikine : Petersen (Tata 55/56) toujours proposé",
+            {"Ligne 55", "Ligne 56"} & {t["ligne"] for t in resultat["lignes"]}, _detail(resultat))
+    return echecs, total
+
+
+def test_gare_gaar() -> tuple[int, int]:
+    """« Gare » se dit « Gaar » : la voix disait « heure de Rufisque ».
+
+    Le lexique change le texte parlé (mot entier), jamais l'écran. La liste
+    des audios à refaire est data/audit/voix_gare.csv ; le notebook générique
+    voix_regen_liste_brev et installer_voix_oolel.py --liste la reposent.
+    """
+    import contextlib
+    import csv as _csv
+    import io as _io
+    import json as _json
+    import os
+    import shutil
+    import tempfile
+    import wave as _wave
+    import zipfile as _zipfile
+
+    from tts.lexique_prononciation import appliquer
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | gare {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    verifie("lexique : « Gare de Rufisque » -> « Gaar de Rufisque »", appliquer("Gare de Rufisque") == "Gaar de Rufisque")
+    verifie("lexique : « Garage » intact", appliquer("Garage Guédiawaye") == "Garage Guédiawaye")
+    verifie("lexique : « gare routière » -> « Gaar routière »", appliquer("gare routière") == "Gaar routière")
+
+    complete = list(_csv.DictReader(open(RACINE / "data/audit/voix_complete.csv", encoding="utf-8", newline="")))
+    avec_gare = [r for r in complete if re.search(r"(?<!\w)gare(?!\w)", r["texte_a_prononcer"], re.I)]
+    avec_gaar = {r["fichier_wav"]: r["texte_a_prononcer"] for r in complete if "Gaar" in r["texte_a_prononcer"]}
+    verifie("voix_complete.csv : plus aucun « Gare » parlé", not avec_gare, [r["fichier_wav"] for r in avec_gare][:5])
+    liste_gare = list(_csv.DictReader(open(RACINE / "data/audit/voix_gare.csv", encoding="utf-8", newline="")))
+    verifie(
+        "voix_gare.csv : exactement les audios « Gaar », même phrase",
+        len(liste_gare) == len(avec_gaar) == 11
+        and {r["fichier"]: r["phrase"] for r in liste_gare} == avec_gaar,
+        (len(liste_gare), len(avec_gaar)),
+    )
+
+    # Le notebook générique : pas de saisie cachée, voix 8_1_c, 3 essais, reprise.
+    nb = _json.loads((RACINE / "notebooks/voix_regen_liste_brev.ipynb").read_text(encoding="utf-8"))
+    codes = ["".join(c["source"]) for c in nb["cells"] if c["cell_type"] == "code"]
+    tout = "\n".join(codes)
+    verifie(
+        "notebook liste : sans getpass, 8_1_c, meilleur de 3, reprise, regen.zip",
+        "getpass" not in tout
+        and "8_1_c.wav" in tout
+        and "GRAINES = [GRAINE, GRAINE + 1, GRAINE + 2]" in tout
+        and "choisir_meilleur_candidat" in tout
+        and "faits = {l['fichier']" in tout
+        and "regen.zip" in tout,
+    )
+    # Les cellules plan et zip s'exécutent pour de vrai, dans un dossier jetable.
+    plan = next(c for c in codes if "PLAN = " in c)
+    fin = next(c for c in codes if "regen.zip" in c and "make_archive" not in c and "ZipFile" in c)
+    tmp = Path(tempfile.mkdtemp(prefix="guindima_regen_"))
+    try:
+        sortie = tmp / "audios_regen"
+        sortie.mkdir()
+        (tmp / "liste.csv").write_text("fichier,phrase\na.wav,Gaar de Dakar\nb.wav,Gaar Ter\n", encoding="utf-8")
+        for nom in ("a.wav", "b.wav", "vieux.wav"):
+            (sortie / nom).write_bytes(b"RIFF")
+        rapport = tmp / "rapport.csv"
+        rapport.write_text("fichier,phrase\na.wav,Gare de Dakar\nb.wav,Gaar Ter\n", encoding="utf-8")
+        espace = {"os": os, "BASE": str(tmp), "SORTIE": str(sortie), "RAPPORT": str(rapport)}
+        os.environ["LISTE_REGEN"] = str(tmp / "liste.csv")
+        with contextlib.redirect_stdout(_io.StringIO()):
+            exec(compile(plan, "<plan liste>", "exec"), espace)
+        verifie(
+            "notebook liste : la phrase changée est refaite, l'autre gardée",
+            not (sortie / "a.wav").exists() and (sortie / "b.wav").exists()
+            and [p["fichier"] for p in espace["PHRASES"]] == ["a.wav", "b.wav"],
+        )
+        (sortie / "a.wav").write_bytes(b"RIFF")
+        with contextlib.redirect_stdout(_io.StringIO()):
+            exec(compile(fin, "<fin liste>", "exec"), espace)
+        with _zipfile.ZipFile(tmp / "regen.zip") as boite:
+            contenu = sorted(boite.namelist())
+        verifie("notebook liste : zip = la liste + le rapport, rien d'autre",
+                contenu == ["a.wav", "b.wav", "rapport_regen.csv"], contenu)
+    finally:
+        os.environ.pop("LISTE_REGEN", None)
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    # installer_voix_oolel.py --liste : exactement ces fichiers, tout ou rien.
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("installer_voix_oolel_liste", RACINE / "scripts/installer_voix_oolel.py")
+    installeur = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(installeur)
+    tmp = Path(tempfile.mkdtemp(prefix="guindima_liste_"))
+    try:
+        for nom in ("lieu_gare_ter.wav", "lieu_gare_de_dakar.wav", "autre.wav"):
+            with _wave.open(str(tmp / nom), "wb") as wav:
+                wav.setnchannels(1)
+                wav.setsampwidth(2)
+                wav.setframerate(16000)
+                wav.writeframes(b"\x00\x00" * 160)
+        archive = tmp / "regen.zip"
+        with _zipfile.ZipFile(archive, "w") as boite:
+            for nom in ("lieu_gare_ter.wav", "lieu_gare_de_dakar.wav", "autre.wav"):
+                boite.write(tmp / nom, arcname=nom)
+        liste = tmp / "liste.csv"
+        liste.write_text("fichier,phrase\nlieu_gare_ter.wav,Gaar Ter\nlieu_gare_de_dakar.wav,Gaar de Dakar\n", encoding="utf-8")
+        cache = tmp / "cache"
+        connus = ["lieu_gare_ter.wav", "lieu_gare_de_dakar.wav", "lieu_gare_de_rufisque.wav"]
+        with contextlib.redirect_stdout(_io.StringIO()):
+            pose = installeur.installer_liste(archive, installeur.lire_liste(liste), cache=cache, connus=connus)
+        verifie("installer --liste : exactement les fichiers de la liste",
+                pose == 0 and sorted(p.name for p in cache.iterdir()) == ["lieu_gare_de_dakar.wav", "lieu_gare_ter.wav"])
+        with contextlib.redirect_stderr(_io.StringIO()):
+            manque = installeur.installer_liste(archive, ["lieu_gare_de_rufisque.wav"], cache=tmp / "vide", connus=connus)
+            inconnu = installeur.installer_liste(archive, ["autre.wav"], cache=tmp / "vide", connus=connus)
+            chemin = installeur.installer_liste(archive, ["../lieu_gare_ter.wav"], cache=tmp / "vide", connus=connus)
+        verifie("installer --liste : manquant, inconnu ou chemin refusés, rien posé",
+                manque == inconnu == chemin == 1 and not (tmp / "vide").exists())
+        verifie("installer --liste : la vraie voix_gare.csv est lisible (11 noms)",
+                len(installeur.lire_liste(RACINE / "data/audit/voix_gare.csv")) == 11)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    return echecs, total
+
+
 def test_trajets_frequents() -> tuple[int, int]:
     """Chaque choix de l'onglet « Écrire » mène vraiment à un bus.
 
@@ -2430,7 +2783,7 @@ def test_voix() -> tuple[int, int]:
     from tts.speak import nom_fichier_lieu, nom_lieu_parle
 
     verifie(
-        "lexique de l'écoute : les 5 choix du locuteur natif",
+        "lexique de l'écoute : les 6 choix du locuteur natif",
         LEXIQUE
         == {
             "bus": "biis",
@@ -2438,6 +2791,8 @@ def test_voix() -> tuple[int, int]:
             "Acapes": "Akaapes",
             "Albert Sarraut": "Alber Saroo",
             "ASECNA": "Aseknaa",
+            # « Gare de Rufisque » s'entendait « heure de Rufisque ».
+            "Gare": "Gaar",
         },
         LEXIQUE,
     )
@@ -2531,9 +2886,19 @@ def test_voix() -> tuple[int, int]:
         "nga wàcc Gàddaay. Ci ginnaaw, jëlal biis bu Dem Dikk, numero ñaari "
         "téeméer ak ñaar fukk, moo lay yóbbu ba Malika."
     )
+    # Avec le plancher « jamais plus court que la ligne droite » (network.py),
+    # la 16A n'est plus dans les deux meilleures : 221 + 220, puis 221 + Tata 37.
+    attendu_corr_plancher = (
+        "Jëlal biis bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
+        "nga wàcc Gàddaay. Ci ginnaaw, jëlal biis bu Dem Dikk, numero ñaari "
+        "téeméer ak ñaar fukk, moo lay yóbbu ba Malika. Walla, "
+        "Jëlal biis bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
+        "nga wàcc Gàddaay. Ci ginnaaw, jëlal biis bu Tata, numero fanweer ak "
+        "juróom ñaar, moo lay yóbbu ba Malika."
+    )
     verifie(
         "voix 2 changements",
-        phrase_corr in {attendu_corr, attendu_corr_officiel},
+        phrase_corr in {attendu_corr, attendu_corr_officiel, attendu_corr_plancher},
         phrase_corr,
     )
     verifie(
@@ -4829,6 +5194,10 @@ if __name__ == "__main__":
         echecs_unite, total_unite = test_unite_15()
         echecs_vp, total_vp = test_vague_voix_partage()
         echecs_prive, total_prive = test_vie_privee()
+        echecs_chg, total_chg = test_correspondances_coherentes()
+        echecs_titres, total_titres = test_titres_markdown()
+        echecs_t2, total_t2 = test_yoff_tata_2()
+        echecs_gare, total_gare = test_gare_gaar()
         echecs_prononciations, total_prononciations = test_prononciations()
         echecs_brev, total_brev = test_notebooks_brev()
         echecs_verification, total_verification = test_verification_voix()
@@ -4855,6 +5224,10 @@ if __name__ == "__main__":
             + echecs_unite
             + echecs_vp
             + echecs_prive
+            + echecs_chg
+            + echecs_titres
+            + echecs_t2
+            + echecs_gare
             + echecs_prononciations
             + echecs_brev
             + echecs_verification
@@ -4882,6 +5255,10 @@ if __name__ == "__main__":
             + total_unite
             + total_vp
             + total_prive
+            + total_chg
+            + total_titres
+            + total_t2
+            + total_gare
             + total_prononciations
             + total_brev
             + total_verification
