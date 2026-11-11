@@ -23,7 +23,7 @@ from pathlib import Path
 RACINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RACINE / "src"))
 
-SPACE = "TIJAANI/guindima-ai"
+SPACE = "PythonMindset/guindima-ai"
 
 # Phrase (y compris telle que l'ASR l'écrit) -> lignes dont au moins une doit sortir.
 # « corr: » = trajet avec changement attendu, dont le 1er bus est cette ligne.
@@ -2158,6 +2158,54 @@ def test_yoff_tata_2() -> tuple[int, int]:
     resultat = matcher.find_line("Sandaga", "Pikine")
     verifie("Sandaga -> Pikine : Petersen (Tata 55/56) toujours proposé",
             {"Ligne 55", "Ligne 56"} & {t["ligne"] for t in resultat["lignes"]}, _detail(resultat))
+    return echecs, total
+
+
+def test_compte_hugging_face() -> tuple[int, int]:
+    """Le compte Hugging Face s'appelle maintenant PythonMindset (ex-TIJAANI).
+
+    Les anciennes adresses redirigent « pour l'instant » seulement : le lien
+    WhatsApp, le Whisper fine-tuné et les tests en ligne doivent viser le
+    nouveau nom. « --collecteur TIJAANI » (preparer_collecte.py) reste : c'est
+    le nom d'un collecteur de voix, pas une adresse Hugging Face.
+    """
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | compte hf {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    partage = (RACINE / "src" / "app" / "partage.py").read_text(encoding="utf-8")
+    transcribe = (RACINE / "src" / "asr" / "transcribe.py").read_text(encoding="utf-8")
+    verifie("lien WhatsApp vers le Space PythonMindset",
+            'LIEN_APP = "https://huggingface.co/spaces/PythonMindset/guindima-ai"' in partage)
+    verifie("Whisper fine-tuné sous PythonMindset",
+            'MODEL_WHISPER = "PythonMindset/whisper-small-wolof-dakar-essai3"' in transcribe)
+    verifie("tests en ligne vers PythonMindset/guindima-ai", SPACE == "PythonMindset/guindima-ai")
+    # Plus aucune adresse Hugging Face à l'ancien nom dans le code, les
+    # notebooks et la doc (identifiants « ancien-nom/… » et lien de profil).
+    # os.walk pour ne pas descendre dans .venv (des milliers de fichiers).
+    import os
+
+    # Motifs recollés ici, sinon ce test se trouverait lui-même.
+    ancien = "TIJ" + "AANI"
+    motifs = (ancien + "/", "huggingface.co/" + ancien)
+    restes = []
+    for dossier, sous, fichiers in os.walk(RACINE):
+        sous[:] = [d for d in sous if d not in {".venv", ".git", "data", "models", "__pycache__"}]
+        for nom in fichiers:
+            if not nom.endswith((".py", ".ipynb", ".md")) and nom != "LICENSE":
+                continue
+            chemin = Path(dossier) / nom
+            texte = chemin.read_text(encoding="utf-8", errors="ignore")
+            if any(motif in texte for motif in motifs):
+                restes.append(str(chemin.relative_to(RACINE)))
+    verifie("aucune adresse Hugging Face à l'ancien nom TIJAANI", not restes, restes[:5])
     return echecs, total
 
 
@@ -5198,6 +5246,7 @@ if __name__ == "__main__":
         echecs_titres, total_titres = test_titres_markdown()
         echecs_t2, total_t2 = test_yoff_tata_2()
         echecs_gare, total_gare = test_gare_gaar()
+        echecs_hf, total_hf = test_compte_hugging_face()
         echecs_prononciations, total_prononciations = test_prononciations()
         echecs_brev, total_brev = test_notebooks_brev()
         echecs_verification, total_verification = test_verification_voix()
@@ -5228,6 +5277,7 @@ if __name__ == "__main__":
             + echecs_titres
             + echecs_t2
             + echecs_gare
+            + echecs_hf
             + echecs_prononciations
             + echecs_brev
             + echecs_verification
@@ -5259,6 +5309,7 @@ if __name__ == "__main__":
             + total_titres
             + total_t2
             + total_gare
+            + total_hf
             + total_prononciations
             + total_brev
             + total_verification

@@ -458,13 +458,13 @@ def _remplace_token(src: str) -> str:
 # Le dépôt privé du Whisper finetuné, cité dans les commentaires du notebook
 # Brev pour expliquer le repli du préprocesseur (le même nom vit dans la
 # cellule Whisper des notebooks Colab, constante WHISPER_PRINCIPAL).
-WHISPER_PRIVE = "TIJAANI/whisper-small-wolof-dakar-essai3"
+WHISPER_PRIVE = "PythonMindset/whisper-small-wolof-dakar-essai3"
 
 
 def _ajoute_fallback_processeur(src: str) -> str:
     """Encadre la ligne du préprocesseur par un repli sur Whisper-small public.
 
-    TIJAANI/whisper-small-wolof-dakar-essai3 ne contient pas de
+    PythonMindset/whisper-small-wolof-dakar-essai3 ne contient pas de
     preprocessor_config.json (le script d'entraînement n'a pas sauvegardé le
     tokenizer) : le chargement du préprocesseur plante, alors qu'il ne manque
     que ça au dépôt. Le repli lit le préprocesseur du Whisper-small d'origine,

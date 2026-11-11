@@ -46,7 +46,7 @@ META_DEFAUT = RACINE / "data" / "collecte" / "metadata.csv"
 REVISIONS_CONNUES = {
     "M9and2M/whisper-small-wolof": "8cc20b3c6e77ecb490210103d3b4fd0b85c3d1d8",
     "openai/whisper-tiny": "169d4a4341b33bc18d8881c4b69c2e104e1cc0af",
-    "TIJAANI/whisper-small-wolof-dakar-essai3": "17f81ad52653495b5953387ea1f87ffda7bf2f15",
+    "PythonMindset/whisper-small-wolof-dakar-essai3": "17f81ad52653495b5953387ea1f87ffda7bf2f15",
 }
 
 

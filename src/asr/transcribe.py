@@ -1,9 +1,9 @@
 """Transcription wolof pour l'app : audio -> texte, avec notre whisper fine-tuné.
 
-On charge d'abord TIJAANI/whisper-small-wolof-dakar-essai3, notre fine-tuning
+On charge d'abord PythonMindset/whisper-small-wolof-dakar-essai3, notre fine-tuning
 de whisper-small sur les vocaux collectés par WhatsApp (WER 89,7 % -> 74,1 %
 sur 22 vocaux de 3 voix jamais vues). Le dépôt est privé : il faut le secret
-HF_TOKEN d'un compte du dépôt TIJAANI. S'il ne se charge pas (token absent,
+HF_TOKEN d'un compte du dépôt PythonMindset. S'il ne se charge pas (token absent,
 erreur réseau), on retombe tout seul sur M9and2M/whisper-small-wolof, le modèle
 de base wolof, public. Réglages inchangés : CPU, quantification int8,
 décodage glouton. SpeechBrain reste écarté : wav2vec2-large ne tient pas dans
@@ -24,7 +24,7 @@ import numpy as np
 # Notre fine-tuning sur les voix dakaroises (voir scripts/finetune_whisper.py
 # et scripts/evaluer_modele.py) : les trajets compris passent de 5/22 à 10/22
 # sur des voix jamais vues de l'entraînement.
-MODEL_WHISPER = "TIJAANI/whisper-small-wolof-dakar-essai3"
+MODEL_WHISPER = "PythonMindset/whisper-small-wolof-dakar-essai3"
 REVISION_WHISPER = "17f81ad52653495b5953387ea1f87ffda7bf2f15"
 
 # Repli automatique, public : si le dépôt fine-tuné n'est pas accessible, la
@@ -142,7 +142,7 @@ def load_model():
 
     torch.set_num_threads(NB_THREADS)
 
-    # Secret d'un compte du dépôt TIJAANI ; vide ou absent, on reste anonyme et
+    # Secret d'un compte du dépôt PythonMindset ; vide ou absent, on reste anonyme et
     # la bibliothèque essaie quand même le jeton déjà connecté en local.
     token = os.getenv("HF_TOKEN", "").strip() or None
     revisions = {

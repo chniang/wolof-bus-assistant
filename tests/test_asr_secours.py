@@ -3,7 +3,7 @@ repli automatique.
 
 Aucun modèle n'est téléchargé ni exécuté : `_telecharger_modele` et
 `_charger_pipeline` sont remplacés par des bouchons, pour ne tester que la
-logique — le dépôt TIJAANI privé en tête, le repli sur M9and2M/whisper-small-wolof
+logique — le dépôt PythonMindset privé en tête, le repli sur M9and2M/whisper-small-wolof
 quand le premier ne se charge pas (token absent, dépôt protégé, erreur réseau),
 le téléchargement des seuls fichiers de la racine (jamais les checkpoints) et
 le libellé affiché sous chaque résultat, qui doit dire quel Whisper a servi.

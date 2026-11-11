@@ -4,7 +4,7 @@ Assistant vocal wolof pour les bus de Dakar : l'usager dit son trajet en wolof,
 l'app répond avec la compagnie (Dem Dikk ou Tata AFTU), la ligne, l'arrêt de
 montée, l'arrêt de descente, un éventuel changement, à l'écran et à voix haute.
 
-- App en ligne : Hugging Face Space `TIJAANI/guindima-ai` (Gradio, ZeroGPU)
+- App en ligne : Hugging Face Space `PythonMindset/guindima-ai` (Gradio, ZeroGPU)
 - Code : GitHub `chniang/wolof-bus-assistant`
 - Environnement : Windows, PowerShell, Python 3.12, venv `.venv`
 
@@ -39,7 +39,7 @@ Astuce PowerShell : un script Python passé en « here-string » perd les accent
    - Kiriku-Wolof-ASR sur GPU, **chargé au niveau module** au démarrage (règle ZeroGPU) ;
      `@spaces.GPU(duration=30)` ne fait que le calcul, **ne jamais y charger un modèle**.
    - Secours / local : notre Whisper fine-tuné sur la collecte,
-     `TIJAANI/whisper-small-wolof-dakar-essai3` (CPU, int8, préchargé au démarrage).
+     `PythonMindset/whisper-small-wolof-dakar-essai3` (CPU, int8, préchargé au démarrage).
      Dépôt **privé** : lit le secret `HF_TOKEN` ; sans token, repli automatique sur
      `M9and2M/whisper-small-wolof` (message dans le journal). Seuls les fichiers de
      la racine sont téléchargés, jamais les dossiers `checkpoint-*`.

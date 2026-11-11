@@ -11,7 +11,7 @@ app_file: app.py
 
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Gradio 6.30](https://img.shields.io/badge/Gradio-6.30-F97316?logo=gradio&logoColor=white)](https://www.gradio.app/)
-[![Hugging Face - Live demo](https://img.shields.io/badge/Hugging%20Face-Live%20demo-FFD21E?logo=huggingface&logoColor=white)](https://huggingface.co/spaces/TIJAANI/guindima-ai)
+[![Hugging Face - Live demo](https://img.shields.io/badge/Hugging%20Face-Live%20demo-FFD21E?logo=huggingface&logoColor=white)](https://huggingface.co/spaces/PythonMindset/guindima-ai)
 [![ASR Kiriku-Wolof-ASR](https://img.shields.io/badge/ASR-Kiriku--Wolof--ASR-8CAAE6)](#-how-it-uses-the-models)
 [![Voice Oolel-Voices](https://img.shields.io/badge/Voice-Oolel--Voices-FF7F7F)](#-how-it-uses-the-models)
 [![License All rights reserved](https://img.shields.io/badge/License-All%20rights%20reserved-yellow)](LICENSE)
@@ -59,7 +59,7 @@ that riders who read little can use it entirely by voice.
 
 **Links:**
 
-- 🌐 **Live demo:** **https://huggingface.co/spaces/TIJAANI/guindima-ai**
+- 🌐 **Live demo:** **https://huggingface.co/spaces/PythonMindset/guindima-ai**
 - 🎥 **Demo video:** <!-- TODO: add the demo video link -->
 - 💻 **Code:** **https://github.com/chniang/wolof-bus-assistant**
 
@@ -79,7 +79,7 @@ engine (v2) and the native Oolel voice go live after the voice generation.
 | Part | Model | What it does |
 | --- | --- | --- |
 | Speech to text, GPU | `AIHubSN/Kiriku-Wolof-ASR` | Transcribes the Wolof recording; recognizes stop names far better than a generic Whisper. |
-| Speech to text, CPU | `TIJAANI/whisper-small-wolof-dakar-essai3` | Our own Whisper, fine-tuned on Wolof voices we collected in Dakar (int8, CPU). Runs when the free GPU is not granted. |
+| Speech to text, CPU | `PythonMindset/whisper-small-wolof-dakar-essai3` | Our own Whisper, fine-tuned on Wolof voices we collected in Dakar (int8, CPU). Runs when the free GPU is not granted. |
 | Speech to text, fallback | `M9and2M/whisper-small-wolof` | Public fallback loaded if our private fine-tuned repo is unavailable. |
 
 The other parts are clearly non-ASR:
@@ -160,7 +160,7 @@ when local extraction cannot find the trip.
 | When | What |
 | --- | --- |
 | 27 Sept 2026 | First prototype built at the GOMYCODE x NVIDIA hackathon: 2nd place in Senegal and NVIDIA Brev Breakthrough Award. |
-| October 2026 | Whisper small fine-tuned on Dakar Wolof speech (`TIJAANI/whisper-small-wolof-dakar-essai3`); pre-generated Wolof voice answers. |
+| October 2026 | Whisper small fine-tuned on Dakar Wolof speech (`PythonMindset/whisper-small-wolof-dakar-essai3`); pre-generated Wolof voice answers. |
 | November 2026 | Route engine v2 (Dijkstra/A\*, speeds per operator); reliable route data (65 official AFTU traces, official Dem Dikk itineraries, OpenStreetMap); basic Wolof conversation; native Oolel voice pipeline with a pronunciation lexicon; 530-check test suite. |
 
 ---
@@ -245,7 +245,7 @@ The suite has **530 checks** across those 7 suites.
 
 - 📧 [cheikhniang159@gmail.com](mailto:cheikhniang159@gmail.com)
 - 💼 [LinkedIn](https://www.linkedin.com/in/cheikh-niang-5370091b5/)
-- 🤗 [Hugging Face](https://huggingface.co/TIJAANI)
+- 🤗 [Hugging Face](https://huggingface.co/PythonMindset)
 - 🐙 [GitHub](https://github.com/chniang)
 
 ---
@@ -264,7 +264,7 @@ runs inside the app**.
   (GPU transcription online) — license: see model card (TODO verify);
 - [`M9and2M/whisper-small-wolof`](https://huggingface.co/M9and2M/whisper-small-wolof)
   (CPU fallback when the GPU is not there) — license: see model card (TODO verify);
-- [`TIJAANI/whisper-small-wolof-dakar-essai3`](https://huggingface.co/TIJAANI/whisper-small-wolof-dakar-essai3)
+- [`PythonMindset/whisper-small-wolof-dakar-essai3`](https://huggingface.co/PythonMindset/whisper-small-wolof-dakar-essai3)
   (our fine-tuning on the Dakar collection, private repo) — license: see model
   card (TODO verify).
 

@@ -40,7 +40,7 @@ SAMPLE_RATE = 16000
 
 MODEL_DEFAUT = "M9and2M/whisper-small-wolof"
 MODELE_ESSAI = "openai/whisper-tiny"
-DEPOT_HUB = "TIJAANI/whisper-small-wolof-dakar"
+DEPOT_HUB = "PythonMindset/whisper-small-wolof-dakar"
 
 # Révisions épinglées (HfApi.model_info, sans télécharger les poids). Le dépôt
 # d'entraînement ne doit pas changer entre deux runs : sinon le WER n'est plus

@@ -1,4 +1,4 @@
-r"""Crée (ou met à jour) le Space de test TIJAANI/kiriku-test et y envoie ce dossier.
+r"""Crée (ou met à jour) le Space de test PythonMindset/kiriku-test et y envoie ce dossier.
 
 Lancement depuis la racine du projet :
     .\.venv\Scripts\python.exe kiriku_test\creer_space_test.py
@@ -12,7 +12,7 @@ from pathlib import Path
 
 from huggingface_hub import HfApi, get_token
 
-REPO = "TIJAANI/kiriku-test"
+REPO = "PythonMindset/kiriku-test"
 DOSSIER = Path(__file__).parent
 
 api = HfApi()

@@ -10,7 +10,7 @@ from __future__ import annotations
 from urllib.parse import quote
 
 # L'app publiée, mise en lien dans chaque message partagé.
-LIEN_APP = "https://huggingface.co/spaces/TIJAANI/guindima-ai"
+LIEN_APP = "https://huggingface.co/spaces/PythonMindset/guindima-ai"
 
 
 def _bout(match: dict, cle: str, lieu_dit: str) -> str:

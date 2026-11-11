@@ -13,6 +13,6 @@ M9and2M/whisper-small-wolof, Oolel-Voices par soynade-research (AGPL-3.0),
 utilisé hors ligne pour pré-générer les audios, CONCREE/Adia_TTS (voix de
 référence, licence Apache 2.0, création de CONCREE),
 meta/llama-3.2-11b-vision-instruct, ainsi que notre fine-tuning
-TIJAANI/whisper-small-wolof-dakar-essai3 dérivé de M9and2M/whisper-small-wolof)
+PythonMindset/whisper-small-wolof-dakar-essai3 dérivé de M9and2M/whisper-small-wolof)
 restent soumis à leurs propres licences, qui s'appliquent à ces modèles et non
 à ce dépôt.
