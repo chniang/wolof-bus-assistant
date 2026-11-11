@@ -34,6 +34,12 @@ from .places import (
 MAX_TRANSFERS = 2
 ACCESS_WALK_RADIUS_M = 1200.0
 NEARBY_EXACT_STOP_RADIUS_M = 900.0
+# Autour d'un lieu nommé par l'usager, un arrêt conseillé doit rester à 600 m :
+# au-delà, la carte ne donne plus de nom d'arrêt (« MTOA » ouvrait « Central
+# Bel Air (MTOA) », 15 km au sud) et dit de chercher l'arrêt le plus proche.
+# Le calcul du trajet, lui, n'est pas restreint : une pénalité ici faisait
+# disparaître les Dem Dikk 10 et 13 de Liberté 5 (terminus de Dieuppeul).
+PLACE_STOP_RADIUS_M = 600.0
 MAX_NEARBY_STOPS = 14
 MAX_LABELS_PER_STATE = 6
 MAX_EXPANSIONS = 250_000

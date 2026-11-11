@@ -878,15 +878,33 @@ def _une_carte(
         depart_texte = _echapper(depart if depart else match["monte_a"])
         arrivee_texte = _echapper(arrivee if arrivee else match["descend_a"])
         fin = " pour changer de bus" if changement else ""
+        # Arrêt non garanti près du lieu dit (point du lieu inconnu, ou arrêt
+        # à plus de 600 m) : on ne montre pas un nom d'arrêt qui risque
+        # d'envoyer l'usager à l'autre bout du quartier, on lui dit de
+        # chercher l'arrêt le plus proche lui-même.
+        conseil_monte = (
+            f"— arrêt conseillé : <b style='color:#081F11;'>{_echapper(monte_a)}</b> "
+            f"<span style='font-weight:600;font-size:15px;color:#3D5A48;'>"
+            f"(ou tout arrêt de la ligne {affiche} près de toi)</span>"
+            if not match.get("monte_a_vague")
+            else (
+                f"<span style='font-weight:600;font-size:15px;color:#3D5A48;'>"
+                f": cherche l'arrêt de la ligne {affiche} le plus proche</span>"
+            )
+        )
+        conseil_descente = (
+            f"— arrêt conseillé : <b style='color:#081F11;'>{_echapper(descend_a)}</b>"
+            if not match.get("descend_a_vague")
+            else (
+                f"<span style='font-weight:600;font-size:15px;color:#3D5A48;'>"
+                f": cherche l'arrêt de la ligne {affiche} le plus proche</span>"
+            )
+        )
         trajet = (
             f"<div style='color:#11301C;font-size:22px;font-weight:800;"
             f"line-height:1.35;margin-top:8px;'>"
-            f"Monte à <b style='color:#081F11;'>{depart_texte}</b> — arrêt conseillé : "
-            f"<b style='color:#081F11;'>{_echapper(monte_a)}</b> "
-            f"<span style='font-weight:600;font-size:15px;color:#3D5A48;'>"
-            f"(ou tout arrêt de la ligne {affiche} près de toi)</span><br>"
-            f"Descends à <b style='color:#081F11;'>{arrivee_texte}</b> — arrêt conseillé : "
-            f"<b style='color:#081F11;'>{_echapper(descend_a)}</b>{fin}</div>"
+            f"Monte à <b style='color:#081F11;'>{depart_texte}</b> {conseil_monte}<br>"
+            f"Descends à <b style='color:#081F11;'>{arrivee_texte}</b> {conseil_descente}{fin}</div>"
         )
     arrets = _bloc_arrets(match)
     # Les terminus de la ligne, en petit : le parcours réel du bus.

@@ -18,12 +18,12 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 try:  # import à plat (app.py) ou lancé depuis src/intent/
-    from matching.lieux import lieux_reconnaissables
+    from matching.lieux import jetons, lieux_reconnaissables
 except ImportError:  # pragma: no cover
     import sys
 
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from matching.lieux import lieux_reconnaissables
+    from matching.lieux import jetons, lieux_reconnaissables
 
 ITINERAIRES_CSV = Path(__file__).resolve().parents[2] / "data" / "itineraires_dakar.csv"
 
@@ -400,6 +400,15 @@ REPLACEMENTS_PHRASE = (
     # mieux vaut ne rien répondre que d'envoyer l'usager à Fann.
     (r"\b(?:hann|hane|anne)\s+maristes?\b", " maristes "),
     (r"\b(?:teungueth|teungedj|tengedj|tengeej)\b", " rufisque "),
+    # L'université comme les étudiants la disent, et telle que l'ASR l'entend :
+    # « la fac », « yuniversite » (vu dans la collecte) → « UCAD », le nom que
+    # LIEUX garde pour l'arrêt du même endroit (Dem Dikk 1, 7, 23, 502A ;
+    # Tata 24, 37, 38, 54, 58, 62, 71, 84). L'alias de matching/lieux.py
+    # (« fac », « faculte ») sert au chemin LLM.
+    (r"\bfacultes?\b", " ucad "),
+    (r"\bfacs?\b", " ucad "),
+    (r"\byuniversites?\b", " ucad "),
+    (r"\bunivesites?\b", " ucad "),
 )
 
 # En dessous de ce ratio, on préfère ne rien trouver plutôt qu'inventer un quartier.
@@ -455,6 +464,26 @@ _CIBLES = [(_cible(lieu), lieu) for lieu in LIEUX] + [
 # Noms normalisés exacts. Un lieu très court (« HLM ») doit être reconnu quand il
 # est écrit tel quel, même si sa longueur passe sous LONGUEUR_MIN.
 _CIBLES_EXACTES = {cible for cible, _ in _CIBLES}
+
+# Formes étendues des alias : « Université » est le nom que LIEUX garde (forme
+# courte, même clé d'alias que « Université Cheikh Anta Diop »), mais l'usager
+# dit parfois le nom entier. L'alias du matcher (jetons) étend « universite »
+# vers le nom complet : la fenêtre des n-grammes le connaît aussi, sinon le
+# 4-gramme ne matchait rien et le reste de la phrase partait en « Cheikh Bethio ».
+# Seules les extensions qui rallongent comptent : « ecole mariste » -> « maristes »
+# raccourcit, la cible d'origine suffit déjà.
+_CIBLES_ETENDUES: list[tuple[str, str]] = []
+for _cible_brute, _lieu in _CIBLES:
+    _etendue = " ".join(jetons(_lieu))
+    # Une extension qui rallonge et qui n'est pas déjà une cible (« hopital
+    # dalal diam » est déjà le nom exact d'un arrêt) : sinon des doublons de
+    # candidats tournent dans la boucle pour rien.
+    if (
+        len(_etendue.split()) > len(_cible_brute.split())
+        and _etendue not in _CIBLES_EXACTES
+        and all(_etendue != _deja for _deja, _ in _CIBLES_ETENDUES)
+    ):
+        _CIBLES_ETENDUES.append((_etendue, _lieu))
 
 
 def _normaliser_phrase(phrase: str) -> str:
@@ -626,8 +655,15 @@ def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
     candidats: list[tuple[float, int, int, str]] = []
     # 1. Noms complets dits en entier : « rond point colobane » doit donner
     # « Rond-Point Colobane », pas seulement « Colobane ». Le nom complet est
-    # plus long et à score égal il passe avant le nom réduit.
-    for cible, lieu_exact in _CIBLES_COMPLETES:
+    # plus long et à score égal il passe avant le nom réduit. Tous les lieux
+    # y passent, pas seulement les noms à préfixe générique : « universite
+    # cheikh anta diop » (4 mots) dépassait la fenêtre des 3 n-grammes, et
+    # l'arrivée finissait en « Cheikh Bethio » avec le reste de la phrase.
+    # Les lieux qui portent un mot hors lieu (« sicap baobab ») restent
+    # volontairement non reconnus : le mot seul disqualifie, comme avant.
+    for cible, lieu_exact in _CIBLES_COMPLETES + _CIBLES + _CIBLES_ETENDUES:
+        if any(mot in MOTS_HORS_LIEUX for mot in cible.split()):
+            continue
         sequence = cible.split()
         taille = len(sequence)
         for debut in range(len(mots) - taille + 1):
@@ -768,6 +804,19 @@ def extract_local(phrase: str) -> dict:
                 "erreur": None,
                 "source": "local",
             }
+
+    # Un seul lieu reconnu, dit après « dem » : c'est l'arrivée, jamais le
+    # départ. « Maa ngi Guinaw Rails, bëgg naa dem Pikine » (Guinaw Rails
+    # inconnu) donnait « départ Pikine » : un trajet faux. Mieux vaut un départ
+    # vide, que l'app redemande, qu'un départ inventé.
+    if position_dem >= 0 and len(trouves) == 1 and trouves[0][0] > position_dem:
+        return {
+            "depart": "",
+            "arrivee": trouves[0][2],
+            "compagnie": compagnie,
+            "erreur": None,
+            "source": "local",
+        }
 
     return {
         "depart": trouves[0][2],

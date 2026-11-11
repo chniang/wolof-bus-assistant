@@ -42,6 +42,11 @@ ALIAS = {
     "leclerc": "place leclerc",
     "ucad": "universite cheikh anta diop",
     "universite": "universite cheikh anta diop",
+    # Les étudiants disent « la fac » : l'UCAD, la Cité universitaire de Dakar.
+    # Les gares de l'université (Dem Dikk 1, 7, 23, 502A ; Tata 24, 37, 38, 54,
+    # 58, 62, 71, 84) s'y retrouvent toutes.
+    "fac": "universite cheikh anta diop",
+    "faculte": "universite cheikh anta diop",
     # Variantes de « Médina » vues par l'ASR. « medine » (Grand Médine) reste à
     # part : c'est un autre lieu, on ne le rabat pas sur Médina.
     "madiina": "medina",
@@ -195,16 +200,28 @@ def _proches(a: str, b: str) -> bool:
     return SequenceMatcher(None, a, b).ratio() >= 0.85
 
 
+# Mots qui font d'un nom un autre lieu : « Grand Yoff » n'est pas Yoff (3 km),
+# « Grand Médine » n'est pas Médine, « Grand Mbao » n'est pas Mbao. Un arrêt
+# qui porte ce mot ne répond pas à une demande qui ne le dit pas.
+MOTS_AUTRE_LIEU = {"grand"}
+
+
 @lru_cache(maxsize=131072)
 def _score_brut(q: tuple[str, ...], s: tuple[str, ...]) -> float:
     if q == s:
         return 1.0
+    if any(mot in s and mot not in q for mot in MOTS_AUTRE_LIEU):
+        return 0.0
     if all(mot in s for mot in q):
         return 0.5 + 0.5 * len(q) / len(s)
     if all(any(_proches(mot, m) for m in s) for mot in q):
         return 0.45 + 0.45 * len(q) / len(s)
     # Mots collés par l'ASR ou l'opérateur : « kharyalla », « taliboubess ».
+    # Jamais avec un numéro : « unite1 » est dans « unite15 », mais l'Unité 1
+    # des Parcelles n'est pas l'Unité 15.
     colle_q, colle_s = "".join(q), "".join(s)
+    if any(mot.isdigit() for mot in q):
+        return 0.0
     if len(colle_q) >= 5 and colle_q in colle_s:
         return 0.45 + 0.45 * len(colle_q) / len(colle_s)
     return 0.0

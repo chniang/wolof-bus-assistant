@@ -12,7 +12,7 @@ Le réseau est construit une seule fois, à l'import, comme ``MATCHER`` dans
 from __future__ import annotations
 
 from .data import load_data
-from .network import Network
+from .network import Network, haversine_m
 from functools import lru_cache
 
 from .corrections import STOP_NAME_ALIASES
@@ -20,6 +20,7 @@ from .places import PlaceIndex, normalize_name, terminus_forms
 from .router import (
     Leg,
     NoRouteFoundError,
+    PLACE_STOP_RADIUS_M,
     PlaceNotFoundError,
     ResolvedPlace,
     RouteEngine,
@@ -114,6 +115,11 @@ def _troncon(leg: Leg) -> dict:
         "depart": depart,
         "arrivee": arrivee,
         "sens": "direct" if direct else "inverse",
+        # Les noms du réseau, non embellis : l'écran montre « joli » (accents,
+        # majuscules), mais mesurer la distance lieu→arrêt exige le nom exact
+        # que _NETWORK.coords sait lire.
+        "monte_a_reseau": leg.board_stop,
+        "descend_a_reseau": leg.alight_stop,
         "monte_a": joli(leg.board_stop),
         "descend_a": joli(leg.alight_stop),
         "arrets_trajet": [joli(arret) for arret in parcours],
@@ -287,7 +293,23 @@ def _resoudre(matcher, lieu: str) -> dict:
     # celle de arrets_geo.csv peut être périmée (AIBD, placé à Grand Yoff).
     point = None if note >= 1.0 else matcher.geo.point_connu(lieu)
 
+    # Le point fiable du lieu, pour juger si l'arrêt proposé est vraiment près de
+    # lui (message vague sinon). Un lieu nommé exactement prend la position de
+    # l'arrêt sur le réseau ; un quartier prend son point de lieux_geo.csv. Jamais
+    # d'appel réseau ici : pas de position vaut mieux qu'une position devinée.
+    point_sur = None
+    if meilleur and note >= 1.0:
+        for nom in _vers_reseau([meilleur]):
+            coords = _NETWORK.coords(nom)
+            if coords is not None:
+                point_sur = coords
+                break
+    if point_sur is None:
+        point_sur = matcher.geo.point_connu(lieu)
+
     def place(seuil: float) -> ResolvedPlace:
+        # Pas de restriction ici : un arrêt loin du lieu dit garde sa ligne. La
+        # carte, elle, passe en message vague au-delà de 600 m (_vague).
         return ResolvedPlace(
             stops=_vers_reseau([a for a in tries if notes_v1[a] >= seuil]),
             coords=point,
@@ -301,6 +323,15 @@ def _resoudre(matcher, lieu: str) -> dict:
         "large": place(MIN_SCORE),
         "notes": notes,
         "par_son_nom": par_son_nom,
+        "point_sur": point_sur,
+        # Arrêts qui portent le nom exact du lieu : « Terminus Liberté 5
+        # (Dieuppeul) » est Liberté 5, même à 1,3 km de l'autre arrêt Liberté 5.
+        "nom_exact": {
+            nom
+            for arret in tries
+            if _note_du_nom(lieu, arret) >= 1.0
+            for nom in _arrets_du_reseau(arret)
+        },
     }
 
 
@@ -346,6 +377,56 @@ def _directs_comme_v1(trips: list[Trip], dep: dict, arr: dict) -> list[Trip]:
     # devant Tata 55 pour Sandaga -> Pikine parce qu'elle s'arrête à « Sandaga ».
     classes = sorted(rank_trips(gardes), key=direct_rank_key)
     return remove_dominated_trips(classes, _NETWORK)
+
+
+def _equilibrer(
+    trajets: list[dict],
+    compagnies_du_trajet,
+    filtre_actif: bool,
+) -> list[dict]:
+    """Le meilleur Dem Dikk puis le meilleur Tata d'abord, le reste ensuite.
+
+    « Tous » ne doit pas montrer trois Tata qui se suivent quand Dem Dikk a
+    aussi sa ligne : sur Yoff -> Guédiawaye, la plus rapide n'était que Tata et
+    le choix de l'usager disparaissait. Un filtre de compagnie actif, lui, n'a
+    rien à équilibrer (il n'y a qu'un opérateur par définition).
+    """
+
+    if filtre_actif or len(trajets) <= 1:
+        return trajets
+    de_dem_dikk = next(
+        (t for t in trajets if compagnies_du_trajet(t) == {"Dakar Dem Dikk"}), None
+    )
+    de_tata = next(
+        (t for t in trajets if compagnies_du_trajet(t) == {"Tata AFTU"}), None
+    )
+    if de_dem_dikk is None and de_tata is None:
+        return trajets
+    ordre = [bus for bus in (de_dem_dikk, de_tata) if bus is not None]
+    reste = [
+        t for t in trajets if t is not de_dem_dikk and t is not de_tata
+    ]
+    return ordre + reste
+
+
+def _vague(lieu: dict, arret: str) -> bool:
+    """Arrêt non garanti près du lieu dit : la carte doit le dire.
+
+    Un arrêt qui porte le nom exact du lieu n'est jamais vague. Sinon, sans
+    point fiable pour le lieu (« Keur Massar » absent des CSV), ou avec un
+    arrêt à plus de 600 m (arrêt sans position, arrêt voisin trop loin), on ne
+    prétend pas connaître l'arrêt exact.
+    """
+
+    if arret in lieu.get("nom_exact", ()):
+        return False
+    point = lieu.get("point_sur")
+    if point is None:
+        return True
+    coords = _NETWORK.coords(arret)
+    if coords is None:
+        return True
+    return haversine_m(point, coords) > PLACE_STOP_RADIUS_M
 
 
 def _resultat_vide(depart: str, arrivee: str, dep: dict, arr: dict) -> dict:
@@ -450,9 +531,43 @@ def chercher_v2(
         elif len(trip.legs) == 3:
             trajets_2.append(_trajet_2(trip))
 
+    # « Tous » montre les deux compagnies : le meilleur Dem Dikk puis le
+    # meilleur Tata passent devant le reste, qui suit l'ordre du temps. Le
+    # plafond d'affichage vient après, sur la liste équilibrée.
+    filtre_actif = compagnies is not None
+    lignes = _equilibrer(lignes, lambda t: {t["compagnie"]}, filtre_actif)
+    correspondances = _equilibrer(
+        correspondances,
+        lambda t: {t["etape_1"]["compagnie"], t["etape_2"]["compagnie"]},
+        filtre_actif,
+    )
+
     lignes = lignes[:MAX_LIGNES]
     correspondances = correspondances[:MAX_CORRESPONDANCES]
     trajets_2 = trajets_2[:MAX_TRAJETS_2]
+
+    # L'arrêt de montée / descente n'est garanti près du lieu dit que si le
+    # point fiable le confirme : sinon la carte passe en message vague. Seuls
+    # les deux bouts du trajet portent un lieu dit ; le changement de bus, lui,
+    # est l'arrêt réel du réseau.
+    for ligne in lignes:
+        ligne["monte_a_vague"] = _vague(dep, ligne["monte_a_reseau"])
+        ligne["descend_a_vague"] = _vague(arr, ligne["descend_a_reseau"])
+    for corr in correspondances:
+        corr["etape_1"]["monte_a_vague"] = _vague(
+            dep, corr["etape_1"]["monte_a_reseau"]
+        )
+        corr["etape_2"]["descend_a_vague"] = _vague(
+            arr, corr["etape_2"]["descend_a_reseau"]
+        )
+    for trajet in trajets_2:
+        if trajet["etapes"]:
+            trajet["etapes"][0]["monte_a_vague"] = _vague(
+                dep, trajet["etapes"][0]["monte_a_reseau"]
+            )
+            trajet["etapes"][-1]["descend_a_vague"] = _vague(
+                arr, trajet["etapes"][-1]["descend_a_reseau"]
+            )
 
     resultat.update(
         {

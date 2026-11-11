@@ -320,6 +320,18 @@ def _matcher():
     return MoteurV2(repli)
 
 
+def _matcher_hors_ligne():
+    """Le même moteur, sans aucun appel Nominatim : seuls les points des CSV.
+
+    Un lieu inconnu (« Guinaw Rails ») partait sinon en géocodage réseau, et
+    le cache data/sources/cache_lieux_nominatim.json changeait pendant les tests.
+    """
+    matcher = _matcher()
+    repli = getattr(matcher, "_repli", matcher)
+    repli.geo.point = repli.geo.point_connu
+    return matcher
+
+
 def test_local() -> int:
     from intent.extract_intent import extract_local
     from matching.compagnie import message_autre_compagnie
@@ -1348,6 +1360,325 @@ def test_alias_lieux() -> tuple[int, int]:
     finally:
         matcher.geo.point = ancien_point
 
+    return echecs, total
+
+
+def test_universite_fac() -> tuple[int, int]:
+    """L'université comme les étudiants la disent : nom complet, « la fac », ASR.
+
+    « Université Cheikh Anta Diop » dit en entier doit donner l'UCAD d'un seul
+    lieu : avant, la fenêtre des 3 n-grammes coupait le nom, et le reste de la
+    phrase partait en « Cheikh Bethio ». « la fac » (réécriture « ucad »,
+    alias de lieux.py) et les graphies ASR (« yuniversite », « univesite »)
+    mènent au même arrêt, d'où partent les lignes vers Rufisque et la banlieue.
+    """
+    from intent.extract_intent import extract_local
+    from matching.lieux import score
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | université {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    lieux = extract_local("Maa ngi Université Cheikh Anta Diop, bëgg naa dem Rufisque")
+    verifie(
+        "nom complet -> UCAD, sans troncature",
+        lieux.get("depart") == "UCAD",
+        lieux,
+    )
+    verifie("nom complet : l'arrivée reste Rufisque", lieux.get("arrivee") == "Rufisque", lieux)
+
+    # « la fac » et sa variante écrite, graphies ASR comprises : tout mène à l'UCAD.
+    for forme in ("fac", "Faculté", "yuniversite", "univesite"):
+        lieux = extract_local(f"Maa ngi {forme}, bëgg naa dem Rufisque")
+        verifie(
+            f"« {forme} » -> UCAD",
+            lieux.get("depart") == "UCAD" and lieux.get("arrivee") == "Rufisque",
+            lieux,
+        )
+    verifie("alias matcher : « Fac » vaut l'UCAD", score("Fac", "UCAD") == 1.0)
+    verifie("alias matcher : « Faculté » vaut l'UCAD", score("Faculté", "UCAD") == 1.0)
+
+    # De l'UCAD à Rufisque, un trajet existe.
+    matcher = _matcher()
+    ancien_point = matcher.geo.point
+    matcher.geo.point = matcher.geo.point_connu
+    try:
+        resultat = matcher.find_line("UCAD", "Rufisque")
+        verifie(
+            "UCAD -> Rufisque : un trajet existe",
+            resultat["depart_valide"]
+            and resultat["arrivee_valide"]
+            and (resultat["found"] or resultat.get("correspondances")),
+            _detail(resultat),
+        )
+    finally:
+        matcher.geo.point = ancien_point
+
+    return echecs, total
+
+
+def test_equilibre_compagnies() -> tuple[int, int]:
+    """« Tous » montre les deux compagnies : le meilleur Dem Dikk puis le meilleur Tata.
+
+    Le plus rapide ne doit pas remplir seul les trois cartes : quand les deux
+    opérateurs desservent le trajet, l'usager doit voir son choix des deux
+    côtés, puis les autres dans l'ordre du temps. Un filtre de compagnie, lui,
+    ne renvoie que cette compagnie ; un trajet sans l'autre opérateur n'invente
+    rien.
+    """
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | équilibre {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    matcher = _matcher_hors_ligne()
+    cas = (
+        ("Pikine", "Thiaroye"),
+        ("Yoff", "Médina"),
+        ("Colobane", "UCAD"),
+        ("Médina", "Petersen"),
+    )
+    for dep, arr in cas:
+        resultat = matcher.find_line(dep, arr)
+        lignes = resultat.get("lignes") or []
+        compagnies = {ligne["compagnie"] for ligne in lignes}
+        verifie(
+            f"{dep} -> {arr} : les deux compagnies en tête des directs",
+            len(lignes) >= 2
+            and {lignes[0]["compagnie"], lignes[1]["compagnie"]}
+            == {"Dakar Dem Dikk", "Tata AFTU"},
+            _detail(resultat),
+        )
+        verifie(
+            f"{dep} -> {arr} : noms d'arrêts inchangés par l'équilibre",
+            all(ligne["monte_a_reseau"] and ligne["descend_a_reseau"] for ligne in lignes),
+        )
+
+    # Un filtre actif ne mélange rien et n'équilibre pas : une seule compagnie.
+    for compagnie in ("Tata AFTU", "Dakar Dem Dikk"):
+        resultat = matcher.find_line("Pikine", "Thiaroye", compagnies={compagnie})
+        lignes = resultat.get("lignes") or []
+        verifie(
+            f"filtre {compagnie} : rien d'autre que cette compagnie",
+            bool(lignes)
+            and all(ligne["compagnie"] == compagnie for ligne in lignes),
+            _detail(resultat),
+        )
+
+    # Une paire desservie par un seul opérateur : rien d'inventé, l'ordre du
+    # temps reste tel quel.
+    resultat = matcher.find_line("Pikine", "Yeumbeul")
+    lignes = resultat.get("lignes") or []
+    verifie(
+        "Pikine -> Yeumbeul : que des Tata, dans l'ordre du temps",
+        bool(lignes)
+        and all(ligne["compagnie"] == "Tata AFTU" for ligne in lignes)
+        and [ligne["minutes"] for ligne in lignes] == sorted(
+            ligne["minutes"] for ligne in lignes
+        ),
+        _detail(resultat),
+    )
+
+    return echecs, total
+
+
+def test_trajets_etudiants() -> tuple[int, int]:
+    """Les trajets des étudiants, dans les deux sens, en moins de 2 h 30.
+
+    Retour du terrain : « Université -> Rufisque » ne donnait rien. L'UCAD doit
+    mener aux quartiers où vivent les étudiants, aller et retour, avec un temps
+    raisonnable (au-delà de 2 h 30, la réponse est absurde).
+    """
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | étudiants {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    def plus_court(resultat: dict) -> int | None:
+        temps = [
+            trajet.get("minutes")
+            for cle in ("lignes", "correspondances", "trajets_2")
+            for trajet in resultat.get(cle) or []
+        ]
+        temps = [t for t in temps if t is not None]
+        return min(temps) if temps else None
+
+    matcher = _matcher_hors_ligne()
+    quartiers = (
+        "Rufisque", "Keur Massar", "Pikine", "Guédiawaye", "Parcelles Assainies",
+        "Petersen", "Colobane", "Sandaga", "Liberté 6", "Yoff",
+    )
+    for quartier in quartiers:
+        for dep, arr in (("UCAD", quartier), (quartier, "UCAD")):
+            resultat = matcher.find_line(dep, arr)
+            minutes = plus_court(resultat)
+            verifie(
+                f"{dep} -> {arr} : un bus en moins de 2 h 30 ({minutes} min)",
+                minutes is not None and minutes <= 150,
+                _detail(resultat),
+            )
+
+    resultat = matcher.find_line("Université", "Rufisque")
+    minutes = plus_court(resultat)
+    verifie(
+        f"Université -> Rufisque : un bus ({minutes} min)",
+        minutes is not None and minutes <= 150,
+        _detail(resultat),
+    )
+    return echecs, total
+
+
+def test_noms_proches() -> tuple[int, int]:
+    """« Yoff » n'est pas « Grand Yoff », « Unité 1 » n'est pas « Unité 15 ».
+
+    Retour du terrain : « Maa ngi Yoff » faisait monter à Grand Yoff, à 3 km.
+    Le nom complet exact passe avant tout nom partiel ou approché ; les noms
+    voisins (Liberté 5/6, unités des Parcelles, Pikine/Guinaw Rails/Thiaroye)
+    ne se remplacent jamais l'un l'autre.
+    """
+    from intent.extract_intent import extract_local
+    from matching.lieux import sans_accents, score
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | noms proches {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    for requete, arret in (
+        ("Yoff", "Grand Yoff"), ("Yoff", "Mairie Grand Yoff"), ("Grand Yoff", "Yoff"),
+        ("Grand Yoff", "Yoff Village"), ("Liberté 5", "Liberté 6"),
+        ("Liberté 6", "Liberté 5"), ("Unité 1", "Unité 15"), ("Unité 15", "Unité 1"),
+        ("Unité 2", "Unité 22"), ("Pikine", "Guinaw Rails"), ("Pikine", "Thiaroye"),
+        ("Thiaroye", "Pikine"), ("Guinaw Rails", "Pikine"),
+    ):
+        verifie(f"« {requete} » ne vaut pas « {arret} »", score(requete, arret) == 0.0,
+                score(requete, arret))
+    verifie("« Yoff » reconnaît encore « Yoff Village »", score("Yoff", "Yoff Village") > 0.5)
+    verifie("« Grand Yoff » reconnaît « Mairie Grand Yoff »",
+            score("Grand Yoff", "Mairie Grand Yoff") > 0.5)
+
+    lieux = extract_local("Maa ngi Yoff, bëgg naa dem Médina")
+    verifie("phrase : Yoff reste Yoff", lieux.get("depart") == "Yoff", lieux)
+    lieux = extract_local("Maa ngi Grand Yoff, bëgg naa dem Médina")
+    verifie("phrase : Grand Yoff reste Grand Yoff",
+            (lieux.get("depart") or "").replace("-", " ") == "Grand Yoff", lieux)
+
+    # Départ inconnu : la seule destination dite ne devient jamais le départ.
+    for phrase, arrivee in (
+        ("Maa ngi Guinaw Rails, bëgg naa dem Pikine", "Pikine"),
+        ("Maa ngi Unité 15, bëgg naa dem Liberté 5", "Liberté 5"),
+    ):
+        lieux = extract_local(phrase)
+        verifie(
+            f"phrase : « {phrase} » ne part pas de {arrivee}",
+            lieux.get("depart") != arrivee and lieux.get("arrivee") == arrivee,
+            lieux,
+        )
+
+    matcher = _matcher_hors_ligne()
+    for dep, arr, interdit in (
+        ("Yoff", "Médina", "grand yoff"),
+        ("Grand Yoff", "Médina", "yoff village"),
+        ("Liberté 5", "Palais", "liberte 6"),
+        ("Liberté 6", "Palais", "liberte 5"),
+    ):
+        resultat = matcher.find_line(dep, arr)
+        montees = {
+            sans_accents(t["monte_a"]).replace("-", " ")
+            for t in resultat.get("lignes") or []
+        } | {
+            sans_accents(c["etape_1"]["monte_a"]).replace("-", " ")
+            for c in resultat.get("correspondances") or []
+        }
+        verifie(
+            f"{dep} -> {arr} : jamais monté à « {interdit} »",
+            bool(montees) and not any(interdit in m for m in montees),
+            _detail(resultat),
+        )
+    return echecs, total
+
+
+def test_arret_vague() -> tuple[int, int]:
+    """Arrêt de montée / descente : le plus proche du lieu dit, sinon un conseil.
+
+    Au-delà de 600 m du lieu, ou sans position fiable, la carte ne nomme plus
+    d'arrêt : « Monte à X : cherche l'arrêt de la ligne N le plus proche ».
+    Un arrêt qui porte le nom exact du lieu reste nommé.
+    """
+    import os
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_arret_vague")
+    from routing import adapter
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | arrêt vague {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    yoff = adapter._resoudre(_matcher_hors_ligne()._repli, "Yoff")
+    verifie("arrêt au nom exact : jamais vague", not adapter._vague(yoff, "Yoff"))
+    verifie("lieu sans position : vague", adapter._vague({"point_sur": None}, "Yoff"))
+    verifie(
+        "arrêt à 3 km (Grand Yoff pour Yoff) : vague",
+        adapter._vague(yoff, "Grand Yoff"),
+    )
+
+    # Liberté 5 : le terminus de Dieuppeul porte le nom, il reste nommé.
+    resultat = _matcher_hors_ligne().find_line("Liberté 5", "Palais")
+    verifie(
+        "Liberté 5 -> Palais : arrêts nommés, pas de conseil vague",
+        bool(resultat["lignes"])
+        and not any(ligne["monte_a_vague"] for ligne in resultat["lignes"]),
+        _detail(resultat),
+    )
+
+    match = {
+        "ligne": "Ligne 62", "compagnie": "Tata AFTU",
+        "monte_a": "UCAD", "descend_a": "Fass Rufisque",
+        "monte_a_vague": False, "descend_a_vague": True,
+        "depart": "UCAD", "arrivee": "Rufisque", "arrets_trajet": [],
+    }
+    carte = app._une_carte(match, depart="UCAD", arrivee="Rufisque")
+    verifie(
+        "carte : descente vague -> « cherche l'arrêt de la ligne 62 le plus proche »",
+        "Rufisque</b> <span" in carte
+        and ": cherche l'arrêt de la ligne 62 le plus proche" in carte
+        and "Fass Rufisque" not in carte.split("Descends à")[1].split("</div>")[0],
+        carte,
+    )
+    verifie("carte : montée sûre -> arrêt conseillé nommé", "arrêt conseillé : <b" in carte)
     return echecs, total
 
 
@@ -4198,6 +4529,11 @@ if __name__ == "__main__":
         echecs_voix, total_voix = test_voix()
         echecs_lieux, total_lieux = test_lieux()
         echecs_alias, total_alias = test_alias_lieux()
+        echecs_universite, total_universite = test_universite_fac()
+        echecs_equilibre, total_equilibre = test_equilibre_compagnies()
+        echecs_etudiants, total_etudiants = test_trajets_etudiants()
+        echecs_proches, total_proches = test_noms_proches()
+        echecs_vague, total_vague = test_arret_vague()
         echecs_prononciations, total_prononciations = test_prononciations()
         echecs_brev, total_brev = test_notebooks_brev()
         echecs_verification, total_verification = test_verification_voix()
@@ -4216,6 +4552,11 @@ if __name__ == "__main__":
             + echecs_voix
             + echecs_lieux
             + echecs_alias
+            + echecs_universite
+            + echecs_equilibre
+            + echecs_etudiants
+            + echecs_proches
+            + echecs_vague
             + echecs_prononciations
             + echecs_brev
             + echecs_verification
@@ -4235,6 +4576,11 @@ if __name__ == "__main__":
             + total_voix
             + total_lieux
             + total_alias
+            + total_universite
+            + total_equilibre
+            + total_etudiants
+            + total_proches
+            + total_vague
             + total_prononciations
             + total_brev
             + total_verification
