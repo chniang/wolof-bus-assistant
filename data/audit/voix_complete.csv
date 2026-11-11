@@ -644,6 +644,10 @@ conversation,Maa ngi tudd GuindiMa. Damay won nit ñi biis bi ñuy jël ci Ndaka
 conversation,Maalekum salaam ! Fan nga bëgga dem ?,conversation_salutation.wav,tts_cache_ajouts
 conversation,"Wax ma fan nga nekk ak fan nga bëgga dem, ma won la biis bi nga wara jël.",conversation_capacites.wav,tts_cache_ajouts
 conversation,"Ñoo ko bokk ! Soo ma soxlaa, maa ngi lay déglu.",conversation_merci.wav,tts_cache_ajouts
+conversation,"Maa ngi ci jàmm, alxamdulilaay. Yaw nag ?",conversation_ci_lo_nekk.wav,tts_cache_ajouts
+conversation,Sama liggéey mooy won nit ñi biis bi ñuy jël ci Ndakaaru.,conversation_liggeey.wav,tts_cache_ajouts
+conversation,"Ci Ndakaaru laa dëkk, ci biir sa telefon.",conversation_dekk.wav,tts_cache_ajouts
+conversation,"Waaw, dégg naa wolof. Wax ma fan nga bëgga dem.",conversation_wolof.wav,tts_cache_ajouts
 ligne,"Jëlal biis bu Dem Dikk, Taf Taf Wakaam.",dakar_dem_dikk_taf_taf_ouakam_to1.wav,tts_cache_ajouts
 ligne,"Jëlal biis bu Dem Dikk, numero fukk ak juróom.",dakar_dem_dikk_15.wav,tts_cache_ajouts
 ligne,"Jëlal biis bu Dem Dikk, numero juróomi téeméer ak ñaar.",dakar_dem_dikk_502.wav,tts_cache_ajouts

@@ -1,12 +1,13 @@
 # Faire tourner les notebooks voix sur une machine NVIDIA Brev
 
-Les deux notebooks voix ont une variante **Brev** (Jupyter simple, sans Google
+Les trois notebooks voix ont une variante **Brev** (Jupyter simple, sans Google
 Drive) en plus des versions Colab :
 
 | Notebook | Ce qu'il fabrique |
 | --- | --- |
 | `notebooks/voix_test_prononciation_brev.ipynb` | les 12 audios de test de prononciation → `sortie_voix/audios/` puis `sortie_voix/voix_test.zip` |
-| `notebooks/voix_oolel_complete_brev.ipynb` | les 869 audios (637 + 232) → `sortie_voix/tts_cache_oolel/` puis `sortie_voix/tts_cache_oolel.zip` |
+| `notebooks/voix_oolel_complete_brev.ipynb` | tous les audios du CSV (`voix_complete.csv`, 637 + ajouts) → `sortie_voix/tts_cache_oolel/` puis `sortie_voix/tts_cache_oolel.zip` |
+| `notebooks/voix_ajouts_conversation_brev.ipynb` | les 4 réponses de conversation récentes + 3 essais « Tata » à écouter → `sortie_voix/audios_conversation/` puis `sortie_voix/ajouts_conversation.zip` |
 
 Les versions Colab restent telles quelles ; seule la partie « Colab » change
 (Drive → dossier local `./sortie_voix/`, secrets Colab → variable
@@ -21,9 +22,11 @@ reprise après coupure sont identiques.
    Jupyter déjà installés — pip et torch peuvent manquer, la première cellule
    du notebook s'en occupe). Les deux notebooks tiennent dans quelques Go de
    VRAM ; pas besoin de plus.
-2. **Upload** : dans l'interface Jupyter de la machine, téléverse les deux
-   fichiers `.ipynb` (le `voix_oolel_complete_brev.ipynb`, et optionnellement
-   le `voix_test_prononciation_brev.ipynb` pour un essai rapide d'abord).
+2. **Upload** : dans l'interface Jupyter de la machine, téléverse les fichiers
+   `.ipynb` (le `voix_oolel_complete_brev.ipynb`, et optionnellement
+   le `voix_test_prononciation_brev.ipynb` pour un essai rapide d'abord,
+   ou le `voix_ajouts_conversation_brev.ipynb` pour poser juste les
+   nouvelles réponses de conversation).
 3. **Jeton** : dans l'environnement de la machine, définis la variable
    `HF_TOKEN` avec un jeton Hugging Face (lecture seule suffit). Le notebook
    ne le demande **pas au clavier** : pas de saisie possible sur une machine
@@ -67,10 +70,18 @@ Depuis la racine du dépôt :
 ```
 
 (ajuste le chemin du zip ; l'option `--zip` est la même chose que l'argument
-positionnel des versions Colab). Le script vérifie les 869 noms attendus
+positionnel des versions Colab). Le script vérifie les noms attendus
 (`data/audit/voix_complete.csv`) puis remplit `data/tts_cache_oolel/` — il ne
 touche ni `data/tts_cache/` ni `data/tts_cache_ajouts/`, qui restent en
 secours tant que le nouveau cache n'est pas complet.
+
+Pour le petit zip des ajouts de conversation, même principe avec
+`--conversation` : seules les 4 réponses de conversation sont installées, les
+essais « Tata » restent à écouter, et l'archive complète n'est pas requise :
+
+```powershell
+.\.venv\Scripts\python.exe scripts\installer_voix_oolel.py --conversation C:\Users\Lenovo\Downloads\ajouts_conversation.zip
+```
 
 ## La facture Brev
 

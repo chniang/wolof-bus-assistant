@@ -1067,7 +1067,7 @@ def test_moteur_v2() -> tuple[int, int]:
 
 
 def test_conversation() -> tuple[int, int]:
-    """Petite conversation : les 8 phrases validées, et un trajet gagne toujours.
+    """Petite conversation : les 12 phrases validées, et un trajet gagne toujours.
 
     Les phrases de réponse sont celles validées par un locuteur natif : elles sont
     recopiées ici pour qu'aucune modification ne passe inaperçue.
@@ -1096,24 +1096,42 @@ def test_conversation() -> tuple[int, int]:
     reponses = {
         "salutation": "Maalekum salaam ! Fan nga bëgga dem ?",
         "ca_va": "Maa ngi fi rekk, jërëjëf. Yaw nag ? Fan nga bëgga dem ?",
-        "merci": "Ñoo ko bokk ! Soo ma soxlaa, maa ngi lay déglu.",
+        "ci_lo_nekk": "Maa ngi ci jàmm, alxamdulilaay. Yaw nag ?",
+        "liggeey": "Sama liggéey mooy won nit ñi biis bi ñuy jël ci Ndakaaru.",
         "role": "Maa ngi tudd GuindiMa. Damay won nit ñi bus bi ñuy jël ci Ndakaaru.",
+        "dekk": "Ci Ndakaaru laa dëkk, ci biir sa telefon.",
+        "wolof": "Waaw, dégg naa wolof. Wax ma fan nga bëgga dem.",
+        "merci": "Ñoo ko bokk ! Soo ma soxlaa, maa ngi lay déglu.",
         "createur": "Cheikh Niang moo ma defar.",
         "capacites": "Wax ma fan nga nekk ak fan nga bëgga dem, ma won la bus bi nga wara jël.",
         "au_revoir": "Ba beneen yoon !",
         "hors_sujet": "Baal ma, bus yi rekk laa xam. Wax ma fan nga nekk ak fan nga bëgga dem.",
     }
     obtenues = {i.nom: i.reponse for i in INTENTIONS + (HORS_SUJET,)}
-    verifie("les 8 phrases validées, mot pour mot", obtenues == reponses, obtenues)
+    verifie("les 12 phrases validées, mot pour mot", obtenues == reponses, obtenues)
 
     exemples = {
-        "salutation": ["salam", "Salamaleykoum", "asalaa maalekum", "Bonjour", "salut", "hello"],
-        "ca_va": ["nanga def", "na nga def", "naka nga def", "naka waa", "ça va ?", "comment tu vas", "nangadef"],
+        "salutation": [
+            "salam", "Salamaleykoum", "asalaa maalekum", "Bonjour", "salut", "hello",
+            "salaam aleekum", "salam alaykum", "Salamalekum", "assalamou alaykoum",
+            "assalamu alaykum",
+        ],
+        "ca_va": [
+            "nanga def", "na nga def", "naka nga def", "naka waa", "ça va ?",
+            "comment tu vas", "nangadef", "mbaa jamm nga am", "jamm nga am",
+        ],
+        "ci_lo_nekk": ["silo nekk", "silo neh", "si lo nekk", "ci lo nekk", "silo nex"],
+        "liggeey": ["lan mooy sa liggeey", "lan mooy sa ligeey", "lane mooy sa ligeey", "lan ngay def"],
+        "role": [
+            "kan nga", "naka nga tudd", "noo tudd", "yaay kan", "yaay kane",
+            "yaw la kan", "yaw la kane", "qui es-tu", "tu fais quoi", "c'est quoi ton rôle",
+        ],
+        "dekk": ["fan nga dekk"],
+        "wolof": ["ndax danga degg wolof", "ndax degg nga wolof", "degg nga wolof", "ndakh danga degg wolof"],
         "merci": ["jërëjëf", "jerejef", "jaajëf", "merci", "dieuredieuf"],
-        "role": ["kan nga", "lan ngay def", "qui es-tu", "tu fais quoi", "c'est quoi ton rôle"],
         "createur": ["kan moo la defar", "kan moo la sos", "qui t'a créé", "qui t'a fait"],
         "capacites": ["lan nga mëna def", "qu'est-ce que tu peux faire"],
-        "au_revoir": ["ba beneen", "ba beneen yoon", "au revoir", "bye"],
+        "au_revoir": ["ba beneen", "ba beneen yoon", "ba suba", "mangi dem", "maa ngi dem", "au revoir", "bye"],
     }
     for nom, phrases in exemples.items():
         for phrase in phrases:
@@ -1122,6 +1140,11 @@ def test_conversation() -> tuple[int, int]:
     verifie("« quel temps fait-il » : aucune petite conversation", detecter("quel temps fait-il") is None)
     verifie("« qu'est-ce que tu peux faire » n'est pas un trajet vers la Foire",
             not extract_local_sans_lieu("qu'est-ce que tu peux faire"))
+    # Une demande de trajet n'est JAMAIS une petite conversation, même par
+    # ressemblance floue : l'app n'appelle detecter que sans lieu, mais le
+    # détecteur doit aussi refuser tout seul.
+    verifie("« Maa ngi Ouakam, bëgg naa dem Médina » : jamais une conversation",
+            detecter("Maa ngi Ouakam, bëgg naa dem Médina") is None)
 
     app = _charger_module(RACINE / "app.py", "app_guindima_conversation")
     with contextlib.redirect_stdout(io.StringIO()):
@@ -1129,6 +1152,7 @@ def test_conversation() -> tuple[int, int]:
         mixte, _ = app._pipeline("salam, maa ngi Ouakam dama bëgg dem Médina", "", 0.0)
         mixte_arrivee, _ = app._pipeline("salam, dama bëgga dem Médina", "", 0.0)
         hors, hors_ok = app._pipeline("quel temps fait-il", "", 0.0)
+        trajet, trajet_ok = app._pipeline("Maa ngi Ouakam, bëgg naa dem Médina", "", 0.0)
     verifie(
         "« salam » : la salutation à l'écran",
         salam_ok and reponses["salutation"] in salam[2],
@@ -1148,6 +1172,11 @@ def test_conversation() -> tuple[int, int]:
         "hors sujet : la phrase « bus yi rekk laa xam »",
         not hors_ok and reponses["hors_sujet"] in hors[2],
         hors[2],
+    )
+    verifie(
+        "« Maa ngi Ouakam, bëgg naa dem Médina » : un trajet, pas de conversation",
+        trajet_ok and "Maalekum" not in trajet[2] and "Ouakam" in trajet[1],
+        (trajet[1], trajet[2][:120]),
     )
     verifie("« salam » compris : pas de seconde transcription", app._phrase_donne_un_trajet("salam"))
 
@@ -1190,7 +1219,7 @@ def test_conversation() -> tuple[int, int]:
 
     # La liste complète des audios (data/audit/voix_complete.csv, alimentée par
     # scripts/preparer_regen_oolel.py) a remplacé voix_a_generer.csv, vide
-    # depuis que rien ne manque : les 8 réponses de conversation y figurent
+    # depuis que rien ne manque : les 12 réponses de conversation y figurent
     # avec leur phrase exacte.
     with (RACINE / "data" / "audit" / "voix_complete.csv").open(encoding="utf-8") as fichier:
         liste = list(csv.DictReader(fichier))
@@ -1200,7 +1229,7 @@ def test_conversation() -> tuple[int, int]:
 
     conversation = {r["fichier_wav"]: r["texte_a_prononcer"] for r in liste if r["type"] == "conversation"}
     verifie(
-        "les 8 phrases sont dans la liste complète des audios",
+        "les 12 phrases sont dans la liste complète des audios",
         conversation == {i.fichier: appliquer(i.reponse) for i in INTENTIONS + (HORS_SUJET,)},
         conversation,
     )
@@ -1213,7 +1242,7 @@ def test_conversation() -> tuple[int, int]:
     portee: dict = {}
     exec(plan, portee)
     verifie(
-        "notebook : ce sont les 232 ajouts (ligne à ligne de la liste complète)",
+        "notebook : ce sont les 236 ajouts (ligne à ligne de la liste complète)",
         [(p["fichier"], appliquer(p["phrase"])) for p in portee["PHRASES"]]
         == [
             (r["fichier_wav"], r["texte_a_prononcer"])
@@ -1252,6 +1281,74 @@ def extract_local_sans_lieu(phrase: str) -> bool:
 
     lieux = extract_local(phrase)
     return bool(lieux.get("depart") or lieux.get("arrivee"))
+
+
+def test_alias_lieux() -> tuple[int, int]:
+    """Noms dits à l'oral : « Anne Mariste » -> Maristes, « Teungedj » -> Rufisque.
+
+    Les formes parlées (hann écrit « anne » ou « hane » par l'ASR, Teunguej en
+    graphies phonétiques) rejoignent les arrêts qui existent dans les données.
+    « Hann Bel Air », lui, n'a pas d'arrêt dans les données (les seuls « Bel
+    Air » du réseau sont les « Rocade Fann Bel-Air », à Fann, plusieurs
+    kilomètres plus au sud) : aucune réécriture, mieux vaut ne rien répondre
+    que d'envoyer l'usager à Fann.
+    """
+    from intent.extract_intent import extract_local
+    from matching.lieux import score
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | alias lieux {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    maristes = ("hane mariste", "hann mariste", "anne mariste", "hann maristes")
+    for forme_dite in maristes:
+        lieux = extract_local(f"Maa ngi {forme_dite}, bëgg naa dem Médina")
+        verifie(f"{forme_dite} -> Maristes", lieux.get("depart") == "Maristes", lieux)
+
+    teungedj = ("teungedj", "teungueth", "tengeej", "tëngéej", "tengedj")
+    for forme_dite in teungedj:
+        lieux = extract_local(f"Maa ngi Ouakam, bëgg naa dem {forme_dite}")
+        verifie(f"{forme_dite} -> Rufisque", lieux.get("arrivee") == "Rufisque", lieux)
+
+    # Le chemin LLM renvoie la forme entendue : l'alias du matcher la ramène
+    # à l'arrêt du réseau.
+    verifie("alias matcher : « Anne Mariste » vaut « Maristes »", score("Anne Mariste", "Maristes") == 1.0)
+    verifie("alias matcher : « Hann Maristes » vaut « Maristes »", score("Hann Maristes", "Maristes") == 1.0)
+    verifie("alias matcher : « Teungedj » vaut « Rufisque »", score("Teungedj", "Rufisque") == 1.0)
+
+    bel_air = extract_local("Maa ngi hann bel air, dama bëgga dem")
+    verifie(
+        "« hann bel air » : rien n'est inventé (l'arrêt n'existe pas)",
+        not bel_air.get("depart") and not bel_air.get("arrivee"),
+        bel_air,
+    )
+
+    matcher = _matcher()
+    ancien_point = matcher.geo.point
+    matcher.geo.point = matcher.geo.point_connu
+    try:
+        lieux = extract_local("Maa ngi Anne Mariste, bëgg naa dem Teungedj")
+        resultat = matcher.find_line(lieux["depart"], lieux["arrivee"])
+        verifie(
+            "Maa ngi Anne Mariste -> Teungedj : un trajet existe",
+            resultat["depart_valide"]
+            and resultat["arrivee_valide"]
+            and lieux["depart"] == "Maristes"
+            and lieux["arrivee"] == "Rufisque"
+            and (resultat["found"] or resultat.get("correspondances")),
+            (lieux, _detail(resultat)),
+        )
+    finally:
+        matcher.geo.point = ancien_point
+
+    return echecs, total
 
 
 def test_trajets_frequents() -> tuple[int, int]:
@@ -2136,7 +2233,8 @@ def test_lieux() -> tuple[int, int]:
 
 
 def _phrases_ajouts_notebook() -> dict[str, str]:
-    """Les 232 ajouts : fichier -> phrase, lues du PLAN embarqué dans le notebook.
+    """Les ajouts (232 de la série Adia + 4 réponses de conversation) : fichier
+    -> phrase, lues du PLAN embarqué dans le notebook.
 
     Colab n'a pas accès au dépôt ; la liste est copiée dans le notebook même,
     généré par scripts/preparer_notebook_ajouts.py. C'est là qu'elle reste
@@ -2162,11 +2260,12 @@ def test_prononciations() -> tuple[int, int]:
     """Le plan porte le texte exact préparé pour la génération Oolel-Voices.
 
     La voix passe à la voix native d'Oolel (8_1_c.wav du Space
-    Oolel-Voices-Demo) : la liste complète des 869 audios régénérables
+    Oolel-Voices-Demo) : la liste complète des 873 audios régénérables
     (data/audit/voix_complete.csv, texte final après lexique) doit couvrir
-    exactement ce que l'app peut jouer aujourd'hui, et les deux notebooks de
-    génération (test de prononciation et complet) doivent suivre les mêmes
-    réglages que les séries précédentes.
+    exactement ce que l'app peut jouer aujourd'hui (hors les 4 réponses de
+    conversation pas encore générées), et les trois notebooks de génération
+    (test de prononciation, complet, ajouts de conversation) doivent suivre
+    les mêmes réglages que les séries précédentes.
     """
     import csv
     import json
@@ -2367,11 +2466,11 @@ def test_prononciations() -> tuple[int, int]:
     )
     fichiers_complete = [r["fichier_wav"] for r in complete]
     verifie(
-        "voix_complete.csv : 869 audios, 637 du plan + 232 ajouts, sans doublon",
-        len(complete) == 869
-        and len(set(fichiers_complete)) == 869
+        "voix_complete.csv : 873 audios, 637 du plan + 236 ajouts, sans doublon",
+        len(complete) == 873
+        and len(set(fichiers_complete)) == 873
         and sum(1 for r in complete if r["origine"] == "tts_cache") == 637
-        and sum(1 for r in complete if r["origine"] == "tts_cache_ajouts") == 232,
+        and sum(1 for r in complete if r["origine"] == "tts_cache_ajouts") == 236,
         (len(complete), len(set(fichiers_complete))),
     )
     import os as _os
@@ -2381,18 +2480,31 @@ def test_prononciations() -> tuple[int, int]:
             RACINE / "data" / "tts_cache_ajouts" / fichier
         )
 
-    manquants_d_aujourdhui = [f for f in fichiers_complete if not _voix_d_aujourdhui(f)]
+    # Les 4 réponses de conversation validées après la série Adia : leur texte
+    # est dans la liste, mais elles partent du petit notebook Brev
+    # (voix_ajouts_conversation_brev.ipynb), pas encore tourné — donc pas encore
+    # jouables. Dès qu'elles sont installées, cette liste redevient vide.
+    EN_ATTENTE_CONVERSATION = {
+        "conversation_ci_lo_nekk.wav",
+        "conversation_liggeey.wav",
+        "conversation_dekk.wav",
+        "conversation_wolof.wav",
+    }
+    manquants_d_aujourdhui = [
+        f for f in fichiers_complete if not _voix_d_aujourdhui(f)
+    ]
     verifie(
         "voix_complete.csv : chaque audio est jouable aujourd'hui",
-        not manquants_d_aujourdhui,
+        set(manquants_d_aujourdhui) == EN_ATTENTE_CONVERSATION,
         manquants_d_aujourdhui[:5],
     )
 
     # Couverture de la voix native : chaque nom que l'app peut jouer — les
-    # 869 de la liste complète + les phrases fixes du module de voix
+    # 873 de la liste complète + les phrases fixes du module de voix
     # (aucune_ligne, walla, …) — doit exister dans data/tts_cache_oolel/.
     # Les rares manquants, s'il y en a un jour, se listent ICI, nom par nom :
-    # jamais devinés, jamais générés à la volée. Aujourd'hui : liste vide.
+    # jamais devinés, jamais générés à la volée. Aujourd'hui : uniquement les
+    # 4 réponses de conversation en attente du zip de Brev.
     import tts.speak as speak
 
     fixe_a_jouer = sorted(
@@ -2406,7 +2518,7 @@ def test_prononciations() -> tuple[int, int]:
     sans_voix = sorted(set(fichiers_complete).union(fixe_a_jouer) - installes_oolel)
     verifie(
         "voix native : tts_cache_oolel couvre la liste complète et les phrases fixes",
-        not sans_voix,
+        set(sans_voix) == EN_ATTENTE_CONVERSATION,
         sans_voix[:10],
     )
     # Texte final = phrase du plan / des ajouts, avec le lexique de l'écoute
@@ -2470,7 +2582,7 @@ def test_prononciations() -> tuple[int, int]:
     portee_complet: dict = {}
     exec(plan_complet_src, portee_complet)
     verifie(
-        "notebook complet : exactement les 869 audios de voix_complete.csv",
+        "notebook complet : exactement les 873 audios de voix_complete.csv",
         [(p["fichier"], p["phrase"]) for p in portee_complet["PHRASES"]]
         == [(r["fichier_wav"], r["texte_a_prononcer"]) for r in complete]
         and portee_complet["GRAINE"] == 1234,
@@ -2579,14 +2691,19 @@ def test_prononciations() -> tuple[int, int]:
     nb_complet_brev = json.loads(
         (RACINE / "notebooks" / "voix_oolel_complete_brev.ipynb").read_text(encoding="utf-8")
     )
+    nb_conv_brev = json.loads(
+        (RACINE / "notebooks" / "voix_ajouts_conversation_brev.ipynb").read_text(encoding="utf-8")
+    )
     sources_test_brev = _sources_code("voix_test_prononciation_brev.ipynb")
     sources_complet_brev = _sources_code("voix_oolel_complete_brev.ipynb")
+    sources_conv_brev = _sources_code("voix_ajouts_conversation_brev.ipynb")
     tout_test_brev = "\n".join(sources_test_brev)
     tout_complet_brev = "\n".join(sources_complet_brev)
-    tout_brev = tout_test_brev + tout_complet_brev
+    tout_conv_brev = "\n".join(sources_conv_brev)
+    tout_brev = tout_test_brev + tout_complet_brev + tout_conv_brev
 
     verifie(
-        "Brev (test + complet) : plus de Google Drive, secrets, saisie clavier ou redémarrage forcé",
+        "Brev (test + complet + conversation) : plus de Google Drive, secrets, saisie clavier ou redémarrage forcé",
         not any(
             reste in tout_brev
             for reste in (
@@ -2612,19 +2729,22 @@ def test_prononciations() -> tuple[int, int]:
         ],
     )
     verifie(
-        "Brev (test + complet) : jeton HF lu dans la variable d'environnement, jamais affiché ni écrit",
+        "Brev (test + complet + conversation) : jeton HF lu dans la variable d'environnement, jamais affiché ni écrit",
         'os.environ.get("HF_TOKEN"' in tout_brev
         and "WHISPER_PRINCIPAL = WHISPER_SECOURS" in tout_brev
         and not re.search(r"hf_[A-Za-z0-9]{20,}", tout_brev)
         and not re.search(r"print\([^)]*HF_TOKEN", tout_brev),
     )
     verifie(
-        "Brev (test + complet) : tout dans ./sortie_voix, zip à côté du notebook",
+        "Brev (test + complet + conversation) : tout dans ./sortie_voix, zip à côté du notebook",
         "./sortie_voix" in tout_test_brev
         and "./sortie_voix" in tout_complet_brev
+        and "./sortie_voix" in tout_conv_brev
         and "shutil.make_archive('./sortie_voix/voix_test', 'zip', SORTIE)" in tout_test_brev
         and "shutil.make_archive('./sortie_voix/tts_cache_oolel', 'zip', SORTIE)"
-        in tout_complet_brev,
+        in tout_complet_brev
+        and "shutil.make_archive('./sortie_voix/ajouts_conversation', 'zip', SORTIE)"
+        in tout_conv_brev,
     )
     # Brev : le Jupyter démarre nu (pas de pip, pas de torch, pas de numpy). La
     # première cellule installe pip via ensurepip (sans -q : il refuse les
@@ -2632,13 +2752,13 @@ def test_prononciations() -> tuple[int, int]:
     # « Numpy is not available » dès que torch est chargé).
     cells_pip = [
         "".join(c["source"])
-        for nb in (nb_test_brev, nb_complet_brev)
+        for nb in (nb_test_brev, nb_complet_brev, nb_conv_brev)
         for c in nb["cells"]
         if c["cell_type"] == "code" and "-m ensurepip" in "".join(c["source"])
     ]
     verifie(
         "Brev : pip via ensurepip + pip du noyau, pile torch/numpy d'abord, note de redémarrage",
-        len(cells_pip) == 2
+        len(cells_pip) == 3
         and all(
             c.startswith("# Brev : le Jupyter de base démarre sans pip")
             and "import sys" in c
@@ -2660,9 +2780,9 @@ def test_prononciations() -> tuple[int, int]:
         ),
     )
     verifie(
-        "Brev (test + complet) : Whisper-small public secours du préprocesseur du dépôt privé",
+        "Brev (test + complet + conversation) : Whisper-small public secours du préprocesseur du dépôt privé",
         'WhisperProcessor.from_pretrained(\n                    "openai/whisper-small", token=jeton\n                )' in tout_brev
-        and tout_brev.count("Sans preprocessor_config.json dans le dépôt") == 2,
+        and tout_brev.count("Sans preprocessor_config.json dans le dépôt") == 3,
     )
 
     plan_test_brev = next(s for s in sources_test_brev if s.startswith("PLAN = "))
@@ -2679,12 +2799,50 @@ def test_prononciations() -> tuple[int, int]:
     portee_complet_brev: dict = {}
     exec(plan_complet_brev, portee_complet_brev)
     verifie(
-        "Brev complet : les 869 audios du CSV, graine 1234, génération identique aux 637",
+        "Brev complet : les 873 audios du CSV, graine 1234, génération identique aux 637",
         [(p["fichier"], p["phrase"]) for p in portee_complet_brev["PHRASES"]]
         == [(r["fichier_wav"], r["texte_a_prononcer"]) for r in complete]
         and portee_complet_brev["GRAINE"] == 1234
         and gen_637 in sources_complet_brev,
         len(portee_complet_brev.get("PHRASES", [])),
+    )
+    plan_conv_brev = next(s for s in sources_conv_brev if s.startswith("PLAN = "))
+    portee_conv_brev: dict = {}
+    exec(plan_conv_brev, portee_conv_brev)
+    # Les 4 réponses de conversation reprennent le texte du CSV (lexique
+    # appliqué) ; les 3 essais « Tata » sont des phrases d'écoute, absentes de
+    # la liste complète : l'app ne les joue jamais, l'installateur les ignore.
+    nouvelles_conversation = (
+        "conversation_ci_lo_nekk.wav",
+        "conversation_liggeey.wav",
+        "conversation_dekk.wav",
+        "conversation_wolof.wav",
+    )
+    attendu_conv = [
+        (r["fichier_wav"], r["texte_a_prononcer"])
+        for r in complete
+        if r["fichier_wav"] in nouvelles_conversation
+    ]
+    essais_tata = [
+        ("Jëlal Tataa ñett.", "test_tata_tataa.wav"),
+        ("Jëlal Tatà ñett.", "test_tata_tata_accent.wav"),
+        ("Jëlal Tata ñett.", "test_tata_tata.wav"),
+    ]
+    verifie(
+        "Brev conversation : 4 réponses du CSV + 3 essais Tata à écouter, graine 1234",
+        [(p["phrase"], p["fichier"]) for p in portee_conv_brev["PHRASES"]]
+        == [(phrase, fichier) for fichier, phrase in attendu_conv]
+        + [(phrase, fichier) for phrase, fichier in essais_tata]
+        and portee_conv_brev["GRAINE"] == 1234
+        and gen_637 in sources_conv_brev
+        and not {f for _, f in essais_tata} & set(fichiers_complete),
+        len(portee_conv_brev.get("PHRASES", [])),
+    )
+    verifie(
+        "Brev conversation : voix du Space, jamais la voix Adia",
+        "8_1_c.wav" in tout_conv_brev
+        and "soynade-research/Oolel-Voices-Demo" in tout_conv_brev
+        and "Adia" not in tout_conv_brev,
     )
     verifie(
         "Brev (test + complet) : voix du Space, jamais la voix Adia",
@@ -2735,7 +2893,7 @@ def test_prononciations() -> tuple[int, int]:
     )
     # Les magies (%, !) ne se compilent pas : on les retire, comme pour les
     # versions Colab, puis on vérifie le reste cellule par cellule.
-    for numero, source in enumerate(sources_test_brev + sources_complet_brev, 1):
+    for numero, source in enumerate(sources_test_brev + sources_complet_brev + sources_conv_brev, 1):
         lignes = [
             ligne
             for ligne in source.splitlines()
@@ -2748,22 +2906,27 @@ def test_prononciations() -> tuple[int, int]:
 
     lire_moi = (RACINE / "notebooks" / "BREV_LIRE_MOI.md").read_text(encoding="utf-8")
     verifie(
-        "BREV_LIRE_MOI.md : les deux notebooks, jeton en variable d'environnement, exécution sans interface, installer --zip, machine à éteindre",
+        "BREV_LIRE_MOI.md : les trois notebooks, jeton en variable d'environnement, exécution sans interface, installer --zip/--conversation, machine à éteindre",
         "voix_oolel_complete_brev.ipynb" in lire_moi
         and "voix_test_prononciation_brev.ipynb" in lire_moi
+        and "voix_ajouts_conversation_brev.ipynb" in lire_moi
         and "getpass" not in lire_moi
         and "variable d'environnement" in lire_moi
         and "--ExecutePreprocessor.timeout=-1" in lire_moi
         and "--zip" in lire_moi
+        and "--conversation" in lire_moi
         and "Éteins" in lire_moi,
     )
     installer_src = (RACINE / "scripts" / "installer_voix_oolel.py").read_text(encoding="utf-8")
     verifie(
-        "installer : option --zip (dossier du notebook Brev), mêmes attentes voix_complete.csv",
+        "installer : option --zip (dossier du notebook Brev), --conversation (4 réponses seules), mêmes attentes voix_complete.csv",
         "--zip" in installer_src
+        and "--conversation" in installer_src
         and "def installer(" in installer_src
+        and "def installer_conversation(" in installer_src
         and "fichiers_attendus()" in installer_src
-        and "voix_oolel_complete_brev.ipynb" in installer_src,
+        and "voix_oolel_complete_brev.ipynb" in installer_src
+        and "voix_ajouts_conversation_brev.ipynb" in installer_src,
     )
 
     # Installation réelle, sans réseau ni gros fichier : une mini-archive avec
@@ -2810,11 +2973,56 @@ def test_prononciations() -> tuple[int, int]:
                 archive_mini, installeur.fichiers_attendus(), cache=cache_test
             )
         verifie(
-            "installer : archive incomplète refusée (les 869 attendus, 2 fournis)",
+            "installer : archive incomplète refusée (les 873 attendus, 2 fournis)",
             refus == 1
             and "manquant(s)" in refle.getvalue()
             and not (cache_test / fichiers_complete[5]).is_file(),
             (refus, refle.getvalue()[:120]),
+        )
+
+        # Le petit zip « ajouts_conversation » : les 4 réponses de
+        # conversation, plus deux essais « Tata » que l'installateur doit
+        # ignorer (phrases d'écoute, jamais jouées par l'app). Une archive à
+        # laquelle il manque une réponse est refusée.
+        quatre = installeur.CONVERSATION
+        sons_conv = tmp_installer / "conversation"
+        sons_conv.mkdir()
+        for nom in quatre + ("test_tata_tataa.wav", "test_tata_tata.wav"):
+            with _wave.open(str(sons_conv / nom), "wb") as wav:
+                wav.setnchannels(1)
+                wav.setsampwidth(2)
+                wav.setframerate(16000)
+                wav.writeframes(b"\x00\x00" * 160)
+        archive_conv = tmp_installer / "ajouts_conversation.zip"
+        with _zipfile.ZipFile(archive_conv, "w") as boite:
+            for nom in quatre + ("test_tata_tataa.wav", "test_tata_tata.wav"):
+                boite.write(sons_conv / nom, arcname=f"audios_conversation/{nom}")
+        cache_conv = tmp_installer / "cache_conv"
+        refle_conv = io.StringIO()
+        with contextlib.redirect_stdout(refle_conv):
+            pose = installeur.installer_conversation(archive_conv, cache=cache_conv)
+        verifie(
+            "installer --conversation : les 4 réponses posées, essais Tata ignorés",
+            pose == 0
+            and all((cache_conv / nom).is_file() for nom in quatre)
+            and not (cache_conv / "test_tata_tataa.wav").is_file()
+            and "ignoré(s)" in refle_conv.getvalue()
+            and "test_tata_tataa.wav" in refle_conv.getvalue(),
+            (pose, refle_conv.getvalue()[:160]),
+        )
+        archive_conv_incomplete = tmp_installer / "conversation_incomplete.zip"
+        with _zipfile.ZipFile(archive_conv_incomplete, "w") as boite:
+            for nom in ("test_tata_tataa.wav", "test_tata_tata.wav"):
+                boite.write(sons_conv / nom, arcname=f"audios_conversation/{nom}")
+        refle_manque = io.StringIO()
+        with contextlib.redirect_stderr(refle_manque):
+            refus_conv = installeur.installer_conversation(
+                archive_conv_incomplete, cache=cache_conv
+            )
+        verifie(
+            "installer --conversation : une réponse manquante est refusée (4 attendues)",
+            refus_conv == 1 and "manquant(s)" in refle_manque.getvalue(),
+            (refus_conv, refle_manque.getvalue()[:120]),
         )
 
     return echecs, total
@@ -2899,6 +3107,7 @@ def test_notebooks_brev() -> tuple[int, int]:
             for nom in (
                 "voix_test_prononciation_brev.ipynb",
                 "voix_oolel_complete_brev.ipynb",
+                "voix_ajouts_conversation_brev.ipynb",
             )
         )
         verifie("régénération brev.py --dossier identique au dépôt", ok, (lance.returncode, lance.stderr[:400]))
@@ -3988,6 +4197,7 @@ if __name__ == "__main__":
         echecs_partage, total_partage = test_partage()
         echecs_voix, total_voix = test_voix()
         echecs_lieux, total_lieux = test_lieux()
+        echecs_alias, total_alias = test_alias_lieux()
         echecs_prononciations, total_prononciations = test_prononciations()
         echecs_brev, total_brev = test_notebooks_brev()
         echecs_verification, total_verification = test_verification_voix()
@@ -4005,6 +4215,7 @@ if __name__ == "__main__":
             + echecs_partage
             + echecs_voix
             + echecs_lieux
+            + echecs_alias
             + echecs_prononciations
             + echecs_brev
             + echecs_verification
@@ -4023,6 +4234,7 @@ if __name__ == "__main__":
             total_partage
             + total_voix
             + total_lieux
+            + total_alias
             + total_prononciations
             + total_brev
             + total_verification

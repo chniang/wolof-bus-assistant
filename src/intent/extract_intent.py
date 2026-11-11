@@ -388,6 +388,18 @@ REPLACEMENTS_PHRASE = (
     (r"(?<!geran\s)(?<!gerana\s)(?<!garan\s)\byoof\b", " yoff "),
     (r"\byaraax\b", " yarakh "),
     (r"\byembal\b", " yeumbeul "),
+    # Noms dits à l'oral pour deux quartiers de Hann et pour Teunguej : l'ASR
+    # écrit « anne » ou « hane » pour « hann ». On réécrit vers les noms
+    # d'arrêts existants (« Maristes », « Rufisque ») pour un match exact à
+    # l'extraction ; les mêmes noms vivent dans ALIAS de matching/lieux.py,
+    # pour le chemin LLM. « Hann Maristes » n'existe pas tel quel dans le
+    # réseau : l'arrêt s'appelle « Maristes » (lignes 37/40/75). Teunguej est
+    # le quartier des gares de Rufisque. « Hann Bel Air », lui, n'a pas d'arrêt
+    # dans les données (les seuls « Bel Air » du réseau sont les « Rocade Fann
+    # Bel-Air », à Fann, plusieurs kilomètres plus au sud) : aucune réécriture,
+    # mieux vaut ne rien répondre que d'envoyer l'usager à Fann.
+    (r"\b(?:hann|hane|anne)\s+maristes?\b", " maristes "),
+    (r"\b(?:teungueth|teungedj|tengedj|tengeej)\b", " rufisque "),
 )
 
 # En dessous de ce ratio, on préfère ne rien trouver plutôt qu'inventer un quartier.

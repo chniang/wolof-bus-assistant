@@ -38,7 +38,10 @@ class Intention:
 
 # Dans l'ordre de priorité : la plus précise d'abord.  « lan nga mëna def » (ce que
 # tu sais faire) contient presque « nanga def » (ça va) ; « kan moo la defar »
-# (qui t'a créé) commence comme « kan nga » (qui es-tu).
+# (qui t'a créé) commence comme « kan nga » (qui es-tu).  « lan ngay def » (ton
+# travail ?) et « lan nga di def » (qu'est-ce que tu fais ?) se ressemblent trop
+# pour laisser le hasard trancher : « lan ngay def » est consommé par « liggeey »,
+# placé avant « role ».
 INTENTIONS: tuple[Intention, ...] = (
     Intention(
         "createur",
@@ -59,13 +62,49 @@ INTENTIONS: tuple[Intention, ...] = (
         ),
     ),
     Intention(
+        "ci_lo_nekk",
+        "Maa ngi ci jàmm, alxamdulilaay. Yaw nag ?",
+        "conversation_ci_lo_nekk.wav",
+        (
+            # « silo nekk » et « ci lo nekk » : même question (comment ça va ?),
+            # écrite selon l'oreille de l'ASR.
+            "silo nekk", "silo neh", "si lo nekk", "ci lo nekk", "silo nex",
+        ),
+    ),
+    Intention(
+        "liggeey",
+        "Sama liggéey mooy won nit ñi biis bi ñuy jël ci Ndakaaru.",
+        "conversation_liggeey.wav",
+        (
+            "lan mooy sa liggeey", "lan mooy sa ligeey", "lane mooy sa ligeey",
+            "lan ngay def",
+        ),
+    ),
+    Intention(
         "role",
         "Maa ngi tudd GuindiMa. Damay won nit ñi bus bi ñuy jël ci Ndakaaru.",
         "conversation_role.wav",
         (
-            "kan nga", "kan nga doon", "lan ngay def", "lan nga di def",
+            "kan nga", "kan nga doon", "lan nga di def",
+            "naka nga tudd", "noo tudd", "yaay kan", "yaay kane",
+            "yaw la kan", "yaw la kane",
             "qui es tu", "tu es qui", "tu fais quoi", "c est quoi ton role",
             "quel est ton role",
+        ),
+    ),
+    Intention(
+        "dekk",
+        "Ci Ndakaaru laa dëkk, ci biir sa telefon.",
+        "conversation_dekk.wav",
+        ("fan nga dekk",),
+    ),
+    Intention(
+        "wolof",
+        "Waaw, dégg naa wolof. Wax ma fan nga bëgga dem.",
+        "conversation_wolof.wav",
+        (
+            "ndax danga degg wolof", "ndax degg nga wolof", "degg nga wolof",
+            "ndakh danga degg wolof",
         ),
     ),
     Intention(
@@ -74,6 +113,7 @@ INTENTIONS: tuple[Intention, ...] = (
         "conversation_ca_va.wav",
         (
             "nanga def", "na nga def", "naka nga def", "naka waa", "naka wa",
+            "jamm nga am", "mbaa jamm nga am",
             "ca va", "comment tu vas", "comment vas tu", "comment ca va",
         ),
     ),
@@ -90,7 +130,12 @@ INTENTIONS: tuple[Intention, ...] = (
         "au_revoir",
         "Ba beneen yoon !",
         "conversation_au_revoir.wav",
-        ("ba beneen", "ba beneen yoon", "ba benen yoon", "au revoir", "bye"),
+        (
+            "ba beneen", "ba beneen yoon", "ba benen yoon", "ba suba",
+            # « je m'en vais » : l'usager raccroche en annonçant son départ.
+            "mangi dem", "maa ngi dem",
+            "au revoir", "bye",
+        ),
     ),
     Intention(
         "salutation",
@@ -98,7 +143,8 @@ INTENTIONS: tuple[Intention, ...] = (
         "conversation_salutation.wav",
         (
             "salam", "salamaleykoum", "salamalekum", "salamaleikoum",
-            "salamalaikoum", "salamalekoum", "assalamou aleykoum",
+            "salamalaikoum", "salamalekoum", "salaam aleekum", "salam alaykum",
+            "assalamou aleykoum", "assalamou alaykoum", "assalamu alaykum",
             "asalaa maalekum", "asalamaalekum", "assalam alaykoum",
             "bonjour", "salut", "hello",
         ),

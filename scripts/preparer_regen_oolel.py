@@ -5,10 +5,11 @@ soynade-research/Oolel-Voices-Demo) : TOUTES les réponses sont régénérées, 
 une seule série. Cette liste fait le compte :
 
 - les 637 réponses du plan courant (scripts/phrases_voix.json) ;
-- les 232 ajouts Adia (décrits dans notebooks/voix_ajouts_colab.ipynb),
-  aujourd'hui dans data/tts_cache_ajouts/.
+- les ajouts décrits dans notebooks/voix_ajouts_colab.ipynb : les 232 de la
+  série Adia (aujourd'hui dans data/tts_cache_ajouts/) et les 4 réponses de
+  conversation récentes (pas encore générées à ce jour).
 
-soit 869 fichiers, chacun avec le texte final envoyé à la voix — c'est-à-dire
+soit 873 fichiers, chacun avec le texte final envoyé à la voix — c'est-à-dire
 la phrase du plan, une fois le lexique de prononciation
 (`src/tts/lexique_prononciation.py`) appliqué. Toutes les phrases sont déjà en
 écriture parlée validée (« Tataa », « Taf Taf », chiffres en mots) ; le lexique
@@ -49,7 +50,7 @@ CHAMPS = ["type", "texte_a_prononcer", "fichier_wav", "origine"]
 
 
 def plan_ajouts() -> list[dict[str, str]]:
-    """Les 232 ajouts : le PLAN embarqué dans le notebook des ajouts.
+    """Les ajouts : le PLAN embarqué dans le notebook des ajouts (232 + 4).
 
     Colab n'a pas accès au dépôt ; la liste est copiée dans le notebook. On l'y
     relit plutôt que de la reconstruire, pour que le CSV reprenne exactement les

@@ -89,6 +89,20 @@ ALIAS = {
     "mariste": "maristes",
     "hann maristes": "maristes",
     "hann mariste": "maristes",
+    # Mêmes noms dits à l'oral que les réécritures de extract_intent.py : le
+    # LLM renvoie la forme entendue (« Anne Mariste », « Teungedj »), c'est
+    # ici qu'elle rejoint l'arrêt du réseau. Pas d'alias « Hann Bel Air » :
+    # aucun arrêt de ce nom dans les données (les « Rocade Fann Bel-Air » sont
+    # à Fann) — mieux vaut ne rien répondre que d'envoyer l'usager à Fann.
+    "hane mariste": "maristes",
+    "hane maristes": "maristes",
+    "anne mariste": "maristes",
+    "anne maristes": "maristes",
+    # Teunguej : le quartier des gares de Rufisque.
+    "teungueth": "rufisque",
+    "teungedj": "rufisque",
+    "tengedj": "rufisque",
+    "tengeej": "rufisque",
 }
 
 # Premiers mots d'une voie : « Route de Rufisque » n'est pas Rufisque.

@@ -185,7 +185,8 @@ if not MODE_TEST:
 # sur GPU, avec repli sur le même whisper quand ZeroGPU refuse la carte.
 LIBELLE_ASR = "Whisper wolof fine-tuné à Dakar + Kiriku-Wolof-ASR"
 # Voix des réponses pré-générées : la voix native 8_1_c du Space
-# Oolel-Voices-Demo, dans data/tts_cache_oolel/ (869 audios).
+# Oolel-Voices-Demo, dans data/tts_cache_oolel/ (873 audios attendus,
+# dont 4 réponses de conversation posées par installer_conversation).
 LIBELLE_VOIX = "Oolel-Voices, voix native (soynade-research)"
 
 # --------------------------------------------------------------------------- #
