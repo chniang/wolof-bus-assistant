@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import csv
 import re
+import sys
 import unicodedata
 from bisect import bisect_left
 from collections import Counter, defaultdict
@@ -337,8 +338,17 @@ def signatures_officielles(officiels: dict[tuple[str, str], dict]) -> dict[tuple
     }
 
 
+def lignes_corrigees() -> list[dict]:
+    """data/lignes_dakar.csv avec les terminus Tata des fiches AFTU
+    (data/corrections/terminus_tata_officiels.csv), comme l'app les voit."""
+    sys.path.insert(0, str(RACINE / "src"))
+    from matching.terminus import corriger_terminus
+
+    return [corriger_terminus(rangee) for rangee in lire_csv(DATA / "lignes_dakar.csv")]
+
+
 def construire_rangees() -> tuple[list[dict], dict[str, int]]:
-    lignes = lire_csv(DATA / "lignes_dakar.csv")
+    lignes = lignes_corrigees()
     itineraires = lire_csv(DATA / "itineraires_dakar.csv")
     officiels = charger_officiels()
     signatures = signatures_officielles(officiels)
@@ -644,7 +654,7 @@ def ecrire(chemin: Path, rangees: list[dict]) -> None:
 def couverture_f1() -> tuple[Counter, Counter, list[tuple[str, str]]]:
     """L'audit F1 couvre 119 lignes ; notre fichier de lignes en sert 112."""
     audit = lire_csv(DATA / "audit" / "fiabilite_lignes.csv")
-    nos = lire_csv(DATA / "lignes_dakar.csv")
+    nos = lignes_corrigees()
     cles_audit = {(rangee["compagnie"], rangee["ligne"]) for rangee in audit}
     cles_nos = {(rangee["compagnie"], rangee["ligne"]) for rangee in nos}
     return (

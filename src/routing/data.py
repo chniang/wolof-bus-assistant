@@ -160,6 +160,25 @@ def _integrer_donnees_fiables(data: NetworkData) -> None:
     data.traces = charger_traces(DOSSIER_TRACES)
 
 
+def _corriger_terminus(data: NetworkData) -> None:
+    """Terminus Tata des fiches officielles AFTU (data/corrections/terminus_tata_officiels.csv)."""
+
+    try:
+        from matching.terminus import corrections_terminus
+    except ImportError:  # pragma: no cover
+        from ..matching.terminus import corrections_terminus
+
+    corrections = corrections_terminus()
+    if not corrections:
+        return
+    lignes = data.lignes.copy()
+    for index, rangee in lignes.iterrows():
+        corrige = corrections.get((rangee["compagnie"], rangee["ligne"]))
+        if corrige is not None:
+            lignes.at[index, "terminus_a"], lignes.at[index, "terminus_b"] = corrige
+    data.lignes = lignes
+
+
 def load_data() -> NetworkData:
     """Lit les CSV locaux et applique les corrections d'orthographe revues."""
 
@@ -171,6 +190,7 @@ def load_data() -> NetworkData:
     )
 
     _integrer_donnees_fiables(data)
+    _corriger_terminus(data)
 
     # Les corrections de noms s'appliquent aux DataFrames en mémoire, jamais
     # aux fichiers : tout le monde voit ainsi le même nom d'arrêt.

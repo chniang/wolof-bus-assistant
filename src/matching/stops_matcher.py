@@ -18,9 +18,11 @@ from pathlib import Path
 try:  # import à plat (app.py) ou en paquet
     from matching.geo import LieuxGeo, distance_metres
     from matching.lieux import VOIES, _jetons, jetons, joli, score
+    from matching.terminus import corriger_terminus
 except ImportError:  # pragma: no cover
     from .geo import LieuxGeo, distance_metres
     from .lieux import VOIES, _jetons, jetons, joli, score
+    from .terminus import corriger_terminus
 
 DATA = Path(__file__).resolve().parents[2] / "data"
 LIGNES_CSV = DATA / "lignes_dakar.csv"
@@ -45,7 +47,8 @@ class StopsMatcher:
 
     def __init__(self, lignes_csv: str | Path = LIGNES_CSV, itineraires_csv: str | Path = ITINERAIRES_CSV) -> None:
         with open(lignes_csv, newline="", encoding="utf-8") as f:
-            self.lignes = {(l["compagnie"], l["ligne"]): l for l in csv.DictReader(f)}
+            # Terminus Tata corrigés d'après les fiches AFTU (data/corrections/).
+            self.lignes = {(l["compagnie"], l["ligne"]): corriger_terminus(l) for l in csv.DictReader(f)}
         self.arrets: dict[tuple[str, str], list[str]] = {cle: [] for cle in self.lignes}
         with open(itineraires_csv, newline="", encoding="utf-8") as f:
             for rangee in sorted(csv.DictReader(f), key=lambda r: int(r["ordre"])):

@@ -2557,6 +2557,128 @@ def test_parcelles_grand_yoff() -> tuple[int, int]:
     return echecs, total
 
 
+def test_terminus_tata_officiels() -> tuple[int, int]:
+    """Lot 2b : terminus des 15 lignes Tata TERMINUS_DIFFERENT, d'après les fiches AFTU.
+
+    data/lignes_dakar.csv reste intact : data/corrections/terminus_tata_officiels.csv
+    (URL et date de chaque fiche) s'applique en mémoire, partout où les lignes
+    sont lues (StopsMatcher, moteur v2, comparer_lignes_officielles.py). La
+    voix ne lit jamais les terminus : aucun audio n'est touché.
+    """
+    import csv
+    import importlib.util
+    import re as re_
+
+    import tts.speak as speak
+    from matching.stops_matcher import StopsMatcher
+    from matching.terminus import corrections_terminus
+    from routing.data import load_data
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | terminus tata {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    lignes_attendues = {f"Ligne {n}" for n in (1, 26, 45, 50, 52, 56, 58, 63, 64, 65, 69, 70, 72, 74, 81)}
+    with open(RACINE / "data" / "corrections" / "terminus_tata_officiels.csv", encoding="utf-8-sig", newline="") as f:
+        rangees = list(csv.DictReader(f))
+    verifie("15 lignes corrigées, exactement celles de l'audit",
+            {r["ligne"] for r in rangees} == lignes_attendues and len(rangees) == 15, sorted(r["ligne"] for r in rangees))
+    corrections = corrections_terminus()
+    verifie("les 15 corrections sont chargées", set(k[1] for k in corrections) == lignes_attendues)
+
+    with open(RACINE / "data" / "reference" / "arrets_toutes_lignes_aftu.csv", encoding="utf-8-sig", newline="") as f:
+        officiels: dict[str, list[dict]] = {}
+        for r in csv.DictReader(f):
+            officiels.setdefault(r["ligne"], []).append(r)
+    with open(RACINE / "data" / "itineraires_dakar.csv", encoding="utf-8", newline="") as f:
+        itineraires: dict[str, list[tuple[int, str]]] = {}
+        for r in csv.DictReader(f):
+            if r["compagnie"] == "Tata AFTU":
+                itineraires.setdefault(r["ligne"], []).append((int(r["ordre"]), r["arret"]))
+
+    spec = importlib.util.spec_from_file_location("comparer_officiel", RACINE / "scripts" / "comparer_lignes_officielles.py")
+    comparer = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(comparer)
+
+    for r in rangees:
+        numero = r["ligne"].split()[-1]
+        fiche = officiels.get(numero) or []
+        verifie(f"{r['ligne']} : source = fiche AFTU de la ligne, avec sa date",
+                r["source"] == f"https://aftu-senegal.org/map/dakar-urbain-ligne-{numero}/"
+                and bool(fiche) and r["date_fiche"].strip() and r["date_fiche"] in fiche[0]["date"], (r["source"], r["date_fiche"]))
+        for cle in ("terminus_a", "terminus_b"):
+            nom = r[cle]
+            # Ni faute (« TERMINNUS »), ni majuscules de fiche ; « Terminus » seulement
+            # devant un numéro seul (« Terminus 63 », nom de l'arrêt sur la fiche 45).
+            lisible = (nom == nom.strip() and not nom.isupper() and "  " not in nom
+                       and not re_.search(r"\b(?:terminnus|termnus|termibus)\b", nom, re_.I)
+                       and (not re_.match(r"terminus\b", nom, re_.I) or re_.fullmatch(r"Terminus \d+", nom)))
+            verifie(f"{r['ligne']} : « {nom} » est un nom lisible", lisible)
+        # Les deux terminus sont ceux de la fiche, dans un sens ou dans l'autre.
+        ok, _, _ = comparer.comparer_terminus((r["terminus_a"], r["terminus_b"]), [x["arret"] for x in fiche])
+        verifie(f"{r['ligne']} : terminus = premier et dernier points de la fiche AFTU", ok == "oui",
+                (r["terminus_a"], r["terminus_b"], fiche[0]["arret"] if fiche else "", fiche[-1]["arret"] if fiche else ""))
+        # terminus_a reste le premier arrêt de NOTRE itinéraire : le sens affiché ne change pas.
+        arrets = [a for _, a in sorted(itineraires.get(r["ligne"], []))]
+        verifie(f"{r['ligne']} : terminus_a dans le sens de notre itinéraire",
+                bool(arrets) and comparer.type_correspondance(r["terminus_a"], arrets[0]) is not None
+                and comparer.type_correspondance(r["terminus_b"], arrets[-1]) is not None,
+                (r["terminus_a"], r["terminus_b"], arrets[:1], arrets[-1:]))
+
+    # Le CSV d'origine n'est pas modifié ; les lecteurs voient la correction.
+    with open(RACINE / "data" / "lignes_dakar.csv", encoding="utf-8", newline="") as f:
+        brut = {(r["compagnie"], r["ligne"]): r for r in csv.DictReader(f)}
+    verifie("lignes_dakar.csv intact (Tata 74 finit toujours à Tivaouane Peulh dans le fichier)",
+            brut[("Tata AFTU", "Ligne 74")]["terminus_b"] == "Tivaouane Peulh")
+    matcher = StopsMatcher()
+    verifie("StopsMatcher : Tata 74 -> Cité Cocehas",
+            matcher.lignes[("Tata AFTU", "Ligne 74")]["terminus_b"] == "Cité Cocehas")
+    data = load_data()
+    ligne_74 = data.lignes[(data.lignes["compagnie"] == "Tata AFTU") & (data.lignes["ligne"] == "Ligne 74")].iloc[0]
+    verifie("moteur v2 : Tata 74 -> Cité Cocehas", ligne_74["terminus_b"] == "Cité Cocehas", ligne_74["terminus_b"])
+    autres = [k for k in brut if k[0] == "Tata AFTU" and k[1] not in lignes_attendues]
+    verifie("les autres lignes Tata gardent leurs terminus",
+            all(matcher.lignes[k]["terminus_a"] == brut[k]["terminus_a"]
+                and matcher.lignes[k]["terminus_b"] == brut[k]["terminus_b"] for k in autres))
+    troncon = matcher._troncon(("Tata AFTU", "Ligne 74"), 0, 3)
+    verifie("affichage : « Ligne : Bargny (Gare ferroviaire) → Cité Cocehas »",
+            (troncon["depart"], troncon["arrivee"]) == ("Bargny (Gare ferroviaire)", "Cité Cocehas"),
+            (troncon["depart"], troncon["arrivee"]))
+
+    rangees_comparees, _ = comparer.construire_rangees()
+    differentes = [r["ligne"] for r in rangees_comparees
+                   if r.get("type_ligne") == "notre_ligne" and r["classe"] == "TERMINUS_DIFFERENT"]
+    verifie("comparer_lignes_officielles : plus aucune ligne TERMINUS_DIFFERENT", not differentes, differentes)
+
+    # La voix : jamais les terminus. Une ligne aux terminus inventés ne change
+    # aucun fichier lu, et chaque nouveau terminus a déjà son WAV de lieu.
+    entendus: list[list[str]] = []
+    ancien = speak.assembler
+    speak.assembler = lambda fichiers, pauses=None: entendus.append([f.name for f in fichiers]) or b"RIFF"
+    try:
+        for depart, arrivee in (("Tivaouane Peulh", "Bargny"), ("ZZZ_A", "ZZZ_B")):
+            match = {"compagnie": "Tata AFTU", "ligne": "Ligne 74", "depart": depart, "arrivee": arrivee,
+                     "monte_a": "Bargny (Gare ferroviaire)", "descend_a": "Keur Massar"}
+            speak.voix_depuis_cache([match])
+            speak.voix_correspondances_depuis_cache([{"etape_1": match, "etape_2": match, "changement": "Keur Massar"}])
+    finally:
+        speak.assembler = ancien
+    verifie("voix : les terminus ne changent aucun segment lu (0 phrase concernée)",
+            len(entendus) == 4 and entendus[0] == entendus[2] and entendus[1] == entendus[3], entendus)
+    for r in rangees:
+        for cle in ("terminus_a", "terminus_b"):
+            verifie(f"voix : « {r[cle]} » a déjà son WAV de lieu", speak.chemin_lieu(speak.CACHE_DIR, r[cle]).is_file(),
+                    speak.nom_fichier_lieu(r[cle]))
+    return echecs, total
+
+
 def test_terrain_en_ligne() -> tuple[int, int]:
     """Retours du test en ligne : titres lisibles, lieu précis, options trop lentes, « bus »."""
     import csv
@@ -5862,6 +5984,7 @@ if __name__ == "__main__":
         echecs_noms1, total_noms1 = test_noms_lot_1()
         echecs_aero, total_aero = test_aeroport_ambigu()
         echecs_pgy, total_pgy = test_parcelles_grand_yoff()
+        echecs_term, total_term = test_terminus_tata_officiels()
         echecs_gare, total_gare = test_gare_gaar()
         echecs_hf, total_hf = test_compte_hugging_face()
         echecs_terrain, total_terrain = test_terrain_en_ligne()
@@ -5898,6 +6021,7 @@ if __name__ == "__main__":
             + echecs_noms1
             + echecs_aero
             + echecs_pgy
+            + echecs_term
             + echecs_gare
             + echecs_hf
             + echecs_terrain
@@ -5935,6 +6059,7 @@ if __name__ == "__main__":
             + total_noms1
             + total_aero
             + total_pgy
+            + total_term
             + total_gare
             + total_hf
             + total_terrain

@@ -8,14 +8,14 @@ Dakar Dem Dikk,Ligne 503A,Colobane,Môle 8,devinée (demdikk.sn/info-voyageurs),
 Dakar Dem Dikk,Ligne 503B,Colobane,Hydrocarbures,devinée (demdikk.sn/info-voyageurs),2,100,0,0,oui,oui,oui,Colobane / Hydrocarbures
 Dakar Dem Dikk,Ligne 504A,Gare de Diamniadio,Sphère ministérielle,devinée (demdikk.sn/info-voyageurs),2,100,0,0,oui,oui,oui,Gare Diamniadio / Sphère ministérielle
 Dakar Dem Dikk,Ligne 504B,Sébikotane,Gare de Diamniadio,devinée (demdikk.sn/info-voyageurs),2,100,0,0,oui,oui,oui,Sébikotane / Gare Diamniadio
-Tata AFTU,Ligne 1,Lat Dior,HLM Grand Yoff,trace officielle AFTU,20,57,43,0,non,oui,oui,Gare Lat Dior / Espace HLM Grand Médine (face autoroute)
+Tata AFTU,Ligne 1,Gare Lat Dior,Espace HLM Grand Médine,trace officielle AFTU,20,57,43,0,non,oui,oui,Gare Lat Dior / Espace HLM Grand Médine (face autoroute)
 Tata AFTU,Ligne 2,Parcelles Assainies,Petersen,trace officielle AFTU,18,62,38,0,non,oui,oui,Route principale des Parcelles Assainies / Gare Petersen
 Tata AFTU,Ligne 3,Yoff,Petersen,trace officielle AFTU,15,29,71,0,non,oui,oui,Yoff-Village / Gare Petersen
 Tata AFTU,Ligne 4,Yoff Village,Petersen,trace officielle AFTU,10,17,83,0,non,oui,oui,Yoff-Village / Petersen
 Tata AFTU,Ligne 5,Parcelles Assainies,Petersen,trace officielle AFTU,19,69,31,0,non,oui,oui,Gare des Parcelles Assainies / Petersen
 Tata AFTU,Ligne 24,UCAD,Notaire Guédiawaye,trace officielle AFTU,14,27,73,0,non,oui,oui,Notaire (Guédiawaye) / UCAD
 Tata AFTU,Ligne 25,Parcelles Assainies,Petersen,trace officielle AFTU,13,14,86,0,non,oui,oui,Parcelles Assainies / Petersen
-Tata AFTU,Ligne 26,Parcelles Assainies,Poste Thiaroye,trace officielle AFTU,8,50,0,50,non,oui,non,Gare des Parcelles Assainies / Guédiawaye
+Tata AFTU,Ligne 26,Gare des Parcelles Assainies,Guédiawaye,trace officielle AFTU,8,50,0,50,non,oui,oui,Gare des Parcelles Assainies / Guédiawaye
 Tata AFTU,Ligne 27,Marché Boubess,Petersen,trace officielle AFTU,20,10,90,0,non,oui,oui,Marché Boubess / Petersen
 Tata AFTU,Ligne 28,Hamo 5,Petersen,trace officielle AFTU,16,0,100,0,non,oui,oui,Hamo V/VI / Petersen
 Tata AFTU,Ligne 29,Cité Nations Unies (Cambérène),Petersen,trace officielle AFTU,16,33,67,0,non,oui,oui,Cité Nations Unies (Cambérène) / Petersen
@@ -34,43 +34,43 @@ Tata AFTU,Ligne 41,Petersen,Étage Madiale,trace officielle AFTU,21,45,55,0,non,
 Tata AFTU,Ligne 42,Gadaye (Guédiawaye),Ouakam Baye,trace officielle AFTU,14,14,86,0,non,oui,oui,Gadaye (Guédiawaye) / Ouakam Baye
 Tata AFTU,Ligne 43,Ouakam,Thierno Ndiaye,trace officielle AFTU,15,33,67,0,non,oui,oui,Ouakam / Thierno Ndiaye
 Tata AFTU,Ligne 44,Grand Mbao,Ouakam,trace officielle AFTU,13,67,33,0,non,oui,oui,Grand Mbao / Ouakam
-Tata AFTU,Ligne 45,Kounoune Ngalam,Parcelles Église,trace officielle AFTU,34,20,80,0,non,oui,oui,Kounoune Ngalam / Parcelles Église
+Tata AFTU,Ligne 45,Kounoune Ngalam,Terminus 63,trace officielle AFTU,34,20,80,0,non,oui,non,Kounoune Ngalam / Parcelles Église
 Tata AFTU,Ligne 46,SDE Serigne Assane,Lat Dior,trace officielle AFTU,20,50,50,0,non,oui,oui,SDE Serigne Assane / Lat Dior
 Tata AFTU,Ligne 47,Lat Dior,Almadies,trace officielle AFTU,15,29,71,0,non,oui,oui,Gare Lat-Dior / Almadies
 Tata AFTU,Ligne 48,Cité Serigne Mansour,Lat Dior,trace officielle AFTU,12,38,62,0,non,oui,oui,Cité Serigne Mansour / Lat Dior
 Tata AFTU,Ligne 49,Gadaye,Ngor,trace officielle AFTU,22,78,22,0,non,oui,oui,Gadaye / Ngor
-Tata AFTU,Ligne 50,Petersen,Malika Cimetière,trace officielle AFTU,20,18,82,0,non,oui,oui,Petersen / Malika plage
+Tata AFTU,Ligne 50,Petersen,Malika Plage,trace officielle AFTU,20,18,82,0,non,oui,oui,Petersen / Malika plage
 Tata AFTU,Ligne 51,Jaxaay,Gare des Baux Maraîchers,trace officielle AFTU,10,40,60,0,non,oui,oui,Jaxaay / Gare des Baux maraîchers
-Tata AFTU,Ligne 52,Bountou Pikine,Keur Massar,trace officielle AFTU,13,43,57,0,non,oui,oui,Bountou Pikine / Keur Massar
+Tata AFTU,Ligne 52,Baux Maraîchers,Jaxaay,trace officielle AFTU,13,43,57,0,non,oui,non,Bountou Pikine / Keur Massar
 Tata AFTU,Ligne 53,Keur Massar,Sébikotane,trace officielle AFTU,16,43,57,0,non,oui,oui,Keur Massar / Sébikotane
 Tata AFTU,Ligne 54,Keur Massar (Cité MTOA),UCAD,trace officielle AFTU,14,45,55,0,non,oui,oui,Keur Massar (MTOA) / UCAD
 Tata AFTU,Ligne 55,Rufisque Sonadis,Petersen,trace officielle AFTU,13,12,88,0,non,oui,oui,Rufisque Sonadis / Petersen
-Tata AFTU,Ligne 56,Jaxaay 2,Petersen,trace officielle AFTU,12,20,80,0,non,oui,oui,Jaxaay 2 / Petersen
+Tata AFTU,Ligne 56,Jaxaay 1,Petersen,trace officielle AFTU,12,20,80,0,non,oui,oui,Jaxaay 2 / Petersen
 Tata AFTU,Ligne 57,Liberté 6,Rufisque,trace officielle AFTU,14,0,100,0,non,oui,oui,Rufisque Gouye Mouride / Rond-point Liberté 6
-Tata AFTU,Ligne 58,Sahm,Comico,trace officielle AFTU,12,40,60,0,non,oui,oui,Sahm / Comico
+Tata AFTU,Ligne 58,Fass Mbao (Rail-Ba),Sahm,trace officielle AFTU,12,40,60,0,non,oui,non,Sahm / Comico
 Tata AFTU,Ligne 59,Diamalaye,Cité Gendarmerie (Jaxaay),trace officielle AFTU,15,50,50,0,non,oui,oui,Diamalaye / Cité Gendarmerie (Jaxaay)
 Tata AFTU,Ligne 60,Colobane,Bargny,trace officielle AFTU,11,44,56,0,non,oui,oui,Colobane / Bargny
 Tata AFTU,Ligne 61,Almadies,Keur Massar,trace officielle AFTU,10,50,50,0,non,oui,oui,Almadies / Keur Massar
 Tata AFTU,Ligne 62,Arrêt Chérif (Rufisque),Penc Mi (Gueule Tapée),trace officielle AFTU,19,25,75,0,non,oui,oui,Arrêt Chérif (Rufisque) / Penc Mi (Gueule Tapée)
-Tata AFTU,Ligne 63,Camp Marchand Rufisque,Stade LSS,trace officielle AFTU,18,25,75,0,non,oui,oui,Camp Marchand Rufisque / Stade LSS
-Tata AFTU,Ligne 64,Guédiawaye,Rufisque,trace officielle AFTU,16,11,89,0,non,oui,non,Diamniadio / Notaire (Guédiawaye)
-Tata AFTU,Ligne 65,Colobane,Jaxaay,trace officielle AFTU,12,22,78,0,non,oui,oui,Colobane / Jaxaay
+Tata AFTU,Ligne 63,Camp Marchand Rufisque,Parcelles Dior,trace officielle AFTU,18,25,75,0,non,oui,non,Camp Marchand Rufisque / Stade LSS
+Tata AFTU,Ligne 64,Diamniadio,Notaire,trace officielle AFTU,16,11,89,0,non,oui,oui,Diamniadio / Notaire (Guédiawaye)
+Tata AFTU,Ligne 65,Gare routière de Colobane,Jaxaay 2,trace officielle AFTU,12,22,78,0,non,oui,oui,Colobane / Jaxaay
 Tata AFTU,Ligne 66,Yoff,Gorom 1,trace officielle AFTU,23,27,73,0,non,oui,oui,Yoff / Gorom 1
 Tata AFTU,Ligne 67,Ouakam,Thiawlène (Rufisque),trace officielle AFTU,22,60,40,0,non,oui,oui,Thiawlène (Rufisque) / Boutique Diallo (Ouakam)
 Tata AFTU,Ligne 68,Yeumbeul,Sébikotane,trace officielle AFTU,9,50,50,0,non,oui,oui,Yeumbeul / Sébikotane
-Tata AFTU,Ligne 69,Diamalaye,Tivaouane Peulh,trace officielle AFTU,15,25,75,0,non,oui,oui,Diamalaye / Tivaouane Peul
-Tata AFTU,Ligne 70,Daroukhane,Jaxaay 2,trace officielle AFTU,14,33,67,0,non,oui,oui,Daroukhane / Jaxaay 2
+Tata AFTU,Ligne 69,Diamalaye,Namora,trace officielle AFTU,15,25,75,0,non,oui,non,Diamalaye / Tivaouane Peul
+Tata AFTU,Ligne 70,Daroukhane Keur Serigne Assane,Jaxaay 2,trace officielle AFTU,14,33,67,0,non,oui,oui,Daroukhane / Jaxaay 2
 Tata AFTU,Ligne 71,Keur Massar,Claudel,trace officielle AFTU,18,50,50,0,non,oui,oui,Keur Massar / Claudel
-Tata AFTU,Ligne 72,Guédiawaye,Kounoune,trace officielle AFTU,22,13,87,0,non,oui,oui,Guédiawaye / Kounoune
+Tata AFTU,Ligne 72,Guédiawaye Cité des Enseignants,Kounoune (Cité Cardinal Thiandoum),trace officielle AFTU,22,13,87,0,non,oui,oui,Guédiawaye / Kounoune
 Tata AFTU,Ligne 73,Lac Rose,Poste Thiaroye,trace officielle AFTU,10,33,67,0,non,oui,oui,Poste Thiaroye / Lac Rose
-Tata AFTU,Ligne 74,Bargny (Gare ferroviaire),Tivaouane Peulh,trace officielle AFTU,14,0,100,0,non,oui,oui,Bargny (gare ferroviaire) / Tivaouane Peul
+Tata AFTU,Ligne 74,Bargny (Gare ferroviaire),Cité Cocehas,trace officielle AFTU,14,0,100,0,non,oui,non,Bargny (gare ferroviaire) / Tivaouane Peul
 Tata AFTU,Ligne 75,Malika (Cité Sonatel),Gare routière de Colobane,trace officielle AFTU,15,75,25,0,non,oui,oui,Malika (Cité Sonatel) / Gare routière Colobane
 Tata AFTU,Ligne 76,Sipres,Cité Assurance,trace officielle AFTU,12,83,17,0,non,oui,oui,Sipres / Cité Assurance
 Tata AFTU,Ligne 77,Rufisque,Liberté 5,trace officielle AFTU,14,30,70,0,non,oui,oui,Rufisque / Liberté 5
 Tata AFTU,Ligne 78,Diamaguène,Liberté 5,trace officielle AFTU,12,80,20,0,non,oui,oui,Diamaguène / Liberté 5
 Tata AFTU,Ligne 79,Sangalkam,Cambérène,trace officielle AFTU,15,25,75,0,non,oui,oui,Sangalkam / Cambérène
 Tata AFTU,Ligne 80,Diamalaye,Darou Thioub,trace officielle AFTU,17,60,40,0,non,oui,oui,Diamalaye / Darou Thioub
-Tata AFTU,Ligne 81,Baux Maraîchers,Tivaouane Peulh,trace officielle AFTU,16,100,0,0,non,oui,oui,Baux maraîchers / Tivaouane Peul
+Tata AFTU,Ligne 81,Gare des Baux Maraîchers,Tawfeex,trace officielle AFTU,16,100,0,0,non,oui,non,Baux maraîchers / Tivaouane Peul
 Tata AFTU,Ligne 82,Lat Dior,Comico Yeumbeul,trace officielle AFTU,14,57,43,0,non,oui,oui,Lat Dior / Comico Yeumbeul
 Tata AFTU,Ligne 83,Rufisque Arafat,Zone de Captage,trace officielle AFTU,14,43,57,0,non,oui,oui,Rufisque Arafat / Zone de captage
 Tata AFTU,Ligne 84,UCAD,Jaxaay,devinée (aftu-senegal.org/infos-pratiques),2,100,0,0,oui,oui,oui,UCAD / Jaxaay
