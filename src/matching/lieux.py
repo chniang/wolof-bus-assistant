@@ -8,10 +8,12 @@ Ce module ramène les deux à une même forme de travail pour les comparer.
 
 from __future__ import annotations
 
+import csv
 import re
 import unicodedata
 from difflib import SequenceMatcher
 from functools import lru_cache
+from pathlib import Path
 
 # Mots qui ne désignent pas le lieu lui-même : « Terminus Gare de Colobane »
 # et « Colobane » doivent être reconnus comme le même endroit.
@@ -28,13 +30,19 @@ ABREVIATIONS = {
 
 CHIFFRES_ROMAINS = {
     "i": "1", "ii": "2", "iii": "3", "iv": "4", "v": "5", "vi": "6",
+    "vii": "7", "viii": "8", "ix": "9",
     # Le LLM ou l'ASR écrit aussi les numéros en lettres : « Liberté six ».
     "un": "1", "deux": "2", "trois": "3", "quatre": "4", "cinq": "5", "six": "6",
     "senk": "5", "sis": "6", "siss": "6", "sixe": "6", "sise": "6", "sees": "6",
     "siis": "6", "siks": "6",
 }
 # Le chiffre romain n'est converti qu'après ces mots : « V » seul ne veut rien dire.
-AVANT_NUMERO = {"liberte", "hamo", "unite", "unites", "jaxaay", "gorom", "palais"}
+# « Liberté VI » = « Liberté 6 » (Tata 1, 2, 29, 30, 31 : « Giratoire Liberté VI ») ;
+# de même pour les Sicap, les HLM et Grand Yoff (« HLM V », « Grand Yoff II »).
+AVANT_NUMERO = {
+    "liberte", "hamo", "unite", "unites", "jaxaay", "gorom", "palais",
+    "sicap", "hlm", "yoff",
+}
 
 # Surnoms et formes courantes qui ne se déduisent pas de l'orthographe. Les deux
 # côtés de la comparaison passent par cette table.
@@ -116,7 +124,31 @@ ALIAS = {
     "tengedj": "rufisque",
     "tengeej": "rufisque",
 }
+# « Sicap Liberté 6 » est le quartier Liberté 6 (la SICAP a bâti les Liberté).
+ALIAS.update({f"sicap liberte {n}": f"liberte {n}" for n in range(1, 7)})
 
+# Aéroport international Blaise Diagne (AIBD, à Diass). Alias appliqués à la
+# DEMANDE seulement, jamais au nom d'un arrêt : l'arrêt « Aéroport » des Tata 35,
+# 36 et 61 est l'ancien aéroport de Yoff (LSS), et l'arrêt « Blaise Diagne » de
+# Dem Dikk 11 est l'avenue de la Médina. Appliqués des deux côtés, ils seraient
+# devenus l'AIBD. Les usagers disent « aéroport Blaise Diagne » ou « aéroport »
+# tout court (data/reference/verification_ecarts.md, partie 4) ; l'ancien
+# aéroport se demande avec son nom : « Aéroport LSS », « Aéroport de Yoff ».
+# Jamais « Avenue Blaise Diagne » ni « Lycée Blaise Diagne » : ces noms gardent
+# leurs mots et ne tombent pas sur ces clés.
+_AEROPORT = ("aeroport", "aeroports", "earoport", "ayeropoor", "ayeroport", "ayeropor")
+ALIAS_DEMANDE: dict[str, str] = {"blaise diagne": "aibd", "diass": "aibd"}
+for _mot in _AEROPORT:
+    for _suite in ("", " aibd", " blaise diagne", " international", " international blaise diagne",
+                   " internationale blaise diagne", " international aibd", " diass"):
+        ALIAS_DEMANDE[_mot + _suite] = "aibd"
+
+# Homonymes : un arrêt qui porte ce nom ET l'un de ces mots est un autre lieu,
+# qu'on ne propose qu'à qui dit aussi ce mot. « MARCHE COLOBANE RUFISQUE »
+# (Tata 57) et « COLOBANE RUFISQUE » (Tata 74) sont au quartier Colobane Gouye
+# Mouride, à Rufisque : « Colobane » seul est la gare de Dakar (Tata 60,
+# Colobane -> Rufisque, envoyait à Rufisque en 14 min).
+HOMONYMES = {"colobane": {"rufisque"}}
 # Premiers mots d'une voie : « Route de Rufisque » n'est pas Rufisque.
 VOIES = {
     "rue", "rues", "avenue", "boulevard", "route", "autoroute", "rocade", "allees",
@@ -167,6 +199,43 @@ def sans_accents(texte: str) -> str:
     return "".join(c for c in texte if unicodedata.category(c) != "Mn")
 
 
+@lru_cache(maxsize=16384)
+def nom_exact(nom: str) -> str:
+    """Le nom tel qu'écrit, sans casse, accents ni ponctuation, abréviations comprises.
+
+    « Av Cheikh Anta Diop » reste distinct de « Avenue Cheikh Anta Diop » : la
+    Tata 42 a le premier côté Ouakam, loin de l'UCAD.
+    """
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", sans_accents(nom)).split())
+
+
+# Arrêts AFTU nommés d'après une rue ou un repère, reliés au lieu qu'ils
+# desservent (data/corrections/lieux_arrets_aftu.csv, une source par ligne).
+# Seulement quand le lien est sûr, par le nom EXACT de la fiche AFTU :
+# « AV CHEIKH ANTA DIOP » (Tata 42, côté Ouakam ; Tata 47, incertain) n'y est pas.
+LIENS_AFTU_CSV = Path(__file__).resolve().parents[2] / "data" / "corrections" / "lieux_arrets_aftu.csv"
+# Un arrêt relié passe après un arrêt qui porte le nom du lieu : sa position
+# (un point au milieu de la rue) n'est pas celle du lieu. 0,85 : au plus TOLERANCE
+# (0,15) sous un nom exact, et pas plus de TOLERANCE au-dessus d'un arrêt situé
+# dans le quartier (0,7) : Parcelles -> UCAD garde la Tata 38 (Police Parcelles)
+# à côté de la Tata 25 (Avenue Cheikh Anta Diop).
+NOTE_ARRET_RELIE = 0.85
+
+
+def _lire_liens_aftu(chemin: Path = LIENS_AFTU_CSV) -> dict[str, tuple[str, ...]]:
+    liens: dict[str, list[str]] = {}
+    if not chemin.exists():
+        return {}
+    with open(chemin, newline="", encoding="utf-8-sig") as fichier:
+        for rangee in csv.DictReader(fichier):
+            if (rangee.get("source") or "").strip():
+                liens.setdefault(nom_exact(rangee["arret_aftu"]), []).append(rangee["lieu"].strip())
+    return {cle: tuple(lieux) for cle, lieux in liens.items()}
+
+
+LIENS_AFTU = _lire_liens_aftu()
+
+
 def _calcul_jetons(texte: str) -> list[str]:
     brut = re.sub(r"[^a-z0-9]+", " ", sans_accents(texte)).split()
     # Un faux ami perd le nom du quartier : sinon « Garage Guédiawaye » vaudrait
@@ -191,6 +260,30 @@ def jetons(texte: str) -> list[str]:
     base = _jetons(str(texte))
     alias = ALIAS.get(" ".join(base))
     return list(_jetons(alias)) if alias else list(base)
+
+
+def jetons_demande(texte: str) -> list[str]:
+    """Jetons d'un lieu DEMANDÉ : ceux de `jetons`, plus les alias de la demande (AIBD)."""
+    alias = ALIAS_DEMANDE.get(" ".join(_jetons(str(texte))))
+    return list(_jetons(alias)) if alias else jetons(texte)
+
+
+@lru_cache(maxsize=4096)
+def parties(texte: str) -> tuple[str, ...]:
+    """« Liberté 5 (Dieuppeul) » -> le nom entier, « Liberté 5 », « Dieuppeul ».
+
+    Chaque partie désigne le lieu : l'usager (ou la fiche de référence) précise
+    un quartier par un autre. Sans parenthèses, le nom seul.
+    """
+    texte = str(texte or "")
+    if "(" not in texte:
+        return (texte,)
+    sortie = [texte, re.sub(r"\(.*?\)", " ", texte)]
+    for dedans in re.findall(r"\((.*?)\)", texte):
+        # « (Dieuppeul/Derklé) » : deux noms du même endroit. Pas la virgule :
+        # dans « Grand Yoff (HLM, stade LSS) », « HLM » seul serait un autre quartier.
+        sortie += dedans.split("/")
+    return tuple(dict.fromkeys(p.strip() for p in sortie if p.strip()))
 
 
 def forme(texte: str) -> str:
@@ -246,22 +339,49 @@ def _variantes_quartier(requete: str) -> tuple[str, ...] | None:
     return None
 
 
-def score(requete: str, arret: str) -> float:
+def score(requete: str, arret: str, liens: bool = True) -> float:
     """Ressemblance entre un lieu demandé et un arrêt, entre 0 et 1.
 
     1.0 : même lieu. Entre 0 et 1 : tous les mots demandés sont dans l'arrêt
     (« Liberté 6 » dans « Giratoire Liberté VI »), d'autant mieux noté que
     l'arrêt a peu de mots en plus. 0 : rien de commun. Un grand quartier
-    (« Plateau ») vaut le meilleur de ses arrêts.
+    (« Plateau ») vaut le meilleur de ses arrêts. Un nom avec parenthèses
+    (« Liberté 5 (Dieuppeul) ») vaut la meilleure de ses parties.
+
+    `liens=False` ignore les arrêts AFTU reliés à un lieu (LIENS_AFTU) : le
+    réseau v2 range « Av Cheikh Anta Diop » (Tata 42, Ouakam) sous le même nom
+    normalisé que « Avenue Cheikh Anta Diop », qui seul est relié à l'UCAD.
     """
+    return max(_score_entier(morceau, arret, liens) for morceau in parties(requete))
+
+
+def relie(arret: str) -> bool:
+    """Vrai si cet arrêt (nom exact) est relié à un lieu par data/corrections/lieux_arrets_aftu.csv."""
+    return nom_exact(arret) in LIENS_AFTU
+
+
+def _score_entier(requete: str, arret: str, liens: bool = True) -> float:
+    """`score` pour un nom pris d'un seul bloc (parenthèses déjà séparées)."""
     variantes = _variantes_quartier(requete)
     if variantes is not None:
-        return max(score(variante, arret) for variante in variantes)
+        return max(score(variante, arret, liens) for variante in variantes)
 
-    q = jetons(requete)
+    note = _score_nom(requete, arret)
+    # Arrêt AFTU nommé d'après une rue, relié au lieu qu'il dessert.
+    for lieu in LIENS_AFTU.get(nom_exact(arret), ()) if liens else ():
+        note = max(note, NOTE_ARRET_RELIE * _score_nom(requete, lieu))
+    return note
+
+
+def _score_nom(requete: str, arret: str) -> float:
+    q = jetons_demande(requete)
     s = jetons(arret)
     if not q or not s:
         return 0.0
+    # « Colobane » seul n'est jamais « Marché Colobane Rufisque ».
+    for nom, precisions in HOMONYMES.items():
+        if nom in q and nom in s and any(m in s for m in precisions) and not any(m in q for m in precisions):
+            return 0.0
     brut = _score_brut(tuple(q), tuple(s))
     # Une rue ou une route qui porte le nom d'un quartier (« Route de Rufisque »)
     # n'est pas ce quartier : on la note moins bien qu'un vrai arrêt.

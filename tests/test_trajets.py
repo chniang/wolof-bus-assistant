@@ -2168,6 +2168,194 @@ def test_yoff_tata_2() -> tuple[int, int]:
     return echecs, total
 
 
+def test_noms_lot_1() -> tuple[int, int]:
+    """Lot 1 des noms (audit du 12/11/2026, data/audit/fiabilite_rapport.md).
+
+    - « Colobane » seul est la gare de Dakar ; les arrêts de Rufisque (Tata 57
+      « Marché Colobane Rufisque », Tata 74 « Colobane Rufisque ») seulement
+      pour « Colobane Rufisque ». Tata 60 (Colobane -> Rufisque) envoyait à
+      Rufisque en 14 min.
+    - L'aéroport Blaise Diagne (AIBD) sous tous ses noms, jamais l'ancien
+      aéroport de Yoff (LSS) ni l'avenue ou le lycée Blaise Diagne.
+    - Chiffres romains : « Liberté VI » = « Liberté 6 » (Sicap, HLM, Grand Yoff).
+    - Noms à parenthèses : chaque partie désigne le lieu.
+    - Arrêts AFTU nommés d'après une rue, reliés à leur lieu seulement quand
+      c'est sûr (data/corrections/lieux_arrets_aftu.csv).
+    """
+    import csv
+
+    from intent.extract_intent import extract_local
+    from matching.lieux import LIENS_AFTU, NOTE_ARRET_RELIE, jetons, nom_exact, parties, score
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | noms lot 1 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    def lignes(resultat: dict) -> set[tuple[str, str]]:
+        return {(t["compagnie"], t["ligne"]) for t in resultat.get("lignes") or []} | {
+            (e["compagnie"], e["ligne"])
+            for c in resultat.get("correspondances") or []
+            for e in (c["etape_1"], c["etape_2"])
+        }
+
+    def arrets(resultat: dict) -> set[str]:
+        etapes = list(resultat.get("lignes") or []) + [
+            e for c in resultat.get("correspondances") or [] for e in (c["etape_1"], c["etape_2"])
+        ]
+        return {
+            nom
+            for e in etapes
+            for nom in (e["monte_a"], e["descend_a"], e.get("monte_a_reseau", ""), e.get("descend_a_reseau", ""))
+            if nom
+        }
+
+    tata = {"Tata AFTU"}
+    matcher = _matcher_hors_ligne()
+
+    # ---------------------------------------------------------------- Colobane
+    for arret in ("Marché Colobane Rufisque", "Colobane Rufisque", "MARCHE COLOBANE RUFISQUE"):
+        verifie(f"« Colobane » ne vaut jamais « {arret} »", score("Colobane", arret) == 0.0, score("Colobane", arret))
+        verifie(f"« Colobane Rufisque » trouve « {arret} »", score("Colobane Rufisque", arret) >= 0.8,
+                score("Colobane Rufisque", arret))
+    verifie("« Colobane Rufisque » ne vaut pas la gare de Colobane (Dakar)",
+            score("Colobane Rufisque", "Gare de Colobane") == 0.0)
+    verifie("« Rufisque » garde ses arrêts de Colobane Gouye Mouride",
+            score("Rufisque", "Marché Colobane Rufisque") >= 0.6)
+    lieux = extract_local("maa ngi Colobane Rufisque bëgg naa dem Thiaroye")
+    verifie("phrase « maa ngi Colobane Rufisque » -> Colobane Rufisque", lieux.get("depart") == "Colobane Rufisque", lieux)
+    rufisque_colobane = {"Marché Colobane Rufisque", "Colobane Rufisque"}
+    for dep, arr in (("Colobane", "Rufisque"), ("Thiaroye", "Colobane"), ("Pikine", "Colobane")):
+        for filtre in (None, tata):
+            resultat = matcher.find_line(dep, arr, filtre)
+            verifie(f"{dep} -> {arr} ({'Tata' if filtre else 'Tous'}) : jamais un arrêt Colobane de Rufisque",
+                    not arrets(resultat) & rufisque_colobane, _detail(resultat))
+    resultat = matcher.find_line("Colobane", "Rufisque", tata)
+    verifie("Colobane -> Rufisque (Tata) : la Tata 60 de la fiche AFTU est proposée",
+            ("Tata AFTU", "Ligne 60") in lignes(resultat), _detail(resultat))
+    resultat = matcher.find_line("Colobane Rufisque", "Thiaroye")
+    verifie("Colobane Rufisque -> Thiaroye : monte à Rufisque (Tata 57)",
+            ("Tata AFTU", "Ligne 57") in lignes(resultat) and bool(arrets(resultat) & rufisque_colobane),
+            _detail(resultat))
+
+    # ---------------------------------------------------------------- AIBD
+    for nom in ("aéroport Blaise Diagne", "Aéroport AIBD", "Blaise Diagne", "AIBD", "aéroport",
+                "aéroport de Diass", "Diass", "aeroport", "earoport", "ayeropoor",
+                "Aéroport international Blaise Diagne"):
+        verifie(f"« {nom} » -> AIBD", score(nom, "AIBD") == 1.0, score(nom, "AIBD"))
+        for arret in ("Aéroport", "Aéroport LSS", "Aéroport L S Senghor", "Avenue Blaise Diagne",
+                      "Av Blaise Diagne", "Lycée Blaise Diagne", "Blaise Diagne"):
+            verifie(f"« {nom} » ne vaut jamais « {arret} »", score(nom, arret) == 0.0, score(nom, arret))
+    # Côté arrêt, rien ne change : « Blaise Diagne » (Dem Dikk 11, avenue de la
+    # Médina) et « Aéroport » (Tata 35, Yoff) gardent leur nom.
+    verifie("l'arrêt « Blaise Diagne » reste l'avenue", jetons("Blaise Diagne") == ["blaise", "diagne"])
+    verifie("l'arrêt « Aéroport » reste l'aéroport de Yoff", score("Aéroport LSS", "Aéroport") == 1.0)
+    verifie("« Avenue Blaise Diagne » reste l'avenue",
+            score("Avenue Blaise Diagne", "Avenue Blaise Diagne") == 1.0 and score("Avenue Blaise Diagne", "AIBD") == 0.0)
+    for forme_dite in ("aéroport Blaise Diagne", "aeroport", "earoport", "ayeropoor", "Diass", "aéroport de Diass",
+                       "Blaise Diagne", "AIBD", "l'aéroport international Blaise Diagne"):
+        lieux = extract_local(f"maa ngi Ouakam bëgg naa dem {forme_dite}")
+        verifie(f"phrase « dem {forme_dite} » -> AIBD",
+                lieux.get("depart") == "Ouakam" and lieux.get("arrivee") == "AIBD", lieux)
+    for forme_dite in ("aéroport LSS", "aéroport Léopold Sédar Senghor", "aéroport de Yoff"):
+        lieux = extract_local(f"maa ngi Pikine bëgg naa dem {forme_dite}")
+        verifie(f"phrase « dem {forme_dite} » -> l'ancien aéroport, jamais l'AIBD",
+                lieux.get("arrivee") == "Aéroport LSS", lieux)
+    lieux = extract_local("maa ngi Pikine bëgg naa dem Avenue Blaise Diagne")
+    verifie("phrase « Avenue Blaise Diagne » reste l'avenue", lieux.get("arrivee") == "Avenue Blaise Diagne", lieux)
+    for dep in ("Ouakam", "Yoff", "Liberté 6", "Grand Yoff"):
+        resultat = matcher.find_line(dep, "aéroport Blaise Diagne")
+        verifie(f"{dep} -> aéroport Blaise Diagne : TAF TAF jusqu'à l'AIBD",
+                ("Dakar Dem Dikk", "TAF TAF") in lignes(resultat) and "AIBD" in arrets(resultat), _detail(resultat))
+        verifie(f"{dep} -> aéroport Blaise Diagne : aucune Tata (aucune ne dessert l'AIBD)",
+                not any(c == "Tata AFTU" for c, _ in lignes(resultat)), _detail(resultat))
+        verifie(f"{dep} -> aéroport Blaise Diagne : jamais à pied", not resultat.get("a_pied"), resultat.get("a_pied"))
+    resultat = matcher.find_line("Pikine", "Aéroport LSS")
+    verifie("Pikine -> Aéroport LSS : toujours l'aéroport de Yoff, jamais l'AIBD",
+            resultat["found"] and "AIBD" not in arrets(resultat), _detail(resultat))
+
+    # ---------------------------------------------------------------- chiffres romains
+    for romain, arabe in (("Liberté VI", "Liberté 6"), ("Liberté V", "Liberté 5"), ("Sicap Liberté VI", "Liberté 6"),
+                          ("HLM V", "HLM 5"), ("Grand Yoff II", "Grand Yoff 2"), ("Sicap IV", "Sicap 4")):
+        verifie(f"« {romain} » = « {arabe} »", jetons(romain) == jetons(arabe), (jetons(romain), jetons(arabe)))
+    verifie("« Liberté 6 » trouve « Giratoire de Liberté VI » (Tata 1)",
+            score("Liberté 6", "Giratoire de Liberté VI") == 1.0)
+    for phrase, attendu in (("maa ngi Lat Dior bëgg naa dem Liberté VI", "Liberté 6"),
+                            ("maa ngi Liberté V bëgg naa dem Palais", "Liberté 5"),
+                            ("maa ngi Sicap Liberté VI bëgg naa dem Médina", "Liberté 6")):
+        lieux = extract_local(phrase)
+        verifie(f"phrase « {phrase} » -> {attendu}", attendu in (lieux.get("depart"), lieux.get("arrivee")), lieux)
+
+    # ---------------------------------------------------------------- parenthèses
+    verifie("parties de « Liberté 5 (Dieuppeul) »",
+            parties("Liberté 5 (Dieuppeul)") == ("Liberté 5 (Dieuppeul)", "Liberté 5", "Dieuppeul"))
+    for nom, arret in (("Liberté 5 (Dieuppeul)", "Liberté 5"), ("Liberté 5 (Dieuppeul)", "Dieuppeul"),
+                       ("Liberté 5 (Dieuppeul)", "Terminus Liberté 5 (Dieuppeul)"),
+                       ("Médina (Gueule Tapée)", "Médina"), ("Médina (Gueule Tapée)", "Gueule Tapée")):
+        verifie(f"« {nom} » trouve « {arret} »", score(nom, arret) == 1.0, score(nom, arret))
+    # La virgule ne sépare pas : « HLM » seul est un autre quartier que HLM Grand Yoff.
+    verifie("« Grand Yoff (HLM, stade LSS) » ne vaut pas l'arrêt « HLM »",
+            score("Grand Yoff (HLM, stade LSS)", "HLM") == 0.0)
+    verifie("« Grand Yoff (HLM, stade LSS) » vaut Grand Yoff", score("Grand Yoff (HLM, stade LSS)", "Grand Yoff") == 1.0)
+    resultat = matcher.find_line("Liberté 5 (Dieuppeul)", "UCAD")
+    verifie("Liberté 5 (Dieuppeul) -> UCAD : monte à Liberté 5 / Dieuppeul, plus à Stade Demba Diop",
+            bool(resultat["lignes"]) and all("Demba Diop" not in t["monte_a"] for t in resultat["lignes"]),
+            _detail(resultat))
+    resultat = matcher.find_line("Médina (Gueule Tapée)", "Parcelles (HLM Grand Médine)", tata)
+    verifie("Médina (Gueule Tapée) -> Parcelles (HLM Grand Médine) (Tata) : la Tata 1 de la fiche AFTU",
+            ("Tata AFTU", "Ligne 1") in lignes(resultat), _detail(resultat))
+
+    # ---------------------------------------------------------------- arrêts AFTU reliés
+    with open(RACINE / "data" / "reference" / "arrets_toutes_lignes_aftu.csv", encoding="utf-8-sig", newline="") as f:
+        noms_aftu = {nom_exact(r["arret"]) for r in csv.DictReader(f)}
+    with open(RACINE / "data" / "corrections" / "lieux_arrets_aftu.csv", encoding="utf-8-sig", newline="") as f:
+        liens = list(csv.DictReader(f))
+    verifie(f"{len(liens)} liens AFTU, chacun avec une source", bool(liens) and all(r["source"].strip() for r in liens))
+    for r in liens:
+        verifie(f"lien « {r['arret_aftu']} » : nom exact d'une fiche AFTU", nom_exact(r["arret_aftu"]) in noms_aftu)
+        verifie(f"lien « {r['arret_aftu']} » -> {r['lieu']} chargé",
+                r["lieu"] in LIENS_AFTU.get(nom_exact(r["arret_aftu"]), ()))
+    for lieu, arret in (("UCAD", "Avenue Cheikh Anta Diop"), ("UCAD", "Avenue Cheikh Antadiop"),
+                        ("Parcelles Assainies", "Route Principale des Parcelles Assainies"),
+                        ("Parcelles Assainies", "Route du Marché des Parcelles Assainies"),
+                        ("HLM Grand Médine", "Rte Corniche de HLM Gd Médine"),
+                        ("Gueule Tapée", "Boulevard de la Gueule Tapée")):
+        verifie(f"« {lieu} » trouve l'arrêt relié « {arret} », après un nom exact",
+                score(lieu, arret) == NOTE_ARRET_RELIE, score(lieu, arret))
+    # « AV CHEIKH ANTA DIOP » : Tata 42 côté Ouakam, Tata 47 incertaine. Pas relié.
+    verifie("« UCAD » ne vaut jamais « Av Cheikh Anta Diop » (Tata 42, Ouakam)",
+            score("UCAD", "Av Cheikh Anta Diop") == 0.0)
+    resultat = matcher.find_line("Yoff", "UCAD", tata)
+    verifie("Yoff -> UCAD (Tata) : Tata 4 directe, par Avenue Cheikh Anta Diop",
+            ("Tata AFTU", "Ligne 4") in {(t["compagnie"], t["ligne"]) for t in resultat["lignes"]}, _detail(resultat))
+    resultat = matcher.find_line("Parcelles Assainies", "Petersen", tata)
+    verifie("Parcelles Assainies -> Petersen (Tata) : Tata 2 de la fiche AFTU",
+            ("Tata AFTU", "Ligne 2") in lignes(resultat), _detail(resultat))
+    for dep in ("Parcelles Assainies", "Guédiawaye", "Aéroport LSS"):
+        resultat = matcher.find_line(dep, "UCAD")
+        verifie(f"{dep} -> UCAD : jamais la Tata 42 ni la 47 (« Av Cheikh Anta Diop », non reliée)",
+                not lignes(resultat) & {("Tata AFTU", "Ligne 42"), ("Tata AFTU", "Ligne 47")}, _detail(resultat))
+    resultat = matcher.find_line("Parcelles Assainies", "UCAD", tata)
+    verifie("Parcelles Assainies -> UCAD (Tata) : la Tata 38 reste proposée à côté de la 25",
+            ("Tata AFTU", "Ligne 38") in lignes(resultat), _detail(resultat))
+
+    # ---------------------------------------------------------------- Guédiawaye
+    resultat = matcher.find_line("Guédiawaye", "Colobane", tata)
+    montees = {t["monte_a"] for t in resultat["lignes"]}
+    verifie("Guédiawaye -> Colobane (Tata) : monte dans Guédiawaye, jamais au Garage Guédiawaye (Dakar)",
+            bool(montees) and not any("Garage" in m for m in montees), _detail(resultat))
+    verifie("« Guédiawaye » trouve « Gadaye (Guédiawaye) », terminus de la Tata 30",
+            score("Guédiawaye", "Gadaye (Guédiawaye)") >= 0.6)
+    verifie("« Guédiawaye » ne vaut jamais « Garage Guédiawaye »", score("Guédiawaye", "Garage Guédiawaye") == 0.0)
+    return echecs, total
+
+
 def test_terrain_en_ligne() -> tuple[int, int]:
     """Retours du test en ligne : titres lisibles, lieu précis, options trop lentes, « bus »."""
     import csv
@@ -2276,12 +2464,18 @@ def test_terrain_en_ligne() -> tuple[int, int]:
     return echecs, total
 
 
-def test_verite_terrain() -> tuple[int, int]:
-    """Les trajets de data/reference/ passent dans le moteur : score affiché, pas encore exigé.
+# Plancher du score de vérité terrain (lot 1 des noms, 12/11/2026).
+PLANCHER_VERITE = {"statut_tous": 43, "statut_filtre": 50}
 
-    Mode rapport (étape F2) : on vérifie seulement que chaque trajet reçoit un
-    statut. Le score (36/67 OK sous « Tous » le 12/11/2026) deviendra un seuil
-    quand les corrections de noms et de positions seront faites.
+
+def test_verite_terrain() -> tuple[int, int]:
+    """Les trajets de data/reference/ passent dans le moteur, avec un score plancher.
+
+    Le 12/11/2026 : 36/67 OK sous « Tous » et 42/67 sous le filtre de la
+    compagnie, 4 trajets sans réponse (AIBD). Après le lot 1 des noms (Colobane,
+    aéroport, chiffres romains, parenthèses, arrêts AFTU reliés) : 43 et 50,
+    aucun trajet sans réponse. Le plancher empêche de revenir en arrière ; les
+    corrections de positions (lot suivant) le relèveront.
     """
     import importlib.util
 
@@ -2306,7 +2500,9 @@ def test_verite_terrain() -> tuple[int, int]:
     for colonne, nom in (("statut_tous", "Tous"), ("statut_filtre", "filtre compagnie")):
         compte = audit.score(rangees, colonne)
         print(f"      SCORE {nom} : {compte['OK']}/{len(rangees)} OK, {compte['AUTRE_LIGNE']} autre ligne, "
-              f"{compte['LIGNE_FAUSSE']} ligne fausse, {compte['ABSENT']} absent (rapport, pas encore exigé)")
+              f"{compte['LIGNE_FAUSSE']} ligne fausse, {compte['ABSENT']} absent")
+        verifie(f"score {nom} : au moins {PLANCHER_VERITE[colonne]} OK", compte["OK"] >= PLANCHER_VERITE[colonne], compte)
+        verifie(f"score {nom} : aucun trajet sans réponse (aéroport AIBD compris)", compte["ABSENT"] == 0, compte)
     return echecs, total
 
 
@@ -2498,11 +2694,14 @@ def test_trajets_frequents() -> tuple[int, int]:
     import json
 
     from intent.extract_intent import extract_local
-    from matching.lieux import sans_accents
+    from matching.lieux import ALIAS_DEMANDE, sans_accents
     from matching.stops_matcher import StopsMatcher
 
     def normalise(nom: str) -> str:
-        return " ".join(re.findall(r"[a-z0-9]+", sans_accents(nom or "").lower()))
+        forme = " ".join(re.findall(r"[a-z0-9]+", sans_accents(nom or "").lower()))
+        # « Aéroport » (choix de l'onglet) désigne l'AIBD depuis le lot 1 des
+        # noms : l'extraction rend « AIBD », c'est bien le même lieu.
+        return ALIAS_DEMANDE.get(forme, forme)
 
     echecs = 0
     total = 0
@@ -5462,6 +5661,7 @@ if __name__ == "__main__":
         echecs_chg, total_chg = test_correspondances_coherentes()
         echecs_titres, total_titres = test_titres_markdown()
         echecs_t2, total_t2 = test_yoff_tata_2()
+        echecs_noms1, total_noms1 = test_noms_lot_1()
         echecs_gare, total_gare = test_gare_gaar()
         echecs_hf, total_hf = test_compte_hugging_face()
         echecs_terrain, total_terrain = test_terrain_en_ligne()
@@ -5495,6 +5695,7 @@ if __name__ == "__main__":
             + echecs_chg
             + echecs_titres
             + echecs_t2
+            + echecs_noms1
             + echecs_gare
             + echecs_hf
             + echecs_terrain
@@ -5529,6 +5730,7 @@ if __name__ == "__main__":
             + total_chg
             + total_titres
             + total_t2
+            + total_noms1
             + total_gare
             + total_hf
             + total_terrain

@@ -34,11 +34,13 @@ from .router import (
 
 try:  # import à plat (app.py) ou en paquet
     from matching.geo import nom_generique, nom_rue_numerotee
-    from matching.lieux import joli, score
+    from matching.lieux import joli, relie, score
+    from matching.lieux import nom_exact as cle_exacte
     from matching.stops_matcher import MIN_SCORE, TOLERANCE
 except ImportError:  # pragma: no cover
     from ..matching.geo import nom_generique, nom_rue_numerotee
-    from ..matching.lieux import joli, score
+    from ..matching.lieux import joli, relie, score
+    from ..matching.lieux import nom_exact as cle_exacte
     from ..matching.stops_matcher import MIN_SCORE, TOLERANCE
 
 # Les mêmes plafonds que l'affichage v1 : trois lignes directes, deux
@@ -241,7 +243,7 @@ def _vers_reseau(arrets: list[str]) -> tuple[str, ...]:
     return tuple(noms)
 
 
-def _note_du_nom(lieu: str, arret: str) -> float:
+def _note_du_nom(lieu: str, arret: str, liens: bool = True) -> float:
     """La note de v1, ou celle d'un lieu que désigne ce terminus.
 
     Sans cela, « Terminus liberté 5 (Dieuppeul) » ne valait que 0,83 pour « Liberté 5 »,
@@ -249,7 +251,7 @@ def _note_du_nom(lieu: str, arret: str) -> float:
     """
 
     return max(
-        (score(lieu, nom) for nom in (arret, *terminus_forms(arret))),
+        (score(lieu, nom, liens) for nom in (arret, *terminus_forms(arret))),
         default=0.0,
     )
 
@@ -281,10 +283,29 @@ def _resoudre(matcher, lieu: str) -> dict:
     tries = sorted(notes_v1, key=lambda arret: -notes_v1[arret])
     meilleur = tries[0] if tries and notes_v1[tries[0]] > 0 else ""
     note = notes_v1[meilleur] if meilleur else 0.0
+
+    def reseau(arret: str) -> list[str]:
+        """Les noms v2 de cet arrêt qui méritent sa note.
+
+        Un arrêt AFTU relié à un lieu (« Avenue Cheikh Anta Diop » -> UCAD) ne
+        transmet sa note qu'aux noms écrits pareil : le réseau v2 range sous le
+        même nom normalisé « Av Cheikh Anta Diop », arrêt des Tata 42 (Ouakam)
+        et 47, que rien ne relie à l'UCAD.
+        """
+        noms = _arrets_du_reseau(arret)
+        if not relie(arret) or notes_v1[arret] <= max(
+            _note_du_nom(lieu, arret, liens=False), geo_scores.get(arret, 0.0)
+        ):
+            return noms
+        return [nom for nom in noms if cle_exacte(nom) == cle_exacte(arret)]
+
+    def vers_reseau(arrets: list[str]) -> tuple[str, ...]:
+        return tuple(dict.fromkeys(nom for arret in arrets for nom in reseau(arret)))
+
     notes: dict[str, float] = {}
     par_son_nom: set[str] = set()
     for arret in tries:
-        for nom in _arrets_du_reseau(arret):
+        for nom in reseau(arret):
             notes.setdefault(nom, notes_v1[arret])
             if _note_du_nom(lieu, arret) >= MIN_SCORE:
                 par_son_nom.add(nom)
@@ -364,7 +385,7 @@ def _resoudre(matcher, lieu: str) -> dict:
         # Pas de restriction ici : un arrêt loin du lieu dit garde sa ligne. La
         # carte, elle, passe en message vague au-delà de 600 m (_vague).
         return ResolvedPlace(
-            stops=_vers_reseau([a for a in tries if notes_v1[a] >= seuil]),
+            stops=vers_reseau([a for a in tries if notes_v1[a] >= seuil]),
             coords=point,
         )
 

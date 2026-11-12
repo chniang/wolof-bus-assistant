@@ -170,3 +170,28 @@ positions estimées.
    confirmation téléphonique de Dem Dikk.
 5. **Les lignes manquantes** 311, 319, 327 et TO1.
 6. **Les positions des arrêts**, une fois les listes stabilisées.
+
+## Lot 1 des noms (12/11/2026)
+
+Corrections de reconnaissance seulement (aucune position, vitesse ni règle « 1,8 fois » modifiée) :
+Colobane seul = Dakar (« Colobane Rufisque » pour Tata 57/74), aéroport Blaise Diagne (AIBD, Diass,
+« aéroport » seul ; jamais LSS, ni l'avenue ou le lycée Blaise Diagne), chiffres romains, noms à
+parenthèses, et 7 arrêts AFTU nommés d'après une rue reliés à leur lieu
+(`data/corrections/lieux_arrets_aftu.csv`, une source par lien).
+
+| Statut | Tous avant | Tous après | Filtre avant | Filtre après |
+| --- | ---: | ---: | ---: | ---: |
+| OK | 36 | **43** | 42 | **50** |
+| AUTRE_LIGNE | 25 | 21 | 21 | 16 |
+| LIGNE_FAUSSE | 2 | 3 | 0 | 1 |
+| ABSENT | 4 | **0** | 4 | **0** |
+
+Écarts corrigés : 1 (Colobane -> Rufisque, Tata 60), 4 (AIBD : 3 trajets OK, Grand Yoff -> AIBD
+reçoit le TAF TAF ; l'Express AIBD n'est pas dans nos données), 9 (Tata 1), 10 (Tata 2), 14 (Tata 4).
+En partie : 2 (plus de « Marché Colobane Rufisque », mais la Tata 40 n'est pas dans les 3 premières)
+et 6 (montée à Liberté 5 / Dieuppeul, mais pas la DDD 4).
+
+Nouvelle LIGNE_FAUSSE : Parcelles Assainies -> Grand Yoff propose la Tata 2 jusqu'à « Route HLM
+Grand Médine » (3 min), que `arrets_geo.csv` place au quartier « Hlm Grand Yoff ». À revoir avec les
+positions. Thiaroye -> Aéroport LSS (Yoff) passe de OK à AUTRE_LIGNE sous « Tous » : la partie
+« (Yoff) » ajoute la Tata 66, et la DDD 218 sort des 3 premières (la DDD 217 reste).

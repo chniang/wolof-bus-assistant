@@ -18,12 +18,12 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 try:  # import à plat (app.py) ou lancé depuis src/intent/
-    from matching.lieux import jetons, lieux_reconnaissables
+    from matching.lieux import CHIFFRES_ROMAINS, jetons, lieux_reconnaissables
 except ImportError:  # pragma: no cover
     import sys
 
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from matching.lieux import jetons, lieux_reconnaissables
+    from matching.lieux import CHIFFRES_ROMAINS, jetons, lieux_reconnaissables
 
 ITINERAIRES_CSV = Path(__file__).resolve().parents[2] / "data" / "itineraires_dakar.csv"
 
@@ -346,6 +346,14 @@ REPLACEMENTS_PHRASE = (
     (r"\b(liberte)\s+(?:quatre|katr|nient|ñeent|nyent)\b", r" \1 4 "),
     (r"\b(liberte)\s+(?:cinq|senk|sank|sink|sinq|juroom|jurom|five)\b", r" \1 5 "),
     (r"\b(liberte)\s+(?:six|sixe|sis|siss|sise|siis|sees|siks)\b", r" \1 6 "),
+    # Chiffres romains écrits (« Liberté VI », le nom des fiches AFTU), après
+    # les mêmes mots que matching/lieux.py (Liberté, Sicap, HLM, Grand Yoff…).
+    # « vi » avant « v » et « i » : l'alternance prend la première qui convient.
+    (r"\b(liberte|sicap|hlm|yoff|hamo|unite|palais)\s+(ix|viii|vii|vi|iv|v|iii|ii|i)\b",
+     lambda m: f" {m.group(1)} {CHIFFRES_ROMAINS[m.group(2)]} "),
+    # « Sicap Liberté 6 » est le quartier Liberté 6 : sans cela, « sicap » seul
+    # (mot trop vague) laissait « Liberté » sans son numéro.
+    (r"\bsicap\s+(liberte)\b", r" \1 "),
     # ---------------------------------------------------------------------- #
     # Variantes Whisper « sûres » (scripts/analyser_whisper.py, étape 5) :
     # entendues ≥2 fois chez ≥2 locuteurs différents, et le lieu visé confirmé
@@ -410,6 +418,24 @@ REPLACEMENTS_PHRASE = (
     (r"\bfacs?\b", " ucad "),
     (r"\byuniversites?\b", " ucad "),
     (r"\bunivesites?\b", " ucad "),
+    # Aéroport international Blaise Diagne (Diass) : les usagers disent
+    # « aéroport Blaise Diagne », « aéroport de Diass » ou « aéroport » tout
+    # court ; l'ASR écrit aussi « earoport », « ayeropoor ». Tout devient
+    # « aibd », le nom de l'arrêt (TAF TAF). Jamais l'ancien aéroport de Yoff
+    # (« aéroport LSS / Léopold Sédar Senghor / de Yoff »), ni « Avenue » ou
+    # « Lycée Blaise Diagne » (Médina, lignes 3, 4, Dem Dikk 9 et 121).
+    # L'ancien aéroport garde son nom complet, « Aéroport LSS » : réduit à
+    # « Aéroport », il deviendrait l'AIBD (alias de la demande, lieux.py).
+    (r"\b(?:aeroports?|earoport|ayeropo{1,2}rt?)\s+(?:de\s+)?"
+     r"(?:lss|l\s+s\s+s|l\s+s\s+senghor|leopold\s+sedar\s+senghor|leopold\s+senghor|senghor|yoff)\b",
+     " aeroport lss "),
+    (r"\b(?:aeroports?|earoport|ayeropo{1,2}rt?)(?:\s+internationale?)?"
+     r"(?:\s+(?:blaise\s+diagne|de\s+diass|diass|aibd))?\b"
+     r"(?!\s+(?:lss|l\s+s\s+s|l\s+s\s+senghor|leopold|senghor|de\s+yoff|yoff))",
+     " aibd "),
+    (r"(?<!avenue )(?<!av )(?<!lycee )\bblaise\s+diagne\b", " aibd "),
+    (r"\bdiass\b", " aibd "),
+    (r"\baibd(?:\s+aibd)+\b", " aibd "),
 )
 
 # En dessous de ce ratio, on préfère ne rien trouver plutôt qu'inventer un quartier.
@@ -445,6 +471,8 @@ LIEUX_SUPPLEMENTAIRES = (
     # Quartier de arrets_geo.csv (Giratoire Liberté VI, Hamo VI) : sans lui,
     # « Liberté 6 Extension » perdait « Extension » et tombait sur Liberté 6.
     "Liberté 6 Extension",
+    # L'ancien aéroport de Yoff sous son nom entier : « Aéroport » seul est l'AIBD.
+    "Aéroport LSS",
     # Lieux incertains, situés par leur position.
     "Mbao", "Yarakh", "Point E", "Cité Soprim", "Soprim", "Cité Keur Gorgui",
 )
