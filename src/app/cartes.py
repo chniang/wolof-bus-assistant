@@ -23,6 +23,11 @@ def titre_autre_possibilite(numero: int) -> str:
     return _titre(f"Autre possibilité {numero}", 16, 700, "14px 0 4px 0")
 
 
+def titre_autre_possibilite_texte(texte: str) -> str:
+    """Même titre qu'« Autre possibilité N », avec un texte choisi (« ✈️ AIBD… »)."""
+    return _titre(texte, 16, 700, "14px 0 4px 0")
+
+
 def titre_section(texte: str) -> str:
     """Titre de section en HTML, jamais en Markdown « ### ».
 

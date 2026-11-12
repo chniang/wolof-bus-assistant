@@ -2245,9 +2245,10 @@ def test_noms_lot_1() -> tuple[int, int]:
             _detail(resultat))
 
     # ---------------------------------------------------------------- AIBD
-    for nom in ("aéroport Blaise Diagne", "Aéroport AIBD", "Blaise Diagne", "AIBD", "aéroport",
-                "aéroport de Diass", "Diass", "aeroport", "earoport", "ayeropoor",
-                "Aéroport international Blaise Diagne"):
+    # « aéroport » seul n'est plus l'AIBD (lot 2a, test_aeroport_ambigu) : seuls
+    # les noms précis y mènent.
+    for nom in ("aéroport Blaise Diagne", "Aéroport AIBD", "Blaise Diagne", "AIBD",
+                "aéroport de Diass", "Diass", "Aéroport international Blaise Diagne"):
         verifie(f"« {nom} » -> AIBD", score(nom, "AIBD") == 1.0, score(nom, "AIBD"))
         for arret in ("Aéroport", "Aéroport LSS", "Aéroport L S Senghor", "Avenue Blaise Diagne",
                       "Av Blaise Diagne", "Lycée Blaise Diagne", "Blaise Diagne"):
@@ -2258,7 +2259,7 @@ def test_noms_lot_1() -> tuple[int, int]:
     verifie("l'arrêt « Aéroport » reste l'aéroport de Yoff", score("Aéroport LSS", "Aéroport") == 1.0)
     verifie("« Avenue Blaise Diagne » reste l'avenue",
             score("Avenue Blaise Diagne", "Avenue Blaise Diagne") == 1.0 and score("Avenue Blaise Diagne", "AIBD") == 0.0)
-    for forme_dite in ("aéroport Blaise Diagne", "aeroport", "earoport", "ayeropoor", "Diass", "aéroport de Diass",
+    for forme_dite in ("aéroport Blaise Diagne", "Diass", "aéroport de Diass",
                        "Blaise Diagne", "AIBD", "l'aéroport international Blaise Diagne"):
         lieux = extract_local(f"maa ngi Ouakam bëgg naa dem {forme_dite}")
         verifie(f"phrase « dem {forme_dite} » -> AIBD",
@@ -2353,6 +2354,206 @@ def test_noms_lot_1() -> tuple[int, int]:
     verifie("« Guédiawaye » trouve « Gadaye (Guédiawaye) », terminus de la Tata 30",
             score("Guédiawaye", "Gadaye (Guédiawaye)") >= 0.6)
     verifie("« Guédiawaye » ne vaut jamais « Garage Guédiawaye »", score("Guédiawaye", "Garage Guédiawaye") == 0.0)
+    return echecs, total
+
+
+def test_aeroport_ambigu() -> tuple[int, int]:
+    """Lot 2a : « aéroport » seul est ambigu à Dakar, on propose les deux.
+
+    L'AIBD (Diass) et l'ancien aéroport Léopold Sédar Senghor (Yoff, arrêt
+    « Aéroport » de la Tata 35) : deviner serait répondre faux une fois sur
+    deux. Les noms précis vont droit au bon aéroport. La voix n'utilise que des
+    segments existants (« moo lay yóbbu ba » + lieu_aibd / lieu_aeroport_lss,
+    « Walla, » entre les deux).
+    """
+    import os
+
+    import tts.speak as speak
+    from intent.extract_intent import extract_local
+    from matching.lieux import AEROPORT_LSS, AIBD, aeroport_ambigu, score
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | aéroport ambigu {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    # ------------------------------------------------------------ les noms
+    for forme in ("aéroport", "Aéroport", "aeroport", "earoport", "ayeropoor", "aéroport international"):
+        verifie(f"« {forme} » seul est ambigu", aeroport_ambigu(forme))
+        verifie(f"« {forme} » seul ne vaut plus directement l'AIBD", score(forme, "AIBD") == 0.0)
+    for forme in ("aéroport Blaise Diagne", "Blaise Diagne", "AIBD", "Diass", "aéroport de Diass",
+                  "aéroport Yoff", "aéroport Senghor", "Léopold Sédar Senghor", "LSS", "Aéroport LSS"):
+        verifie(f"« {forme} » n'est pas ambigu", not aeroport_ambigu(forme))
+    for forme in ("aéroport Yoff", "aéroport de Yoff", "aéroport Senghor", "Léopold Sédar Senghor", "LSS",
+                  "aéroport LSS", "aéroport Léopold Sédar Senghor"):
+        verifie(f"« {forme} » -> ancien aéroport de Yoff", score(forme, "Aéroport LSS") == 1.0
+                and score(forme, "Aéroport") == 1.0, (score(forme, "Aéroport LSS"), score(forme, "Aéroport")))
+        verifie(f"« {forme} » ne vaut jamais l'AIBD", score(forme, "AIBD") == 0.0)
+    for forme in ("aéroport Blaise Diagne", "Blaise Diagne", "AIBD", "Diass"):
+        verifie(f"« {forme} » ne vaut jamais l'ancien aéroport", score(forme, "Aéroport") == 0.0
+                and score(forme, "Aéroport LSS") == 0.0)
+    verifie("« Stade LSS » reste le stade", score("Stade LSS", "Aéroport LSS") == 0.0)
+
+    for forme, attendu in (("aéroport", "Aéroport"), ("aeroport", "Aéroport"), ("earoport", "Aéroport"),
+                           ("ayeropoor", "Aéroport"), ("aéroport Blaise Diagne", "AIBD"), ("Diass", "AIBD"),
+                           ("aéroport Yoff", "Aéroport LSS"), ("aéroport de Yoff", "Aéroport LSS"),
+                           ("aéroport Senghor", "Aéroport LSS"), ("Léopold Sédar Senghor", "Aéroport LSS"),
+                           ("LSS", "Aéroport LSS"), ("Stade LSS", None), ("Avenue Blaise Diagne", "Avenue Blaise Diagne")):
+        lieux = extract_local(f"maa ngi Pikine bëgg naa dem {forme}")
+        if attendu is None:
+            verifie(f"phrase « dem {forme} » : jamais un aéroport",
+                    lieux.get("arrivee") not in ("Aéroport", "Aéroport LSS", "AIBD"), lieux)
+        else:
+            verifie(f"phrase « dem {forme} » -> {attendu}", lieux.get("arrivee") == attendu, lieux)
+
+    # « aydapoor » : « aéroport » chez les locuteurs wolof plus âgés, et ses formes ASR.
+    aydapoor = ("aydapoor", "ayda poor", "aydaapoor", "aydapor", "aydaporr", "aydapoore")
+    for forme in aydapoor:
+        verifie(f"« {forme} » seul est ambigu, comme « aéroport »", aeroport_ambigu(forme))
+        lieux = extract_local(f"maa ngi Pikine bëgg naa dem {forme}")
+        verifie(f"phrase « dem {forme} » -> Aéroport (ambigu)", lieux.get("arrivee") == "Aéroport", lieux)
+        for suite, attendu in ((" Blaise Diagne", "AIBD"), (" AIBD", "AIBD"), (" Diass", "AIBD"),
+                               (" Yoff", "Aéroport LSS"), (" Senghor", "Aéroport LSS"), (" LSS", "Aéroport LSS")):
+            lieux = extract_local(f"maa ngi Pikine bëgg naa dem {forme}{suite}")
+            verifie(f"phrase « dem {forme}{suite} » -> {attendu}", lieux.get("arrivee") == attendu, lieux)
+            cible = "AIBD" if attendu == "AIBD" else "Aéroport LSS"
+            verifie(f"« {forme}{suite} » -> {cible} (nom)", score(forme + suite, cible) == 1.0
+                    and not aeroport_ambigu(forme + suite), score(forme + suite, cible))
+    lieux = extract_local("maa ngi aydapoor bëgg naa dem Palais")
+    verifie("phrase « maa ngi aydapoor » : départ ambigu « Aéroport »", lieux.get("depart") == "Aéroport", lieux)
+
+    # ------------------------------------------------------------ le moteur
+    matcher = _matcher_hors_ligne()
+    for dep in ("Ouakam", "Pikine", "Yoff", "Médina"):
+        resultat = matcher.find_line(dep, "aéroport")
+        possibles = resultat.get("lieux_possibles") or []
+        verifie(f"{dep} -> aéroport : deux possibilités, AIBD puis Aéroport LSS",
+                [p["lieu"] for p in possibles] == [AIBD, AEROPORT_LSS], [p["lieu"] for p in possibles])
+        options = (resultat.get("lignes") or []) + (resultat.get("correspondances") or []) + (resultat.get("trajets_2") or [])
+        verifie(f"{dep} -> aéroport : les deux à l'écran", len(options) + bool(resultat.get("a_pied")) == 2, _detail(resultat))
+        for possible in possibles:
+            option = possible["option"]
+            derniere = (option.get("etapes") or [None])[-1] if possible["genre"] == "trajet_2" else (
+                option.get("etape_2") if possible["genre"] == "correspondance" else option)
+            if possible["genre"] == "a_pied":
+                continue
+            descente = derniere["descend_a"]
+            bon = descente == "AIBD" if possible["lieu"] == AIBD else descente in ("Aéroport", "Aéroport LSS")
+            verifie(f"{dep} -> aéroport : la possibilité {possible['lieu']} descend au bon aéroport", bon, descente)
+    resultat = matcher.find_line("Pikine", "aydapoor")
+    verifie("Pikine -> aydapoor : les deux aéroports, comme « aéroport »",
+            [p["lieu"] for p in resultat.get("lieux_possibles") or []] == [AIBD, AEROPORT_LSS], _detail(resultat))
+    resultat = matcher.find_line("Pikine", "aéroport", {"Tata AFTU"})
+    verifie("Pikine -> aéroport (Tata) : seul l'ancien aéroport, aucune Tata ne va à l'AIBD",
+            [p["lieu"] for p in resultat.get("lieux_possibles") or []] == [AEROPORT_LSS], _detail(resultat))
+    resultat = matcher.find_line("aéroport", "Palais")
+    verifie("aéroport -> Palais : deux possibilités au départ",
+            [p["lieu"] for p in resultat.get("lieux_possibles") or []] == [AIBD, AEROPORT_LSS], _detail(resultat))
+    for arrivee in ("aéroport Blaise Diagne", "aéroport Yoff", "AIBD", "Aéroport LSS"):
+        resultat = matcher.find_line("Ouakam", arrivee)
+        verifie(f"Ouakam -> {arrivee} : nom précis, une seule réponse directe", not resultat.get("lieux_possibles")
+                and resultat["found"], _detail(resultat))
+
+    # ------------------------------------------------------------ la voix
+    entendus: list[list[str]] = []
+    ancien = speak.assembler
+    speak.assembler = lambda fichiers, pauses=None: entendus.append([f.name for f in fichiers]) or b"RIFF"
+    try:
+        resultat = matcher.find_line("Ouakam", "aéroport")
+        octets = speak.voix_lieux_possibles(resultat["lieux_possibles"])
+        resultat_corr = matcher.find_line("Pikine", "aéroport")
+        speak.voix_lieux_possibles(resultat_corr["lieux_possibles"])
+    finally:
+        speak.assembler = ancien
+    for nom, fichiers in (("Ouakam -> aéroport", entendus[0] if entendus else []),
+                          ("Pikine -> aéroport", entendus[1] if len(entendus) > 1 else [])):
+        verifie(f"voix {nom} : « Walla, » entre les deux possibilités", fichiers.count("walla_autre.wav") == 1, fichiers)
+        verifie(f"voix {nom} : dit l'AIBD puis l'aéroport LSS",
+                "lieu_aibd.wav" in fichiers and "lieu_aeroport_lss.wav" in fichiers
+                and fichiers.index("lieu_aibd.wav") < fichiers.index("walla_autre.wav") < fichiers.index("lieu_aeroport_lss.wav"),
+                fichiers)
+        verifie(f"voix {nom} : jamais l'arrêt ambigu « Aéroport »", "lieu_aeroport.wav" not in fichiers, fichiers)
+        dossier = speak.CACHE_DIR
+        verifie(f"voix {nom} : seulement des segments existants",
+                all(speak.chemin_audio(dossier, f).is_file() for f in fichiers), fichiers)
+    verifie("voix : assemblée", octets == b"RIFF")
+    regenerer = RACINE / "data" / "audit" / "voix_a_regenerer.csv"
+    verifie("phrase manquante (départ « aéroport ») listée dans voix_a_regenerer.csv, pas créée",
+            regenerer.is_file() and "voix_lieux_possibles" in regenerer.read_text(encoding="utf-8"))
+
+    # ------------------------------------------------------------ l'écran
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_aeroport")
+    repli = getattr(app.MATCHER, "_repli", app.MATCHER)
+    repli.geo.point = repli.geo.point_connu
+    resultat = app.MATCHER.find_line("Ouakam", "Aéroport")
+    carte = app._carte(resultat, "Ouakam", "Aéroport")
+    verifie("écran : les deux aéroports titrés",
+            "Aéroport Blaise Diagne (AIBD, Diass)" in carte and "Ancien aéroport Léopold Sédar Senghor (Yoff)" in carte,
+            carte[:300])
+    verifie("écran : pas de « tout près à pied » vers un seul des deux", "C'est tout près" not in carte)
+    return echecs, total
+
+
+def test_parcelles_grand_yoff() -> tuple[int, int]:
+    """Lot 2a : Parcelles Assainies -> Grand Yoff n'est plus la Tata 2 en 3 min.
+
+    Cause (lot 1) : les liens « Route Principale / Route du Marché des Parcelles
+    Assainies » (data/corrections/lieux_arrets_aftu.csv) ont fait de la Tata 2
+    une ligne de départ des Parcelles ; à l'arrivée, « Route HLM Grand Médine »
+    était prise pour Grand Yoff par son quartier géocodé (« Hlm Grand Yoff »,
+    arrets_geo.csv). Un arrêt relié à son lieu est désormais ce lieu, jamais
+    un autre quartier par la géographie.
+    """
+    import importlib.util
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | parcelles grand yoff {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    matcher = _matcher_hors_ligne()
+    for filtre in (None, {"Tata AFTU"}):
+        resultat = matcher.find_line("Parcelles Assainies", "Grand Yoff", filtre)
+        descentes = {t["descend_a"] for t in resultat["lignes"]}
+        verifie(f"Parcelles -> Grand Yoff ({'Tata' if filtre else 'Tous'}) : jamais descendre à Route HLM Grand Médine",
+                "Route HLM Grand Médine" not in descentes, _detail(resultat))
+        verifie(f"Parcelles -> Grand Yoff ({'Tata' if filtre else 'Tous'}) : plus la Tata 2",
+                "Ligne 2" not in {t["ligne"] for t in resultat["lignes"] if t["compagnie"] == "Tata AFTU"}, _detail(resultat))
+        verifie(f"Parcelles -> Grand Yoff ({'Tata' if filtre else 'Tous'}) : des bus restent proposés",
+                bool(resultat["lignes"]), _detail(resultat))
+    geo = getattr(matcher, "_repli", matcher).geo
+    verifie("« Route HLM Grand Médine » n'est pas Grand Yoff par son quartier",
+            "Route HLM Grand Médine" not in geo.scores_lieu("Grand Yoff", proximite=False))
+    # Le lien du lot 1 sert toujours : Parcelles -> Petersen garde la Tata 2,
+    # et HLM Grand Médine reste trouvé par son nom.
+    resultat = matcher.find_line("Parcelles Assainies", "Petersen", {"Tata AFTU"})
+    verifie("Parcelles -> Petersen (Tata) : la Tata 2 reste proposée",
+            "Ligne 2" in {t["ligne"] for t in resultat["lignes"]}, _detail(resultat))
+    resultat = matcher.find_line("Parcelles Assainies", "HLM Grand Médine", {"Tata AFTU"})
+    verifie("Parcelles -> HLM Grand Médine (Tata) : la Tata 2 y descend",
+            "Ligne 2" in {t["ligne"] for t in resultat["lignes"]}, _detail(resultat))
+
+    spec = importlib.util.spec_from_file_location("audit_fiabilite", RACINE / "scripts" / "audit_fiabilite.py")
+    audit = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(audit)
+    rangees = [r for r in audit.audit_trajets(_matcher_hors_ligne())
+               if r["depart"] == "Parcelles Assainies" and r["arrivee"] == "Grand Yoff"]
+    verifie("audit : Parcelles -> Grand Yoff n'est plus LIGNE_FAUSSE",
+            bool(rangees) and all("LIGNE_FAUSSE" not in (r["statut_tous"], r["statut_filtre"]) for r in rangees),
+            [(r["statut_tous"], r["statut_filtre"]) for r in rangees])
     return echecs, total
 
 
@@ -2694,14 +2895,11 @@ def test_trajets_frequents() -> tuple[int, int]:
     import json
 
     from intent.extract_intent import extract_local
-    from matching.lieux import ALIAS_DEMANDE, sans_accents
+    from matching.lieux import sans_accents
     from matching.stops_matcher import StopsMatcher
 
     def normalise(nom: str) -> str:
-        forme = " ".join(re.findall(r"[a-z0-9]+", sans_accents(nom or "").lower()))
-        # « Aéroport » (choix de l'onglet) désigne l'AIBD depuis le lot 1 des
-        # noms : l'extraction rend « AIBD », c'est bien le même lieu.
-        return ALIAS_DEMANDE.get(forme, forme)
+        return " ".join(re.findall(r"[a-z0-9]+", sans_accents(nom or "").lower()))
 
     echecs = 0
     total = 0
@@ -5662,6 +5860,8 @@ if __name__ == "__main__":
         echecs_titres, total_titres = test_titres_markdown()
         echecs_t2, total_t2 = test_yoff_tata_2()
         echecs_noms1, total_noms1 = test_noms_lot_1()
+        echecs_aero, total_aero = test_aeroport_ambigu()
+        echecs_pgy, total_pgy = test_parcelles_grand_yoff()
         echecs_gare, total_gare = test_gare_gaar()
         echecs_hf, total_hf = test_compte_hugging_face()
         echecs_terrain, total_terrain = test_terrain_en_ligne()
@@ -5696,6 +5896,8 @@ if __name__ == "__main__":
             + echecs_titres
             + echecs_t2
             + echecs_noms1
+            + echecs_aero
+            + echecs_pgy
             + echecs_gare
             + echecs_hf
             + echecs_terrain
@@ -5731,6 +5933,8 @@ if __name__ == "__main__":
             + total_titres
             + total_t2
             + total_noms1
+            + total_aero
+            + total_pgy
             + total_gare
             + total_hf
             + total_terrain

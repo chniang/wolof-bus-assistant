@@ -127,21 +127,44 @@ ALIAS = {
 # « Sicap Liberté 6 » est le quartier Liberté 6 (la SICAP a bâti les Liberté).
 ALIAS.update({f"sicap liberte {n}": f"liberte {n}" for n in range(1, 7)})
 
-# Aéroport international Blaise Diagne (AIBD, à Diass). Alias appliqués à la
-# DEMANDE seulement, jamais au nom d'un arrêt : l'arrêt « Aéroport » des Tata 35,
-# 36 et 61 est l'ancien aéroport de Yoff (LSS), et l'arrêt « Blaise Diagne » de
-# Dem Dikk 11 est l'avenue de la Médina. Appliqués des deux côtés, ils seraient
-# devenus l'AIBD. Les usagers disent « aéroport Blaise Diagne » ou « aéroport »
-# tout court (data/reference/verification_ecarts.md, partie 4) ; l'ancien
-# aéroport se demande avec son nom : « Aéroport LSS », « Aéroport de Yoff ».
-# Jamais « Avenue Blaise Diagne » ni « Lycée Blaise Diagne » : ces noms gardent
-# leurs mots et ne tombent pas sur ces clés.
-_AEROPORT = ("aeroport", "aeroports", "earoport", "ayeropoor", "ayeroport", "ayeropor")
-ALIAS_DEMANDE: dict[str, str] = {"blaise diagne": "aibd", "diass": "aibd"}
+# Les deux aéroports de Dakar. Alias appliqués à la DEMANDE seulement, jamais au
+# nom d'un arrêt : l'arrêt « Aéroport » des Tata 35, 36 et 61 est l'ancien
+# aéroport de Yoff (LSS), et l'arrêt « Blaise Diagne » de Dem Dikk 11 est
+# l'avenue de la Médina. Appliqués des deux côtés, ils seraient devenus l'AIBD.
+# - AIBD (Diass) : « aéroport Blaise Diagne », « Blaise Diagne », « AIBD »,
+#   « Diass » (data/reference/verification_ecarts.md, partie 4).
+# - Ancien aéroport Léopold Sédar Senghor (Yoff) : « aéroport Yoff »,
+#   « aéroport Senghor », « Léopold Sédar Senghor », « LSS ». Ils rejoignent la
+#   forme « aeroport » des arrêts « Aéroport » et « Aéroport LSS » (ALIAS).
+# - « aéroport » SEUL est ambigu (AEROPORT_AMBIGU) : MoteurV2 propose les deux.
+# Jamais « Avenue » ni « Lycée Blaise Diagne », ni « Stade » ou « Avenue Léopold
+# Sédar Senghor » : ces noms gardent leurs mots et ne tombent pas sur ces clés.
+# « aydapoor » : « aéroport » chez les locuteurs wolof plus âgés, avec ses
+# formes ASR (« ayda poor », « aydaapoor », « aydapor », « aydaporr », « aydapoore »).
+_AEROPORT = (
+    "aeroport", "aeroports", "earoport", "ayeropoor", "ayeroport", "ayeropor",
+    "aydapoor", "ayda poor", "aydaapoor", "aydapor", "aydaporr", "aydapoore",
+)
+AIBD = "AIBD"
+AEROPORT_LSS = "Aéroport LSS"
+AEROPORT_AMBIGU = {_mot for _mot in _AEROPORT} | {f"{_mot} international" for _mot in _AEROPORT}
+ALIAS_DEMANDE: dict[str, str] = {
+    "blaise diagne": "aibd", "diass": "aibd",
+    "lss": "aeroport", "l s s": "aeroport", "leopold sedar senghor": "aeroport",
+}
 for _mot in _AEROPORT:
-    for _suite in ("", " aibd", " blaise diagne", " international", " international blaise diagne",
+    for _suite in (" aibd", " blaise diagne", " international blaise diagne",
                    " internationale blaise diagne", " international aibd", " diass"):
         ALIAS_DEMANDE[_mot + _suite] = "aibd"
+    for _suite in (" yoff", " senghor", " leopold senghor", " leopold sedar senghor", " lss",
+                   " l s s", " l s senghor", " international leopold sedar senghor"):
+        ALIAS_DEMANDE[_mot + _suite] = "aeroport"
+
+
+def aeroport_ambigu(lieu: object) -> bool:
+    """Vrai pour « aéroport » dit seul : l'AIBD (Diass) ou l'ancien aéroport de Yoff."""
+    return " ".join(_jetons(str(lieu or ""))) in AEROPORT_AMBIGU
+
 
 # Homonymes : un arrêt qui porte ce nom ET l'un de ces mots est un autre lieu,
 # qu'on ne propose qu'à qui dit aussi ce mot. « MARCHE COLOBANE RUFISQUE »
@@ -253,6 +276,11 @@ def _calcul_jetons(texte: str) -> list[str]:
 @lru_cache(maxsize=16384)
 def _jetons(texte: str) -> tuple[str, ...]:
     return tuple(_calcul_jetons(texte))
+
+
+# Les clés des alias de la demande, sous la forme que produit _jetons (« l s s »
+# perd son « l », mot générique) : sinon certaines ne seraient jamais trouvées.
+ALIAS_DEMANDE.update({" ".join(_jetons(cle)): cible for cle, cible in list(ALIAS_DEMANDE.items())})
 
 
 def jetons(texte: str) -> list[str]:

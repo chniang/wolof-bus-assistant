@@ -44,7 +44,7 @@ RACINE = Path(__file__).resolve().parent
 # que src/ soit dans le chemin, y compris quand app.py est lancé depuis la racine.
 sys.path.insert(0, str(RACINE / "src"))
 
-from app.cartes import titre_autre_possibilite, titre_section  # noqa: E402
+from app.cartes import titre_autre_possibilite, titre_autre_possibilite_texte, titre_section  # noqa: E402
 from app.partage import bouton_partage  # noqa: E402
 from asr.transcribe import (  # noqa: E402
     MODEL_ASR_GPU,
@@ -76,6 +76,7 @@ from tts.speak import (  # noqa: E402
     numero_de,
     voix_correspondances_depuis_cache,
     voix_depuis_cache,
+    voix_lieux_possibles,
     voix_trajets_2_depuis_cache,
 )
 
@@ -450,6 +451,7 @@ def _voix_wolof(
     lignes: list[dict],
     correspondances: list[dict] | None = None,
     trajets_2: list[dict] | None = None,
+    lieux_possibles: list[dict] | None = None,
 ) -> str | None:
     """La réponse lue en wolof, sous forme de chemin de fichier.
 
@@ -461,6 +463,9 @@ def _voix_wolof(
     """
     correspondances = correspondances or []
     trajets_2 = trajets_2 or []
+    if lieux_possibles and len(lieux_possibles) > 1:
+        # « aéroport » seul : une possibilité par aéroport, « Walla, » entre les deux.
+        return _ecrire_voix(voix_lieux_possibles(lieux_possibles))
     if not lignes and not correspondances and not trajets_2:
         return None
     if lignes:
@@ -979,6 +984,59 @@ def _carte_a_pied(a_pied: dict) -> str:
 """
 
 
+def _cartes_lieux_possibles(entete: str, possibles: list[dict]) -> str:
+    """« aéroport » seul : la meilleure possibilité vers chacun des deux aéroports.
+
+    Un bloc titré par aéroport (AIBD à Diass, ancien aéroport LSS à Yoff), avec
+    les mêmes cartes qu'une réponse ordinaire. Un seul bloc quand un seul est
+    desservi (filtre Tata : aucune Tata ne va à l'AIBD) : son titre dit lequel.
+    """
+    blocs = [entete]
+    if len(possibles) > 1:
+        blocs.append(titre_section("✈️ « Aéroport » : il y a deux aéroports, voici les deux"))
+    for possible in possibles:
+        dep, arr = possible["depart"], possible["arrivee"]
+        genre, option = possible["genre"], possible["option"]
+        blocs.append(titre_autre_possibilite_texte(f"✈️ {possible['titre']}"))
+        if genre == "a_pied":
+            blocs.append(_carte_a_pied(option))
+        elif genre == "ligne":
+            blocs.append(_une_carte(option, depart=dep, arrivee=arr))
+        elif genre == "correspondance":
+            blocs.append(_une_carte(option["etape_1"], "1er bus", depart=dep, changement=True))
+            blocs.append(
+                f"<div style='text-align:center;color:#6B7A72;margin:2px 0;'>"
+                f"🔁 Change à <b>{_echapper(option['changement'])}</b></div>"
+            )
+            blocs.append(_une_carte(option["etape_2"], "2e bus", arrivee=arr))
+        else:
+            etapes = option.get("etapes") or []
+            changements = option.get("changements") or []
+            for index, etape in enumerate(etapes):
+                if index:
+                    changement = changements[index - 1] if index - 1 < len(changements) else ""
+                    blocs.append(
+                        f"<div style='text-align:center;color:#6B7A72;margin:2px 0;'>"
+                        f"🔁 Change à <b>{_echapper(changement)}</b></div>"
+                    )
+                blocs.append(
+                    _une_carte(
+                        etape,
+                        f"{index + 1}er bus" if index == 0 else f"{index + 1}e bus",
+                        depart=dep if index == 0 else "",
+                        arrivee=arr if index == len(etapes) - 1 else "",
+                        changement=index < len(etapes) - 1,
+                    )
+                )
+        if genre != "a_pied":
+            blocs.append(
+                bouton_partage(
+                    dep, arr, possible["resultat"], option if genre != "ligne" else None
+                )
+            )
+    return "".join(blocs)
+
+
 def _carte(
     resultat: dict,
     depart: str,
@@ -1000,6 +1058,11 @@ def _carte(
         )
 
     astuce = _astuce_quartier(depart, arrivee)
+    possibles = resultat.get("lieux_possibles")
+    if possibles:
+        # « aéroport » seul : pas de « tout près à pied », qui mesurerait
+        # jusqu'à l'un des deux aéroports seulement.
+        return _cartes_lieux_possibles(bandeau_compagnie + avertissement + astuce, possibles)
     entete = bandeau_compagnie + avertissement + astuce + _note_distance_pied(depart, arrivee)
     lignes = resultat.get("lignes") or []
     correspondances = resultat.get("correspondances") or []
@@ -1277,6 +1340,7 @@ def _pipeline(
             resultat["lignes"],
             resultat.get("correspondances"),
             trajets_2,
+            resultat.get("lieux_possibles"),
         ),
         _mention(intent, modele_asr),
     ), trouve

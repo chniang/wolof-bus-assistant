@@ -34,12 +34,12 @@ from .router import (
 
 try:  # import à plat (app.py) ou en paquet
     from matching.geo import nom_generique, nom_rue_numerotee
-    from matching.lieux import joli, relie, score
+    from matching.lieux import AEROPORT_LSS, AIBD, aeroport_ambigu, joli, relie, score
     from matching.lieux import nom_exact as cle_exacte
     from matching.stops_matcher import MIN_SCORE, TOLERANCE
 except ImportError:  # pragma: no cover
     from ..matching.geo import nom_generique, nom_rue_numerotee
-    from ..matching.lieux import joli, relie, score
+    from ..matching.lieux import AEROPORT_LSS, AIBD, aeroport_ambigu, joli, relie, score
     from ..matching.lieux import nom_exact as cle_exacte
     from ..matching.stops_matcher import MIN_SCORE, TOLERANCE
 
@@ -792,6 +792,88 @@ def chercher_v2(
     return resultat
 
 
+# « aéroport » seul : les deux aéroports de Dakar, dans cet ordre, avec le nom
+# affiché au-dessus de chaque possibilité.
+AEROPORTS_POSSIBLES = (
+    (AIBD, "Aéroport Blaise Diagne (AIBD, Diass)"),
+    (AEROPORT_LSS, "Ancien aéroport Léopold Sédar Senghor (Yoff)"),
+)
+
+
+def _premiere_option(resultat: dict) -> tuple[str, dict] | None:
+    """La meilleure possibilité d'un résultat : ligne directe, changement(s), ou marche."""
+
+    for cle, genre in (
+        ("lignes", "ligne"),
+        ("correspondances", "correspondance"),
+        ("trajets_2", "trajet_2"),
+    ):
+        if resultat.get(cle):
+            return genre, resultat[cle][0]
+    if resultat.get("a_pied"):
+        return "a_pied", resultat["a_pied"]
+    return None
+
+
+def deux_aeroports(find_line, depart: str, arrivee: str, compagnies=None) -> dict | None:
+    """« aéroport » seul est ambigu : la meilleure possibilité vers CHACUN des deux.
+
+    L'AIBD (Diass) et l'ancien aéroport Léopold Sédar Senghor (Yoff, arrêt
+    « Aéroport » de la Tata 35) portent le même mot : deviner serait répondre
+    faux une fois sur deux. On cherche le trajet vers chacun avec
+    ``find_line`` et on garde la meilleure possibilité de chaque : à l'écran,
+    deux blocs titrés ; à la voix, « Walla, » entre les deux. Le résultat
+    garde le format habituel (``lignes``, ``correspondances``, ``trajets_2``),
+    plus ``lieux_possibles`` : une entrée par aéroport, dans l'ordre affiché.
+    None si aucun des deux côtés n'est « aéroport » seul.
+    """
+
+    cote_arrivee = aeroport_ambigu(arrivee)
+    if not cote_arrivee and not aeroport_ambigu(depart):
+        return None
+    possibles = []
+    for nom, titre in AEROPORTS_POSSIBLES:
+        dep, arr = (depart, nom) if cote_arrivee else (nom, arrivee)
+        sous = find_line(dep, arr, compagnies)
+        option = _premiere_option(sous)
+        if option is None:
+            continue
+        genre, element = option
+        possibles.append(
+            {
+                "lieu": nom,
+                "titre": titre,
+                "genre": genre,
+                "option": element,
+                "depart": dep,
+                "arrivee": arr,
+                "resultat": sous,
+            }
+        )
+    if not possibles:
+        return None
+    if len(possibles) == 1:
+        # Un seul aéroport desservi (filtre Tata : aucune Tata ne va à l'AIBD) :
+        # on le dit par son titre, sans faire croire qu'il n'y en a qu'un.
+        seul = dict(possibles[0]["resultat"])
+        seul["lieux_possibles"] = possibles
+        return seul
+    resultat = dict(possibles[0]["resultat"])
+    resultat.update(
+        {
+            "found": True,
+            "depart": depart,
+            "arrivee": arrivee,
+            "lignes": [p["option"] for p in possibles if p["genre"] == "ligne"],
+            "correspondances": [p["option"] for p in possibles if p["genre"] == "correspondance"],
+            "trajets_2": [p["option"] for p in possibles if p["genre"] == "trajet_2"],
+            "a_pied": next((p["option"] for p in possibles if p["genre"] == "a_pied"), None),
+            "lieux_possibles": possibles,
+        }
+    )
+    return resultat
+
+
 def a_un_trajet(resultat: dict | None) -> bool:
     """Vrai dès qu'un résultat contient une ligne, une correspondance ou une marche."""
 
@@ -825,6 +907,9 @@ class MoteurV2:
     def find_line(
         self, depart: str, arrivee: str, compagnies: set[str] | None = None
     ) -> dict:
+        ambigu = deux_aeroports(self.find_line, depart, arrivee, compagnies)
+        if ambigu is not None:
+            return ambigu
         try:
             resultat = chercher_v2(self._repli, depart, arrivee, compagnies)
         except Exception as exc:  # pragma: no cover - garde-fou de production
@@ -848,4 +933,4 @@ class MoteurV2:
         return self.find_line(depart, arrivee), False
 
 
-__all__ = ["MoteurV2", "a_un_trajet", "chercher_v2"]
+__all__ = ["MoteurV2", "a_un_trajet", "chercher_v2", "deux_aeroports"]

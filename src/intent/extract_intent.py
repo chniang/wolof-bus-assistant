@@ -418,24 +418,27 @@ REPLACEMENTS_PHRASE = (
     (r"\bfacs?\b", " ucad "),
     (r"\byuniversites?\b", " ucad "),
     (r"\bunivesites?\b", " ucad "),
-    # Aéroport international Blaise Diagne (Diass) : les usagers disent
-    # « aéroport Blaise Diagne », « aéroport de Diass » ou « aéroport » tout
-    # court ; l'ASR écrit aussi « earoport », « ayeropoor ». Tout devient
-    # « aibd », le nom de l'arrêt (TAF TAF). Jamais l'ancien aéroport de Yoff
-    # (« aéroport LSS / Léopold Sédar Senghor / de Yoff »), ni « Avenue » ou
-    # « Lycée Blaise Diagne » (Médina, lignes 3, 4, Dem Dikk 9 et 121).
-    # L'ancien aéroport garde son nom complet, « Aéroport LSS » : réduit à
-    # « Aéroport », il deviendrait l'AIBD (alias de la demande, lieux.py).
-    (r"\b(?:aeroports?|earoport|ayeropo{1,2}rt?)\s+(?:de\s+)?"
+    # Les deux aéroports de Dakar (voir matching/lieux.py) :
+    # - l'AIBD (Diass) : « aéroport Blaise Diagne », « aéroport de Diass »,
+    #   « Blaise Diagne », « Diass » -> « aibd », le nom de l'arrêt (TAF TAF) ;
+    # - l'ancien aéroport de Yoff : « aéroport Yoff / Senghor / LSS »,
+    #   « Léopold Sédar Senghor », « LSS » -> « aeroport lss » (« Aéroport LSS ») ;
+    # - « aéroport » seul (et ses formes ASR « earoport », « ayeropoor », ou
+    #   « aydapoor », le mot des locuteurs plus âgés, « ayda poor »…) reste
+    #   « aeroport » : il est ambigu, MoteurV2 propose les deux aéroports.
+    # Jamais « Avenue » ou « Lycée Blaise Diagne » (Médina, lignes 3, 4, Dem
+    # Dikk 9 et 121), ni « Stade » ou « Avenue Léopold Sédar Senghor ».
+    (r"\b(?:aeroports?|earoport|ayeropo{1,2}rt?|ayda+\s*po{1,2}r{1,2}e?)\s+(?:internationale?\s+)?(?:de\s+)?"
      r"(?:lss|l\s+s\s+s|l\s+s\s+senghor|leopold\s+sedar\s+senghor|leopold\s+senghor|senghor|yoff)\b",
      " aeroport lss "),
-    (r"\b(?:aeroports?|earoport|ayeropo{1,2}rt?)(?:\s+internationale?)?"
-     r"(?:\s+(?:blaise\s+diagne|de\s+diass|diass|aibd))?\b"
-     r"(?!\s+(?:lss|l\s+s\s+s|l\s+s\s+senghor|leopold|senghor|de\s+yoff|yoff))",
+    (r"\b(?:aeroports?|earoport|ayeropo{1,2}rt?|ayda+\s*po{1,2}r{1,2}e?)(?:\s+internationale?)?"
+     r"\s+(?:blaise\s+diagne|de\s+diass|diass|aibd)\b",
      " aibd "),
+    (r"\b(?:aeroports|earoport|ayeropo{1,2}rt?|ayda+\s*po{1,2}r{1,2}e?)\b(?!\s+lss\b)", " aeroport "),
     (r"(?<!avenue )(?<!av )(?<!lycee )\bblaise\s+diagne\b", " aibd "),
     (r"\bdiass\b", " aibd "),
     (r"\baibd(?:\s+aibd)+\b", " aibd "),
+    (r"(?<!stade )(?<!avenue )(?<!av )(?<!aeroport )\b(?:leopold\s+sedar\s+senghor|lss)\b", " aeroport lss "),
 )
 
 # En dessous de ce ratio, on préfère ne rien trouver plutôt qu'inventer un quartier.

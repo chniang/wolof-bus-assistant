@@ -26,9 +26,9 @@ import time
 from pathlib import Path
 
 try:  # import à plat (app.py) ou en paquet
-    from matching.lieux import FAUX_AMIS, sans_accents
+    from matching.lieux import FAUX_AMIS, relie, sans_accents
 except ImportError:  # pragma: no cover
-    from .lieux import FAUX_AMIS, sans_accents
+    from .lieux import FAUX_AMIS, relie, sans_accents
 
 DATA = Path(__file__).resolve().parents[2] / "data"
 ARRETS_GEO = DATA / "arrets_geo.csv"
@@ -468,8 +468,13 @@ class LieuxGeo:
             if normaliser(arret) in FAUX_AMIS:
                 continue
             note = 0.0
+            # Un arrêt relié à son lieu (data/corrections/lieux_arrets_aftu.csv)
+            # est ce lieu, pas le quartier que lui prête le géocodage : « Route
+            # HLM Grand Médine » (quartier « Hlm Grand Yoff ») faisait de la
+            # Tata 2 un Parcelles -> Grand Yoff en 3 min.
             if (
                 cible
+                and not relie(arret)
                 and info["confiance"] in CONFIANCE_PROXIMITE
                 and cible <= self._cible_mots.get(arret, set())
             ):

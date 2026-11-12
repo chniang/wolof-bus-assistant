@@ -839,3 +839,66 @@ def voix_correspondances_depuis_cache(
     fichiers = [chemin for chemin, _ in morceaux]
     pauses = [pause for _, pause in morceaux[:-1]]
     return assembler(fichiers, pauses)
+
+
+def voix_lieux_possibles(
+    possibles: list[dict], cache_dir: Path | None = None
+) -> bytes | None:
+    """« aéroport » seul : une possibilité par aéroport, « Walla, » entre les deux.
+
+    Uniquement des segments existants : le bus (ou la correspondance), puis
+    « moo lay yóbbu ba » + le nom de l'aéroport (lieu_aibd.wav,
+    lieu_aeroport_lss.wav), pour que l'usager entende LEQUEL des deux chaque
+    bus dessert. Quand c'est le DÉPART qui est ambigu, aucun segment ne dit
+    « depuis tel aéroport » : la voix lit les bus et la destination, l'écran
+    nomme l'aéroport (phrase à générer listée dans
+    data/audit/voix_a_regenerer.csv). La marche seule reste sans voix, et un
+    segment absent est sauté, comme ailleurs.
+    """
+    dossier = cache_dir or CACHE_DIR
+    morceaux: list[tuple[Path, float]] = []
+    for possible in possibles[:MAX_POSSIBILITES]:
+        genre, option = possible.get("genre"), possible.get("option") or {}
+        if genre == "a_pied":
+            continue
+        # Côté arrivée ambigu : on dit l'aéroport, jamais l'arrêt « Aéroport ».
+        lieu = (
+            possible.get("lieu")
+            if possible.get("arrivee") == possible.get("lieu")
+            else None
+        )
+        plan: list[tuple[Path, float]] = []
+        if genre == "ligne":
+            _ajoute_segment(plan, dossier, nom_cache_match(option), SILENCE_ENTRE)
+            _ajoute_lieu(
+                plan, dossier, MOO_LAY_YOBBU_BA, lieu or descente_dite(option), SILENCE_ENTRE
+            )
+        elif genre == "correspondance":
+            trajet = dict(option)
+            if lieu:
+                trajet["etape_2"] = {
+                    **option["etape_2"], "descend_a": lieu, "descend_a_vague": False,
+                }
+            plan = plan_correspondance(trajet, dossier)
+        elif genre == "trajet_2":
+            trajet = dict(option)
+            etapes = list(option.get("etapes") or [])
+            if lieu and etapes:
+                etapes[-1] = {**etapes[-1], "descend_a": lieu, "descend_a_vague": False}
+                trajet["etapes"] = etapes
+            plan = []
+            for chemin, pause in plan_trajet_2(trajet, dossier):
+                if chemin.is_file():
+                    plan.append((chemin, pause))
+                else:
+                    _segment_manquant(chemin.name)
+        if not plan:
+            continue
+        if morceaux:
+            _ajoute_segment(morceaux, dossier, WALLA_AUTRE, SILENCE_ENTRE)
+        morceaux.extend(plan)
+    if not morceaux:
+        return None
+    fichiers = [chemin for chemin, _ in morceaux]
+    pauses = [pause for _, pause in morceaux[:-1]]
+    return assembler(fichiers, pauses)
