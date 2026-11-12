@@ -1,0 +1,120 @@
+﻿compagnie,ligne,terminus_a,terminus_b,source,nb_arrets,pct_mesure,pct_interpole,pct_devine,terminus_seulement,dans_reference,meme_terminus,terminus_reference
+Dakar Dem Dikk,Ligne 15A,Rufisque,Palais 1,devinée (demdikk.sn/info-voyageurs),2,100,0,0,oui,non,,
+Dakar Dem Dikk,Ligne 15B,Rufisque,Palais 1,devinée (demdikk.sn/info-voyageurs),2,100,0,0,oui,non,,
+Dakar Dem Dikk,Ligne 233,Baux Maraîchers,Palais 1,devinée (demdikk.sn/info-voyageurs),2,100,0,0,oui,oui,oui,Baux maraîchers / Palais 1
+Dakar Dem Dikk,Ligne 502A,Colobane,UCAD,devinée (demdikk.sn/info-voyageurs),2,100,0,0,oui,oui,oui,Colobane / UCAD
+Dakar Dem Dikk,Ligne 502B,Colobane,Hôpital Abass Ndao,devinée (demdikk.sn/info-voyageurs),2,50,0,50,oui,oui,oui,Colobane / Abass Ndao
+Dakar Dem Dikk,Ligne 503A,Colobane,Môle 8,devinée (demdikk.sn/info-voyageurs),2,100,0,0,oui,oui,oui,Colobane / Môle 8
+Dakar Dem Dikk,Ligne 503B,Colobane,Hydrocarbures,devinée (demdikk.sn/info-voyageurs),2,100,0,0,oui,oui,oui,Colobane / Hydrocarbures
+Dakar Dem Dikk,Ligne 504A,Gare de Diamniadio,Sphère ministérielle,devinée (demdikk.sn/info-voyageurs),2,100,0,0,oui,oui,oui,Gare Diamniadio / Sphère ministérielle
+Dakar Dem Dikk,Ligne 504B,Sébikotane,Gare de Diamniadio,devinée (demdikk.sn/info-voyageurs),2,100,0,0,oui,oui,oui,Sébikotane / Gare Diamniadio
+Tata AFTU,Ligne 1,Lat Dior,HLM Grand Yoff,trace officielle AFTU,20,57,43,0,non,oui,oui,Gare Lat Dior / Espace HLM Grand Médine (face autoroute)
+Tata AFTU,Ligne 2,Parcelles Assainies,Petersen,trace officielle AFTU,18,62,38,0,non,oui,oui,Route principale des Parcelles Assainies / Gare Petersen
+Tata AFTU,Ligne 3,Yoff,Petersen,trace officielle AFTU,15,29,71,0,non,oui,oui,Yoff-Village / Gare Petersen
+Tata AFTU,Ligne 4,Yoff Village,Petersen,trace officielle AFTU,10,17,83,0,non,oui,oui,Yoff-Village / Petersen
+Tata AFTU,Ligne 5,Parcelles Assainies,Petersen,trace officielle AFTU,19,69,31,0,non,oui,oui,Gare des Parcelles Assainies / Petersen
+Tata AFTU,Ligne 24,UCAD,Notaire Guédiawaye,trace officielle AFTU,14,27,73,0,non,oui,oui,Notaire (Guédiawaye) / UCAD
+Tata AFTU,Ligne 25,Parcelles Assainies,Petersen,trace officielle AFTU,13,14,86,0,non,oui,oui,Parcelles Assainies / Petersen
+Tata AFTU,Ligne 26,Parcelles Assainies,Poste Thiaroye,trace officielle AFTU,8,50,0,50,non,oui,non,Gare des Parcelles Assainies / Guédiawaye
+Tata AFTU,Ligne 27,Marché Boubess,Petersen,trace officielle AFTU,20,10,90,0,non,oui,oui,Marché Boubess / Petersen
+Tata AFTU,Ligne 28,Hamo 5,Petersen,trace officielle AFTU,16,0,100,0,non,oui,oui,Hamo V/VI / Petersen
+Tata AFTU,Ligne 29,Cité Nations Unies (Cambérène),Petersen,trace officielle AFTU,16,33,67,0,non,oui,oui,Cité Nations Unies (Cambérène) / Petersen
+Tata AFTU,Ligne 30,Gadaye (Guédiawaye),Gare de Colobane,trace officielle AFTU,18,30,70,0,non,oui,oui,Gadaye (Guédiawaye) / Gare de Colobane
+Tata AFTU,Ligne 31,Tally Icotaf (Pikine),Hôpital Abass Ndao,trace officielle AFTU,15,27,73,0,non,oui,oui,Tally Icotaf x Route des Niayes / Hôpital Abass Ndao
+Tata AFTU,Ligne 32,Sahm,Serigne Assane,trace officielle AFTU,13,14,86,0,non,oui,oui,Sahm / Serigne Assane
+Tata AFTU,Ligne 33,Colobane,Serigne Assane,trace officielle AFTU,18,80,20,0,non,oui,oui,Colobane / Serigne Assane
+Tata AFTU,Ligne 34,Nord Foire,Lat Dior,trace officielle AFTU,11,50,50,0,non,oui,oui,Nord Foire / Lat Dior
+Tata AFTU,Ligne 35,Ngor,Pikine Texaco,trace officielle AFTU,10,44,56,0,non,oui,oui,Pikine Texaco / Ngor
+Tata AFTU,Ligne 36,Marché Ndiarème,Ngor,trace officielle AFTU,18,0,100,0,non,oui,oui,Marché Ndiarème / Ngor
+Tata AFTU,Ligne 37,Cité Apix,UCAD (Claudel),trace officielle AFTU,35,18,82,0,non,oui,oui,Cité Apix / UCAD (Claudel)
+Tata AFTU,Ligne 38,Cité des Enseignants,Sahm,trace officielle AFTU,13,75,25,0,non,oui,oui,Cité des Enseignants / Sahm
+Tata AFTU,Ligne 39,Lat Dior,Diamalaye,trace officielle AFTU,14,57,43,0,non,oui,oui,Lat Dior / Diamalaye
+Tata AFTU,Ligne 40,Grand Mbao,Petersen,trace officielle AFTU,11,43,57,0,non,oui,oui,Grand Mbao / Petersen
+Tata AFTU,Ligne 41,Petersen,Étage Madiale,trace officielle AFTU,21,45,55,0,non,oui,oui,Petersen / Étage Madiale
+Tata AFTU,Ligne 42,Gadaye (Guédiawaye),Ouakam Baye,trace officielle AFTU,14,14,86,0,non,oui,oui,Gadaye (Guédiawaye) / Ouakam Baye
+Tata AFTU,Ligne 43,Ouakam,Thierno Ndiaye,trace officielle AFTU,15,33,67,0,non,oui,oui,Ouakam / Thierno Ndiaye
+Tata AFTU,Ligne 44,Grand Mbao,Ouakam,trace officielle AFTU,13,67,33,0,non,oui,oui,Grand Mbao / Ouakam
+Tata AFTU,Ligne 45,Kounoune Ngalam,Parcelles Église,trace officielle AFTU,34,20,80,0,non,oui,oui,Kounoune Ngalam / Parcelles Église
+Tata AFTU,Ligne 46,SDE Serigne Assane,Lat Dior,trace officielle AFTU,20,50,50,0,non,oui,oui,SDE Serigne Assane / Lat Dior
+Tata AFTU,Ligne 47,Lat Dior,Almadies,trace officielle AFTU,15,29,71,0,non,oui,oui,Gare Lat-Dior / Almadies
+Tata AFTU,Ligne 48,Cité Serigne Mansour,Lat Dior,trace officielle AFTU,12,38,62,0,non,oui,oui,Cité Serigne Mansour / Lat Dior
+Tata AFTU,Ligne 49,Gadaye,Ngor,trace officielle AFTU,22,78,22,0,non,oui,oui,Gadaye / Ngor
+Tata AFTU,Ligne 50,Petersen,Malika Cimetière,trace officielle AFTU,20,18,82,0,non,oui,oui,Petersen / Malika plage
+Tata AFTU,Ligne 51,Jaxaay,Gare des Baux Maraîchers,trace officielle AFTU,10,40,60,0,non,oui,oui,Jaxaay / Gare des Baux maraîchers
+Tata AFTU,Ligne 52,Bountou Pikine,Keur Massar,trace officielle AFTU,13,43,57,0,non,oui,oui,Bountou Pikine / Keur Massar
+Tata AFTU,Ligne 53,Keur Massar,Sébikotane,trace officielle AFTU,16,43,57,0,non,oui,oui,Keur Massar / Sébikotane
+Tata AFTU,Ligne 54,Keur Massar (Cité MTOA),UCAD,trace officielle AFTU,14,45,55,0,non,oui,oui,Keur Massar (MTOA) / UCAD
+Tata AFTU,Ligne 55,Rufisque Sonadis,Petersen,trace officielle AFTU,13,12,88,0,non,oui,oui,Rufisque Sonadis / Petersen
+Tata AFTU,Ligne 56,Jaxaay 2,Petersen,trace officielle AFTU,12,20,80,0,non,oui,oui,Jaxaay 2 / Petersen
+Tata AFTU,Ligne 57,Liberté 6,Rufisque,trace officielle AFTU,14,0,100,0,non,oui,oui,Rufisque Gouye Mouride / Rond-point Liberté 6
+Tata AFTU,Ligne 58,Sahm,Comico,trace officielle AFTU,12,40,60,0,non,oui,oui,Sahm / Comico
+Tata AFTU,Ligne 59,Diamalaye,Cité Gendarmerie (Jaxaay),trace officielle AFTU,15,50,50,0,non,oui,oui,Diamalaye / Cité Gendarmerie (Jaxaay)
+Tata AFTU,Ligne 60,Colobane,Bargny,trace officielle AFTU,11,44,56,0,non,oui,oui,Colobane / Bargny
+Tata AFTU,Ligne 61,Almadies,Keur Massar,trace officielle AFTU,10,50,50,0,non,oui,oui,Almadies / Keur Massar
+Tata AFTU,Ligne 62,Arrêt Chérif (Rufisque),Penc Mi (Gueule Tapée),trace officielle AFTU,19,25,75,0,non,oui,oui,Arrêt Chérif (Rufisque) / Penc Mi (Gueule Tapée)
+Tata AFTU,Ligne 63,Camp Marchand Rufisque,Stade LSS,trace officielle AFTU,18,25,75,0,non,oui,oui,Camp Marchand Rufisque / Stade LSS
+Tata AFTU,Ligne 64,Guédiawaye,Rufisque,trace officielle AFTU,16,11,89,0,non,oui,non,Diamniadio / Notaire (Guédiawaye)
+Tata AFTU,Ligne 65,Colobane,Jaxaay,trace officielle AFTU,12,22,78,0,non,oui,oui,Colobane / Jaxaay
+Tata AFTU,Ligne 66,Yoff,Gorom 1,trace officielle AFTU,23,27,73,0,non,oui,oui,Yoff / Gorom 1
+Tata AFTU,Ligne 67,Ouakam,Thiawlène (Rufisque),trace officielle AFTU,22,60,40,0,non,oui,oui,Thiawlène (Rufisque) / Boutique Diallo (Ouakam)
+Tata AFTU,Ligne 68,Yeumbeul,Sébikotane,trace officielle AFTU,9,50,50,0,non,oui,oui,Yeumbeul / Sébikotane
+Tata AFTU,Ligne 69,Diamalaye,Tivaouane Peulh,trace officielle AFTU,15,25,75,0,non,oui,oui,Diamalaye / Tivaouane Peul
+Tata AFTU,Ligne 70,Daroukhane,Jaxaay 2,trace officielle AFTU,14,33,67,0,non,oui,oui,Daroukhane / Jaxaay 2
+Tata AFTU,Ligne 71,Keur Massar,Claudel,trace officielle AFTU,18,50,50,0,non,oui,oui,Keur Massar / Claudel
+Tata AFTU,Ligne 72,Guédiawaye,Kounoune,trace officielle AFTU,22,13,87,0,non,oui,oui,Guédiawaye / Kounoune
+Tata AFTU,Ligne 73,Lac Rose,Poste Thiaroye,trace officielle AFTU,10,33,67,0,non,oui,oui,Poste Thiaroye / Lac Rose
+Tata AFTU,Ligne 74,Bargny (Gare ferroviaire),Tivaouane Peulh,trace officielle AFTU,14,0,100,0,non,oui,oui,Bargny (gare ferroviaire) / Tivaouane Peul
+Tata AFTU,Ligne 75,Malika (Cité Sonatel),Gare routière de Colobane,trace officielle AFTU,15,75,25,0,non,oui,oui,Malika (Cité Sonatel) / Gare routière Colobane
+Tata AFTU,Ligne 76,Sipres,Cité Assurance,trace officielle AFTU,12,83,17,0,non,oui,oui,Sipres / Cité Assurance
+Tata AFTU,Ligne 77,Rufisque,Liberté 5,trace officielle AFTU,14,30,70,0,non,oui,oui,Rufisque / Liberté 5
+Tata AFTU,Ligne 78,Diamaguène,Liberté 5,trace officielle AFTU,12,80,20,0,non,oui,oui,Diamaguène / Liberté 5
+Tata AFTU,Ligne 79,Sangalkam,Cambérène,trace officielle AFTU,15,25,75,0,non,oui,oui,Sangalkam / Cambérène
+Tata AFTU,Ligne 80,Diamalaye,Darou Thioub,trace officielle AFTU,17,60,40,0,non,oui,oui,Diamalaye / Darou Thioub
+Tata AFTU,Ligne 81,Baux Maraîchers,Tivaouane Peulh,trace officielle AFTU,16,100,0,0,non,oui,oui,Baux maraîchers / Tivaouane Peul
+Tata AFTU,Ligne 82,Lat Dior,Comico Yeumbeul,trace officielle AFTU,14,57,43,0,non,oui,oui,Lat Dior / Comico Yeumbeul
+Tata AFTU,Ligne 83,Rufisque Arafat,Zone de Captage,trace officielle AFTU,14,43,57,0,non,oui,oui,Rufisque Arafat / Zone de captage
+Tata AFTU,Ligne 84,UCAD,Jaxaay,devinée (aftu-senegal.org/infos-pratiques),2,100,0,0,oui,oui,oui,UCAD / Jaxaay
+Tata AFTU,Ligne 85,Banoba,Liberté 5,devinée (aftu-senegal.org/infos-pratiques),2,50,0,50,oui,oui,oui,Banoba / Liberté 5
+Tata AFTU,Ligne 86,Tournal Boune,Toubab Dialaw,devinée (aftu-senegal.org/infos-pratiques),2,50,0,50,oui,oui,oui,Tournalou Boune / Toubab Dialaw
+Tata AFTU,Ligne 87,Bambilor,Mosquée Massalikoul Djinane,devinée (aftu-senegal.org/infos-pratiques),2,50,0,50,oui,oui,oui,Bambilor / Mosquée Massalikoul Djinane
+Tata AFTU,Ligne 88,MTOA,Liberté 5,devinée (aftu-senegal.org/infos-pratiques),2,100,0,0,oui,oui,oui,MTOA / Liberté 5
+Tata AFTU,Ligne 89,Bargny,Croisement Niague (Cité Sicap),devinée (aftu-senegal.org/infos-pratiques),2,50,0,50,oui,oui,oui,Bargny / Croisement Niague (Cité Sicap)
+Tata AFTU,Ligne 91,Apix,Dougar,devinée (aftu-senegal.org/infos-pratiques),2,100,0,0,oui,oui,oui,Apix / Dougar
+Dakar Dem Dikk,Ligne 1,Parcelles Assainies,Leclerc,itinéraire officiel DDD,22,36,36,27,non,oui,oui,Parcelles Assainies / Place Leclerc
+Dakar Dem Dikk,Ligne 10,Terminus liberté 5 (Dieuppeul),Palais 2,itinéraire officiel DDD,29,24,28,48,non,oui,oui,Liberté 5 (Dieuppeul) / Palais 2
+Dakar Dem Dikk,Ligne 11,Keur Massar,Lat Dior,itinéraire officiel DDD,16,44,25,31,non,oui,oui,Keur Massar / Lat Dior
+Dakar Dem Dikk,Ligne 12,Guédiawaye,Palais 1,itinéraire officiel DDD,20,40,35,25,non,oui,oui,Guédiawaye / Palais 1
+Dakar Dem Dikk,Ligne 121,Scat Urban,Leclerc,itinéraire officiel DDD,25,24,20,56,non,oui,oui,Scat Urbam (Grand Yoff) / Leclerc
+Dakar Dem Dikk,Ligne 13,Terminus liberté 5 (Dieuppeul),Palais 2,itinéraire officiel DDD,24,33,21,46,non,oui,oui,Liberté 5 (Dieuppeul) / Palais 2
+Dakar Dem Dikk,Ligne 15,Rufisque,Palais 1,itinéraire officiel DDD,18,33,39,28,non,non,,
+Dakar Dem Dikk,Ligne 16A,Malika,Palais 1,itinéraire officiel DDD,19,32,42,26,non,non,,
+Dakar Dem Dikk,Ligne 16B,Malika,Palais 1,itinéraire officiel DDD,27,22,41,37,non,non,,
+Dakar Dem Dikk,Ligne 18,Terminus Liberté 5 (Dieuppeul),Terminus Liberté 5 (Dieuppeul),itinéraire officiel DDD,43,7,47,47,non,oui,non,Dieuppeul / Centre-ville (circulaire)
+Dakar Dem Dikk,Ligne 2,Daroukhane,Leclerc,itinéraire officiel DDD,35,26,29,46,non,oui,oui,Daroukhane / Place Leclerc
+Dakar Dem Dikk,Ligne 20,Dieuppeul,Dieuppeul,itinéraire officiel DDD,42,21,31,48,non,oui,non,Dieuppeul / Centre-ville (circulaire)
+Dakar Dem Dikk,Ligne 208,Gorom 01,Rufisque,itinéraire officiel DDD,7,71,14,14,non,oui,non,Bayakh / Rufisque
+Dakar Dem Dikk,Ligne 213,Gare de Rufisque,Dieuppeul,itinéraire officiel DDD,17,29,41,29,non,oui,oui,Rufisque / Dieuppeul
+Dakar Dem Dikk,Ligne 217,Dépôt Thiaroye,Aéroport LSS,itinéraire officiel DDD,15,40,13,47,non,oui,non,Thiaroye / Ouakam
+Dakar Dem Dikk,Ligne 218,Dépôt Thiaroye,Aéroport LSS,itinéraire officiel DDD,15,40,13,47,non,oui,oui,Thiaroye / Aéroport LSS
+Dakar Dem Dikk,Ligne 219,Daroukhane,Ouakam,itinéraire officiel DDD,19,32,37,32,non,oui,oui,Daroukhane / Ouakam
+Dakar Dem Dikk,Ligne 220,Rufisque,Guediawaye,itinéraire officiel DDD,16,62,38,0,non,oui,oui,Rufisque / Guédiawaye
+Dakar Dem Dikk,Ligne 221,Terminus Gadaye (Filaos),Almadies,itinéraire officiel DDD,15,40,33,27,non,oui,oui,Gadaye / Almadies
+Dakar Dem Dikk,Ligne 227,Keur Massar,Parcelles,itinéraire officiel DDD,16,62,25,12,non,oui,oui,Terminus Keur Massar / Terminus Parcelles
+Dakar Dem Dikk,Ligne 228,Rufisque,Diamniadio Yenne,itinéraire officiel DDD,4,50,0,50,non,oui,oui,Terminus Rufisque / Yenne
+Dakar Dem Dikk,Ligne 23,Des Parcelles,Palais 2,itinéraire officiel DDD,40,30,30,40,non,oui,oui,Parcelles Assainies / Palais 1
+Dakar Dem Dikk,Ligne 232,Baux Maraichers,Aéroport LSS,itinéraire officiel DDD,15,33,33,33,non,oui,oui,Baux maraîchers / Aéroport LSS
+Dakar Dem Dikk,Ligne 234,TERMINUS JAXAAY (Mosquée Niakoul Rab),Leclerc,itinéraire officiel DDD,13,38,38,23,non,oui,oui,Jaxaay / Leclerc
+Dakar Dem Dikk,Ligne 311,Lac rose croissement Niague,Retour vers Lac Rose,itinéraire officiel DDD,6,67,0,33,non,non,,
+Dakar Dem Dikk,Ligne 319,Liberté 6,Ouakam,itinéraire officiel DDD,17,18,65,18,non,non,,
+Dakar Dem Dikk,Ligne 327,Keur Massar,Parcelles,itinéraire officiel DDD,11,55,27,18,non,non,,
+Dakar Dem Dikk,Ligne 4,Terminus Liberté 5 (Dieuppeul),Leclerc,itinéraire officiel DDD,27,15,44,41,non,oui,oui,Liberté 5 (Dieuppeul) / Place Leclerc
+Dakar Dem Dikk,Ligne 5,Guédiawaye,Palais 1,itinéraire officiel DDD,16,31,44,25,non,oui,oui,Guédiawaye / Palais 1
+Dakar Dem Dikk,Ligne 501,Palais 2,Leclerc,itinéraire officiel DDD,6,33,17,50,non,oui,non,Gare de Dakar / Palais 2
+Dakar Dem Dikk,Ligne 502,Gare colobane,Gare Colobane,itinéraire officiel DDD,8,38,38,25,non,non,,
+Dakar Dem Dikk,Ligne 503,Gare de Colobane,Gare de Colobane,itinéraire officiel DDD,7,29,43,29,non,non,,
+Dakar Dem Dikk,Ligne 6,Guédiawaye,Palais 1,itinéraire officiel DDD,26,31,19,50,non,oui,non,Cambérène 2 / Palais 2
+Dakar Dem Dikk,Ligne 7,Ouakam,Palais 2,itinéraire officiel DDD,21,38,29,33,non,oui,oui,Ouakam / Palais 2
+Dakar Dem Dikk,Ligne 8,Aéroport LSS,Palais 2,itinéraire officiel DDD,29,31,34,34,non,oui,oui,Aéroport LSS / Palais 2
+Dakar Dem Dikk,Ligne 9,Liberté 6,Palais 2,itinéraire officiel DDD,24,29,17,54,non,oui,oui,Liberté 6 / Palais 2
+Dakar Dem Dikk,TAF TAF,Ouakam,AIBD,itinéraire officiel DDD,16,44,12,44,non,oui,oui,Ouakam / AIBD / Sphère ministérielle (Diamniadio)
+Dakar Dem Dikk,TAF TAF OUAKAM (TO1),Ouakam,Palais 2,itinéraire officiel DDD,10,30,10,60,non,oui,non,Ouakam / AIBD / Sphère ministérielle (Diamniadio)

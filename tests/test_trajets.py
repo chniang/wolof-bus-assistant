@@ -2270,6 +2270,40 @@ def test_terrain_en_ligne() -> tuple[int, int]:
     return echecs, total
 
 
+def test_verite_terrain() -> tuple[int, int]:
+    """Les trajets de data/reference/ passent dans le moteur : score affiché, pas encore exigé.
+
+    Mode rapport (étape F2) : on vérifie seulement que chaque trajet reçoit un
+    statut. Le score (36/67 OK sous « Tous » le 12/11/2026) deviendra un seuil
+    quand les corrections de noms et de positions seront faites.
+    """
+    import importlib.util
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | vérité terrain {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    spec = importlib.util.spec_from_file_location("audit_fiabilite", RACINE / "scripts" / "audit_fiabilite.py")
+    audit = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(audit)
+    rangees = audit.audit_trajets(_matcher_hors_ligne())
+    statuts = {"OK", "AUTRE_LIGNE", "LIGNE_FAUSSE", "ABSENT"}
+    verifie(f"{len(rangees)} trajets de référence, chacun avec un statut",
+            len(rangees) >= 60 and all(r["statut_tous"] in statuts and r["statut_filtre"] in statuts for r in rangees))
+    for colonne, nom in (("statut_tous", "Tous"), ("statut_filtre", "filtre compagnie")):
+        compte = audit.score(rangees, colonne)
+        print(f"      SCORE {nom} : {compte['OK']}/{len(rangees)} OK, {compte['AUTRE_LIGNE']} autre ligne, "
+              f"{compte['LIGNE_FAUSSE']} ligne fausse, {compte['ABSENT']} absent (rapport, pas encore exigé)")
+    return echecs, total
+
+
 def test_compte_hugging_face() -> tuple[int, int]:
     """Le compte Hugging Face s'appelle maintenant PythonMindset (ex-TIJAANI).
 
@@ -5357,6 +5391,7 @@ if __name__ == "__main__":
         echecs_gare, total_gare = test_gare_gaar()
         echecs_hf, total_hf = test_compte_hugging_face()
         echecs_terrain, total_terrain = test_terrain_en_ligne()
+        echecs_verite, total_verite = test_verite_terrain()
         echecs_prononciations, total_prononciations = test_prononciations()
         echecs_brev, total_brev = test_notebooks_brev()
         echecs_verification, total_verification = test_verification_voix()
@@ -5389,6 +5424,7 @@ if __name__ == "__main__":
             + echecs_gare
             + echecs_hf
             + echecs_terrain
+            + echecs_verite
             + echecs_prononciations
             + echecs_brev
             + echecs_verification
@@ -5422,6 +5458,7 @@ if __name__ == "__main__":
             + total_gare
             + total_hf
             + total_terrain
+            + total_verite
             + total_prononciations
             + total_brev
             + total_verification

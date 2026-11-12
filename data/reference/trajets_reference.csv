@@ -1,0 +1,68 @@
+﻿depart,arrivee,operateur,ligne,arret_montee,arret_descente,correspondance,duree_min,statut,source_1,source_2,remarque
+Parcelles Assainies,UCAD,Dakar Dem Dikk,1,Terminus Parcelles Assainies,Ucad,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/6951328,Ligne urbaine 1 Parcelles ↔ Place Leclerc.
+Parcelles Assainies,Sandaga,Dakar Dem Dikk,1,Terminus Parcelles Assainies,Sandaga,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/6951328,
+Parcelles Assainies,Plateau,Dakar Dem Dikk,1,Terminus Parcelles Assainies,Place de l'Indépendance,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/6951328,Terminus final : Leclerc (Embarcadère).
+Parcelles Assainies,Médina,Dakar Dem Dikk,23,Terminus des Parcelles,Rue 6 / Poste Médina,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/7108131,La page officielle titre « Palais 1 » mais finit la liste par « Terminus Palais 2 ».
+Liberté 5 (Dieuppeul),Sandaga,Dakar Dem Dikk,4,Terminus Liberté 5 (Dieuppeul),Sandaga,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/7203970,
+Liberté 5 (Dieuppeul),UCAD,Dakar Dem Dikk,4,Terminus Liberté 5 (Dieuppeul),Université Amphi A. Ba,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/7203970,Passe aussi par Point E et Canal 4.
+Ouakam,UCAD,Dakar Dem Dikk,7,Terminus Ouakam,UCAD,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/7500475,"Via Mermoz, Ecole Normale."
+Ouakam,Sandaga,Dakar Dem Dikk,7,Terminus Ouakam,Sandaga,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/7500475,
+Yoff,Sandaga,Dakar Dem Dikk,8,Yoff Village,Sandaga,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/7495137,Concorde avec GuindiMa (test Yoff → Sandaga).
+Aéroport LSS (Yoff),UCAD,Dakar Dem Dikk,8,Terminus Aéroport LSS,UCAD,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/7495137,
+Grand Yoff,UCAD,Dakar Dem Dikk,8,Grand Yoff,UCAD,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/7495137,Concorde avec GuindiMa (test Grand Yoff → UCAD).
+Grand Yoff,Plateau,Dakar Dem Dikk,8,Grand Yoff,Terminus Palais 2,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/7495137,
+Liberté 6,Médina,Dakar Dem Dikk,9,Terminus Liberté 6,Poste Médina,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/7487218,"Via Dieuppeul, Niary Tally, Centenaire."
+Liberté 5 (Dieuppeul),Soumbédioune (Corniche),Dakar Dem Dikk,10,Terminus Liberté 5 (Dieuppeul),Village artisanal de Soumbédioune,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/7488283,Passe par la Corniche Ouest.
+Liberté 5 (Dieuppeul),Petersen,Dakar Dem Dikk,13,Terminus Liberté 5 (Dieuppeul),Petersen,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,,"Via Castors, Marché HLM, Centenaire."
+Liberté 5 (Dieuppeul),Colobane,Dakar Dem Dikk,18,Terminus Liberté 5 (Dieuppeul),Colobane,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,,Ligne circulaire Dieuppeul ↔ centre-ville.
+Colobane,UCAD,Dakar Dem Dikk,18,Colobane,Avenue Cheikh Anta Diop / Ecole Normale Supérieure,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,,"Boucle via Bel Air, Gare de Dakar, Sandaga, Médina : trajet long."
+Grand Yoff (Scat Urbam),Plateau,Dakar Dem Dikk,121,Terminus Scat Urbam,Terminus Leclerc,,,confirmé,https://demdikk.sn/reseau-urbain-dakar/,https://www.openstreetmap.org/relation/2792903,"Via Liberté 6, Sacré-Cœur, Petersen."
+Guédiawaye,Plateau,Dakar Dem Dikk,5,Terminus DDD Guédiawaye,Terminus Palais 1,,,confirmé,https://demdikk.sn/info-voyageurs/,https://services1.arcgis.com/tKMirJrirprCZbnf/ArcGIS/rest/services/Dem_dikk_mise_a_jour/FeatureServer/0,Arrêts intermédiaires seulement dans ArcGIS (non officiel).
+Guédiawaye,UCAD,Dakar Dem Dikk,12,Terminus Guédiawaye,Arrêt UCAD,,,indice,https://services1.arcgis.com/tKMirJrirprCZbnf/ArcGIS/rest/services/Dem_dikk_mise_a_jour/FeatureServer/0,,Terminus officiels Guédiawaye ↔ Palais 1 ; passage UCAD vu seulement dans ArcGIS.
+Keur Massar,Plateau,Dakar Dem Dikk,11,Terminus Keur Massar,Lat Dior,,,confirmé,https://demdikk.sn/info-voyageurs/,https://services1.arcgis.com/tKMirJrirprCZbnf/ArcGIS/rest/services/Dem_dikk_mise_a_jour/FeatureServer/0,"ArcGIS : via Thiaroye, Pikine."
+Rufisque,Plateau,Dakar Dem Dikk,15A / 15B,Rufisque,Palais 1,,,confirmé,https://demdikk.sn/info-voyageurs/,,Arrêts intermédiaires non publiés.
+Malika,Plateau,Dakar Dem Dikk,16A / 16B,Terminus Malika,Palais 1,,,confirmé,https://demdikk.sn/info-voyageurs/,https://services1.arcgis.com/tKMirJrirprCZbnf/ArcGIS/rest/services/Dem_dikk_mise_a_jour/FeatureServer/0,"ArcGIS 16A : via Pikine, Technopole, Centenaire."
+Thiaroye,Aéroport LSS (Yoff),Dakar Dem Dikk,218,Thiaroye,Aéroport LSS,,,confirmé,https://demdikk.sn/info-voyageurs/,https://services1.arcgis.com/tKMirJrirprCZbnf/ArcGIS/rest/services/Dem_dikk_mise_a_jour/FeatureServer/0,"ArcGIS : via Patte d'Oie, VDN, Ouakam."
+Thiaroye,Ouakam,Dakar Dem Dikk,217,Thiaroye,Ouakam,,,confirmé,https://demdikk.sn/info-voyageurs/,,"La couche ArcGIS 217 montre un autre tracé (Parcelles, Corniche) : à vérifier."
+Rufisque,Liberté 5 (Dieuppeul),Dakar Dem Dikk,213,Rufisque,Dieuppeul,,,confirmé,https://demdikk.sn/info-voyageurs/,,"Arrêts intermédiaires non publiés (GuindiMa cite Poste Thiaroye, Péage, ZAC Mbao : non vérifiables)."
+Rufisque,Guédiawaye,Dakar Dem Dikk,220,Rufisque,Guédiawaye,,,confirmé,https://demdikk.sn/info-voyageurs/,,
+Keur Massar,Parcelles Assainies,Dakar Dem Dikk,227,Terminus Keur Massar,Terminus Parcelles,,,confirmé,https://demdikk.sn/info-voyageurs/,https://services1.arcgis.com/tKMirJrirprCZbnf/ArcGIS/rest/services/Dem_dikk_mise_a_jour/FeatureServer/0,
+"Grand Yoff (HLM, stade LSS)",Aéroport AIBD,Dakar Dem Dikk,Express AIBD,Terminus HLM Grand-Yoff (face stade LSS),AIBD,,,confirmé,https://demdikk.sn/offres-de-transport/,,"Navette par autoroute à péage, 6 000 FCFA, 24h/24."
+Ouakam,Aéroport AIBD,Dakar Dem Dikk,TAF TAF,Terminus Ouakam,AIBD,,,confirmé,https://demdikk.sn/info-voyageurs/,,Départs 6h00–21h00.
+Yoff,Aéroport AIBD,Dakar Dem Dikk,TAF TAF,Yoff,AIBD,,,confirmé,https://demdikk.sn/info-voyageurs/,,
+Liberté 6,Aéroport AIBD,Dakar Dem Dikk,TAF TAF,Rond-point Liberté 6,AIBD,,,confirmé,https://demdikk.sn/info-voyageurs/,,"Via Police Grand Yoff, Patte d'Oie, autoroute."
+Plateau (Lat Dior),Liberté 6,AFTU (Tata),1,Terminus Gare Lat Dior,Giratoire de Liberté VI,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-1/,,"Fiche AFTU : rues, pas d'arrêts nommés."
+Médina (Gueule Tapée),Parcelles (HLM Grand Médine),AFTU (Tata),1,Boulevard de la Gueule Tapée,Terminus Espace HLM Grand Médine,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-1/,,
+Parcelles Assainies,Petersen,AFTU (Tata),2,Route principale des Parcelles,Terminus Gare Petersen,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-2/,,Ne passe pas par Yoff : la Tata 2 proposée par GuindiMa pour Yoff → Sandaga est douteuse.
+Yoff,Petersen (Sandaga),AFTU (Tata),3,Terminus Yoff-Village,Terminus Gare Petersen,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-3/,,"Trajet long via aéroport, Ngor, Mamelles, Ouakam."
+Yoff,Petersen (Sandaga),AFTU (Tata),4,Terminus Yoff-Village,Terminus Petersen,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-4/,,Via VDN et avenue Cheikh Anta Diop.
+Yoff,UCAD,AFTU (Tata),4,Terminus Yoff-Village,Avenue Cheikh Anta Diop,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-4/,,
+Parcelles Assainies,Grand Yoff,AFTU (Tata),5,Terminus Gare des Parcelles Assainies,Route principale de Grand Yoff,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-5/,,
+Guédiawaye,UCAD,AFTU (Tata),24,Terminus Notaire (Guédiawaye),Terminus UCAD,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-24/,,"Via autoroute, échangeur de Hann, Bourguiba."
+Parcelles Assainies,Guédiawaye,AFTU (Tata),26,Terminus Gare des Parcelles Assainies,Terminus Guédiawaye,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-26/,,
+Guédiawaye,Colobane,AFTU (Tata),30,Terminus Gadaye (Guédiawaye),Terminus Gare de Colobane,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-30/,,
+Parcelles Assainies,Colobane,AFTU (Tata),30,Route des Niayes prolongée (Police des Parcelles),Terminus Gare de Colobane,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-30/,,GuindiMa propose DDD 6 / Tata 33 ; la Tata 30 est la seule documentée officiellement.
+Grand Yoff,Colobane,AFTU (Tata),33,HLM Grand Yoff,Terminus Colobane,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-33/,,Fiche publiée dans le sens Colobane → Serigne Assane.
+Pikine,Aéroport LSS (Yoff),AFTU (Tata),35,Terminus Pikine Texaco,Aéroport,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-35/,,"Via Patte d'Oie, Yoff ; terminus Ngor."
+Parcelles Assainies,UCAD,AFTU (Tata),38,Police Parcelles,Terminus Sahm (UCAD),,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-38/,,
+Grand Yoff,UCAD,AFTU (Tata),38,Grand Yoff,UCAD,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-38/,,Concorde avec GuindiMa (Tata 38).
+Thiaroye,Colobane,AFTU (Tata),40,Poste Thiaroye,Colobane,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-40/,https://www.openstreetmap.org/relation/3982642,Terminus Petersen.
+Maristes (Hann),Colobane,AFTU (Tata),40,Maristes,Colobane,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-40/,https://www.openstreetmap.org/relation/3982642,"Concorde avec la ligne GuindiMa (test Hann Bel Air), mais GuindiMa a mal compris le départ."
+Hann (échangeur),Colobane,AFTU (Tata),40,Échangeur Hann,Colobane,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-40/,,Les Tata 75 et 24 passent aussi par l'échangeur de Hann.
+Thiaroye,Ouakam,AFTU (Tata),44,Poste Thiaroye,Terminus Ouakam,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-44/,,"Via autoroute, Patte d'Oie, Foire, Mermoz."
+Plateau (Lat Dior),Almadies,AFTU (Tata),47,Terminus Gare Lat-Dior,Terminus Almadies,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-47/,,"Via UCAD, Liberté 6, Grand Yoff, aéroport LSS, Ngor."
+Petersen,Malika,AFTU (Tata),50,Terminus Petersen,Terminus Malika plage,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-50/,,
+Keur Massar,UCAD,AFTU (Tata),54,Terminus Keur Massar (MTOA),Terminus UCAD,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-54/,,"Via Poste Thiaroye, pont de Colobane, Canal 4."
+Rufisque,Petersen,AFTU (Tata),55,Terminus Rufisque Sonadis,Terminus Petersen,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-55/,,
+Rufisque,Liberté 6,AFTU (Tata),57,Marché Colobane Rufisque,Terminus Rond-point Liberté 6,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-57/,,"Via Poste Thiaroye, Bountou Pikine, Grand Yoff."
+Colobane,Rufisque,AFTU (Tata),60,Terminus Colobane,Sonadis (Rufisque),,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-60/,,Terminus Bargny.
+UCAD,Rufisque,AFTU (Tata),62,UCAD,Arrêt Chérif (Rufisque),,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-62/,,Concorde avec GuindiMa (Tata 62). La durée de 96 min n'est donnée par aucune source.
+Rufisque,Guédiawaye,AFTU (Tata),64,Boulevard Maurice Guèye (Rufisque),Terminus Notaire,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-64/,,"Le catalogue dit Guédiawaye – Rufisque, la fiche dit Diamniadio → Notaire."
+Rufisque,Ouakam,AFTU (Tata),67,Terminus Thiawlène,Terminus Boutique Diallo (Ouakam),,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-67/,,
+Thiaroye,Keur Massar,AFTU (Tata),73,Terminus Poste Thiaroye,Keur Massar,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-73/,,Terminus Lac Rose.
+Malika,Colobane,AFTU (Tata),75,Terminus Malika (Cité Sonatel),Terminus Gare routière Colobane,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-75/,,
+Maristes (Hann),Thiaroye,AFTU (Tata),75,Maristes,Poste Thiaroye,,,confirmé,https://aftu-senegal.org/map/dakar-urbain-ligne-75/,,Sens inverse du sens publié. Concorde avec le 1er bus GuindiMa (test Anne Mariste).
+Malika,UCAD,AFTU (Tata) + Dakar Dem Dikk,75 puis DDD 18,Terminus Malika (Cité Sonatel),Avenue Cheikh Anta Diop,Colobane (gare routière / CSS),,indice,https://aftu-senegal.org/map/dakar-urbain-ligne-75/,https://demdikk.sn/reseau-urbain-dakar/,Correspondance construite à partir de 2 lignes officielles ; marche entre arrêts non vérifiée.
+Maristes (Hann),Rufisque,AFTU (Tata),75 puis 62,Maristes,Arrêt Chérif (Rufisque),Poste Thiaroye,,indice,https://aftu-senegal.org/map/dakar-urbain-ligne-75/,https://aftu-senegal.org/map/dakar-urbain-ligne-62/,Alternative documentée à la DDD 213 proposée par GuindiMa.
+Keur Massar,Sandaga,AFTU (Tata) + Dakar Dem Dikk,54 puis DDD 4,Terminus Keur Massar (MTOA),Sandaga,Canal 4,,indice,https://aftu-senegal.org/map/dakar-urbain-ligne-54/,https://demdikk.sn/reseau-urbain-dakar/,Correspondance construite ; à vérifier sur le terrain.
+Rufisque,Yoff,AFTU (Tata) + Dakar Dem Dikk,57 puis DDD 8,Marché Colobane Rufisque,Yoff Village,Grand Yoff,,indice,https://aftu-senegal.org/map/dakar-urbain-ligne-57/,https://demdikk.sn/reseau-urbain-dakar/,DDD 8 pris dans le sens inverse de la liste publiée.
