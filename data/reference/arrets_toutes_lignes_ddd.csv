@@ -1,0 +1,769 @@
+﻿ligne,operateur,ordre,arret,source,date,statut
+4,Dakar Dem Dikk,1,Terminus Liberté 5 (Dieuppeul),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,2,Cité Derklé,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,3,Rond point Liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,4,Khar Yalla,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,5,Cité Marine,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,6,CEM Dieuppeul 3,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,7,Eglise Martyrs de l’ouganda,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,8,SDE,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,9,Collège Sacré Cœur,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,10,Sicap Karack,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,11,Point E,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,12,Université Amphate BA,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,13,Canal 4,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,14,Marché Fass,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,15,Gueule Tapée,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,16,Rond Point Sham,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,17,Marché Tilène,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,18,Poste Médina,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,19,Difoncé,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,20,Sandaga,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,21,ASECNA,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,22,Boulevard de la République,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,23,Avenue Léopold Sédar Senghor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,24,Place de l’Indépendance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,25,Gare TER,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,26,Embarcadère,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+4,Dakar Dem Dikk,27,Terminus Leclerc,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,1,Terminus Liberté 5 (Dieuppeul),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,2,Cité Derklé,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,3,Rond Point Liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,4,Khar Yalla,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,5,Cité Marine,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,6,Avenue Cheikh Ahmadou Bamba (ex rue 13 Prolongée),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,7,Station Castors,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,8,Marché HLM,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,9,Ouagou Niayes,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,10,BOP,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,11,Masalikul Djinane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,12,CSS,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,13,Colobane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,14,Service des mines,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,15,Place BAKOU,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,16,Police Bel Air,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,17,Grand Moulin de Dakar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,18,Bel Air,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,19,Arsanel,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,20,Gare de dakar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,21,Esso Port,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,22,Place de l’Indépendance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,23,Avenue Georges Pompidou,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,24,Rond point Sandaga,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,25,Avenue André Peytavin,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,26,Lat Dior,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,27,Route de la Corniche,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,28,Reubeuss,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,29,Mosquée Seydou Nourrou Tall – DAF,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,30,Rue 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,31,Médina,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,32,Gueule Tapée,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,33,Lycée Delafosse,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,34,Canal 4,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,35,Rond point Sham,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,36,Avenue Cheikh Anta Diop,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,37,Ecole Normale Supérieure,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,38,Avenue Bourguiba,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,39,Stade Demba DIOP,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,40,Rond Point Jet d’eau,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,41,Allées Ababacar Sy,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+18,Dakar Dem Dikk,42,Terminus Liberté 5 (Dieuppeul),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+220,Dakar Dem Dikk,1,Terminus Rufisque,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,2,Djoutiba,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,3,HLM Rufisque,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,4,SIPRES,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,5,SEDIMA,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,6,Lycée Jaxaay,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,7,2 voies,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,8,Jaxaay,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,9,Station Keur Massar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,10,Terminus Malika,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,11,Malika Plage,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,12,gadaye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,13,Serigne Assane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,14,Marche boubess,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,15,Lycée Limamoulaye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,16,Terminus Guediawaye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+220,Dakar Dem Dikk,1,Espace BRT du terminus Dem Dikk de Guédiawaye,https://senego.com/navette-dem-dikk-guediawaye-aibd-toutes-les-2h-6-000-fcfa_1983793.html,15/07/2026 (article de presse),indice
+220,Dakar Dem Dikk,2,Aéroport international Blaise Diagne (AIBD),https://senego.com/navette-dem-dikk-guediawaye-aibd-toutes-les-2h-6-000-fcfa_1983793.html,15/07/2026 (article de presse),indice
+1,Dakar Dem Dikk,1,Terminus Parcelles Assainies,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,2,Sapeur Pompiers,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,3,Unités 09 10 15,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,4,Ecole Dior,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,5,Terrain Acapes,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,6,Unités 22 24,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,7,Marché Grand Médine,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,8,Rond point 26,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,9,VDN-Foire,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,10,Cité Keur Gorgui,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,11,Ecole Normale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,12,Ucad,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,13,Rond point Sham,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,14,Marché Tilène,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,15,Poste Médina,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,16,Difoncé,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,17,Sandaga,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,18,Avenue George Pompidou,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,19,Place de l’Indépendance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,20,Gare TER,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,21,Embarcadère,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+1,Dakar Dem Dikk,22,Terminus Leclerc,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,1,Terminus Ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,2,Cité Assemblée,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,3,Cité Comico,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,4,Sortie Ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,5,Hopital IHO,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,6,Mermoz,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,7,ENEA,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,8,Ecole Normale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,9,UCAD,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,10,Rond point Sham,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,11,Marché Tilen,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,12,Poste Médina,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,13,Difoncé,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,14,Sandaga,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,15,Avenue George Pompidou,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,16,Place de l’Indépendance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,17,Avenue Léopold Sédar Senghor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,18,Hopitale Principale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,19,Rond point assemblée nationale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,20,Institut pasteur,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+7,Dakar Dem Dikk,21,Terminus Palais 2,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,1,Terminus Aéroport LSS,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,2,Cité Asecna,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,3,Yoff Village,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,4,Pond Foire,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,5,Stade Léopold Sédar Senghor – Patte d’Oie,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,6,Grand Yoff,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,7,Hopital Général Idrissa Pouye (Ex CTO ),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,8,Cité des Eaux,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,9,Station Castor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,10,Avenue Bourguiba,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,11,Jet d’eau,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,12,Stade demba Diop,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,13,Dial Diop (ex rue 10),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,14,Zone B,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,15,Point E,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,16,UCAD,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,17,Rond point Sham,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,18,Marché Tilen,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,19,Poste Médina,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,20,Difoncé,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,21,Sandaga,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,22,ASECNA,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,23,Bld de la République,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,24,Avenue Léopold Sédar Senghor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,25,Hopitale Principale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,26,Rond point Assemblée Nationale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,27,Institut Pasteur,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+8,Dakar Dem Dikk,28,Terminus Palais 2,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,1,Terminus Liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,2,Rond Point JVC,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,3,Sacré Cœur,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,4,IPG,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,5,Terminus Dieuppeul,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,6,Allées Ababacar Sy,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,7,Rond Point Jet d’Eau,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,8,Niary Tally,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,9,Eglise Sainte Thérèse,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,10,Lycée Blaise Diagne,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,11,Lycée Kenedy,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,12,Obelisque,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,13,Centenaire,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,14,Rond point RTS,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,15,Poste Médina,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,16,Difoncé,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,17,Sandaga,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,18,Avenue George Pompidou,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,19,Place de l’Indépendance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,20,Avenue Léopold Sédar Senghor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,21,Hopitale Principale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,22,Rond point assemblée nationale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,23,Institut pasteur,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+9,Dakar Dem Dikk,24,Terminus Palais 2,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,1,Terminus liberté 5 (Dieuppeul),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,2,Cité Derklé,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,3,Rond point Liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,4,Khar Yalla,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,5,Cité Marine,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,6,CEM Ousmane Socé Diop,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,7,Eglise Martyrs de l’Ouganda,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,8,SDE,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,9,Dakar sacré coeur,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,10,Stade Demba Diop,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,11,Avenue Bourguiba,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,12,Ecole Normale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,13,Poste Fann,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,14,Rue Aimé césaire,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,15,Ministère de la Santé,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,16,Corniche Ouest,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,17,IFAN,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,18,Hotel Terrou,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,19,Tunnel de soumbédioune,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,20,Village Artisanal de Soumbédioune,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,21,Prison Rebeus,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,22,Turbinal de dakar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,23,Boulevard de la République,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,24,Sorano,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,25,Avenue Léopold Sédar Senghor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,26,Hopitale Principale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,27,Rond point assemblée nationale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,28,Institut Pasteur,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+10,Dakar Dem Dikk,29,Terminus Palais 2,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,1,Terminus liberté 5 (Dieuppeul),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,2,Avenue Cheikh Ahmadou Bamba (ex rue 13 Prolongée),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,3,Station Castors,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,4,Marché HLM,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,5,Ouagou Niayes,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,6,BOP,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,7,Masalikul Djinane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,8,CSS,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,9,Lycée Kennedy,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,10,Boulevard Général De Gaule,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,11,Centenaire,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,12,RTS,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,13,Grande mosquée,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,14,Allées Papa Guèye Fall,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,15,Petersen,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,16,Avenue Faidherbe,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,17,Esso Port,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,18,Gare de Dakar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,19,Place de l’Indépendance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,20,Avenue Léopold Sédar Senghor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,21,Hopitale Principale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,22,Rond point assemblée nationale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,23,Institut pasteur,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+13,Dakar Dem Dikk,24,Terminus Palais 2,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,1,Terminus Dieuppeul,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,2,Allées Ababacar Sy,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,3,Jet d’Eau,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,4,Avenue Bourguiba,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,5,Stade Demba Diop,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,6,Ecole Normale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,7,Poste Fann,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,8,Avenue Cheikh Anta Diop,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,9,UCAD,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,10,Canal 4,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,11,Lycée Delafosse,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,12,Gueule Tapée,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,13,Rue 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,14,Médina,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,15,DAF,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,16,Mosquée seydou Nourrou Tall,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,17,Reubeuss,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,18,Lat Dior,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,19,Avenue Peytavin,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,20,Rond point Sandaga,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,21,Avenue Gorges Pompidou,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,22,Place de l’Indépendance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,23,Gare Ter,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,24,Esso Port,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,25,Boulevard de l’Arsenal,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,26,Central Bel Air (MTOA),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,27,Grands Moulin de Dakar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,28,Police Bel Air,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,29,Service des Mines,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,30,Colobane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,31,CSS,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,32,Masalikul Djinane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,33,Cité Port,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,34,Ouagou niayes,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,35,Marché HLM,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,36,Station Castors,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,37,Avenue Cheikh Ahmadou Bamba,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,38,Cité Marine,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,39,Khar Yalla,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,40,Rond Point LIBERTE6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,41,Cité Derklé,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+20,Dakar Dem Dikk,42,Terminus Dieuppeul,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,1,Terminus des Parcelles,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,2,Ecole Dior,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,3,Diamalaye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,4,Hlm Grand Médine,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,5,Dior,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,6,Acapes,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,7,Dispensaire Norade,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,8,Hopital Mame Abdou,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,9,Eglise,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,10,Unité 11,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,11,Croisement 22,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,12,Police Parcelles,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,13,Pont Emergent,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,14,Ecole Hyacinthe Thiandoum,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,15,Rond point Liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,16,Khar Yalla,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,17,Front de Terre,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,18,Cité des Eaux,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,19,Station castor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,20,Avenue Bourguiba,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,21,Stade Demba Diop,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,22,Ecole Normale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,23,Poste Fann,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,24,Avenue Cheikh Anta Diop,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,25,UCAD,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,26,Rond Point Sahm,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,27,Canal 4,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,28,Gueule Tapée,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,29,Rue 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,30,DAF,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,31,Poste Médina,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,32,Difoncé,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,33,Sandaga,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,34,ASECNA,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,35,Bld de la République,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,36,Avenue Léopold Sédar Senghor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,37,Hopitale Principale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,38,Rond point assemblée nationale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,39,Institut Pasteur,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+23,Dakar Dem Dikk,40,Terminus Palais 2,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,1,Terminus Scat Urban,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,2,Mairie Grand Yoff,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,3,Pentola,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,4,Les deux voies de Sipres,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,5,Camp penal,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,6,Les deux voies de Liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,7,Rond point JVC,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,8,Boulangerie Zone,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,9,Collège Sacré Cœur,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,10,Scor liberté,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,11,Sicap rue 10,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,12,Lycée Blaise Diagne,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,13,Place ONU,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,14,Canal 4,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,15,HLM Fass,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,16,Travaux communaux,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,17,Rue 22 prolongée,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,18,RTS,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,19,Allées Papa Guèye Fall,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,20,Petersen,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,21,Avenue Faidherbe,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,22,Place de l’indépendance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,23,Albert Sarraut,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,24,BCEAO,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+121,Dakar Dem Dikk,25,Terminus Leclerc,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,1,Terminus liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,2,Rond Point Liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,3,Deux voies liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,4,Rond point JVC,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,5,Boulangerie Jaune,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,6,Immeuble Mariama,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,7,Rond point Cheikh Bethio,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,8,Ancien Piste,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,9,IHO,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,10,Entrée ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,11,Pharmacie cité Aviaon,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,12,Pharmacie Mame Seynabou,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,13,Case des tous petit,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,14,Station shell,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,15,Lycée d’excellence privée,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,16,Boulangerie N’wely,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+319,Dakar Dem Dikk,17,Terminus Ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF OUAKAM (TO1),Dakar Dem Dikk,1,Terminus Ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF OUAKAM (TO1),Dakar Dem Dikk,2,Brioche d’orée Ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF OUAKAM (TO1),Dakar Dem Dikk,3,Monument de la Renaissance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF OUAKAM (TO1),Dakar Dem Dikk,4,Corniche ouest,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF OUAKAM (TO1),Dakar Dem Dikk,5,Avenue Peytavin,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF OUAKAM (TO1),Dakar Dem Dikk,6,Avenue Pompidou,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF OUAKAM (TO1),Dakar Dem Dikk,7,Place de l’Indépendance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF OUAKAM (TO1),Dakar Dem Dikk,8,Avenue Léopold Sédar Senghor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF OUAKAM (TO1),Dakar Dem Dikk,9,Avenue Nelson Mandela,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF OUAKAM (TO1),Dakar Dem Dikk,10,Palais 2,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,1,Terminus Ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,2,Mamelles,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,3,Croisement Almadies,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,4,Ngor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,5,Yoff,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,6,Rte de l’Aéroport,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,7,Foire,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,8,VDN,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,9,Direction Générale DDD,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,10,Rond Point JVC,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,11,Rond Point Liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,12,Itinéraire 213,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,13,Police Grand Yoff,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,14,Pharmacie Patte d’Oie,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,15,Autoroute à Péage,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,16,Diamniadio,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers AIBD),Dakar Dem Dikk,17,AIBD,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+TAF TAF (vers Sphère Ministérielle),Dakar Dem Dikk,1,Terminus Ouakam,https://demdikk.sn/info-voyageurs/,consultée le 12/11/2026 (page non datée),indice
+TAF TAF (vers Sphère Ministérielle),Dakar Dem Dikk,2,Sphère Ministérielle à Diamniadio,https://demdikk.sn/info-voyageurs/,consultée le 12/11/2026 (page non datée),indice
+501,Dakar Dem Dikk,1,Terminus Palais 2,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+501,Dakar Dem Dikk,2,Avenue Nelson Mandela,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+501,Dakar Dem Dikk,3,Avenue Léopold Sédar Senghor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+501,Dakar Dem Dikk,4,Place de l’Indépendance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+501,Dakar Dem Dikk,5,Esso Port Embarcadère,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+501,Dakar Dem Dikk,6,Terminus Leclerc,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+502 (sans lettre),Dakar Dem Dikk,1,Gare colobane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+502 (sans lettre),Dakar Dem Dikk,2,Maison du partie,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+502 (sans lettre),Dakar Dem Dikk,3,Hampathé Ba,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+502 (sans lettre),Dakar Dem Dikk,4,UCAD,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+502 (sans lettre),Dakar Dem Dikk,5,Lycee De Lafosse,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+502 (sans lettre),Dakar Dem Dikk,6,Police 4em,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+502 (sans lettre),Dakar Dem Dikk,7,Rond Point Sham,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+502 (sans lettre),Dakar Dem Dikk,8,Gare Colobane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+503 (sans lettre),Dakar Dem Dikk,1,Gare de Colobane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+503 (sans lettre),Dakar Dem Dikk,2,Rond Point Bel,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+503 (sans lettre),Dakar Dem Dikk,3,Air,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+503 (sans lettre),Dakar Dem Dikk,4,Mole 8,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+503 (sans lettre),Dakar Dem Dikk,5,Cité Isra,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+503 (sans lettre),Dakar Dem Dikk,6,Zone industrielle,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+503 (sans lettre),Dakar Dem Dikk,7,Service des mines,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+503 (sans lettre),Dakar Dem Dikk,8,Gare de Colobane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+502A,Dakar Dem Dikk,1,COLOBANE,https://demdikk.sn/info-voyageurs/,"consultée le 12/11/2026 (page non datée, terminus seuls)",indice
+502A,Dakar Dem Dikk,2,UCAD,https://demdikk.sn/info-voyageurs/,"consultée le 12/11/2026 (page non datée, terminus seuls)",indice
+502B,Dakar Dem Dikk,1,COLOBANE,https://demdikk.sn/info-voyageurs/,"consultée le 12/11/2026 (page non datée, terminus seuls)",indice
+502B,Dakar Dem Dikk,2,ABASS NDAO,https://demdikk.sn/info-voyageurs/,"consultée le 12/11/2026 (page non datée, terminus seuls)",indice
+503A,Dakar Dem Dikk,1,COLOBANE,https://demdikk.sn/info-voyageurs/,"consultée le 12/11/2026 (page non datée, terminus seuls)",indice
+503A,Dakar Dem Dikk,2,MOLE 8,https://demdikk.sn/info-voyageurs/,"consultée le 12/11/2026 (page non datée, terminus seuls)",indice
+503B,Dakar Dem Dikk,1,COLOBANE,https://demdikk.sn/info-voyageurs/,"consultée le 12/11/2026 (page non datée, terminus seuls)",indice
+503B,Dakar Dem Dikk,2,HYDROCARBURE,https://demdikk.sn/info-voyageurs/,"consultée le 12/11/2026 (page non datée, terminus seuls)",indice
+504A,Dakar Dem Dikk,1,GARE DIAMNIADIO,https://demdikk.sn/info-voyageurs/,"consultée le 12/11/2026 (page non datée, terminus seuls)",indice
+504A,Dakar Dem Dikk,2,SPHERE MINISTERIEL,https://demdikk.sn/info-voyageurs/,"consultée le 12/11/2026 (page non datée, terminus seuls)",indice
+504B,Dakar Dem Dikk,1,SEBIKOTANE,https://demdikk.sn/info-voyageurs/,"consultée le 12/11/2026 (page non datée, terminus seuls)",indice
+504B,Dakar Dem Dikk,2,GARE DIAMNIADIO,https://demdikk.sn/info-voyageurs/,"consultée le 12/11/2026 (page non datée, terminus seuls)",indice
+2,Dakar Dem Dikk,1,Terminus Daroukhane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,2,Corniche,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,3,Hamo,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,4,Terminus Guédiawaye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,5,Marché Sahm,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,6,Ravin,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,7,Ecole Canada,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,8,Rte des Niayes,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,9,Tally Boumack,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,10,Bountou Pikine,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,11,Route Nationale n° 1,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,12,PEAGE Pikine,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,13,Cité des Eaux,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,14,Station Castors,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,15,Avenue Cheikh Ahmadou Bamba,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,16,Marché HLM,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,17,Masalikul Djinane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,18,BOPP,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,19,Rond Point Colobane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,20,Lycée Kennedy,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,21,Boulevard Général De Gaule,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,22,Obélisque,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,23,Rue 39,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,24,Douta Seck,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,25,Avenue Blaise Diagne,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,26,Poste Médina,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,27,Difoncé,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,28,Sandaga,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,29,Asecna,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,30,Boulevard de la République,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,31,Avenue Léopold Sédar Senghor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,32,Place de l’Indépendance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,33,Gare de dakar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,34,Embarcadère,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+2,Dakar Dem Dikk,35,Terminus Leclerc,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,1,Terminus Guédiawaye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,2,Marche Jeudi,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,3,Hôpital Dalal Diam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,4,Case PA,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,5,Police de Parcelles Assainies – Pont Sénégal 92 (Pont de l’émergence),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,6,Patte d’Oie,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,7,Autoroute,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,8,Intendance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,9,Avenue Lamine Gueye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,10,Avenue André Peytavin,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,11,Avenue Jean Jaurès (Direction Général ASCENA),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,12,Boulevard de la République,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,13,Avenue Léopold Sédar Senghor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,14,Avenue Nelson Mandela,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+5,Dakar Dem Dikk,15,Palais 1,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+6,Dakar Dem Dikk,1,Terminus Guédiawaye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,2,Marche Jeudi,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,3,Hôpital Dalal Diam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,4,Camberene,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,5,Case PA,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,6,Police de Parcelles Assainies – Marché Grand Médine,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,7,Rond point 26,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,8,Foire,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,9,Sipres,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,10,Rond point Liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,11,Terminus Liberté 5,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,12,Allées Khalifa Ababacar Sy,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,13,Jet d’Eau,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,14,Niary Tally,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,15,Eglise Sainte Thérèse,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,16,ENA,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,17,Boulevard Général De Gaule,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,18,Allées Papa Gueye Fall,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,19,Avenue Faidherbe,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,20,Avenue Lamine Gueye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,21,Avenue André Peytavin,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,22,Avenue Jean Jaurès,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,23,Boulevard de la République,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,24,Avenue Nelson Mandela,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+6,Dakar Dem Dikk,25,Palais 1,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+11,Dakar Dem Dikk,1,Terminus Keur Massar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,2,Station Keur Massar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,3,Croissement Keur Massar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,4,Fass Mbao,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,5,Diamaguène,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,6,Poste Thiaroye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,7,Autoroute a Peage,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,8,Corniche des Hlm,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,9,Colobane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,10,Boulevard Général De Gaule (Centenaire),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,11,RTS,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,12,Rond Point,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,13,Poste Médina,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,14,Blaise Diagne,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,15,Sandaga,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+11,Dakar Dem Dikk,16,Terminus Lat Dior,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,1,Terminus Guédiawaye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,2,Lycée Canada,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,3,Tally Boubess,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,4,Marché Sandika,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,5,Bountou pikine,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,6,National 1,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,7,Croissement Camberene,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,8,Autoroute,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,9,Cité des Eaux,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,10,Station Castors,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,11,Avenue Bourguiba,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,12,Ecole Normale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,13,Avenue Cheikh Anta Diop (Hôpital Fann),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,14,Rond Point Sahm,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,15,Avenue Blaise Diagne,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,16,Avenue Jean Jaurès,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,17,Boulevard de la République,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,18,Avenue Léopold Sedar Senghor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,19,Avenue Nelson Mandela,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+12,Dakar Dem Dikk,20,Palais 1,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,1,Terminus Rufisque,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,2,Djoutiba,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,3,Sortie Rufisque,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,4,Croissement Keur Massar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,5,Fass Mbao,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,6,Diamaguène,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,7,Poste Thiaroye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,8,Croisement Bountou Pikine,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,9,National 1,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,10,Croissement Camberene,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,11,autoroute,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,12,Colobane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,13,SCOA,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,14,Esso Port,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,15,Place de l’Indépendance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,16,Avenue Léopold Sédar Senghor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,17,Avenue Nelson Mandela,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+15 (15A & 15B non distinguées),Dakar Dem Dikk,18,Palais 1,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,1,Terminus Malika,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,2,Malika Plage,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,3,Terminus 221 (Gadaye),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,4,Hamo,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,5,Terminus Guédiawaye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,6,Marché Sahm,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,7,Ecole Canada,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,8,Icotaf,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,9,Cité Lobatt Fall,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,10,Rond Point Lobatt Fall,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,11,Autoroute,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,12,Colobane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,13,Rond Point Colobane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,14,Place Bakou,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,15,Cfao Technologies,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,16,Cyrnos,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,17,Arsenal,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,18,Place de l’Indépendance,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16A,Dakar Dem Dikk,19,Palais 1,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,1,Terminus Malika,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,2,Station Keur Massar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,3,Croisement Keur Massar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,4,LGI Mbao,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,5,Diamaguène,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,6,Thiaroye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,7,Sips,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,8,Sotiba (seras),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,9,Yarakh,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,10,Capa Virmaud,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,11,Place Bakou,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,12,(Scoa),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,13,Police Bel Air,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,14,Bel Air,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,15,GMD,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,16,Sofrigal (môle 8),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,17,Cyrnos (sur le pont),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,18,Caserne Sapeurs Pompiers,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,19,Avenue Lamine Guèye (Sandaga),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,20,Avenue André Peytavin,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,21,Avenue Jean Jaurès,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,22,Boulevard de la République,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,23,Avenue Léopold Sédar Senghor (Roume),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,24,Hôpital Principal,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,25,Assemblée Nationale,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,26,Hôpital Le Dantec,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+16B,Dakar Dem Dikk,27,Palais 1,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+208,Dakar Dem Dikk,1,Gorom 01,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+208,Dakar Dem Dikk,2,Gororm 02,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+208,Dakar Dem Dikk,3,Bambilor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+208,Dakar Dem Dikk,4,Noflaye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+208,Dakar Dem Dikk,5,Sangalkam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+208,Dakar Dem Dikk,6,Keur Ndiaye Lo,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+208,Dakar Dem Dikk,7,Rufisque,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,1,Gare de Rufisque,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,2,HLM SIPRES,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,3,ZAC Mbao,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,4,Rond Point Grand Mbao,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,5,keur Mbaye Fall,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,6,Croisement Petit Mbao,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,7,Diamaguene,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,8,poste Thiaroye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,9,péage,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,10,sortie Croissement Cambérène,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,11,Patte d’Oie,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,12,Marche Grand Yoff,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,13,Police Grand Yoff,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,14,Rond Point Liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,15,2 voies Liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,16,Rond Point JVC,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+213,Dakar Dem Dikk,17,Terminus Dieuppeul,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+217,Dakar Dem Dikk,1,Dépôt Thiaroye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+217,Dakar Dem Dikk,2,Sipses,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+217,Dakar Dem Dikk,3,Bountou Pikine,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+217,Dakar Dem Dikk,4,patte d’oies,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+217,Dakar Dem Dikk,5,Foire,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+217,Dakar Dem Dikk,6,VDN,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+217,Dakar Dem Dikk,7,Sipres,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+217,Dakar Dem Dikk,8,ancienne piste,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+217,Dakar Dem Dikk,9,Ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+217,Dakar Dem Dikk,10,marché Ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+217,Dakar Dem Dikk,11,terminus Ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+217,Dakar Dem Dikk,12,route des mamelles,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+217,Dakar Dem Dikk,13,route des Almadies,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+217,Dakar Dem Dikk,14,Ngor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+217,Dakar Dem Dikk,15,Terminus aéroport LSS,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+218,Dakar Dem Dikk,1,Dépôt Thiaroye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+218,Dakar Dem Dikk,2,Sipses,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+218,Dakar Dem Dikk,3,Bountou Pikine,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+218,Dakar Dem Dikk,4,patte d’oies,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+218,Dakar Dem Dikk,5,Foire,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+218,Dakar Dem Dikk,6,VDN,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+218,Dakar Dem Dikk,7,Sipres,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+218,Dakar Dem Dikk,8,ancienne piste,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+218,Dakar Dem Dikk,9,Ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+218,Dakar Dem Dikk,10,marché Ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+218,Dakar Dem Dikk,11,terminus Ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+218,Dakar Dem Dikk,12,route des mamelles,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+218,Dakar Dem Dikk,13,route des Almadies,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+218,Dakar Dem Dikk,14,Ngor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+218,Dakar Dem Dikk,15,Terminus aéroport LSS,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,1,Daroukhane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,2,marché Ndiarème,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,3,deux voies Notaire,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,4,Sapeur pompier Guédiawaye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,5,Marché Jeudi corniche,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,6,Hôpital Dalal Diam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,7,Case bi,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,8,Pont Sénégal 92,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,9,Collège Hyacinthe Thiandoum,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,10,Rond Point liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,11,Rond Point JVC,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,12,Rond Point Boulangerie Jaune,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,13,Immeuble Mariama,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,14,Ancienne Piste,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,15,Hôpital militaire de Ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,16,Comico,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,17,Cité Asecna,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,18,Cité Assemblée,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+219,Dakar Dem Dikk,19,Terminus Ouakam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,1,Terminus Gadaye (Filaos),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,2,Corniche Daroukhane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,3,Hamo 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,4,Arrêt Dial Mbaye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,5,PAI,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,6,Hôpital Dalal Diam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,7,Case,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,8,Police PA,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,9,Pont Sénégal emergent (92),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,10,Route de l’aéroport,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,11,Yoff Tonghor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,12,Cite Asecna,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,13,Rond Point Ngor,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,14,Ngor village,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+221,Dakar Dem Dikk,15,Terminus Almadies,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,1,Terminus Keur Massar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,2,Tolou Abdoulaye Wade,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,3,Croissement Tivaoune Peulh,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,4,APIX,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,5,Malika plage,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,6,Police Wakhinane,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,7,Hamo6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,8,Arrêt Dial Mbaye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,9,Terminus Guediawaye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,10,Stade Amadou Barry,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,11,CES Canada,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,12,Hôpital Dalal Diam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,13,Case bi,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,14,Croisement 22,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,15,Eglise PA,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+227,Dakar Dem Dikk,16,Terminus Parcelles,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+228 (titre sans numéro : TERMINUS RUFISQUE <--> YENNE),Dakar Dem Dikk,1,Terminus Rufisque,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+228 (titre sans numéro : TERMINUS RUFISQUE <--> YENNE),Dakar Dem Dikk,2,Ville de Rufisque,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+228 (titre sans numéro : TERMINUS RUFISQUE <--> YENNE),Dakar Dem Dikk,3,Bargny,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+228 (titre sans numéro : TERMINUS RUFISQUE <--> YENNE),Dakar Dem Dikk,4,Diamniadio Yenne,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,1,Baux Maraichers,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,2,Yarakh,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,3,Cafétéria,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,4,Hann Maristes,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,5,Cours Sainte Marie de Hann,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,6,Sortie Mariste,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,7,Usine des eaux,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,8,Front de terre,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,9,Khar Yalla,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,10,Rond Point Liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,11,Deux voies vers Camp Leclerc,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,12,VDN,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,13,Foire,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,14,Yoff,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+232,Dakar Dem Dikk,15,Terminus Aéroport LSS,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+233,Dakar Dem Dikk,1,Baux Maraichers,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+233,Dakar Dem Dikk,2,Yarakh,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+233,Dakar Dem Dikk,3,Cafétéria,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+233,Dakar Dem Dikk,4,Hann Maristes,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+233,Dakar Dem Dikk,5,Cours Sainte Marie de Hann,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+233,Dakar Dem Dikk,6,Sortie Mariste,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+233,Dakar Dem Dikk,7,Usine des eaux,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+233,Dakar Dem Dikk,8,Front de terre,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+233,Dakar Dem Dikk,9,Khar Yalla,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+233,Dakar Dem Dikk,10,Rond Point Liberté 6,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+233,Dakar Dem Dikk,11,Deux voies vers Camp Leclerc,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+233,Dakar Dem Dikk,12,VDN,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+233,Dakar Dem Dikk,13,Foire,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+233,Dakar Dem Dikk,14,Yoff,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+233,Dakar Dem Dikk,15,Terminus Aéroport LSS,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),indice
+234,Dakar Dem Dikk,1,TERMINUS JAXAAY (Mosquée Niakoul Rab),https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+234,Dakar Dem Dikk,2,Terminus 56,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+234,Dakar Dem Dikk,3,2 voies Jaxaay,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+234,Dakar Dem Dikk,4,Station Keur Massar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+234,Dakar Dem Dikk,5,Croisement Keur Massar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+234,Dakar Dem Dikk,6,Fass Mbao,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+234,Dakar Dem Dikk,7,Diamagueune,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+234,Dakar Dem Dikk,8,Poste Thiaroye,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+234,Dakar Dem Dikk,9,Péage,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+234,Dakar Dem Dikk,10,Grand théâtre,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+234,Dakar Dem Dikk,11,Esso Port,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+234,Dakar Dem Dikk,12,Place de l’independace Avenue Sarraut,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+234,Dakar Dem Dikk,13,Leclerc,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+311,Dakar Dem Dikk,1,Lac rose croissement Niague,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+311,Dakar Dem Dikk,2,Croissement Tivaoune Peulh,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+311,Dakar Dem Dikk,3,Terminus keur Massar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+311,Dakar Dem Dikk,4,Station Keur Massar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+311,Dakar Dem Dikk,5,Croissement Keur Massar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+311,Dakar Dem Dikk,6,Retour vers Lac Rose,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+327,Dakar Dem Dikk,1,Terminus Keur Massar,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+327,Dakar Dem Dikk,2,Tolou Abdoulaye Wade,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+327,Dakar Dem Dikk,3,Croissement Tivaoune Peulh,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+327,Dakar Dem Dikk,4,APIX,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+327,Dakar Dem Dikk,5,Malika plage,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+327,Dakar Dem Dikk,6,Malibu,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+327,Dakar Dem Dikk,7,Hôpital Dalal Diam,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+327,Dakar Dem Dikk,8,Case bi,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+327,Dakar Dem Dikk,9,Croisement 22,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+327,Dakar Dem Dikk,10,Eglise PA,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+327,Dakar Dem Dikk,11,Terminus Parcelles,https://demdikk.sn/reseau-urbain-dakar/,consultée le 12/11/2026 (page non datée),confirmé
+Express AIBD,Dakar Dem Dikk,1,terminus HLM Grand-Yoff en face du Stade Léopold Sédar Senghor,https://demdikk.sn/offres-de-transport/,consultée le 12/11/2026 (page non datée),confirmé
+Express AIBD,Dakar Dem Dikk,2,autoroute à péage,https://demdikk.sn/offres-de-transport/,consultée le 12/11/2026 (page non datée),confirmé
+Express AIBD,Dakar Dem Dikk,3,Aéroport International Blaise Diagne (AIBD),https://demdikk.sn/offres-de-transport/,consultée le 12/11/2026 (page non datée),confirmé

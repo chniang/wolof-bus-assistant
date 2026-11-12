@@ -103,3 +103,70 @@ deux filtres, la référence, les noms de lieux effectivement utilisés).
 
 Règle pour la suite : on ne corrige nos données qu'avec une source « confirmé »
 (source officielle ou 2 sources concordantes, voir `data/reference/LISEZMOI.md`).
+
+## Comparaison avec les fiches officielles (12/11/2026)
+
+Source : fiches AFTU et Dem Dikk copiées dans `data/reference/`, comparées par
+`scripts/comparer_lignes_officielles.py` (lecture seule, sans réseau). Détail
+ligne par ligne : `data/audit/comparaison_lignes_officielles.csv`. Les fiches
+officielles listent des rues et des repères dans un seul sens, pas de vrais
+arrêts : la comparaison est indicative.
+
+| Classe | Dem Dikk | Tata AFTU | Total |
+| --- | ---: | ---: | ---: |
+| CONFORME | 0 | 50 | 50 |
+| A_COMPLETER | 27 | 0 | 27 |
+| TERMINUS_DIFFERENT | 0 | 15 | 15 |
+| DIVERGENTE | 6 | 0 | 6 |
+| DOUTEUSE | 1 | 0 | 1 |
+| SANS_SOURCE | 6 | 7 | 13 |
+| **Total** | **40** | **72** | **112** |
+
+Les 7 lignes Dem Dikk de l'audit F1 sans équivalent exact dans
+`lignes_dakar.csv` : 311, 319, 327, TAF TAF OUAKAM (TO1), 502 et 503 sans
+lettre, et la fiche 15 (qui ne distingue pas 15A et 15B). La fiche 15 est donc
+comparée à nos deux lignes 15A/15B.
+
+Les 15 appariements d'arrêts uniquement « souples » (fuzzy, seuil 0,88) :
+
+| Ligne | Notre arrêt | Point officiel |
+| --- | --- | --- |
+| DDD 1 | Place Leclerc | Terminus Leclerc |
+| DDD 4 | Place Leclerc | Terminus Leclerc |
+| DDD 121 | Sacré-Cœur | Collège Sacré Cœur |
+| DDD 121 | Place Leclerc | Terminus Leclerc |
+| DDD 23 | Parcelles Assainies | Terminus des Parcelles |
+| DDD 2 | Place Leclerc | Terminus Leclerc |
+| DDD 234 | Place Leclerc | Leclerc |
+| DDD 228 | Yenne | Diamniadio Yenne |
+| DDD 227 | Parcelles Assainies | Terminus Parcelles |
+| DDD 218 | Thiaroye | Dépôt Thiaroye |
+| DDD 217 | Thiaroye | Dépôt Thiaroye |
+| TAF TAF | Grand Yoff | Yoff ; Police Grand Yoff |
+| TAF TAF | Patte d'Oie | Pharmacie Patte d'Oie |
+| Tata 37 | Cité Apix | TERMINUS APIX |
+| Tata 82 | Comico Yeumbeul | TERMINUS COMICO |
+
+Un appariement souple n'est pas une erreur : il signale un libellé plus ou
+moins précis, à vérifier. Tata 37 et 82 restent `CONFORME` : seul leur terminus
+est apparié en souple.
+
+**Ce que CONFORME veut dire.** `CONFORME` signifie que la liste d'arrêts
+correspond à la fiche officielle. La position GPS des arrêts est un autre
+sujet : voir la part de positions mesurées dans
+`data/audit/fiabilite_lignes.csv`. Une ligne CONFORME peut donc avoir des
+positions estimées.
+
+### Ordre de correction
+
+1. **Les noms** : Colobane, aéroport Blaise Diagne, Liberté VI, parenthèses,
+   arrêts AFTU nommés d'après une rue.
+2. **Les 15 libellés de terminus Tata** : 1, 26, 45, 50, 52, 56, 58, 63, 64,
+   65, 69, 70, 72, 74, 81.
+3. **Les 27 lignes Dem Dikk à compléter** à partir des listes officielles
+   (classe `A_COMPLETER` du CSV).
+4. **Les 6 lignes Dem Dikk divergentes** (23, 6, 233, 217, 208, 501) suivent le
+   site officiel ; 6, 217, 220 et 233 restent affichées « estimé » jusqu'à
+   confirmation téléphonique de Dem Dikk.
+5. **Les lignes manquantes** 311, 319, 327 et TO1.
+6. **Les positions des arrêts**, une fois les listes stabilisées.

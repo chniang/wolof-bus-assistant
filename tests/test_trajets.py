@@ -1,21 +1,27 @@
 r"""Vérifie que les trajets de référence trouvent la bonne ligne.
 
-Deux modes :
+Trois modes :
 
-    .\.venv\Scripts\python.exe tests\test_trajets.py            (local, quelques secondes)
-    .\.venv\Scripts\python.exe tests\test_trajets.py --en-ligne (l'app publiée sur Hugging Face)
+    .\.venv\Scripts\python.exe tests\test_trajets.py                     (local, quelques secondes)
+    .\.venv\Scripts\python.exe tests\test_trajets.py --rapport-officiel  (rapport des fiches officielles)
+    .\.venv\Scripts\python.exe tests\test_trajets.py --en-ligne          (l'app publiée sur Hugging Face)
 
 - local : extraction des lieux, recherche de ligne, interface Gradio et vidage
   du micro, sans modèle ni GPU ni LLM. À lancer après chaque modification.
+- rapport-officiel : exécute `scripts/comparer_lignes_officielles.py` hors
+  ligne et affiche les comptes par classe. Rapport seulement : ne fait jamais
+  échouer la suite pour l'instant.
 - en ligne : envoie les phrases à l'app publiée, exactement comme un visiteur.
   À lancer après chaque déploiement, avant de partager le lien.
 
-Code de sortie : 0 si tout passe, 1 sinon.
+Code de sortie : 0 si tout passe, 1 sinon ; le mode rapport sort toujours 0.
 """
 
 from __future__ import annotations
 
+import os
 import re
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -5335,6 +5341,71 @@ def test_micro_vidage() -> tuple[int, int]:
     return echecs, total
 
 
+def test_rapport_lignes_officielles() -> int:
+    """Mode rapport : compare les lignes aux fiches officielles, hors ligne.
+
+    Le script est en lecture seule et sans réseau. On affiche son tableau et un
+    résumé par classe ; aucun écart n'est compté comme un échec pour l'instant.
+    """
+
+    script = RACINE / "scripts" / "comparer_lignes_officielles.py"
+    if not script.exists():
+        print(f"Rapport indisponible : {script} absent.")
+        return 0
+
+    environnement = os.environ.copy()
+    environnement["PYTHONIOENCODING"] = "utf-8"
+    try:
+        resultat = subprocess.run(
+            [sys.executable, str(script)],
+            cwd=RACINE,
+            env=environnement,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=180,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        print(f"Rapport non bloquant : {exc}")
+        return 0
+
+    print("=== Rapport lignes officielles (lecture seule, sans réseau) ===\n")
+    sortie = resultat.stdout or ""
+    print(sortie, end="" if sortie.endswith("\n") else "\n")
+
+    classes = (
+        "CONFORME",
+        "A_COMPLETER",
+        "TERMINUS_DIFFERENT",
+        "DIVERGENTE",
+        "DOUTEUSE",
+        "SANS_SOURCE",
+    )
+    comptes: dict[str, tuple[str, str, str]] = {}
+    for ligne in sortie.splitlines():
+        morceaux = [morceau.strip() for morceau in ligne.split("|")]
+        if len(morceaux) == 4 and morceaux[0] in classes:
+            comptes[morceaux[0]] = (morceaux[1], morceaux[2], morceaux[3])
+    if comptes:
+        print("\nComptes par classe :")
+        for classe in classes:
+            if classe in comptes:
+                dem_dikk, tata, total = comptes[classe]
+                print(
+                    f"  {classe}: Dem Dikk={dem_dikk}, "
+                    f"Tata AFTU={tata}, total={total}"
+                )
+
+    if resultat.returncode != 0:
+        print(f"Rapport non bloquant : le script a renvoyé {resultat.returncode}.")
+        erreurs = resultat.stderr or ""
+        if erreurs:
+            print(erreurs, end="" if erreurs.endswith("\n") else "\n")
+    print("\nRapport seulement : aucun échec compté.")
+    return 0
+
+
 def test_en_ligne() -> int:
     import httpx
 
@@ -5367,6 +5438,9 @@ def test_en_ligne() -> int:
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if "--rapport-officiel" in sys.argv:
+        test_rapport_lignes_officielles()
+        sys.exit(0)
     en_ligne = "--en-ligne" in sys.argv
     print(f"=== Test {'de l app en ligne (' + SPACE + ')' if en_ligne else 'local'} ===\n")
     if en_ligne:
