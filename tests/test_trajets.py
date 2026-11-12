@@ -5079,17 +5079,17 @@ def test_interface_micro() -> tuple[int, int]:
         "demo_audio" not in readme and "rejoue un enregistrement" not in readme,
     )
     verifie(
-        "README credits: native Oolel voice, ASR licenses to verify, data sources, corrections",
-        "Credits and licenses" in readme
+        "README crédits : voix native Oolel, licences ASR, sources de données, corrections",
+        "Crédits et licences" in readme
         and "Oolel-Voices-Demo" in readme
         and "8_1_c" in readme
         and "AGPL-3.0" in readme
-        and "TTS model" in readme
-        and "runs inside the app" in readme
+        and "aucun modèle TTS ne tourne dans l'app" in readme
+        and len(re.findall(r"voir la\s+fiche du modèle", readme)) == 3
         and "aftu-senegal.org" in readme
+        and "demdikk.sn" in readme
         and "ODbL 1.0" in readme
-        and "data/corrections" in readme
-        and "see model card (TODO verify)" in readme,
+        and "data/corrections" in readme,
     )
     verifie(
         "README : GUINDIMA_MOTEUR documenté (v2 par défaut, v1 exprès, pas de repli silencieux)",
