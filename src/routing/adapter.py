@@ -71,6 +71,48 @@ _CATEGORIES = {
 }
 
 
+# Une durée ne s'affiche que si elle repose sur des positions : un bus qui
+# roule au moins 15 km d'affilée entre des arrêts dont aucune position n'est
+# mesurée, sur une ligne sans trace officielle, n'a qu'une durée inventée.
+# Le TAF TAF Ouakam -> AIBD affichait ~175 min : 27 km sans position sûre
+# (« Autoroute à Péage », « Diamniadio », « AIBD » estimés), « VDN » posé à
+# Guédiawaye, le tout à la vitesse d'un bus de ville. Le suivant dans l'audit
+# n'a que 14 km devinés, et sur une Tata dont la trace donne la vraie route.
+DISTANCE_DEVINEE_MAX_M = 15_000.0
+
+
+def duree_devinee(leg: Leg) -> bool:
+    """Vrai si la durée de ce bus repose sur une longue portion sans position mesurée."""
+
+    ligne = _NETWORK.lines.get((leg.operator, leg.line))
+    if ligne is None or ligne.key in _NETWORK.line_distances:
+        return False
+    arrets = list(ligne.stops)
+    try:
+        i, j = arrets.index(leg.board_stop), arrets.index(leg.alight_stop)
+    except ValueError:
+        return False
+    segments = _NETWORK._segment_distances(ligne)
+    portion = plus_longue = 0.0
+    for index in range(min(i, j), max(i, j)):
+        if _NETWORK.position_sure(ligne, index) and _NETWORK.position_sure(ligne, index + 1):
+            portion = 0.0
+            continue
+        portion += segments[index] or 0.0
+        plus_longue = max(plus_longue, portion)
+        if _NETWORK.position_sure(ligne, index + 1):
+            portion = 0.0
+    return plus_longue >= DISTANCE_DEVINEE_MAX_M
+
+
+def _minutes(trip: Trip) -> int | None:
+    """La durée totale, ou None si l'un des bus n'a qu'une durée devinée."""
+
+    if any(duree_devinee(leg) for leg in trip.legs):
+        return None
+    return int(round(trip.total_minutes))
+
+
 def _troncon(leg: Leg) -> dict:
     """Un bus du moteur v2 au format exact de ``StopsMatcher._troncon``."""
 
@@ -126,8 +168,9 @@ def _troncon(leg: Leg) -> dict:
         "monte_a": joli(leg.board_stop),
         "descend_a": joli(leg.alight_stop),
         "arrets_trajet": [joli(arret) for arret in parcours],
-        "minutes": int(round(leg.minutes)),
+        "minutes": None if duree_devinee(leg) else int(round(leg.minutes)),
         "estimee": leg.estimated,
+        "duree_inconnue": duree_devinee(leg),
     }
 
 
@@ -136,7 +179,7 @@ def _direct(trip: Trip) -> dict:
 
     return {
         **_troncon(trip.legs[0]),
-        "minutes": int(round(trip.total_minutes)),
+        "minutes": _minutes(trip),
     }
 
 
@@ -161,7 +204,7 @@ def _correspondance(trip: Trip) -> dict:
         "etape_2": etape_2,
         "changement": joli(trip.legs[0].alight_stop),
         "marches": _marches(trip),
-        "minutes": int(round(trip.total_minutes)),
+        "minutes": _minutes(trip),
     }
 
 
@@ -173,7 +216,7 @@ def _trajet_2(trip: Trip) -> dict:
         "etapes": etapes,
         "changements": [joli(leg.alight_stop) for leg in trip.legs[:-1]],
         "marches": _marches(trip),
-        "minutes": int(round(trip.total_minutes)),
+        "minutes": _minutes(trip),
     }
 
 
@@ -666,7 +709,7 @@ def chercher_v2(
     arr = _resoudre(matcher, arrivee)
     resultat = _resultat_vide(depart, arrivee, dep, arr)
 
-    # Lieu non reconnu par GuindiMa : on ne devine pas, MoteurV2 rendra v1.
+    # Lieu non reconnu par GuindiMa : on ne devine pas, aucun trajet.
     if not dep["valide"] or not arr["valide"]:
         return resultat
 
@@ -852,11 +895,17 @@ def deux_aeroports(find_line, depart: str, arrivee: str, compagnies=None) -> dic
         )
     if not possibles:
         return None
+    # L'aéroport sans trajet est nommé à l'écran : « aucun bus vers l'AIBD
+    # depuis ici dans nos données », plutôt que de le taire (Pikine -> AIBD
+    # demande un demi-tour par Patte d'Oie, que v2 refuse).
+    trouves = {p["lieu"] for p in possibles}
+    sans_trajet = [titre for nom, titre in AEROPORTS_POSSIBLES if nom not in trouves]
     if len(possibles) == 1:
         # Un seul aéroport desservi (filtre Tata : aucune Tata ne va à l'AIBD) :
         # on le dit par son titre, sans faire croire qu'il n'y en a qu'un.
         seul = dict(possibles[0]["resultat"])
         seul["lieux_possibles"] = possibles
+        seul["lieux_sans_trajet"] = sans_trajet
         return seul
     resultat = dict(possibles[0]["resultat"])
     resultat.update(
@@ -869,6 +918,7 @@ def deux_aeroports(find_line, depart: str, arrivee: str, compagnies=None) -> dic
             "trajets_2": [p["option"] for p in possibles if p["genre"] == "trajet_2"],
             "a_pied": next((p["option"] for p in possibles if p["genre"] == "a_pied"), None),
             "lieux_possibles": possibles,
+            "lieux_sans_trajet": sans_trajet,
         }
     )
     return resultat
@@ -888,12 +938,16 @@ def a_un_trajet(resultat: dict | None) -> bool:
 
 
 class MoteurV2:
-    """Même interface que ``StopsMatcher.find_line``, avec repli sur v1.
+    """Même interface que ``StopsMatcher.find_line``, calculée par v2 seul.
 
-    Les appels passent par ``chercher_v2``.  Si le moteur v2 lève une erreur ou
-    ne trouve rien, on rend exactement ce que ``StopsMatcher`` aurait rendu.
-    Les autres attributs (``geo``, ``arrets``…) restent ceux de v1 : les tests et
-    l'affichage continuent de les utiliser sans changement.
+    Les appels passent par ``chercher_v2``.  Plus de repli silencieux sur v1 :
+    quand v2 ne trouve rien, la réponse est « aucun trajet », jamais un trajet
+    de l'ancien moteur. Pikine -> AIBD sortait ainsi de v1 (Tata 48 puis TAF TAF
+    depuis Patte d'Oie), un demi-tour que v2 refuse à juste titre, et sans
+    durée. Le v1 reste disponible, mais seulement par choix explicite du
+    déployeur (GUINDIMA_MOTEUR=v1, app.py). ``StopsMatcher`` ne sert plus qu'à
+    résoudre les lieux (noms, géographie) : les autres attributs (``geo``,
+    ``arrets``…) restent les siens.
     """
 
     def __init__(self, repli) -> None:
@@ -911,16 +965,31 @@ class MoteurV2:
         if ambigu is not None:
             return ambigu
         try:
-            resultat = chercher_v2(self._repli, depart, arrivee, compagnies)
+            return chercher_v2(self._repli, depart, arrivee, compagnies)
         except Exception as exc:  # pragma: no cover - garde-fou de production
+            # Une panne de v2 se dit (journal) et donne « aucun trajet » : jamais
+            # une réponse de v1 présentée comme celle de v2.
             print(
-                f"[moteur] v2 indisponible ({type(exc).__name__}), repli v1",
+                f"[moteur] ERREUR v2 ({type(exc).__name__} : {str(exc)[:120]}) : "
+                "aucun trajet rendu, pas de repli v1",
                 flush=True,
             )
-        else:
-            if a_un_trajet(resultat):
-                return resultat
-        return self._repli.find_line(depart, arrivee, compagnies)
+            return {
+                "found": False,
+                "depart": depart,
+                "arrivee": arrivee,
+                "depart_matched": "",
+                "arrivee_matched": "",
+                "depart_score": 0.0,
+                "depart_valide": True,
+                "arrivee_score": 0.0,
+                "arrivee_valide": True,
+                "lignes": [],
+                "correspondances": [],
+                "trajets_2": [],
+                "a_pied": None,
+                "erreur_moteur": True,
+            }
 
     def find_line_compagnie(
         self, depart: str, arrivee: str, compagnie: str

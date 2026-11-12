@@ -463,8 +463,9 @@ def _voix_wolof(
     """
     correspondances = correspondances or []
     trajets_2 = trajets_2 or []
-    if lieux_possibles and len(lieux_possibles) > 1:
-        # « aéroport » seul : une possibilité par aéroport, « Walla, » entre les deux.
+    if lieux_possibles:
+        # « aéroport » seul : une possibilité par aéroport, « Walla, » entre les
+        # deux ; avec un seul aéroport desservi, la voix dit lequel.
         return _ecrire_voix(voix_lieux_possibles(lieux_possibles))
     if not lignes and not correspondances and not trajets_2:
         return None
@@ -923,6 +924,10 @@ def _une_carte(
         # Dem Dikk 11 : un terminus sans position, la durée est un forfait.
         f"{' (durée estimée)' if match.get('estimee') else ''}</span>"
         if match.get("minutes") is not None
+        # Positions devinées sur une longue portion (TAF TAF vers l'AIBD) : on
+        # ne donne pas de chiffre inventé.
+        else "<span style='color:#6B7A72;'>durée inconnue</span>"
+        if match.get("duree_inconnue")
         else ""
     )
     categorie = " · ".join(
@@ -984,7 +989,9 @@ def _carte_a_pied(a_pied: dict) -> str:
 """
 
 
-def _cartes_lieux_possibles(entete: str, possibles: list[dict]) -> str:
+def _cartes_lieux_possibles(
+    entete: str, possibles: list[dict], sans_trajet: list[str] | None = None
+) -> str:
     """« aéroport » seul : la meilleure possibilité vers chacun des deux aéroports.
 
     Un bloc titré par aéroport (AIBD à Diass, ancien aéroport LSS à Yoff), avec
@@ -994,6 +1001,16 @@ def _cartes_lieux_possibles(entete: str, possibles: list[dict]) -> str:
     blocs = [entete]
     if len(possibles) > 1:
         blocs.append(titre_section("✈️ « Aéroport » : il y a deux aéroports, voici les deux"))
+    else:
+        blocs.append(titre_section("✈️ « Aéroport » : il y a deux aéroports à Dakar"))
+    for titre in sans_trajet or []:
+        # Dit franchement : aucun trajet v2 vers cet aéroport depuis ce lieu.
+        blocs.append(
+            "<div style='color:#7A4B00;background:#FFF6E5;border:1px solid #F0D9A8;"
+            "border-radius:8px;padding:8px 12px;margin:6px 0;font-size:14px;'>"
+            f"✈️ {_echapper(titre)} : aucun trajet en bus trouvé depuis ce lieu "
+            "dans nos données.</div>"
+        )
     for possible in possibles:
         dep, arr = possible["depart"], possible["arrivee"]
         genre, option = possible["genre"], possible["option"]
@@ -1062,7 +1079,11 @@ def _carte(
     if possibles:
         # « aéroport » seul : pas de « tout près à pied », qui mesurerait
         # jusqu'à l'un des deux aéroports seulement.
-        return _cartes_lieux_possibles(bandeau_compagnie + avertissement + astuce, possibles)
+        return _cartes_lieux_possibles(
+            bandeau_compagnie + avertissement + astuce,
+            possibles,
+            resultat.get("lieux_sans_trajet") or [],
+        )
     entete = bandeau_compagnie + avertissement + astuce + _note_distance_pied(depart, arrivee)
     lignes = resultat.get("lignes") or []
     correspondances = resultat.get("correspondances") or []

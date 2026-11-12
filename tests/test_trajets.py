@@ -859,10 +859,27 @@ def test_moteur_v2() -> tuple[int, int]:
         "Sandaga est reconnu (par sa position, comme v1)",
         adapter._resoudre(repli, "Sandaga")["valide"],
     )
+    # Lot 2c : plus de repli silencieux sur v1. Un lieu inconnu donne la réponse
+    # de v2 (aucun trajet, lieu non valide), jugée comme v1 jugeait le lieu.
+    inconnu = moteur.find_line("Zzzqwx", "Colobane")
     verifie(
-        "lieu inconnu de GuindiMa : le résultat exact de v1",
-        moteur.find_line("Zzzqwx", "Colobane") == repli.find_line("Zzzqwx", "Colobane"),
+        "lieu inconnu de GuindiMa : aucun trajet, lieu non valide, comme v1 le jugeait",
+        not inconnu["found"]
+        and not inconnu["lignes"]
+        and not inconnu["correspondances"]
+        and inconnu["depart_valide"] is False
+        and inconnu["depart_valide"] == repli.find_line("Zzzqwx", "Colobane")["depart_valide"],
+        inconnu,
     )
+    appels_v1 = []
+    ancien_find = repli.find_line
+    repli.find_line = lambda *a, **k: appels_v1.append(a) or ancien_find(*a, **k)
+    try:
+        for dep, arr in (("Zzzqwx", "Colobane"), ("Pikine", "AIBD"), ("Rufisque", "AIBD"), ("Ouakam", "Médina")):
+            moteur.find_line(dep, arr)
+    finally:
+        repli.find_line = ancien_find
+    verifie("jamais d'appel au moteur v1 (find_line) depuis MoteurV2", not appels_v1, appels_v1)
 
     # Une ligne de 2 arrêts sans position : la durée est un forfait, et la carte le dit.
     reseau_vide = Network([Line("Op", "Bus", ("A", "B"))], {})
@@ -2430,7 +2447,9 @@ def test_aeroport_ambigu() -> tuple[int, int]:
 
     # ------------------------------------------------------------ le moteur
     matcher = _matcher_hors_ligne()
-    for dep in ("Ouakam", "Pikine", "Yoff", "Médina"):
+    # Pikine n'a pas de trajet v2 vers l'AIBD (demi-tour par Patte d'Oie refusé),
+    # voir plus bas : seuls Ouakam, Yoff et Médina ont les deux.
+    for dep in ("Ouakam", "Yoff", "Médina"):
         resultat = matcher.find_line(dep, "aéroport")
         possibles = resultat.get("lieux_possibles") or []
         verifie(f"{dep} -> aéroport : deux possibilités, AIBD puis Aéroport LSS",
@@ -2446,9 +2465,19 @@ def test_aeroport_ambigu() -> tuple[int, int]:
             descente = derniere["descend_a"]
             bon = descente == "AIBD" if possible["lieu"] == AIBD else descente in ("Aéroport", "Aéroport LSS")
             verifie(f"{dep} -> aéroport : la possibilité {possible['lieu']} descend au bon aéroport", bon, descente)
-    resultat = matcher.find_line("Pikine", "aydapoor")
-    verifie("Pikine -> aydapoor : les deux aéroports, comme « aéroport »",
+    resultat = matcher.find_line("Ouakam", "aydapoor")
+    verifie("Ouakam -> aydapoor : les deux aéroports, comme « aéroport »",
             [p["lieu"] for p in resultat.get("lieux_possibles") or []] == [AIBD, AEROPORT_LSS], _detail(resultat))
+    # Lot 2c : v2 seul. Pikine -> AIBD n'a que des demi-tours (vers Patte d'Oie
+    # ou Liberté 6, puis retour vers l'est) : aucune option AIBD, et on le dit.
+    for forme in ("aéroport", "aydapoor"):
+        resultat = matcher.find_line("Pikine", forme)
+        verifie(f"Pikine -> {forme} : seul l'ancien aéroport, aucune option AIBD venue de v1",
+                [p["lieu"] for p in resultat.get("lieux_possibles") or []] == [AEROPORT_LSS]
+                and not any(e.get("descend_a") == "AIBD" for e in (resultat.get("lignes") or [])), _detail(resultat))
+        verifie(f"Pikine -> {forme} : l'AIBD sans trajet est nommé",
+                resultat.get("lieux_sans_trajet") == ["Aéroport Blaise Diagne (AIBD, Diass)"],
+                resultat.get("lieux_sans_trajet"))
     resultat = matcher.find_line("Pikine", "aéroport", {"Tata AFTU"})
     verifie("Pikine -> aéroport (Tata) : seul l'ancien aéroport, aucune Tata ne va à l'AIBD",
             [p["lieu"] for p in resultat.get("lieux_possibles") or []] == [AEROPORT_LSS], _detail(resultat))
@@ -2467,12 +2496,18 @@ def test_aeroport_ambigu() -> tuple[int, int]:
     try:
         resultat = matcher.find_line("Ouakam", "aéroport")
         octets = speak.voix_lieux_possibles(resultat["lieux_possibles"])
-        resultat_corr = matcher.find_line("Pikine", "aéroport")
+        resultat_corr = matcher.find_line("Médina", "aéroport")
         speak.voix_lieux_possibles(resultat_corr["lieux_possibles"])
+        resultat_pikine = matcher.find_line("Pikine", "aéroport")
+        speak.voix_lieux_possibles(resultat_pikine["lieux_possibles"])
     finally:
         speak.assembler = ancien
+    pikine = entendus[2] if len(entendus) > 2 else []
+    verifie("voix Pikine -> aéroport : un seul aéroport, nommé (LSS), sans « Walla, » ni AIBD",
+            "lieu_aeroport_lss.wav" in pikine and "walla_autre.wav" not in pikine and "lieu_aibd.wav" not in pikine,
+            pikine)
     for nom, fichiers in (("Ouakam -> aéroport", entendus[0] if entendus else []),
-                          ("Pikine -> aéroport", entendus[1] if len(entendus) > 1 else [])):
+                          ("Médina -> aéroport", entendus[1] if len(entendus) > 1 else [])):
         verifie(f"voix {nom} : « Walla, » entre les deux possibilités", fichiers.count("walla_autre.wav") == 1, fichiers)
         verifie(f"voix {nom} : dit l'AIBD puis l'aéroport LSS",
                 "lieu_aibd.wav" in fichiers and "lieu_aeroport_lss.wav" in fichiers
@@ -2498,6 +2533,80 @@ def test_aeroport_ambigu() -> tuple[int, int]:
             "Aéroport Blaise Diagne (AIBD, Diass)" in carte and "Ancien aéroport Léopold Sédar Senghor (Yoff)" in carte,
             carte[:300])
     verifie("écran : pas de « tout près à pied » vers un seul des deux", "C'est tout près" not in carte)
+    resultat = app.MATCHER.find_line("Pikine", "Aéroport")
+    carte = app._carte(resultat, "Pikine", "Aéroport")
+    verifie("écran Pikine -> aéroport : « aucun trajet en bus » vers l'AIBD, dit franchement",
+            "Aéroport Blaise Diagne (AIBD, Diass) : aucun trajet en bus trouvé" in carte
+            and "Ancien aéroport Léopold Sédar Senghor (Yoff)" in carte, carte[:400])
+    return echecs, total
+
+
+def test_duree_et_v1() -> tuple[int, int]:
+    """Lot 2c : pas de durée inventée, pas de repli silencieux sur v1.
+
+    Ouakam -> AIBD par le TAF TAF affichait ~175 min : 27 km sans aucune
+    position mesurée (Autoroute à Péage, Diamniadio, AIBD estimés ; « VDN »
+    placé à Guédiawaye). La durée devient « inconnue » au lieu d'un chiffre
+    inventé ; les durées ordinaires restent affichées.
+    """
+    import os
+
+    from routing import adapter
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | durée et v1 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    matcher = _matcher_hors_ligne()
+    for dep in ("Ouakam", "Yoff", "Grand Yoff", "Liberté 6"):
+        resultat = matcher.find_line(dep, "AIBD")
+        taf = [t for t in resultat["lignes"] if t["ligne"] == "TAF TAF"]
+        verifie(f"{dep} -> AIBD : TAF TAF proposé par v2", bool(taf), _detail(resultat))
+        verifie(f"{dep} -> AIBD : durée inconnue, pas de chiffre inventé",
+                bool(taf) and all(t["minutes"] is None and t["duree_inconnue"] for t in taf),
+                [(t["minutes"], t.get("duree_inconnue")) for t in taf])
+    resultat = matcher.find_line("Médina", "AIBD")
+    verifie("Médina -> AIBD (trois bus, dernier le TAF TAF) : durée totale inconnue",
+            all(t["minutes"] is None for t in resultat.get("trajets_2") or []) and bool(resultat.get("trajets_2")),
+            _detail(resultat))
+    # Les durées qui reposent sur des positions gardent leur chiffre.
+    for dep, arr, ligne in (("Ouakam", "Aéroport LSS", "Ligne 217"), ("Yoff", "UCAD", "Ligne 8"),
+                            ("Colobane", "Rufisque", "Ligne 15"), ("Parcelles Assainies", "Petersen", "Ligne 25")):
+        resultat = matcher.find_line(dep, arr)
+        t = next((t for t in resultat["lignes"] if t["ligne"] == ligne), None)
+        verifie(f"{dep} -> {arr} : {ligne} garde sa durée", t is not None and isinstance(t["minutes"], int)
+                and not t.get("duree_inconnue"), t and (t["minutes"], t.get("duree_inconnue")))
+    verifie("seuil : 15 km sans position mesurée", adapter.DISTANCE_DEVINEE_MAX_M == 15_000.0)
+
+    # Jamais de repli v1 : le moteur v2 ne rappelle jamais StopsMatcher.find_line.
+    repli = getattr(matcher, "_repli", matcher)
+    appels = []
+    ancien = repli.find_line
+    repli.find_line = lambda *a, **k: appels.append(a) or ancien(*a, **k)
+    try:
+        for dep, arr in (("Pikine", "aéroport"), ("Pikine", "AIBD"), ("Rufisque", "AIBD"), ("Zzzqwx", "Colobane")):
+            for filtre in (None, {"Tata AFTU"}):
+                matcher.find_line(dep, arr, filtre)
+    finally:
+        repli.find_line = ancien
+    verifie("aucun appel à v1, même sans trajet v2", not appels, appels)
+
+    # À l'écran : « durée inconnue » au lieu de « ~175 min ».
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_duree")
+    repli_app = getattr(app.MATCHER, "_repli", app.MATCHER)
+    repli_app.geo.point = repli_app.geo.point_connu
+    resultat = app.MATCHER.find_line("Ouakam", "AIBD")
+    carte = app._carte(resultat, "Ouakam", "AIBD")
+    verifie("écran Ouakam -> AIBD : « durée inconnue », plus de ~175 min",
+            "durée inconnue" in carte and "175 min" not in carte, carte[:300])
     return echecs, total
 
 
@@ -5985,6 +6094,7 @@ if __name__ == "__main__":
         echecs_aero, total_aero = test_aeroport_ambigu()
         echecs_pgy, total_pgy = test_parcelles_grand_yoff()
         echecs_term, total_term = test_terminus_tata_officiels()
+        echecs_duree, total_duree = test_duree_et_v1()
         echecs_gare, total_gare = test_gare_gaar()
         echecs_hf, total_hf = test_compte_hugging_face()
         echecs_terrain, total_terrain = test_terrain_en_ligne()
@@ -6022,6 +6132,7 @@ if __name__ == "__main__":
             + echecs_aero
             + echecs_pgy
             + echecs_term
+            + echecs_duree
             + echecs_gare
             + echecs_hf
             + echecs_terrain
@@ -6060,6 +6171,7 @@ if __name__ == "__main__":
             + total_aero
             + total_pgy
             + total_term
+            + total_duree
             + total_gare
             + total_hf
             + total_terrain
