@@ -65,7 +65,13 @@ RETRY_DELAYS = (0,)  # pas de retry
 # le journal. Parmi les Llama instruct encore servis (llama-3.2-90b-vision,
 # nemotron 51b et 70b), on prend le plus petit. Le prochain retrait se règle
 # sans toucher au code : la variable LLM_MODEL (Settings du Space) le remplace.
-MODELE_PAR_DEFAUT = "nvidia/llama-3.1-nemotron-51b-instruct"
+# 13 novembre 2026 : le nemotron 51b répond 404 en production, alors qu'il
+# figure toujours dans GET /v1/models. Le catalogue garde des modèles qui ne
+# sont plus servis (mistral-7b, mistral-nemo-12b, nemotron-70b, gemma-3-12b :
+# tous 404). Seul un vrai appel compte. Sonde du jour, même requête que l'app :
+# nemotron-3.5-lightning répond 200 en ~1 s avec un JSON pur (pas de texte de
+# raisonnement devant) ; gpt-oss-20b dépasse les 15 s.
+MODELE_PAR_DEFAUT = "nvidia/nemotron-3.5-lightning-30b-a3b"
 
 
 def _modeles_configures() -> tuple[str, ...]:

@@ -6047,6 +6047,12 @@ def test_lot_3() -> tuple[int, int]:
                 ei._modeles_configures() == (ei.MODELE_PAR_DEFAUT,)
                 and "llama-3.2-11b" not in ei.MODELE_PAR_DEFAUT,
                 ei._modeles_configures())
+        # Le nemotron 51b répondait 404 en production (13/11/2026), comme les
+        # autres anciens modèles encore listés au catalogue : le défaut est
+        # celui qui a répondu 200 avec un JSON pur lors de la sonde.
+        verifie("modèle par défaut : vérifié en direct, plus le nemotron 51b (404)",
+                ei.MODELE_PAR_DEFAUT == "nvidia/nemotron-3.5-lightning-30b-a3b",
+                ei.MODELE_PAR_DEFAUT)
         os.environ["LLM_MODEL"] = "  meta/llama-test-instruct "
         verifie("LLM_MODEL remplace le modèle", ei._modeles_configures() == ("meta/llama-test-instruct",))
     finally:
