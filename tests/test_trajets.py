@@ -4622,15 +4622,31 @@ def test_prononciations() -> tuple[int, int]:
         ("Jëlal Tatà ñett.", "test_tata_tata_accent.wav"),
         ("Jëlal Tata ñett.", "test_tata_tata.wav"),
     ]
+    # « Yoff » : la voix dit « off ». Deux graphies parlées à écouter à la
+    # prochaine session Brev (« Yoof », choix du locuteur natif, et « Yooff »),
+    # sans toucher au lexique tant que l'écoute n'a pas tranché.
+    essais_yoff = [
+        ("Bëgg naa dem Yoof.", "test_yoff_yoof.wav"),
+        ("Bëgg naa dem Yooff.", "test_yoff_yooff.wav"),
+    ]
     verifie(
-        "Brev conversation : 4 réponses du CSV + 3 essais Tata à écouter, graine 1234",
+        "Brev conversation : 4 réponses du CSV + 3 essais Tata + 2 essais Yoff, graine 1234",
         [(p["phrase"], p["fichier"]) for p in portee_conv_brev["PHRASES"]]
         == [(phrase, fichier) for fichier, phrase in attendu_conv]
         + [(phrase, fichier) for phrase, fichier in essais_tata]
+        + [(phrase, fichier) for phrase, fichier in essais_yoff]
         and portee_conv_brev["GRAINE"] == 1234
         and gen_637 in sources_conv_brev
-        and not {f for _, f in essais_tata} & set(fichiers_complete),
+        and not {f for _, f in essais_tata + essais_yoff} & set(fichiers_complete),
         len(portee_conv_brev.get("PHRASES", [])),
+    )
+    from tts.lexique_prononciation import appliquer as appliquer_lexique
+
+    verifie(
+        "Yoff : lexique inchangé tant que l'écoute n'a pas tranché",
+        "Yoof" not in appliquer_lexique("Bëgg naa dem Yoff")
+        and "Yooff" not in appliquer_lexique("Bëgg naa dem Yoff"),
+        appliquer_lexique("Bëgg naa dem Yoff"),
     )
     verifie(
         "Brev conversation : voix du Space, jamais la voix Adia",
@@ -6238,6 +6254,145 @@ def test_lot_3() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_4() -> tuple[int, int]:
+    """Lot 4 : journal du LLM qui répond, ordre départ / arrivée, AIBD, journal ZeroGPU.
+
+    Aucun appel réseau : faux clients LLM, extraction locale, exceptions fabriquées.
+    """
+    import contextlib
+    import io
+    import os
+
+    import intent.extract_intent as ei
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot 4 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    # ------------------------------------------------------------ 1. LLM ok
+    # Le journal de production ne montrait que les échecs : un succès doit
+    # laisser « [LLM] ok modèle=... durée=...s », sans phrase ni clé.
+    phrase = "maa ngi Ouakam dama bëgg dem Palais"
+    tampon = io.StringIO()
+    with contextlib.redirect_stdout(tampon):
+        resultat = ei.extract_intent(
+            phrase, client=_FauxClient('{"depart": "Ouakam", "arrivee": "Palais"}')
+        )
+    journal = tampon.getvalue()
+    lignes_ok = [l for l in journal.splitlines() if l.startswith("[LLM] ok ")]
+    verifie("LLM ok : une ligne « [LLM] ok modèle=... durée=...s »",
+            len(lignes_ok) == 1
+            and re.fullmatch(r"\[LLM\] ok modèle=\S+ durée=\d+\.\ds", lignes_ok[0]) is not None,
+            journal)
+    verifie("LLM ok : le modèle configuré est nommé", f"modèle={ei.MODELES[0]}" in journal, journal)
+    verifie("LLM ok : ni la phrase ni la clé dans le journal",
+            "Ouakam" not in journal and "Palais" not in journal and "nvapi-" not in journal
+            and os.getenv("NVIDIA_API_KEY", "jamais-vide-ici") not in journal, journal)
+    verifie("LLM ok : la réponse reste celle du LLM", resultat["source"] == "llm", resultat)
+
+    # Un échec ne doit jamais écrire « ok ».
+    tampon = io.StringIO()
+    with contextlib.redirect_stdout(tampon):
+        ei.extract_intent(phrase, client=_ClientQuiLeve(lambda: TimeoutError("lent")))
+    verifie("LLM en échec : pas de ligne « ok »", "[LLM] ok" not in tampon.getvalue(), tampon.getvalue())
+
+    # ------------------------------------------------------------ 2. ordre
+    # Vu en ligne : « Bëgg naa dem aydapoor Blaise Diagne, fi ma nekk mooy Yoff »
+    # donnait départ = aéroport (ambigu), arrivée = Yoff : à l'envers, et
+    # « Blaise Diagne » oublié. Ce qui suit « dem / jëm » est l'arrivée ; ce
+    # qui suit « fi ma nekk (mooy) », « maa ngi (nekk / ci) », « dama nekk »
+    # est le départ, quel que soit l'ordre de la phrase.
+    variantes_aibd = (
+        "Bëgg naa dem aydapoor Blaise Diagne, fi ma nekk mooy Yoff",
+        "Bëgg naa dem aydapoor, Blaise Diagne, fi ma nekk mooy Yoff",
+        "Fi ma nekk mooy Yoff, bëgg naa dem aéroport Blaise Diagne",
+        "Salam aleykum, bëgg naa dem AIBD, maa ngi Yoff",
+        "Asalaa maalekum, maa ngi Yoff, bëgg naa dem aydapoor Blaise Diagne",
+        "Maa ngi nekk Yoff te bëgg naa jëm aéroport Diass",
+        "Dama nekk Yoff, dama bëgg dem aydapoor Blaise Diagne",
+        "Bëgg naa jëm ayda poor Blaise Diagne te maa ngi ci Yoff",
+        "bëgg naa dem aidapoor blez diagne fi ma nekk mooy yoff",
+        "Bëgg naa dem aéroport international Blaise Diagne, fii ma nekk Yoff",
+        "aéroport Blaise Diagne laa bëgg dem, maa ngi Yoff",
+        "Bëgg naa dem AIBD, aéroport, fi ma nekk mooy Yoff",
+    )
+    for texte in variantes_aibd:
+        r = ei.extract_local(texte)
+        verifie(f"« {texte} » : Yoff -> AIBD",
+                (r["depart"], r["arrivee"]) == ("Yoff", "AIBD"), (r["depart"], r["arrivee"]))
+
+    autres_ordres = (
+        ("Dama bëgg dem Palais, dama nekk Ouakam", "Ouakam", "Palais"),
+        ("Bëgg naa dem Colobane te fi ma nekk mooy Pikine", "Pikine", "Colobane"),
+        ("Asalaa maalekum, fi ma nekk Grand Yoff, bëgg naa dem UCAD", "Grand-Yoff", "UCAD"),
+        ("maa ngi ci Liberté 6, bëgg naa dem Sandaga", "Liberté 6", "Sandaga"),
+        ("Bëgg naa jëm Sandaga, fi ma nekk mooy Ouakam", "Ouakam", "Sandaga"),
+    )
+    for texte, depart, arrivee in autres_ordres:
+        r = ei.extract_local(texte)
+        verifie(f"« {texte} » : {depart} -> {arrivee}",
+                (r["depart"], r["arrivee"]) == (depart, arrivee), (r["depart"], r["arrivee"]))
+
+    # « Aéroport » seul reste ambigu, et l'Avenue / le Lycée Blaise Diagne
+    # (Médina) ne deviennent jamais l'AIBD.
+    r = ei.extract_local("Maa ngi Yoff, bëgg naa dem aydapoor")
+    verifie("« aydapoor » seul : aéroport ambigu, jamais AIBD d'office",
+            r["arrivee"] == "Aéroport", r)
+    verifie("« Avenue Blaise Diagne » n'est pas l'AIBD",
+            "aibd" not in ei._normaliser_phrase("maa ngi avenue Blaise Diagne").split())
+    verifie("« Lycée Blaise Diagne » n'est pas l'AIBD",
+            "aibd" not in ei._normaliser_phrase("dem lycée Blaise Diagne").split())
+    verifie("« Ouakam laa nekk » reste un départ",
+            ei.extract_local("Ouakam laa nekk, bëgg naa dem Palais")["depart"] == "Ouakam")
+
+    # ------------------------------------------------------------ 3. ZeroGPU
+    # En ligne : « [ASR] ZeroGPU en échec (RuntimeError) » sans rien d'autre.
+    # Le journal doit dire le message, la cause et l'endroit, en une ligne courte.
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_4")
+
+    def leve_gpu():
+        try:
+            raise ValueError("CUDA driver initialization failed")
+        except ValueError as cause:
+            raise RuntimeError() from cause
+
+    try:
+        leve_gpu()
+    except RuntimeError as exc:
+        resume = app._resume_erreur_gpu(exc)
+    verifie("ZeroGPU : type, cause et message dans le journal",
+            resume.startswith("RuntimeError") and "cause ValueError" in resume
+            and "CUDA driver initialization failed" in resume, resume)
+    verifie("ZeroGPU : lieu de l'erreur, nom de fichier sans chemin",
+            "test_trajets.py:" in resume and "\\" not in resume and "/" not in resume, resume)
+    verifie("ZeroGPU : ligne courte, une seule ligne", len(resume) <= 220 and "\n" not in resume, resume)
+    try:
+        raise RuntimeError("ZeroGPU worker error\nTraceback ...\n" + "x" * 500)
+    except RuntimeError as exc:
+        resume = app._resume_erreur_gpu(exc)
+    verifie("ZeroGPU : seule la première ligne du message", "Traceback" not in resume
+            and len(resume) <= 220, resume)
+
+    # Le décorateur ne réserve le GPU que pour le calcul : aucun chargement de
+    # modèle dans transcrire_wolof (règle ZeroGPU), durée explicite.
+    source_app = (RACINE / "app.py").read_text(encoding="utf-8")
+    corps = source_app.split("def transcrire_wolof", 1)[1].split("\ndef ", 1)[0]
+    verifie("ZeroGPU : @spaces.GPU(duration=30) sur transcrire_wolof",
+            "@spaces.GPU(duration=30)\ndef transcrire_wolof" in source_app)
+    verifie("ZeroGPU : aucun chargement de modèle ni appel CUDA dans la fonction décorée",
+            not any(m in corps for m in ("pipeline(", "load_model", "_charger_kiriku", ".to(", ".cuda")))
+
+    return echecs, total
+
+
 def test_rapport_lignes_officielles() -> int:
     """Mode rapport : compare les lignes aux fiches officielles, hors ligne.
 
@@ -6381,6 +6536,7 @@ if __name__ == "__main__":
         echecs_micro, total_micro = test_micro_vidage()
         echecs_securite, total_securite = test_securite()
         echecs_lot3, total_lot3 = test_lot_3()
+        echecs_lot4, total_lot4 = test_lot_4()
         echecs = (
             test_local()
             + echecs_partage
@@ -6420,6 +6576,7 @@ if __name__ == "__main__":
             + echecs_micro
             + echecs_securite
             + echecs_lot3
+            + echecs_lot4
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -6460,6 +6617,7 @@ if __name__ == "__main__":
             + total_micro
             + total_securite
             + total_lot3
+            + total_lot4
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

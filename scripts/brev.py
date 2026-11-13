@@ -248,7 +248,8 @@ INTRO_CONVERSATION = """\
 Quatre réponses de conversation récemment validées, à installer sans attendre la
 prochaine régénération complète, plus un essai d'écoute « Tata » : trois prises
 de « Jëlal Tataa ñett. » / « Jëlal Tatà ñett. » / « Jëlal Tata ñett. » pour
-comparer la lecture du nom de la compagnie par la voix.
+comparer la lecture du nom de la compagnie par la voix. Et un essai « Yoff »
+(la voix dit « off ») : « Bëgg naa dem Yoof. » / « Bëgg naa dem Yooff. ».
 
 Mêmes réglages que partout : graine 1234, 3 essais par audio, Whisper wolof
 garde le meilleur.
@@ -272,7 +273,7 @@ La reprise saute ce qui est déjà fait dans `sortie_voix/audios_conversation/`.
 
 À la fin, zip `sortie_voix/ajouts_conversation.zip` (panneau de gauche de
 Jupyter). Sur ton PC, seules les 4 réponses s'installent — les essais « Tata »
-restent à écouter :
+et « Yoff » restent à écouter :
 
     python scripts/installer_voix_oolel.py --conversation sortie_voix/ajouts_conversation.zip
 """
@@ -295,7 +296,7 @@ if not os.path.exists(REF):
     )
     shutil.copy(telecharge, REF)
 print('voix de référence :', REF)
-print('déjà faits :', len(glob.glob(f'{SORTIE}/*.wav')), '/ 7')
+print('déjà faits :', len(glob.glob(f'{SORTIE}/*.wav')), '/ 9')
 """
 
 FIN_CONVERSATION = """\
@@ -305,7 +306,7 @@ assert not manquants, f"{len(manquants)} audios manquants : relance la cellule d
 shutil.copy(RAPPORT, f'{SORTIE}/rapport_ajouts_conversation.csv')
 archive = shutil.make_archive('./sortie_voix/ajouts_conversation', 'zip', SORTIE)
 print(
-    '7 audios OK — sur ton PC : python scripts/installer_voix_oolel.py --conversation sortie_voix/ajouts_conversation.zip'
+    '9 audios OK — sur ton PC : python scripts/installer_voix_oolel.py --conversation sortie_voix/ajouts_conversation.zip'
 )
 """
 
@@ -592,9 +593,17 @@ ESSAIS_TATA = (
     ("test_tata_tata.wav", "Jëlal Tata ñett."),
 )
 
+# « Yoff » : la voix dit « off » (écoute du 13/11/2026). Deux graphies parlées
+# à essayer avant de toucher au lexique : « Yoof », le choix du locuteur natif,
+# et « Yooff ». Fichiers d'écoute, jamais installés dans le cache de l'app.
+ESSAIS_YOFF = (
+    ("test_yoff_yoof.wav", "Bëgg naa dem Yoof."),
+    ("test_yoff_yooff.wav", "Bëgg naa dem Yooff."),
+)
+
 
 def plan_conversation() -> dict:
-    """Le plan du petit notebook : les 4 réponses (du CSV) + les 3 essais Tata."""
+    """Le plan du petit notebook : les 4 réponses (du CSV) + les essais Tata et Yoff."""
     phrases = []
     with LISTE_COMPLETE.open(encoding="utf-8", newline="") as fichier:
         for rangee in csv.DictReader(fichier):
@@ -610,6 +619,7 @@ def plan_conversation() -> dict:
     if absentes:
         raise ValueError(f"voix_complete.csv : réponses de conversation absentes : {absentes}")
     phrases += [{"fichier": f, "phrase": p, "type": "test_tata"} for f, p in ESSAIS_TATA]
+    phrases += [{"fichier": f, "phrase": p, "type": "test_yoff"} for f, p in ESSAIS_YOFF]
     plan_637 = json.loads((RACINE / "scripts" / "phrases_voix.json").read_text(encoding="utf-8"))
     return {
         "modele": plan_637["modele"],

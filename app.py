@@ -171,6 +171,18 @@ def _precharger_kiriku():
     try:
         import torch
 
+        # Un échec dans torch.init (spaces/zero/wrappers.py) vient souvent d'un
+        # torch plus récent que ce que la version de spaces sait patcher :
+        # requirements.txt ne fige ni l'un ni l'autre. Les deux versions au
+        # journal permettent de le vérifier sans redéployer pour voir.
+        try:
+            from importlib.metadata import version as _version
+
+            version_spaces = _version("spaces")
+        except Exception:
+            version_spaces = "absent"
+        print(f"[ASR] torch {torch.__version__}, spaces {version_spaces}", flush=True)
+
         if not torch.cuda.is_available():
             print("[ASR] pas de GPU au démarrage : Kiriku non chargé", flush=True)
             return
@@ -405,7 +417,7 @@ def _transcrire_premier(audio: np.ndarray) -> tuple[str, str, float]:
             raise RuntimeError(phrase[len(ERREUR_ASR):])
         return phrase, "Kiriku-Wolof-ASR (GPU)", time.perf_counter() - debut
     except Exception as exc:
-        print(f"[ASR] ZeroGPU en échec ({_court(exc)}), secours CPU", flush=True)
+        print(f"[ASR] ZeroGPU en échec ({_resume_erreur_gpu(exc)}), secours CPU", flush=True)
         return _transcrire_cpu(audio), libelle_charge(), time.perf_counter() - debut
 
 
@@ -427,7 +439,7 @@ def _second_essai(audio: np.ndarray, libelle_premier: str) -> tuple[str, str, fl
             raise RuntimeError(phrase[len(ERREUR_ASR):])
         return phrase, "Kiriku-Wolof-ASR (GPU)", time.perf_counter() - debut
     except Exception as exc:
-        print(f"[ASR] second essai GPU refusé ({_court(exc)})", flush=True)
+        print(f"[ASR] second essai GPU refusé ({_resume_erreur_gpu(exc)})", flush=True)
         raise
 
 
@@ -1473,6 +1485,37 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
 def _court(exc: Exception, longueur: int = 160) -> str:
     """Un message d'erreur court : les exceptions techniques font plusieurs lignes."""
     return f"{type(exc).__name__} : {exc}"[:longueur]
+
+
+def _resume_erreur_gpu(exc: BaseException, longueur: int = 220) -> str:
+    """Résumé d'un refus ZeroGPU pour le journal : type, message, cause, lieu.
+
+    En ligne, le journal disait seulement « ZeroGPU en échec (RuntimeError) » :
+    le message levé par spaces/zero/wrappers.py (torch.init) était vide ou
+    perdu. On ajoute donc la première ligne du message, celle de la cause
+    chaînée (__cause__ / __context__), et le dernier cadre de la trace (nom de
+    fichier seul, sans chemin). Rien ici ne vient de l'utilisateur : ni audio,
+    ni phrase, ni secret.
+    """
+    import traceback
+
+    def premiere_ligne(e: BaseException) -> str:
+        texte = str(e).strip().splitlines()
+        return texte[0][:120] if texte else ""
+
+    morceaux = [type(exc).__name__]
+    message = premiere_ligne(exc)
+    if message:
+        morceaux.append(message)
+    cause = exc.__cause__ or exc.__context__
+    if cause is not None:
+        detail = premiere_ligne(cause)
+        morceaux.append(f"cause {type(cause).__name__}" + (f" : {detail}" if detail else ""))
+    cadres = traceback.extract_tb(exc.__traceback__) if exc.__traceback__ else []
+    if cadres:
+        dernier = cadres[-1]
+        morceaux.append(f"à {Path(dernier.filename).name}:{dernier.lineno} {dernier.name}")
+    return " | ".join(morceaux)[:longueur]
 
 
 # Affichée sous la saisie : ce qui part, et où.

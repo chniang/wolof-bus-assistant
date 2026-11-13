@@ -355,6 +355,15 @@ def _parse_json_or_fallback(text: str) -> dict:
 #
 # « medina » et « grand mbao » sont déjà dans leur forme canonique, ils n'ont besoin
 # d'aucune règle de réécriture.
+# Formes de « aéroport » (dont « aydapoor », le mot des locuteurs plus âgés, et
+# ses graphies ASR « aidapoor », « ayda poor ») et de « Blaise Diagne »
+# (« blez diagne », « bleez jaañ »). Le séparateur accepte la virgule : en
+# ligne, « Bëgg naa dem aydapoor, Blaise Diagne » restait « aéroport »
+# (ambigu) suivi d'un « AIBD » isolé, au lieu de l'AIBD seul.
+_MOT_AEROPORT = r"(?:aeroports?|earoport|ayeropo{1,2}rt?|a[iy]da+\s*po{1,2}r{1,2}e?)"
+_BLAISE_DIAGNE = r"bl(?:aise|aize|ese|eze|eez|ez)\s+(?:diagne|diagn|jaane?|jagne|dia?ngne)"
+_SEP = r"[\s,;.]+"
+
 REPLACEMENTS_PHRASE = (
     # géejawaay (whisper-small), géejewaay (Kiriku), gëjjewaay : même lieu.
     (r"(?:geej\s*a\s*waay|ge{1,2}j{1,2}[ae]\s*waa?y)\b", " guediawaye "),
@@ -499,16 +508,18 @@ REPLACEMENTS_PHRASE = (
     #   « aeroport » : il est ambigu, MoteurV2 propose les deux aéroports.
     # Jamais « Avenue » ou « Lycée Blaise Diagne » (Médina, lignes 3, 4, Dem
     # Dikk 9 et 121), ni « Stade » ou « Avenue Léopold Sédar Senghor ».
-    (r"\b(?:aeroports?|earoport|ayeropo{1,2}rt?|ayda+\s*po{1,2}r{1,2}e?)\s+(?:internationale?\s+)?(?:de\s+)?"
+    (r"\b" + _MOT_AEROPORT + r"\s+(?:internationale?\s+)?(?:de\s+)?"
      r"(?:lss|l\s+s\s+s|l\s+s\s+senghor|leopold\s+sedar\s+senghor|leopold\s+senghor|senghor|yoff)\b",
      " aeroport lss "),
-    (r"\b(?:aeroports?|earoport|ayeropo{1,2}rt?|ayda+\s*po{1,2}r{1,2}e?)(?:\s+internationale?)?"
-     r"\s+(?:blaise\s+diagne|de\s+diass|diass|aibd)\b",
+    (r"\b" + _MOT_AEROPORT + r"(?:\s+internationale?)?"
+     + _SEP + r"(?:" + _BLAISE_DIAGNE + r"|de\s+diass|diass|aibd)\b",
      " aibd "),
-    (r"\b(?:aeroports|earoport|ayeropo{1,2}rt?|ayda+\s*po{1,2}r{1,2}e?)\b(?!\s+lss\b)", " aeroport "),
-    (r"(?<!avenue )(?<!av )(?<!lycee )\bblaise\s+diagne\b", " aibd "),
+    (r"\b(?:aeroports|earoport|ayeropo{1,2}rt?|a[iy]da+\s*po{1,2}r{1,2}e?)\b(?!\s+lss\b)", " aeroport "),
+    (r"(?<!avenue )(?<!av )(?<!lycee )\b" + _BLAISE_DIAGNE + r"\b", " aibd "),
     (r"\bdiass\b", " aibd "),
-    (r"\baibd(?:\s+aibd)+\b", " aibd "),
+    # « AIBD, aéroport » : l'aéroport nommé juste à côté de l'AIBD est l'AIBD.
+    (r"\baibd" + _SEP + r"aeroport\b(?!\s+lss\b)", " aibd "),
+    (r"\baibd(?:" + _SEP + r"aibd)+\b", " aibd "),
     (r"(?<!stade )(?<!avenue )(?<!av )(?<!aeroport )\b(?:leopold\s+sedar\s+senghor|lss)\b", " aeroport lss "),
 )
 
@@ -609,6 +620,9 @@ def _normaliser_phrase(phrase: str) -> str:
     # la répartition départ / arrivée reste possible grâce à la position de « dem ».
     texte = re.sub(r"\bdem(?=[a-z])", "dem ", texte)
     texte = re.sub(r"[^a-z0-9\s]", " ", texte)
+    # « jëm » (aller vers) annonce l'arrivée exactement comme « dem » : « Bëgg
+    # naa jëm aéroport Diass » doit répartir les lieux autour de lui.
+    texte = re.sub(r"\b(?:jem|djem|jeum)\b", "dem", texte)
     return re.sub(r"\s+", " ", texte).strip()
 
 
@@ -867,6 +881,14 @@ MARQUEURS_ICI_APRES = {"laa", "la"}
 # (« diougué », « jóge », « jogé », ramenés à « diougue » par _normaliser_phrase)
 # introduit le lieu de départ, quelle que soit sa place par rapport à « dem ».
 MARQUEURS_DEPART_EXPLICITE = {"diougue"}
+# « fi ma nekk (mooy) Yoff » (là où je suis, c'est Yoff) et « dama nekk Yoff »
+# (je suis à Yoff) annoncent aussi le départ, où qu'ils soient dans la phrase.
+# Vu en ligne : « Bëgg naa dem aydapoor Blaise Diagne, fi ma nekk mooy Yoff »
+# donnait départ = aéroport, arrivée = Yoff, soit le trajet à l'envers.
+_ICI_NEKK = re.compile(r"(?:^| )(?:fi ma|fii ma|dama|ma|maa ngi|ma ngi|mangi|maangi) nekk(?: mooy| moy| mooye| ci)?$")
+# « AIBD laa bëgg dem » : « laa » suivi de « bëgg / dem » met l'arrivée en
+# relief (c'est à l'AIBD que je veux aller), ce n'est pas « AIBD laa nekk ».
+_APRES_LAA_ARRIVEE = {"begg", "begga", "beugg", "bugg", "dem"}
 
 
 def _depart_marque(mots: list[str], trouves: list[tuple[int, int, str]]) -> str | None:
@@ -874,7 +896,13 @@ def _depart_marque(mots: list[str], trouves: list[tuple[int, int, str]]) -> str 
     for debut, fin, lieu in trouves:
         if MARQUEURS_ICI_AVANT & set(mots[max(0, debut - 2):debut]):
             return lieu
-        if fin < len(mots) and mots[fin] in MARQUEURS_ICI_APRES:
+        if _ICI_NEKK.search(" ".join(mots[max(0, debut - 4):debut])):
+            return lieu
+        if (
+            fin < len(mots)
+            and mots[fin] in MARQUEURS_ICI_APRES
+            and not (fin + 1 < len(mots) and mots[fin + 1] in _APRES_LAA_ARRIVEE)
+        ):
             return lieu
     return None
 
@@ -1030,9 +1058,14 @@ def extract_intent(transcription: str, client=None) -> dict:
 
     try:
         llm_client = client if client is not None else get_client()
+        debut_appel = time.monotonic()
         content, _modele = _call_llm(llm_client, transcription)
     except Exception as exc:
         return _repli_local(transcription, decrire_echec(exc))
+    # Preuve en production que le LLM répond : jusqu'ici seuls les échecs
+    # laissaient une trace, et un journal muet ne disait pas si l'appel avait
+    # réussi ou n'était jamais parti. Ni la phrase ni la clé : modèle et durée.
+    print(f"[LLM] ok modèle={_modele} durée={time.monotonic() - debut_appel:.1f}s", flush=True)
 
     try:
         data = _parse_json_or_fallback(content)
