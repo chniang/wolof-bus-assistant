@@ -40,7 +40,9 @@ TRAJETS = [
     ("Dama bëgg dem Palais, maa ngi Ouakam", {"Ligne 7"}),
     ("maa ngi wakaam dama bëgga dem pale", {"Ligne 7"}),
     ("Maa ngi Guédiawaye, dama bëgg dem Palais", {"Ligne 5", "Ligne 12"}),
-    ("Maa ngi Thiaroye, bëgg naa dem Ouakam", {"Ligne 217"}),
+    # Lot 3 : la DDD 217 est « à confirmer » ; la DDD 218 (même parcours Dépôt
+    # Thiaroye -> Ouakam, itinéraire confirmé) passe devant elle.
+    ("Maa ngi Thiaroye, bëgg naa dem Ouakam", {"Ligne 217", "Ligne 218"}),
     ("Maa ngi Pikine, dama bëgg dem Colobane", {"Ligne 48", "Ligne 50", "Ligne 75"}),
     ("Maa ngi Keur Massar, dama bëgg dem UCAD", {"Ligne 54", "Ligne 71"}),
     # Tata 62 passe désormais par Sahm, entre UCAD et Penc Mi : le trajet est
@@ -2864,6 +2866,9 @@ def test_terrain_en_ligne() -> tuple[int, int]:
         ("Parcelles Assainies", "Petersen", None), ("Université", "Rufisque", {"Dakar Dem Dikk"}),
     ):
         opts = options(matcher.find_line(dep, arr, filtre) if filtre else matcher.find_line(dep, arr))
+        # « durée inconnue » (None) : rien à comparer. Lot 3 : la Tata 5, dont la
+        # trace est étirée par des arrêts mal placés, n'a plus de durée inventée.
+        opts = [o for o in opts if o[2] is not None]
         if not opts:
             continue
         meilleure = min(o[2] for o in opts)
@@ -3721,9 +3726,24 @@ def test_voix() -> tuple[int, int]:
         "nga wàcc Gàddaay. Ci ginnaaw, jëlal biis bu Tata, numero fanweer ak "
         "juróom ñaar, moo lay yóbbu ba Malika."
     )
+    # Lot 3 : la DDD 220 (itinéraire à confirmer) passe après les lignes
+    # confirmées. 221 + 16A (changement à Arrêt Dial Mbaye) puis 221 + Tata 37.
+    attendu_corr_lot3 = (
+        "Jëlal biis bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
+        "nga wàcc Arrêt Dial Mbaye. Ci ginnaaw, jëlal biis bu Dem Dikk, numero fukk ak "
+        "juróom benn A, moo lay yóbbu ba Malika. Walla, "
+        "Jëlal biis bu Dem Dikk, numero ñaari téeméer ak ñaar fukk ak benn, "
+        "nga wàcc Gàddaay. Ci ginnaaw, jëlal biis bu Tata, numero fanweer ak "
+        "juróom ñaar, moo lay yóbbu ba Malika."
+    )
     verifie(
         "voix 2 changements",
-        phrase_corr in {attendu_corr, attendu_corr_officiel, attendu_corr_plancher},
+        phrase_corr in {attendu_corr, attendu_corr_officiel, attendu_corr_plancher, attendu_corr_lot3},
+        phrase_corr,
+    )
+    verifie(
+        "voix 2 changements : jamais la DDD 220 (à confirmer) en premier",
+        "numero ñaari téeméer ak ñaar fukk, moo" not in phrase_corr.split("Walla")[0],
         phrase_corr,
     )
     verifie(
@@ -5969,6 +5989,232 @@ def test_micro_vidage() -> tuple[int, int]:
     return echecs, total
 
 
+class _ClientQuiLeve:
+    """Faux client OpenAI dont chaque appel lève l'exception fournie."""
+
+    def __init__(self, fabrique):
+        self.appels = 0
+        fabrique_ = fabrique
+        client = self
+
+        class _Completions:
+            def create(self, **kwargs):
+                client.appels += 1
+                raise fabrique_()
+
+        class _Chat:
+            completions = _Completions()
+
+        self.chat = _Chat()
+
+
+def test_lot_3() -> tuple[int, int]:
+    """Lot 3 : LLM NVIDIA (modèle retiré, journal), Malika -> UCAD, DDD douteuses, Tata 60.
+
+    Aucun appel réseau : le LLM est remplacé par des faux clients, le moteur
+    n'utilise que les positions des CSV.
+    """
+    import contextlib
+    import csv
+    import io
+    import os
+
+    import httpx
+    import openai
+
+    import intent.extract_intent as ei
+    from matching.compagnie import LIGNES_A_CONFIRMER, MENTION_A_CONFIRMER
+    from routing.adapter import _confirmees_dabord
+    from tts.lexique_prononciation import appliquer
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot 3 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    # ------------------------------------------------------------ LLM
+    # 1. Le modèle retiré (410 Gone le 2026-11-05) n'est plus le défaut, et
+    #    LLM_MODEL le remplace sans toucher au code.
+    ancien = os.environ.pop("LLM_MODEL", None)
+    try:
+        verifie("modèle par défaut : plus le Llama 3.2 11B retiré",
+                ei._modeles_configures() == (ei.MODELE_PAR_DEFAUT,)
+                and "llama-3.2-11b" not in ei.MODELE_PAR_DEFAUT,
+                ei._modeles_configures())
+        os.environ["LLM_MODEL"] = "  meta/llama-test-instruct "
+        verifie("LLM_MODEL remplace le modèle", ei._modeles_configures() == ("meta/llama-test-instruct",))
+    finally:
+        os.environ.pop("LLM_MODEL", None)
+        if ancien is not None:
+            os.environ["LLM_MODEL"] = ancien
+
+    requete = httpx.Request("POST", "https://integrate.api.nvidia.com/v1/chat/completions")
+    fausse_cle = "nvapi-CLE-DE-TEST-NE-DOIT-JAMAIS-SORTIR"
+    phrase = "maa ngi Ouakam dama bëgg dem Palais"
+
+    def journal_de(fabrique) -> tuple[str, dict, _ClientQuiLeve]:
+        client = _ClientQuiLeve(fabrique)
+        tampon = io.StringIO()
+        with contextlib.redirect_stdout(tampon):
+            resultat = ei.extract_intent(phrase, client=client)
+        return tampon.getvalue(), resultat, client
+
+    def erreur_http(classe, statut: int):
+        return lambda: classe(
+            f"Error code: {statut} - clé {fausse_cle} ; phrase {phrase}",
+            response=httpx.Response(statut, request=requete),
+            body={"detail": f"{fausse_cle} {phrase}"},
+        )
+
+    # 2. 410 Gone : statut, modèle et type dans le journal ; ni clé ni phrase.
+    journal, resultat, client = journal_de(erreur_http(openai.APIStatusError, 410))
+    verifie("410 : statut HTTP et modèle dans le journal",
+            "statut=410" in journal and f"modèle={ei.MODELES[0]}" in journal and "type=" in journal,
+            journal)
+    verifie("410 : ni la clé ni la phrase dans le journal",
+            fausse_cle not in journal and "nvapi-" not in journal and "Ouakam" not in journal
+            and "Palais" not in journal, journal)
+    verifie("410 : un seul appel, puis repli local qui trouve le trajet",
+            client.appels == 1 and resultat["depart"] == "Ouakam"
+            and resultat["arrivee"].startswith("Palais") and resultat["source"] == "local",
+            (client.appels, resultat))
+    verifie("410 : plus de « RuntimeError » nu dans le journal", "RuntimeError" not in journal, journal)
+
+    # 3. 401 (clé refusée) et 429 (quota) : leur statut apparaît tel quel.
+    journal, _, _ = journal_de(erreur_http(openai.AuthenticationError, 401))
+    verifie("401 : statut et type AuthenticationError",
+            "statut=401" in journal and "type=AuthenticationError" in journal
+            and fausse_cle not in journal, journal)
+    journal, _, _ = journal_de(erreur_http(openai.RateLimitError, 429))
+    verifie("429 : statut et type RateLimitError",
+            "statut=429" in journal and "type=RateLimitError" in journal, journal)
+
+    # 4. Timeout : « type=timeout », pas de statut inventé.
+    journal, _, client = journal_de(lambda: openai.APITimeoutError(request=requete))
+    verifie("timeout : type=timeout, statut=-, un seul appel",
+            "type=timeout" in journal and "statut=-" in journal and client.appels == 1, journal)
+
+    # 5. 400 : les trois syntaxes JSON sont essayées, puis statut 400 au journal.
+    journal, _, client = journal_de(erreur_http(openai.BadRequestError, 400))
+    verifie("400 : trois variantes essayées puis statut=400",
+            client.appels == 3 and "statut=400" in journal and "type=BadRequestError" in journal,
+            (client.appels, journal))
+
+    # 6. Pas de clé : le repli local le dit sans rien d'autre.
+    ancienne_cle = os.environ.pop("NVIDIA_API_KEY", None)
+    try:
+        tampon = io.StringIO()
+        with contextlib.redirect_stdout(tampon):
+            resultat = ei.extract_intent(phrase)
+        verifie("clé absente : type=cle_absente, repli local",
+                "type=cle_absente" in tampon.getvalue() and resultat["source"] == "local",
+                tampon.getvalue())
+    finally:
+        if ancienne_cle is not None:
+            os.environ["NVIDIA_API_KEY"] = ancienne_cle
+
+    # 7. Le LLM qui répond reste utilisé : le correctif ne casse pas le cas nominal.
+    resultat = ei.extract_intent(phrase, client=_FauxClient('{"depart": "Ouakam", "arrivee": "Palais"}'))
+    verifie("LLM qui répond : source llm", resultat["source"] == "llm", resultat)
+
+    # ------------------------------------------------------------ moteur
+    matcher = _matcher_hors_ligne()
+
+    # 8. Malika -> UCAD : plus la DDD 220 (descente à « SIPRES », à Rufisque,
+    #    confondue avec la cité Sipres d'Amitié) ; la Tata 37 (fiche AFTU : Malika
+    #    Terminus ... Terminus UCAD (Claudel)) est proposée en direct.
+    resultat = matcher.find_line("Malika", "UCAD")
+    toutes = [ligne["ligne"] for ligne in resultat["lignes"]] + [
+        etape["ligne"]
+        for corr in resultat["correspondances"]
+        for etape in (corr["etape_1"], corr["etape_2"])
+    ]
+    verifie("Malika -> UCAD : jamais la DDD 220", "Ligne 220" not in toutes, _detail(resultat))
+    premiere = (resultat["lignes"] or [{}])[0]
+    verifie("Malika -> UCAD : Tata 37 directe, descente UCAD (Claudel)",
+            premiere.get("compagnie") == "Tata AFTU" and premiere.get("ligne") == "Ligne 37"
+            and premiere.get("descend_a") == "UCAD (Claudel)", _detail(resultat))
+    descentes = {ligne["descend_a"] for ligne in resultat["lignes"]}
+    verifie("Malika -> UCAD : aucune descente à Sipres", not any("sipres" in d.lower() for d in descentes),
+            descentes)
+    # La trace de la 37 fait 26 km sur ce trajet ; des arrêts « sûrs » mal placés
+    # l'étiraient à 45 km, soit « ~188 min ». Pas de chiffre inventé à l'écran.
+    verifie("Malika -> UCAD : Tata 37 sans durée inventée",
+            premiere.get("minutes") is None and premiere.get("duree_inconnue") is True,
+            (premiere.get("minutes"), premiere.get("duree_inconnue")))
+
+    # 9. Colobane -> Rufisque sous « Tous » : DDD 15 et Tata 60 (Terminus
+    #    Colobane -> Dioutyba (Rufisque) -> Bargny).
+    resultat = matcher.find_line("Colobane", "Rufisque")
+    lignes = {(ligne["compagnie"], ligne["ligne"]) for ligne in resultat["lignes"]}
+    verifie("Colobane -> Rufisque : DDD 15 et Tata 60",
+            {("Dakar Dem Dikk", "Ligne 15"), ("Tata AFTU", "Ligne 60")} <= lignes, _detail(resultat))
+    tata_60 = next((l for l in resultat["lignes"] if l["ligne"] == "Ligne 60"), {})
+    verifie("Colobane -> Rufisque : Tata 60 descend à Dioutyba (Rufisque)",
+            tata_60.get("descend_a") == "Dioutyba (Rufisque)", tata_60)
+    resultat, exacte = matcher.find_line_compagnie("Colobane", "Rufisque", "Tata AFTU")
+    verifie("Colobane -> Rufisque filtre Tata : Tata 60 sans bandeau",
+            exacte and any(l["ligne"] == "Ligne 60" for l in resultat["lignes"]), _detail(resultat))
+
+    # 10. DDD douteuses : jamais avant une ligne confirmée du même trajet.
+    verifie("lignes à confirmer : DDD 6, 217, 220, 233",
+            LIGNES_A_CONFIRMER == {("Dakar Dem Dikk", f"Ligne {n}") for n in ("6", "217", "220", "233")})
+    synthetique = [
+        {"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 220"},
+        {"compagnie": "Tata AFTU", "ligne": "Ligne 37"},
+        {"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 6"},
+        {"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 16A"},
+    ]
+    ordre = [t["ligne"] for t in _confirmees_dabord(synthetique, lambda t: [t])]
+    verifie("tri : confirmées d'abord, ordre gardé", ordre == ["Ligne 37", "Ligne 16A", "Ligne 220", "Ligne 6"], ordre)
+    for depart, arrivee, douteuse in (
+        ("Parcelles Assainies", "Colobane", "Ligne 6"),
+        ("Malika", "Guédiawaye", "Ligne 220"),
+    ):
+        resultat = matcher.find_line(depart, arrivee)
+        rangs = [ligne["ligne"] for ligne in resultat["lignes"]]
+        marques = [ligne.get("a_confirmer") for ligne in resultat["lignes"]]
+        verifie(f"{depart} -> {arrivee} : DDD {douteuse[6:]} après les lignes confirmées",
+                douteuse in rangs and marques == sorted(marques) and not marques[0]
+                and resultat["lignes"][rangs.index(douteuse)]["a_confirmer"] is True,
+                list(zip(rangs, marques)))
+
+    # 11. La carte le dit pour la ligne douteuse, et seulement pour elle.
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_3")
+    resultat = matcher.find_line("Parcelles Assainies", "Colobane")
+    cartes = {ligne["ligne"]: app._une_carte(ligne) for ligne in resultat["lignes"]}
+    verifie("carte DDD 6 : « itinéraire à confirmer »",
+            MENTION_A_CONFIRMER in cartes.get("Ligne 6", ""), list(cartes))
+    verifie("carte d'une ligne confirmée : pas de mention",
+            all(MENTION_A_CONFIRMER not in carte for ligne, carte in cartes.items() if ligne != "Ligne 6"))
+    carte = app._carte(resultat, "Parcelles Assainies", "Colobane")
+    verifie("réponse complète : la mention apparaît", MENTION_A_CONFIRMER in carte)
+
+    # ------------------------------------------------------------ voix
+    # 12. Phrase validée par le locuteur natif, en attente de génération.
+    with open(RACINE / "data" / "audit" / "voix_a_regenerer.csv", encoding="utf-8", newline="") as f:
+        rangees = list(csv.DictReader(f))
+    texte = "Baal ma waaye amoul bus bouy diogué fii dem aéroport Blaise Diagne"
+    rangee = next((r for r in rangees if r["texte_a_prononcer"] == texte), None)
+    verifie("voix_a_regenerer : phrase AIBD validée listée",
+            rangee is not None and rangee["fichier_wav"] == "aibd_aucun_bus.wav", rangees[-1])
+    verifie("lexique : « bus » devient « biis »",
+            appliquer(texte) == "Baal ma waaye amoul biis bouy diogué fii dem aéroport Blaise Diagne",
+            appliquer(texte))
+    verifie("aibd_aucun_bus.wav pas créé (aucune synthèse en direct)",
+            not any((RACINE / "data" / d / "aibd_aucun_bus.wav").exists()
+                    for d in ("tts_cache", "tts_cache_oolel", "tts_cache_ajouts")))
+
+    return echecs, total
+
+
 def test_rapport_lignes_officielles() -> int:
     """Mode rapport : compare les lignes aux fiches officielles, hors ligne.
 
@@ -6111,6 +6357,7 @@ if __name__ == "__main__":
         echecs_interface, total_interface = test_interface_micro()
         echecs_micro, total_micro = test_micro_vidage()
         echecs_securite, total_securite = test_securite()
+        echecs_lot3, total_lot3 = test_lot_3()
         echecs = (
             test_local()
             + echecs_partage
@@ -6149,6 +6396,7 @@ if __name__ == "__main__":
             + echecs_interface
             + echecs_micro
             + echecs_securite
+            + echecs_lot3
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -6188,6 +6436,7 @@ if __name__ == "__main__":
             + total_interface
             + total_micro
             + total_securite
+            + total_lot3
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

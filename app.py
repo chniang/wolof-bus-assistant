@@ -63,7 +63,11 @@ from intent.extract_intent import (  # noqa: E402
     extract_intent,
     extract_local,
 )
-from matching.compagnie import message_autre_compagnie  # noqa: E402
+from matching.compagnie import (  # noqa: E402
+    MENTION_A_CONFIRMER,
+    ligne_a_confirmer,
+    message_autre_compagnie,
+)
 from matching.geo import arrets_non_fiables  # noqa: E402
 from matching.lieux import AVANT_NUMERO, FAUX_AMIS, joli, sans_accents  # noqa: E402
 from matching.stops_matcher import StopsMatcher  # noqa: E402
@@ -930,8 +934,15 @@ def _une_carte(
         if match.get("duree_inconnue")
         else ""
     )
+    # DDD 6, 217, 220, 233 : itinéraire douteux d'après l'audit. On la montre
+    # quand même (parfois la seule), mais l'usager doit savoir qu'elle est à vérifier.
+    a_confirmer = (
+        f"<span style='color:#8A4B00;font-weight:700;'>⚠️ {MENTION_A_CONFIRMER}</span>"
+        if match.get("a_confirmer") or ligne_a_confirmer(match)
+        else ""
+    )
     categorie = " · ".join(
-        x for x in (rappel, _echapper(match.get("categorie", "")), duree) if x
+        x for x in (rappel, _echapper(match.get("categorie", "")), duree, a_confirmer) if x
     )
     return f"""
 <div style="border:1px solid #D6E6DC;border-top:6px solid {VERT};

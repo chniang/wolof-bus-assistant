@@ -12,6 +12,23 @@ from __future__ import annotations
 LIBELLES_COMPAGNIES = {"Tata AFTU": "Tata", "Dakar Dem Dikk": "Dem Dikk"}
 
 
+# Lignes Dem Dikk dont l'itinéraire n'est pas sûr (audit du 12/11/2026,
+# data/audit/fiabilite_rapport.md) : la 6 finit chez nous à Guédiawaye, la
+# référence dit Cambérène 2 ; la 217 à l'Aéroport LSS, la référence dit Ouakam ;
+# la 220 n'a que 62 % d'arrêts situés ; la 233 est réduite à ses deux terminus.
+# Elles restent proposées, mais la carte le dit et elles passent toujours après
+# une ligne confirmée qui fait le même trajet.
+LIGNES_A_CONFIRMER = frozenset(
+    ("Dakar Dem Dikk", f"Ligne {numero}") for numero in ("6", "217", "220", "233")
+)
+MENTION_A_CONFIRMER = "itinéraire à confirmer"
+
+
+def ligne_a_confirmer(etape: dict) -> bool:
+    """Vrai si cette étape (une ligne de résultat) emprunte une ligne douteuse."""
+    return (etape.get("compagnie"), etape.get("ligne")) in LIGNES_A_CONFIRMER
+
+
 def libelle_compagnie(compagnie: str) -> str:
     return LIBELLES_COMPAGNIES.get(compagnie, compagnie)
 

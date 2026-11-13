@@ -252,7 +252,15 @@ def _lire_liens_aftu(chemin: Path = LIENS_AFTU_CSV) -> dict[str, tuple[str, ...]
     with open(chemin, newline="", encoding="utf-8-sig") as fichier:
         for rangee in csv.DictReader(fichier):
             if (rangee.get("source") or "").strip():
-                liens.setdefault(nom_exact(rangee["arret_aftu"]), []).append(rangee["lieu"].strip())
+                cle = nom_exact(rangee["arret_aftu"])
+                # Nos itinéraires retirent « Terminus » du nom de fiche :
+                # « TERMINUS UCAD (CLAUDEL) » y est « UCAD (Claudel) ». Le lien
+                # garde le nom exact de la fiche et vaut aussi pour cette forme.
+                cles = [cle]
+                if cle.startswith("terminus ") and not cle[len("terminus "):].isdigit():
+                    cles.append(cle[len("terminus "):])
+                for une_cle in cles:
+                    liens.setdefault(une_cle, []).append(rangee["lieu"].strip())
     return {cle: tuple(lieux) for cle, lieux in liens.items()}
 
 

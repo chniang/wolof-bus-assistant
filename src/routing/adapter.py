@@ -33,11 +33,13 @@ from .router import (
 )
 
 try:  # import à plat (app.py) ou en paquet
+    from matching.compagnie import ligne_a_confirmer
     from matching.geo import nom_generique, nom_rue_numerotee
     from matching.lieux import AEROPORT_LSS, AIBD, aeroport_ambigu, joli, relie, score
     from matching.lieux import nom_exact as cle_exacte
     from matching.stops_matcher import MIN_SCORE, TOLERANCE
 except ImportError:  # pragma: no cover
+    from ..matching.compagnie import ligne_a_confirmer
     from ..matching.geo import nom_generique, nom_rue_numerotee
     from ..matching.lieux import AEROPORT_LSS, AIBD, aeroport_ambigu, joli, relie, score
     from ..matching.lieux import nom_exact as cle_exacte
@@ -81,11 +83,35 @@ _CATEGORIES = {
 DISTANCE_DEVINEE_MAX_M = 15_000.0
 
 
+# Une ligne avec trace officielle a une vraie longueur de route. Si le plancher
+# « vol d'oiseau » l'allonge beaucoup, c'est que des arrêts dits sûrs sont mal
+# placés, pas que la route est plus longue : Tata 37 Malika Terminus -> UCAD
+# (Claudel) passait de 26 km de trace à 45 km, soit « ~188 min » à l'écran.
+ETIREMENT_TRACE_MAX = 1.3
+ETIREMENT_TRACE_MIN_M = 5_000.0
+
+
+def _trace_etiree(
+    trace: tuple[float | None, ...],
+    segments: tuple[float | None, ...],
+    debut: int,
+    fin: int,
+) -> bool:
+    """Vrai si la portion parcourue est bien plus longue que la trace mesurée."""
+
+    mesure = sum(valeur or 0.0 for valeur in trace[debut:fin])
+    calcule = sum(valeur or 0.0 for valeur in segments[debut:fin])
+    return (
+        calcule - mesure >= ETIREMENT_TRACE_MIN_M
+        and calcule > ETIREMENT_TRACE_MAX * mesure
+    )
+
+
 def duree_devinee(leg: Leg) -> bool:
     """Vrai si la durée de ce bus repose sur une longue portion sans position mesurée."""
 
     ligne = _NETWORK.lines.get((leg.operator, leg.line))
-    if ligne is None or ligne.key in _NETWORK.line_distances:
+    if ligne is None:
         return False
     arrets = list(ligne.stops)
     try:
@@ -93,6 +119,9 @@ def duree_devinee(leg: Leg) -> bool:
     except ValueError:
         return False
     segments = _NETWORK._segment_distances(ligne)
+    trace = _NETWORK.line_distances.get(ligne.key)
+    if trace is not None:
+        return _trace_etiree(trace, segments, min(i, j), max(i, j))
     portion = plus_longue = 0.0
     for index in range(min(i, j), max(i, j)):
         if _NETWORK.position_sure(ligne, index) and _NETWORK.position_sure(ligne, index + 1):
@@ -496,6 +525,21 @@ def _directs_comme_v1(trips: list[Trip], dep: dict, arr: dict) -> list[Trip]:
     return remove_dominated_trips(classes, _NETWORK)
 
 
+def _confirmees_dabord(trajets: list[dict], etapes_du_trajet) -> list[dict]:
+    """Les trajets sans ligne « à confirmer » d'abord, l'ordre gardé sinon.
+
+    Malika -> UCAD mettait la DDD 220 (itinéraire douteux) en tête ; une ligne
+    confirmée qui fait le même trajet doit toujours passer devant. Appelé avant
+    l'équilibre des compagnies (qui prend alors la meilleure Dem Dikk
+    confirmée) et après (qui remet la Dem Dikk en tête).
+    """
+
+    def douteux(trajet: dict) -> bool:
+        return any(ligne_a_confirmer(etape) for etape in etapes_du_trajet(trajet))
+
+    return sorted(trajets, key=douteux)
+
+
 def _equilibrer(
     trajets: list[dict],
     compagnies_du_trajet,
@@ -781,12 +825,35 @@ def chercher_v2(
     lignes, correspondances, trajets_2 = _sans_les_trop_lents(
         lignes, correspondances, trajets_2
     )
-    lignes = _equilibrer(lignes, lambda t: {t["compagnie"]}, filtre_actif)
-    correspondances = _equilibrer(
-        correspondances,
-        lambda t: {t["etape_1"]["compagnie"], t["etape_2"]["compagnie"]},
-        filtre_actif,
+    def etapes_ligne(trajet: dict) -> list[dict]:
+        return [trajet]
+
+    def etapes_corr(trajet: dict) -> list[dict]:
+        return [trajet["etape_1"], trajet["etape_2"]]
+
+    def etapes_t2(trajet: dict) -> list[dict]:
+        return list(trajet.get("etapes") or [])
+
+    lignes = _confirmees_dabord(lignes, etapes_ligne)
+    correspondances = _confirmees_dabord(correspondances, etapes_corr)
+    trajets_2 = _confirmees_dabord(trajets_2, etapes_t2)
+    lignes = _confirmees_dabord(
+        _equilibrer(lignes, lambda t: {t["compagnie"]}, filtre_actif), etapes_ligne
     )
+    correspondances = _confirmees_dabord(
+        _equilibrer(
+            correspondances,
+            lambda t: {t["etape_1"]["compagnie"], t["etape_2"]["compagnie"]},
+            filtre_actif,
+        ),
+        etapes_corr,
+    )
+    for etape in (
+        lignes
+        + [e for c in correspondances for e in etapes_corr(c)]
+        + [e for t in trajets_2 for e in etapes_t2(t)]
+    ):
+        etape["a_confirmer"] = ligne_a_confirmer(etape)
 
     lignes = lignes[:MAX_LIGNES]
     correspondances = correspondances[:MAX_CORRESPONDANCES]

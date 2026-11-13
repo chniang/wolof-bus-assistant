@@ -1,4 +1,4 @@
-"""Extraction départ/destination via LLM NVIDIA Build (GLM 5.3 Flash).
+"""Extraction départ/destination via LLM NVIDIA Build (modèle réglable par LLM_MODEL).
 
 Entrée : transcription vocale wolof (sortie d'un ASR imparfait).
 Sortie  : {"depart": str, "arrivee": str, "erreur": str | None}
@@ -59,7 +59,21 @@ RETRY_DELAYS = (0,)  # pas de retry
 # Septembre 2026 : z-ai/glm-5.3-flash ne répond plus (timeout même à 30 s).
 # Banc d'essai sur la vraie extraction (test_modeles_nvidia.py) : Llama 3.2 11B
 # répond en ~1 s une fois chaud (~13 s au premier appel) et trouve les bons lieux.
-MODELES = ("meta/llama-3.2-11b-vision-instruct",)
+# Novembre 2026 : meta/llama-3.2-11b-vision-instruct répond 410 Gone (fin de vie
+# le 2026-11-05). En production, chaque appel échouait donc et l'app retombait
+# toujours sur l'extraction locale, avec pour seul indice « RuntimeError » dans
+# le journal. Parmi les Llama instruct encore servis (llama-3.2-90b-vision,
+# nemotron 51b et 70b), on prend le plus petit. Le prochain retrait se règle
+# sans toucher au code : la variable LLM_MODEL (Settings du Space) le remplace.
+MODELE_PAR_DEFAUT = "nvidia/llama-3.1-nemotron-51b-instruct"
+
+
+def _modeles_configures() -> tuple[str, ...]:
+    """Le modèle de LLM_MODEL s'il est réglé, sinon le modèle par défaut."""
+    return (os.getenv("LLM_MODEL", "").strip() or MODELE_PAR_DEFAUT,)
+
+
+MODELES = _modeles_configures()
 
 # Plafond global sur la chaîne. Le budget est vérifié avant chaque appel, et il n'y
 # a qu'un appel : le pire cas est donc un seul TIMEOUT_APPEL, soit 15 s.
@@ -125,9 +139,8 @@ def get_client() -> "OpenAI":
 
     api_key = os.getenv("NVIDIA_API_KEY", "").strip()
     if not api_key:
-        raise RuntimeError(
-            "NVIDIA_API_KEY absente : copier .env.example vers .env et renseigner la clé."
-        )
+        # Copier .env.example vers .env et renseigner la clé (secret du Space en ligne).
+        raise EchecLLM(MODELES[0], None, "cle_absente")
     # max_retries=0 est indispensable : le SDK retente deux fois de lui-même et
     # triple le délai (mesuré, 65 s pour un timeout réglé à 20 s). Nos tentatives
     # sont gérées dans _call_llm, qui respecte l'ordre des modèles.
@@ -168,6 +181,53 @@ def _limiter_transcription(transcription: str) -> str:
     return (transcription or "").strip()[:TEXTE_MAX]
 
 
+class EchecLLM(RuntimeError):
+    """Échec d'un appel au LLM, décrit sans aucun texte libre.
+
+    Le message ne porte que le modèle, le statut HTTP et le type d'erreur : jamais
+    le corps de la réponse (il peut recopier la phrase de l'utilisateur), jamais
+    la clé. C'est ce qui permet de l'écrire tel quel dans les logs du Space.
+    Avant, le journal disait seulement « RuntimeError » et il a fallu un
+    diagnostic à la main pour découvrir un 410 Gone.
+    """
+
+    def __init__(self, modele: str, statut: int | None, type_erreur: str):
+        self.modele = modele
+        self.statut = statut
+        self.type_erreur = type_erreur
+        super().__init__(self.resume)
+
+    @property
+    def resume(self) -> str:
+        return (
+            f"modèle={self.modele} statut={self.statut if self.statut else '-'} "
+            f"type={self.type_erreur}"
+        )
+
+
+def _type_erreur(exc: Exception) -> str:
+    """Nom stable de l'erreur : « timeout » se lit mieux qu'APITimeoutError."""
+    nom = type(exc).__name__
+    if "Timeout" in nom or isinstance(exc, TimeoutError):
+        return "timeout"
+    return nom
+
+
+def _echec_depuis(modele: str, exc: Exception) -> EchecLLM:
+    """Traduit une exception du SDK en EchecLLM (statut HTTP si le SDK le donne)."""
+    if isinstance(exc, EchecLLM):
+        return exc
+    statut = getattr(exc, "status_code", None)
+    return EchecLLM(modele, statut if isinstance(statut, int) else None, _type_erreur(exc))
+
+
+def decrire_echec(exc: Exception) -> str:
+    """Ligne de log d'un échec LLM : statut, modèle, type ; jamais de texte libre."""
+    if isinstance(exc, EchecLLM):
+        return exc.resume
+    return f"modèle={MODELES[0]} statut=- type={_type_erreur(exc)}"
+
+
 def _call_modele(client, modele: str, transcription: str) -> str:
     """Interroge un seul modèle et renvoie son contenu JSON exploitable.
 
@@ -200,27 +260,31 @@ def _call_modele(client, modele: str, transcription: str) -> str:
         {"extra_body": {**thinking_off, "guided_json": INTENT_JSON_SCHEMA}},
     ]
 
-    last_error: Exception | None = None
+    last_error: EchecLLM | None = None
     for variante in variantes:
         try:
             response = client.chat.completions.create(**common, **variante)
         except BadRequestError as exc:
             # Syntaxe refusée : seule une autre variante peut sauver cet appel.
-            # Un timeout, lui, doit remonter tout de suite au modèle suivant.
-            last_error = exc
+            last_error = _echec_depuis(modele, exc)
             continue
+        except Exception as exc:
+            # 401/403 (clé), 402/429 (crédits, quota), 404/410 (modèle retiré),
+            # timeout : aucune autre variante n'y changera rien. `from None` :
+            # la trace d'origine (corps de réponse compris) ne part pas aux logs.
+            raise _echec_depuis(modele, exc) from None
         if not response.choices:
-            last_error = RuntimeError("réponse du modèle sans choix (choices vide)")
+            last_error = EchecLLM(modele, None, "choix_vides")
             break
         content = _message_content(response)
         if _is_usable(content):
             return content
         # Ne jamais recopier le contenu du modèle dans l'erreur : il peut
         # contenir la phrase de l'utilisateur, et cette erreur finit dans les logs.
-        last_error = RuntimeError("contenu du modèle inexploitable")
+        last_error = EchecLLM(modele, None, "contenu_inexploitable")
         break
 
-    raise RuntimeError(f"{modele} : {last_error}")
+    raise last_error or EchecLLM(modele, None, "inconnu")
 
 
 def _call_llm(client, transcription: str) -> tuple[str, str]:
@@ -232,7 +296,7 @@ def _call_llm(client, transcription: str) -> tuple[str, str]:
     enchaîner les temps d'attente : mieux vaut une extraction locale approximative
     qu'une minute devant un écran vide.
     """
-    echecs: list[str] = []
+    dernier: EchecLLM | None = None
     debut_chaine = time.monotonic()
 
     for modele in MODELES:
@@ -240,14 +304,15 @@ def _call_llm(client, transcription: str) -> tuple[str, str]:
             if delay:
                 time.sleep(delay)
             if time.monotonic() - debut_chaine > BUDGET_CHAINE:
-                echecs.append(f"budget de {BUDGET_CHAINE}s atteint, API abandonnée")
-                raise RuntimeError(" ; ".join(echecs))
+                raise EchecLLM(modele, None, "budget_depasse")
             try:
                 return _call_modele(client, modele, transcription), modele
             except Exception as exc:
-                echecs.append(str(exc))
+                dernier = _echec_depuis(modele, exc)
 
-    raise RuntimeError(" ; ".join(echecs))
+    # On remonte le dernier échec tel quel, et non un RuntimeError qui
+    # l'enveloppe : c'est lui qui porte le statut HTTP utile au diagnostic.
+    raise dernier or EchecLLM(MODELES[0], None, "aucun_modele")
 
 
 def _parse_json_or_fallback(text: str) -> dict:
@@ -932,10 +997,7 @@ def _repli_local(transcription: str, raison: str) -> dict:
     # La cause peut contenir un extrait de la phrase ou de la réponse du modèle :
     # on ne l'écrit jamais telle quelle dans les logs. Le type d'échec suffit pour
     # savoir si l'API a expiré, refusé la clé ou renvoyé du JSON illisible.
-    print(
-        f"[repli local] API indisponible ({raison}), extraction locale",
-        flush=True,
-    )
+    print(f"[LLM] échec {raison}, repli sur l'extraction locale", flush=True)
     resultat = extract_local(transcription)
     if resultat.get("depart") and resultat.get("arrivee"):
         return resultat
@@ -945,7 +1007,7 @@ def _repli_local(transcription: str, raison: str) -> dict:
 def extract_intent(transcription: str, client=None) -> dict:
     """Extrait depart / arrivee d'une transcription wolof bruitée.
 
-    Trois étages : l'API NVIDIA (deux modèles, un retry chacun), puis
+    Deux étages : l'API NVIDIA (modèle de LLM_MODEL, un seul appel), puis
     l'extraction locale. L'échec de l'API n'est jamais remonté comme une erreur tant
     que la phrase porte ses deux lieux : pendant un hackathon, une démo qui
     répond à moitié vaut mieux qu'un écran d'erreur.
@@ -964,12 +1026,15 @@ def extract_intent(transcription: str, client=None) -> dict:
         llm_client = client if client is not None else get_client()
         content, _modele = _call_llm(llm_client, transcription)
     except Exception as exc:
-        return _repli_local(transcription, f"requête LLM échouée : {type(exc).__name__}")
+        return _repli_local(transcription, decrire_echec(exc))
 
     try:
         data = _parse_json_or_fallback(content)
     except Exception as exc:
-        return _repli_local(transcription, f"réponse JSON illisible : {type(exc).__name__}")
+        return _repli_local(
+            transcription,
+            f"modèle={_modele} statut=200 type=json_illisible_{type(exc).__name__}",
+        )
 
     depart = str(data.get("depart") or "").strip()
     arrivee = str(data.get("arrivee") or "").strip()

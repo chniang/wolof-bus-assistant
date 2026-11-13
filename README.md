@@ -90,7 +90,7 @@ Les autres parties ne font pas d'ASR :
 | --- | --- | --- |
 | Moteur d'itinéraires | Notre code Python : graphe de (ligne, sens, arrêt), Dijkstra/A\*, deux changements au plus, changements à pied | Trouve les bus, les changements et la marche à partir des données publiques des lignes. |
 | Réponse parlée | Oolel-Voices de `soynade-research` (AGPL-3.0), voix native `8_1_c` | Fichiers WAV pré-générés ; aucun modèle TTS ne tourne dans l'app. |
-| Extraction des lieux, dernier recours | `meta/llama-3.2-11b-vision-instruct` sur NVIDIA Build | Appelé seulement quand l'extraction locale, par dictionnaire, ne trouve aucun trajet complet. |
+| Extraction des lieux, dernier recours | `nvidia/llama-3.1-nemotron-51b-instruct` sur NVIDIA Build (réglable par la variable `LLM_MODEL`) | Appelé seulement quand l'extraction locale, par dictionnaire, ne trouve aucun trajet complet. |
 | Petite conversation | Règles simples, en wolof | Salutations, remerciements, « qui es-tu », « quel est ton métier », « comprends-tu le wolof ». |
 
 ---

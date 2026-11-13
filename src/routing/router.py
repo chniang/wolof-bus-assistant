@@ -41,6 +41,12 @@ NEARBY_EXACT_STOP_RADIUS_M = 900.0
 # disparaître les Dem Dikk 10 et 13 de Liberté 5 (terminus de Dieuppeul).
 PLACE_STOP_RADIUS_M = 600.0
 MAX_NEARBY_STOPS = 14
+# Écart toléré entre la position générale d'un arrêt (celle qui a servi à
+# compter la marche) et sa position sur une ligne donnée. Au-delà, ce n'est
+# pas le même arrêt mais un homonyme : « Sipres » est situé à Amitié, près de
+# l'UCAD, alors que le « SIPRES » de Dem Dikk 220 est à Rufisque. Sans ce
+# garde-fou, Malika -> UCAD proposait la 220 avec descente « à 10 min à pied ».
+MAX_ECART_HOMONYME_M = 1_500.0
 MAX_LABELS_PER_STATE = 6
 MAX_EXPANSIONS = 250_000
 DETOUR_LIMIT = 1.8
@@ -471,6 +477,25 @@ class RouteEngine:
             )
         return candidats
 
+    def _noeud_au_lieu_marche(self, node: Node, access: AccessPoint) -> bool:
+        """Vrai si l'arrêt de ce nœud est bien celui vers lequel on a marché.
+
+        Une marche (distance > 0) est mesurée depuis la position générale de
+        l'arrêt. Si la ligne place son arrêt du même nom à plus de
+        MAX_ECART_HOMONYME_M de là, c'est un homonyme lointain : on n'y monte
+        pas et on n'y descend pas. Un arrêt pris tel quel (marche nulle, nom
+        dit par l'usager) n'est pas concerné.
+        """
+
+        if access.walk.distance_m <= 0:
+            return True
+        stop = self.network.stop_for(node)
+        general = self.network.coords(stop)
+        sur_ligne = self.network.position_on_line(self.network.line_for(node), node.index)
+        if general is None or sur_ligne is None:
+            return True
+        return haversine_m(general, sur_ligne) <= MAX_ECART_HOMONYME_M
+
     def _endpoint_map(
         self,
         candidates: list[PlaceCandidate],
@@ -756,6 +781,8 @@ class RouteEngine:
                     continue
                 if operator is not None and node.line[0] != operator:
                     continue
+                if not self._noeud_au_lieu_marche(node, access):
+                    continue
                 label = self._start_label(stop, access, node)
                 while True:
                     ride = next(
@@ -772,7 +799,9 @@ class RouteEngine:
                     destination = destination_points.get(
                         self.network.stop_for(label.node)
                     )
-                    if destination is not None:
+                    if destination is not None and self._noeud_au_lieu_marche(
+                        label.node, destination
+                    ):
                         trips.append(
                             self._build_trip(
                                 label=label, destination=destination, **contexte
@@ -833,6 +862,8 @@ class RouteEngine:
                     continue
                 if operator is not None and node.line[0] != operator:
                     continue
+                if not self._noeud_au_lieu_marche(node, access):
+                    continue
                 self._push(
                     queue, best, counter, self._start_label(stop, access, node), remaining
                 )
@@ -858,7 +889,11 @@ class RouteEngine:
 
             stop = self.network.stop_for(label.node)
             destination = destination_points.get(stop)
-            if destination is not None and label.rode_since_transfer:
+            if (
+                destination is not None
+                and label.rode_since_transfer
+                and self._noeud_au_lieu_marche(label.node, destination)
+            ):
                 trip = self._build_trip(
                     label=label,
                     destination=destination,
