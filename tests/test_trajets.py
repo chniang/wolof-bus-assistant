@@ -6162,6 +6162,23 @@ def test_lot_3() -> tuple[int, int]:
     verifie("Colobane -> Rufisque filtre Tata : Tata 60 sans bandeau",
             exacte and any(l["ligne"] == "Ligne 60" for l in resultat["lignes"]), _detail(resultat))
 
+    # 9 bis. Malika -> Colobane : la Tata 75 de la référence (Terminus Malika
+    #    (Cité Sonatel) -> Terminus Gare routière de Colobane). Les deux noms
+    #    entre parenthèses / « Gare routière de » ne valaient que 0,67 et 0,75.
+    resultat = matcher.find_line("Malika", "Colobane")
+    verifie("Malika -> Colobane (Tous) : Tata 75 proposée",
+            ("Tata AFTU", "Ligne 75") in {(l["compagnie"], l["ligne"]) for l in resultat["lignes"]},
+            _detail(resultat))
+    resultat, exacte = matcher.find_line_compagnie("Malika", "Colobane", "Tata AFTU")
+    verifie("Malika -> Colobane (Tata) : Tata 75 en tête, montée au terminus Cité Sonatel",
+            exacte and resultat["lignes"] and resultat["lignes"][0]["ligne"] == "Ligne 75"
+            and resultat["lignes"][0]["monte_a"] == "Malika (Cité Sonatel)", _detail(resultat))
+    from matching.lieux import LIENS_AFTU
+    verifie("liens Terminus : la forme sans « Terminus » est chargée",
+            "Malika" in LIENS_AFTU.get("malika cite sonatel", ())
+            and "Colobane" in LIENS_AFTU.get("gare routiere de colobane", ())
+            and "Université Cheikh Anta Diop" in LIENS_AFTU.get("ucad claudel", ()))
+
     # 10. DDD douteuses : jamais avant une ligne confirmée du même trajet.
     verifie("lignes à confirmer : DDD 6, 217, 220, 233",
             LIGNES_A_CONFIRMER == {("Dakar Dem Dikk", f"Ligne {n}") for n in ("6", "217", "220", "233")})
