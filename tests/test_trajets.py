@@ -6393,6 +6393,141 @@ def test_lot_4() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_5() -> tuple[int, int]:
+    """Lot 5 : salutation + trajet, le trajet gagne ; la politesse seule reste politesse.
+
+    Vu en production : « Salaam aleekum, man damay dem Petersen te maa ngi
+    Ouakam, ban bus laa wara jël ? » a reçu trois fois « Maalekum salaam »
+    (erreur=conversation_salutation), Kiriku comme seconde chance CPU. Aucun
+    appel réseau : faux clients LLM, fausses transcriptions.
+    """
+    import contextlib
+    import io
+    import os
+
+    from asr.transcribe import transcrir_avec_seconde_chance
+    from intent.conversation import detecter, signal_trajet
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot 5 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_5")
+    client_origine = app._client_llm
+
+    def pipeline(phrase: str, client) -> tuple[str, bool, str]:
+        app._client_llm = lambda: client
+        tampon = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(tampon):
+                quint, trouve = app._pipeline(phrase, "Kiriku-Wolof-ASR (GPU)", 1.0)
+        finally:
+            app._client_llm = client_origine
+        return quint[2], trouve, tampon.getvalue()
+
+    # 1. Salutation, remerciement ou « ça va » + trajet lisible : l'extraction
+    #    locale trouve les deux lieux, le trajet sort, le LLM n'est pas appelé.
+    lisibles = (
+        ("Salaam aleekum, man damay dem Petersen te maa ngi Ouakam, ban bus laa wara jël ?",
+         "Ouakam", "Petersen"),
+        ("Salaam aleekum, maa ngi Ouakam, bëgg naa dem Petersen", "Ouakam", "Petersen"),
+        ("Maa ngi Ouakam, bëgg naa dem Petersen. Salaam aleekum", "Ouakam", "Petersen"),
+        ("Salam, bëgg naa dem Palais, fi ma nekk mooy Ouakam", "Ouakam", "Palais"),
+        ("Asalaa maalekum, dama nekk Pikine te bëgg naa jëm UCAD", "Pikine", "UCAD"),
+        ("Jërëjëf, maa ngi Ouakam, bëgg naa dem Palais", "Ouakam", "Palais"),
+        ("Bëgg naa dem Colobane, maa ngi Pikine. Jërëjëf", "Pikine", "Colobane"),
+        ("Naka nga def ? Dama bëgg dem UCAD, fi ma nekk mooy Pikine", "Pikine", "UCAD"),
+        ("Nanga def, maa ngi ci Liberté 6, bëgg naa dem Sandaga", "Liberté 6", "Sandaga"),
+        ("Salamalekum, damay dem Sandaga te maa ngi Ouakam", "Ouakam", "Sandaga"),
+        ("Hello, maa ngi Yoff, bëgg naa dem aéroport Blaise Diagne", "Yoff", "AIBD"),
+    )
+    for texte, depart, arrivee in lisibles:
+        local = app.extract_local(texte)
+        client = _ClientQuiLeve(lambda: TimeoutError("ne doit pas être appelé"))
+        carte, trouve, journal = pipeline(texte, client)
+        verifie(f"« {texte} » : le trajet {depart} -> {arrivee} gagne",
+                (local["depart"], local["arrivee"]) == (depart, arrivee)
+                and "erreur=conversation_" not in journal and "Maalekum salaam" not in carte,
+                ((local["depart"], local["arrivee"]), journal))
+
+    # 2. Le cas de production : l'ASR a déformé les deux noms, l'extraction
+    #    locale ne trouve rien ou presque. La salutation ne doit plus court-
+    #    circuiter le LLM, qui trouve les deux lieux.
+    deformees = (
+        "Salaam aleekum, man damay dem Piteersen te maa ngi Wuxaam, ban bus laa wara jël ?",
+        "Salam, fi ma nekk mooy Wuxaam, bëgg naa jëm Piteersen",
+        "Naka nga def, dama nekk Wuxaam, damay dem Piteersen",
+        "Jërëjëf, Wuxaam laa nekk, bëgg naa dem Piteersen",
+    )
+    for texte in deformees:
+        client = _FauxClient('{"depart": "Ouakam", "arrivee": "Petersen"}')
+        carte, trouve, journal = pipeline(texte, client)
+        verifie(f"« {texte} » : signal de trajet, le LLM trouve Ouakam -> Petersen",
+                signal_trajet(texte) and detecter(texte) is not None
+                and trouve and "erreur=conversation_" not in journal
+                and "[LLM] ok" in journal, (trouve, journal))
+
+    # 3. Politesse pure : la petite conversation reste, sans appel au LLM.
+    pures = (
+        ("Salaam aleekum", "salutation"),
+        ("Naka nga def ? Maa ngi fi rekk", "ca_va"),
+        ("Jërëjëf, ba beneen yoon", "merci"),
+        ("Salam, maa ngi tudd Moussa", "salutation"),
+        ("Asalaa maalekum, maa ngi ci jàmm", "salutation"),
+        ("Nanga def, fan nga bëgga dem ?", "ca_va"),
+        ("Maa ngi dem, jërëjëf", "merci"),
+    )
+    for texte, nom in pures:
+        client = _ClientQuiLeve(lambda: TimeoutError("ne doit pas être appelé"))
+        carte, trouve, journal = pipeline(texte, client)
+        verifie(f"« {texte} » : reste « {nom} », sans LLM",
+                not signal_trajet(texte) and f"erreur=conversation_{nom}" in journal
+                and client.appels == 0 and trouve, (signal_trajet(texte), journal, client.appels))
+
+    # 4. Salutation + forme de trajet, mais aucun lieu même pour le LLM : la
+    #    salutation répond (« Fan nga bëgga dem ? » redemande le trajet), sans
+    #    trajet inventé ; False laisse sa chance à la seconde transcription.
+    texte = "Salaam aleekum, damay dem Xyzzq"
+    carte, trouve, journal = pipeline(texte, _FauxClient('{"depart": "", "arrivee": ""}'))
+    verifie("salutation + trajet sans lieu : réponse de salutation, pas de trajet",
+            "erreur=conversation_salutation" in journal and not trouve, (trouve, journal))
+
+    # 5. Seconde chance : la salutation ne doit plus l'empêcher quand la phrase
+    #    a la forme d'une demande de trajet.
+    garbled = deformees[0]
+    propre = lisibles[0][0]
+    verifie("seconde chance : salutation + trajet déformé ne suffit pas",
+            app._phrase_donne_un_trajet(garbled) is False)
+    verifie("seconde chance : salutation seule suffit (rien à re-transcrire)",
+            app._phrase_donne_un_trajet("Salaam aleekum") is True)
+    verifie("seconde chance : salutation + trajet lisible suffit",
+            app._phrase_donne_un_trajet(propre) is True)
+    phrase, libelle, _, retente = transcrir_avec_seconde_chance(
+        None,
+        lambda son: (garbled, "Kiriku-Wolof-ASR (GPU)", 1.0),
+        lambda son, premier: (propre, "Whisper fine-tuné Dakar (CPU)", 2.0),
+        app._phrase_donne_un_trajet,
+    )
+    verifie("seconde chance : le 2e essai (CPU) qui lit les lieux est retenu",
+            phrase == propre and retente and libelle.endswith("(2e essai)"), (phrase, libelle))
+
+    # 6. Aucune nouvelle phrase parlée : la réponse de trajet ne gagne pas de
+    #    préfixe de salutation (aucun audio existant ne le permet seul).
+    carte, trouve, journal = pipeline(propre, _ClientQuiLeve(lambda: TimeoutError("non")))
+    verifie("trajet après salutation : pas de « Maalekum salaam » ajouté",
+            "Maalekum" not in carte, carte[:200])
+
+    return echecs, total
+
+
 def test_rapport_lignes_officielles() -> int:
     """Mode rapport : compare les lignes aux fiches officielles, hors ligne.
 
@@ -6537,6 +6672,7 @@ if __name__ == "__main__":
         echecs_securite, total_securite = test_securite()
         echecs_lot3, total_lot3 = test_lot_3()
         echecs_lot4, total_lot4 = test_lot_4()
+        echecs_lot5, total_lot5 = test_lot_5()
         echecs = (
             test_local()
             + echecs_partage
@@ -6577,6 +6713,7 @@ if __name__ == "__main__":
             + echecs_securite
             + echecs_lot3
             + echecs_lot4
+            + echecs_lot5
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -6618,6 +6755,7 @@ if __name__ == "__main__":
             + total_securite
             + total_lot3
             + total_lot4
+            + total_lot5
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

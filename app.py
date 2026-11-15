@@ -73,6 +73,7 @@ from matching.lieux import AVANT_NUMERO, FAUX_AMIS, joli, sans_accents  # noqa: 
 from matching.stops_matcher import StopsMatcher  # noqa: E402
 from intent.conversation import HORS_SUJET, Intention  # noqa: E402
 from intent.conversation import detecter as detecter_conversation  # noqa: E402
+from intent.conversation import signal_trajet  # noqa: E402
 from tts.speak import voix_conversation  # noqa: E402
 from tts.speak import (  # noqa: E402
     MAX_POSSIBILITES,
@@ -454,8 +455,14 @@ def _phrase_donne_un_trajet(phrase: str) -> bool:
     if not phrase or phrase.startswith(ERREUR_ASR):
         return False
     local = extract_local(phrase)
-    if not (local.get("depart") or local.get("arrivee")) and detecter_conversation(phrase):
-        # « Salam » est compris : inutile de re-transcrire avec l'autre modèle.
+    if (
+        not (local.get("depart") or local.get("arrivee"))
+        and detecter_conversation(phrase)
+        and not signal_trajet(phrase)
+    ):
+        # « Salam » seul est compris : inutile de re-transcrire avec l'autre
+        # modèle. Mais « Salaam aleekum, damay dem <lieu mal écrit> » est un
+        # trajet : l'autre modèle a sa chance d'écrire le lieu correctement.
         return True
     if not (local.get("depart") and local.get("arrivee")):
         return False
@@ -1314,10 +1321,15 @@ def _pipeline(
     # Liberté 6). Le LLM ne sert que si elle ne trouve pas un trajet complet.
     local = extract_local(phrase)
     # Petite conversation seulement sans aucun lieu : une demande de trajet gagne
-    # toujours (« salam, dama bëgga dem Médina » est un trajet).
+    # toujours (« salam, dama bëgga dem Médina » est un trajet). Les usagers
+    # saluent d'abord puis demandent : si la phrase a la forme d'une demande
+    # (« damay dem X », « maa ngi X ») sans lieu reconnu localement, le LLM
+    # passe avant la salutation. Vu en production : « Salaam aleekum, man damay
+    # dem Petersen te maa ngi Ouakam » a reçu trois fois « Maalekum salaam ».
+    intention = None
     if not local.get("depart") and not local.get("arrivee"):
         intention = detecter_conversation(phrase)
-        if intention is not None:
+        if intention is not None and not signal_trajet(phrase):
             return _reponse_conversation(phrase, intention, modele_asr, duree_asr), True
     intent = None
     if local.get("depart") and local.get("arrivee"):
@@ -1329,8 +1341,11 @@ def _pipeline(
     depart, arrivee = intent.get("depart") or "", intent.get("arrivee") or ""
 
     if not depart and not arrivee:
-        # Rien compris : ni lieu, ni petite conversation.
-        quint = _reponse_conversation(phrase, HORS_SUJET, modele_asr, duree_asr)
+        # Aucun lieu, même pour le LLM. Une salutation reçoit alors sa réponse
+        # habituelle (« Maalekum salaam ! Fan nga bëgga dem ? » redemande le
+        # trajet), sinon « hors sujet ». Dans les deux cas, pas de trajet :
+        # False laisse sa chance à l'autre modèle ASR.
+        quint = _reponse_conversation(phrase, intention or HORS_SUJET, modele_asr, duree_asr)
         return quint[:4] + (_mention(intent, modele_asr),), False
     if not depart or not arrivee:
         _journal(modele_asr, duree_asr, 0, "lieu_manquant")
