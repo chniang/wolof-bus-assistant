@@ -6528,6 +6528,126 @@ def test_lot_5() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_6() -> tuple[int, int]:
+    """Lot 6 : « wakaay », garde « même lieu », formes ASR de « Blaise Diagne ».
+
+    Phrases test du locuteur natif, transcrites en production. Aucun réseau.
+    """
+    import contextlib
+    import io
+    import os
+
+    import intent.extract_intent as ei
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot 6 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    # 1. Transcriptions exactes de production, puis 8 variantes.
+    attendus = (
+        # Kiriku : « wakaay » n'était pas Ouakam -> départ = arrivée = Petersen.
+        ("salaamaalekum damay dem petersen te maa ngi wakaay bon bus laay jële", "Ouakam", "Petersen"),
+        # Whisper CPU : « arappor beles gang » restait l'aéroport ambigu.
+        ("Yoff, arappor beles gang", "Yoff", "AIBD"),
+        # Variantes.
+        ("salaam aleekum damay dem petersen te maa ngi wakay", "Ouakam", "Petersen"),
+        ("maa ngi waakaay damay dem petersen", "Ouakam", "Petersen"),
+        ("damay dem Petersen, maa ngi wakhaay", "Ouakam", "Petersen"),
+        ("Yoff arapor bles diagne", "Yoff", "AIBD"),
+        ("maa ngi Yoff, bëgg naa dem araport belez diagne", "Yoff", "AIBD"),
+        ("Yoff, arappor belesgang", "Yoff", "AIBD"),
+        ("maa ngi Yoff dem aéroport blez jaañ", "Yoff", "AIBD"),
+        ("Fi ma nekk mooy Yoff, damay dem arappor beles gaan", "Yoff", "AIBD"),
+    )
+    for texte, depart, arrivee in attendus:
+        r = ei.extract_local(texte)
+        verifie(f"« {texte} » : {depart} -> {arrivee}",
+                (r["depart"], r["arrivee"]) == (depart, arrivee), (r["depart"], r["arrivee"]))
+
+    # « wakaay » ne touche aucun autre lieu ; « Wakhinane » reste Wakhinane.
+    verifie("« wakhinane » n'est pas réécrit en Ouakam",
+            "ouakam" not in ei._normaliser_phrase("maa ngi wakhinane"))
+    # Le rapprochement phonétique ne vaut qu'après un mot « aéroport ».
+    for texte in ("dem avenue beles gang", "dem lycée beles gang", "maa ngi beles gang",
+                  "dem aéroport bel air", "dem aéroport bi", "dem arappor ba leen"):
+        verifie(f"« {texte} » : jamais l'AIBD par ressemblance",
+                "aibd" not in ei._normaliser_phrase(texte).split(), ei._normaliser_phrase(texte))
+    verifie("Avenue Blaise Diagne reste la Médina, pas l'AIBD",
+            "aibd" not in ei._normaliser_phrase("dem avenue blaise diagne").split())
+    verifie("seuil phonétique : « beles gang » au-dessus, « ba leen » en dessous",
+            ei.SequenceMatcher(None, ei._phonetique("belesgang"), ei._BLAISE_PHONETIQUE).ratio()
+            >= ei.SEUIL_BLAISE
+            > ei.SequenceMatcher(None, ei._phonetique("baleen"), ei._BLAISE_PHONETIQUE).ratio())
+
+    # 2. Garde « même lieu » dans l'app.
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_6")
+    client_origine = app._client_llm
+
+    def pipeline(phrase: str, client) -> tuple[str, bool, str, object]:
+        app._client_llm = lambda: client
+        tampon = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(tampon):
+                quint, trouve = app._pipeline(phrase, "Kiriku-Wolof-ASR (GPU)", 1.0)
+        finally:
+            app._client_llm = client_origine
+        return quint[2], trouve, tampon.getvalue(), quint[3]
+
+    verifie("même lieu : même nom", app._meme_lieu("Petersen", "petersen"))
+    verifie("même lieu : marche de 0 m (Palais -> Palais 2)",
+            app._meme_lieu("Palais", "Palais 2", app.MATCHER.find_line("Palais", "Palais 2")))
+    verifie("même lieu : Sandaga -> Petersen n'en est pas un",
+            not app._meme_lieu("Sandaga", "Petersen", app.MATCHER.find_line("Sandaga", "Petersen")))
+
+    # La phrase de production passe maintenant par le local : Ouakam -> Petersen.
+    carte, trouve, journal, _ = pipeline(attendus[0][0], _ClientQuiLeve(lambda: TimeoutError("non")))
+    verifie("production Kiriku : trajet Ouakam -> Petersen, sans « À pied » ni redemande",
+            trouve and "conversation_" not in journal and "À pied environ 0" not in carte,
+            (trouve, journal))
+
+    # Le LLM rend le même lieu des deux côtés : on redemande, sans bus.
+    carte, trouve, journal, voix = pipeline(
+        "salaamaalekum damay dem petersen te maa ngi xyzzq",
+        _FauxClient('{"depart": "Petersen", "arrivee": "Petersen"}'),
+    )
+    verifie("LLM Petersen -> Petersen : on redemande (phrase capacités), aucun bus",
+            "erreur=conversation_meme_lieu" in journal and not trouve
+            and app.DEMANDE_MEME_LIEU.reponse in carte and "Ligne" not in carte
+            and "À pied" not in carte, (trouve, journal, carte[:200]))
+    verifie("redemande : voix déjà enregistrée (conversation_capacites.wav), rien de nouveau",
+            app.DEMANDE_MEME_LIEU.fichier == "conversation_capacites.wav"
+            and any((RACINE / "data" / d / "conversation_capacites.wav").is_file()
+                    for d in ("tts_cache_oolel", "tts_cache_ajouts", "tts_cache")))
+
+    # Le local trouve le même lieu des deux côtés : le LLM relit la phrase.
+    client = _FauxClient('{"depart": "Ouakam", "arrivee": "Petersen"}')
+    carte, trouve, journal, _ = pipeline("maa ngi Petersen, bëgg naa dem Petersen", client)
+    verifie("local Petersen -> Petersen : le LLM relit la phrase entière",
+            "[LLM] ok" in journal and trouve and "conversation_meme_lieu" not in journal, journal)
+    carte, trouve, journal, _ = pipeline(
+        "maa ngi Petersen, bëgg naa dem Petersen",
+        _FauxClient('{"depart": "Petersen", "arrivee": "Petersen"}'),
+    )
+    verifie("local et LLM tous deux Petersen -> Petersen : redemande",
+            "erreur=conversation_meme_lieu" in journal and not trouve, journal)
+
+    # Seconde chance : un même lieu ne compte pas comme un trajet trouvé.
+    verifie("seconde chance : « maa ngi Petersen dem Petersen » relance l'autre ASR",
+            app._phrase_donne_un_trajet("maa ngi Petersen, bëgg naa dem Petersen") is False)
+    verifie("seconde chance : la phrase Kiriku corrigée suffit",
+            app._phrase_donne_un_trajet(attendus[0][0]) is True)
+
+    return echecs, total
+
+
 def test_rapport_lignes_officielles() -> int:
     """Mode rapport : compare les lignes aux fiches officielles, hors ligne.
 
@@ -6673,6 +6793,7 @@ if __name__ == "__main__":
         echecs_lot3, total_lot3 = test_lot_3()
         echecs_lot4, total_lot4 = test_lot_4()
         echecs_lot5, total_lot5 = test_lot_5()
+        echecs_lot6, total_lot6 = test_lot_6()
         echecs = (
             test_local()
             + echecs_partage
@@ -6714,6 +6835,7 @@ if __name__ == "__main__":
             + echecs_lot3
             + echecs_lot4
             + echecs_lot5
+            + echecs_lot6
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -6756,6 +6878,7 @@ if __name__ == "__main__":
             + total_lot3
             + total_lot4
             + total_lot5
+            + total_lot6
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

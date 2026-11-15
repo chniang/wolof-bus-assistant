@@ -360,7 +360,9 @@ def _parse_json_or_fallback(text: str) -> dict:
 # (« blez diagne », « bleez jaañ »). Le séparateur accepte la virgule : en
 # ligne, « Bëgg naa dem aydapoor, Blaise Diagne » restait « aéroport »
 # (ambigu) suivi d'un « AIBD » isolé, au lieu de l'AIBD seul.
-_MOT_AEROPORT = r"(?:aeroports?|earoport|ayeropo{1,2}rt?|a[iy]da+\s*po{1,2}r{1,2}e?)"
+# « arappor », « arapor », « araport » : Whisper CPU pour « aéroport »
+# (« Yoff, arappor beles gang »).
+_MOT_AEROPORT = r"(?:aeroports?|earoport|ayeropo{1,2}rt?|a[iy]da+\s*po{1,2}r{1,2}e?|ara{1,2}p{1,2}o{1,2}rt?)"
 _BLAISE_DIAGNE = r"bl(?:aise|aize|ese|eze|eez|ez)\s+(?:diagne|diagn|jaane?|jagne|dia?ngne)"
 _SEP = r"[\s,;.]+"
 
@@ -370,6 +372,10 @@ REPLACEMENTS_PHRASE = (
     # (?<!ou) protège la graphie canonique : sans lui « ouakam » deviendrait
     # « ou ouakam », la règle réécrivant son propre suffixe.
     (r"(?<!ou)(?:wakaam|wakam)\b", " ouakam "),
+    # « wakaay » : Kiriku pour « Ouakam » (phrase test du locuteur natif,
+    # « damay dem petersen te maa ngi wakaay »). Aucun arrêt ne s'en approche
+    # en dehors de Ouakam : « Wakhinane » garde sa fin « -inane », jamais « -aay ».
+    (r"\bwa{1,2}kh?a{1,2}y\b", " ouakam "),
     (r"(?:palee|paale|pale|pali)\b", " palais "),
     # « pala dee » : Palais entendu en deux morceaux.
     (r"\bpala(?:\s+d?ee?)?\b", " palais "),
@@ -514,7 +520,8 @@ REPLACEMENTS_PHRASE = (
     (r"\b" + _MOT_AEROPORT + r"(?:\s+internationale?)?"
      + _SEP + r"(?:" + _BLAISE_DIAGNE + r"|de\s+diass|diass|aibd)\b",
      " aibd "),
-    (r"\b(?:aeroports|earoport|ayeropo{1,2}rt?|a[iy]da+\s*po{1,2}r{1,2}e?)\b(?!\s+lss\b)", " aeroport "),
+    (r"\b(?:aeroports|earoport|ayeropo{1,2}rt?|a[iy]da+\s*po{1,2}r{1,2}e?|ara{1,2}p{1,2}o{1,2}rt?)\b(?!\s+lss\b)",
+     " aeroport "),
     (r"(?<!avenue )(?<!av )(?<!lycee )\b" + _BLAISE_DIAGNE + r"\b", " aibd "),
     (r"\bdiass\b", " aibd "),
     # « AIBD, aéroport » : l'aéroport nommé juste à côté de l'AIBD est l'AIBD.
@@ -607,6 +614,51 @@ for _cible_brute, _lieu in _CIBLES:
         _CIBLES_ETENDUES.append((_etendue, _lieu))
 
 
+# « Blaise Diagne » entendu de travers juste après « aéroport » : Whisper CPU
+# a écrit « Yoff, arappor beles gang ». On compare une forme phonétique
+# simplifiée (« blaise diagne » -> « blezjan », « beles gang » -> « belezjan »)
+# avec un seuil prudent. Seulement derrière un mot « aéroport » : « Avenue » ou
+# « Lycée Blaise Diagne » (Médina) n'y passent jamais.
+_BLAISE_PHONETIQUE = "blezjan"
+SEUIL_BLAISE = 0.8
+_REGLES_PHONETIQUES = (
+    (r"aise", "ez"), (r"ai|ei", "e"), (r"s", "z"), (r"gne|gn", "n"), (r"dj|di(?=a)", "j"),
+    (r"g(?=a)", "j"), (r"ng$", "n"), (r"x", "k"), (r"([a-z])\1+", r"\1"), (r"e$", ""),
+)
+
+
+def _phonetique(texte: str) -> str:
+    forme = texte.replace(" ", "")
+    for motif, remplacement in _REGLES_PHONETIQUES:
+        forme = re.sub(motif, remplacement, forme)
+    return forme
+
+
+def _aibd_par_ressemblance(texte: str) -> str:
+    """« aeroport beles gang » -> « aibd » quand les 1 ou 2 mots suivants sonnent « Blaise Diagne »."""
+    mots = texte.split()
+    sortie: list[str] = []
+    i = 0
+    while i < len(mots):
+        if mots[i] == "aeroport" and mots[i + 1 : i + 2] != ["lss"]:
+            for largeur in (2, 1):
+                morceau = mots[i + 1 : i + 1 + largeur]
+                if len(morceau) < largeur or len("".join(morceau)) < 5:
+                    continue
+                score = SequenceMatcher(None, _phonetique(" ".join(morceau)), _BLAISE_PHONETIQUE).ratio()
+                if score >= SEUIL_BLAISE:
+                    sortie.append("aibd")
+                    i += 1 + largeur
+                    break
+            else:
+                sortie.append(mots[i])
+                i += 1
+            continue
+        sortie.append(mots[i])
+        i += 1
+    return " ".join(sortie)
+
+
 def _normaliser_phrase(phrase: str) -> str:
     """Forme de travail : minuscules, sans accents, graphies phonétiques corrigées.
 
@@ -623,7 +675,8 @@ def _normaliser_phrase(phrase: str) -> str:
     # « jëm » (aller vers) annonce l'arrivée exactement comme « dem » : « Bëgg
     # naa jëm aéroport Diass » doit répartir les lieux autour de lui.
     texte = re.sub(r"\b(?:jem|djem|jeum)\b", "dem", texte)
-    return re.sub(r"\s+", " ", texte).strip()
+    texte = _aibd_par_ressemblance(re.sub(r"\s+", " ", texte).strip())
+    return texte
 
 
 def _score(gramme: str, lieu: str) -> float:
@@ -846,6 +899,7 @@ def _chercher_lieux(mots: list[str]) -> list[tuple[int, int, str]]:
 
 # Quartiers et communes qui en contiennent d'autres. Dit juste avant un lieu
 # plus précis (« Parcelles Unité 15 »), le grand nom ne fait que situer le petit.
+LIEUX_AEROPORTS = {"AIBD", "Aéroport", "Aéroport LSS", "Aéroport L S Senghor"}
 ZONES_LARGES = {
     "parcelles", "parcelles assainies", "grand yoff", "grand-yoff", "pikine",
     "guediawaye", "keur massar", "rufisque", "medina", "ouakam", "yoff", "liberte",
@@ -865,7 +919,14 @@ def _le_precis_gagne(trouves: list[tuple[int, int, str]]) -> list[tuple[int, int
     for debut, fin, lieu in trouves:
         if resultat:
             p_debut, p_fin, p_lieu = resultat[-1]
-            if p_fin == debut and _sans_accents(p_lieu).lower() in ZONES_LARGES:
+            # Un aéroport n'est jamais « dans » le quartier dit juste avant :
+            # « Yoff, arappor beles gang » (Whisper) est Yoff -> AIBD, pas un
+            # « Yoff AIBD » qui effaçait le départ.
+            if (
+                p_fin == debut
+                and _sans_accents(p_lieu).lower() in ZONES_LARGES
+                and lieu not in LIEUX_AEROPORTS
+            ):
                 resultat[-1] = (p_debut, fin, lieu)
                 continue
         resultat.append((debut, fin, lieu))
@@ -921,7 +982,12 @@ def _arrivee_apres_dem(
         apres = [lieu for debut, lieu in autres if debut > position_dem]
         if apres:
             return apres[0]
-    return autres[0][1]
+    if autres:
+        return autres[0][1]
+    # « maa ngi Petersen, bëgg naa dem Petersen » : le même lieu deux fois.
+    # Avant, IndexError (plantage de la requête). On rend ce lieu tel quel :
+    # l'app voit départ = arrivée et redemande au lieu d'inventer un trajet.
+    return depart
 
 
 def extract_local(phrase: str) -> dict:

@@ -73,7 +73,7 @@ from matching.lieux import AVANT_NUMERO, FAUX_AMIS, joli, sans_accents  # noqa: 
 from matching.stops_matcher import StopsMatcher  # noqa: E402
 from intent.conversation import HORS_SUJET, Intention  # noqa: E402
 from intent.conversation import detecter as detecter_conversation  # noqa: E402
-from intent.conversation import signal_trajet  # noqa: E402
+from intent.conversation import INTENTIONS, signal_trajet  # noqa: E402
 from tts.speak import voix_conversation  # noqa: E402
 from tts.speak import (  # noqa: E402
     MAX_POSSIBILITES,
@@ -444,6 +444,31 @@ def _second_essai(audio: np.ndarray, libelle_premier: str) -> tuple[str, str, fl
         raise
 
 
+# Départ et arrivée au même endroit : vu en production, Kiriku a écrit
+# « damay dem petersen te maa ngi wakaay » ; « wakaay » n'étant pas reconnu, le
+# LLM a rendu Petersen -> Petersen, et l'app a répondu « À pied environ 0 min »
+# avec des bus au hasard. Même nom, ou marche de moins de 100 m (Palais ->
+# Palais 2) : ce n'est pas un trajet, c'est une extraction incomplète.
+DISTANCE_MEME_LIEU_M = 100
+
+# On redemande avec une phrase déjà enregistrée, jamais une phrase nouvelle :
+# « Wax ma fan nga nekk ak fan nga bëgga dem, ma won la bus bi nga wara jël. »
+# (conversation_capacites.wav, validée par le locuteur natif).
+_CAPACITES = next(i for i in INTENTIONS if i.nom == "capacites")
+DEMANDE_MEME_LIEU = Intention("meme_lieu", _CAPACITES.reponse, _CAPACITES.fichier, ())
+
+
+def _meme_lieu(depart: str, arrivee: str, resultat: dict | None = None) -> bool:
+    """Vrai si départ et arrivée désignent le même endroit (nom ou marche quasi nulle)."""
+    if not depart or not arrivee:
+        return False
+    if sans_accents(depart).lower().strip() == sans_accents(arrivee).lower().strip():
+        return True
+    a_pied = (resultat or {}).get("a_pied") or {}
+    distance = a_pied.get("distance_m")
+    return isinstance(distance, (int, float)) and distance <= DISTANCE_MEME_LIEU_M
+
+
 def _phrase_donne_un_trajet(phrase: str) -> bool:
     """La phrase mène-t-elle déjà à un trajet, sans LLM ?
 
@@ -467,6 +492,9 @@ def _phrase_donne_un_trajet(phrase: str) -> bool:
     if not (local.get("depart") and local.get("arrivee")):
         return False
     essai = MATCHER.find_line(local["depart"], local["arrivee"])
+    if _meme_lieu(local["depart"], local["arrivee"], essai):
+        # Même lieu des deux côtés : l'autre modèle ASR a sa chance.
+        return False
     return bool(essai["found"] or essai["correspondances"])
 
 
@@ -1334,7 +1362,10 @@ def _pipeline(
     intent = None
     if local.get("depart") and local.get("arrivee"):
         essai = MATCHER.find_line(local["depart"], local["arrivee"])
-        if essai["found"] or essai["correspondances"]:
+        # Même lieu des deux côtés : extraction incomplète, le LLM relit la phrase.
+        if (essai["found"] or essai["correspondances"]) and not _meme_lieu(
+            local["depart"], local["arrivee"], essai
+        ):
             intent = {**local, "source": "reseau", "erreur": None}
     if intent is None:
         intent = extract_intent(phrase, client=_client_llm())
@@ -1363,6 +1394,13 @@ def _pipeline(
             if essai["found"] or (essai["correspondances"] and not resultat["correspondances"]):
                 depart, arrivee, resultat = local["depart"], local["arrivee"], essai
                 intent = {**intent, "source": "llm+local"}
+
+    # Toujours le même lieu après le LLM (qui a relu la phrase entière) : jamais
+    # de bus ni de « À pied 0 min ». On redemande d'où l'usager part et où il va,
+    # avec une phrase déjà enregistrée.
+    if _meme_lieu(depart, arrivee, resultat):
+        quint = _reponse_conversation(phrase, DEMANDE_MEME_LIEU, modele_asr, duree_asr)
+        return quint[:4] + (_mention(intent, modele_asr),), False
 
     # Compagnie : ce que l'utilisateur a dit à la voix prime sur le bouton.
     compagnie_voix = (intent.get("compagnie") or "").strip()
