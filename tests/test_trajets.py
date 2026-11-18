@@ -6757,6 +6757,165 @@ def test_lot_7() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_8() -> tuple[int, int]:
+    """Lot 8 : l'extraction et geo.py voient les arrêts Dem Dikk que l'app sert.
+
+    « Sapeur Pompiers », « Difoncé »… sont servis par l'app (listes officielles)
+    mais n'étaient pas reconnus quand l'usager les disait. Sans faux lieux :
+    notes, fautes, noms qui écraseraient un lieu plus large restent écartés, et
+    ces arrêts ne sont jamais géocodés (position non sûre). Aucun réseau : le
+    géocodage est remplacé par un enregistreur qui ne lit que le cache.
+    """
+    import contextlib
+    import csv
+    import io
+    import os
+
+    import intent.extract_intent as ei
+    import routing.data as rdata
+    from matching import geo
+    from matching import itineraires_app as ia
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot 8 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    # 1. Noms officiels désormais reconnus dans une vraie phrase (au moins 15).
+    reconnus = (
+        "Sapeur Pompiers", "Difoncé", "Embarcadère", "Arsenal", "Assemblée Nationale",
+        "Institut Pasteur", "Hôpital Le Dantec", "Grand théâtre", "Monument de la Renaissance",
+        "Place ONU", "Sicap Karack", "Sorano", "Obelisque", "Douta Seck", "Cité Isra",
+        "Mosquée Seydou Nourrou Tall", "Lycée Delafosse", "Albert Sarraut", "Djoutiba",
+        "Leclerc", "Acapes", "Bel Air", "Lycée Blaise Diagne", "Stade Léopold Sédar Senghor",
+        "Corniche Ouest",
+    )
+    for nom in reconnus:
+        r = ei.extract_local(f"maa ngi {nom}, bëgg naa dem Sandaga")
+        verifie(f"« maa ngi {nom} » : départ reconnu",
+                ei.cle_lieu(r["depart"]) == ei.cle_lieu(nom) and r["arrivee"] == "Sandaga",
+                (r["depart"], r["arrivee"]))
+    verifie("au moins 15 noms officiels ajoutés", len(ei.LIEUX_DDD_OFFICIELS) >= 15, len(ei.LIEUX_DDD_OFFICIELS))
+    verifie("le LLM les connaît aussi : prompt et contrôle de sortie",
+            "- Sapeur Pompiers" in ei.SYSTEM_PROMPT and ei._lieu_connu("Sapeur Pompiers"))
+
+    # 2. Écartés, avec une raison : jamais un lieu.
+    for nom in ("Itinéraire 213", "2 voies", "National 1", "Terminus", "Croisement", "vers Camp Leclerc",
+                "BOP", "DAF", "TER", "Ex Rue 10", "Ville de Rufisque", "Blaise Diagne", "Arsanel"):
+        verifie(f"« {nom} » écarté ({ia.raison_ecart(nom)})", ia.raison_ecart(nom) is not None)
+    for nom in ("Rond Point Sahm", "Marché Fass", "Mairie Grand Yoff", "Police de Parcelles Assainies",
+                "Hôpital Fann", "Police Bel Air", "Terrain Acapes"):
+        verifie(f"« {nom} » écarté : contient un lieu plus large",
+                nom in ei.LIEUX_DDD_ECARTES and "plus large" in ei.LIEUX_DDD_ECARTES[nom],
+                ei.LIEUX_DDD_ECARTES.get(nom))
+    verifie("aucun nom écarté n'est dans LIEUX",
+            not {ei.cle_lieu(n) for n in ei.LIEUX_DDD_ECARTES} & {ei.cle_lieu(n) for n in ei.LIEUX_DDD_OFFICIELS})
+
+    # 3. Le lieu plus large reste prioritaire, et les mots wolof restent des mots.
+    plus_larges = (
+        ("maa ngi Ville de Rufisque, bëgg naa dem Petersen", "depart", "Rufisque"),
+        ("maa ngi Marché Fass, bëgg naa dem Petersen", "depart", "Fass"),
+        ("maa ngi Mairie Grand Yoff, bëgg naa dem Petersen", "depart", "Grand-Yoff"),
+        ("maa ngi Hôpital Fann, bëgg naa dem Petersen", "depart", "Fann"),
+        ("maa ngi Yoff, bëgg naa dem aéroport Blaise Diagne", "arrivee", "AIBD"),
+    )
+    for phrase, champ, attendu in plus_larges:
+        r = ei.extract_local(phrase)
+        verifie(f"« {phrase} » : {champ} = {attendu}", ei.cle_lieu(r[champ]) == ei.cle_lieu(attendu), r[champ])
+    # « daf » (wolof) et le sigle « BOP » ne deviennent pas des lieux. NB : « sama
+    # bopp » donnait déjà le quartier Bopp avant ce lot (arrêt brut) : hors lot.
+    r = ei.extract_local("daf ma neex")
+    verifie("« daf » : aucun lieu", not r["depart"] and not r["arrivee"], r)
+    verifie("sigles BOP / DAF / TER jamais ajoutés",
+            not {"bop", "daf", "ter"} & {ei.cle_lieu(n) for n in ei.LIEUX_DDD_OFFICIELS})
+
+    # 4. Les 10 phrases habituelles ne changent pas (relevé hors ligne avant le lot).
+    habituelles = (
+        ("Maa ngi Ouakam, bëgg naa dem Palais", "Ouakam", "Palais"),
+        ("maa ngi Parcelles Assainies, bëgg naa dem UCAD", "Parcelles Assainies", "UCAD"),
+        ("Maa ngi Yoff, bëgg naa dem aéroport Blaise Diagne", "Yoff", "AIBD"),
+        ("Maa ngi Pikine, bëgg naa dem Colobane", "Pikine", "Colobane"),
+        ("maa ngi Liberté 6, bëgg naa dem Sandaga", "Liberté 6", "Sandaga"),
+        ("Maa ngi Guédiawaye, bëgg naa dem Petersen", "Guédiawaye", "Petersen"),
+        ("Maa ngi Grand Yoff, bëgg naa dem Médina", "Grand-Yoff", "Médina"),
+        ("maa ngi Keur Massar, bëgg naa dem Rufisque", "Keur Massar", "Rufisque"),
+        ("Maa ngi Malika, bëgg naa dem UCAD", "Malika", "UCAD"),
+        ("Salaam aleekum, damay dem Petersen te maa ngi Ouakam", "Ouakam", "Petersen"),
+    )
+    for phrase, depart, arrivee in habituelles:
+        r = ei.extract_local(phrase)
+        verifie(f"inchangée : « {phrase} »", (r["depart"], r["arrivee"]) == (depart, arrivee),
+                (r["depart"], r["arrivee"]))
+
+    # 5. Positions : jamais géocodés, jamais « sûrs ».
+    demandes: list[str] = []
+    geocode_origine, sauver_origine = geo._Nominatim.geocode, geo._Nominatim._sauver
+
+    def enregistre(self, requete):
+        demandes.append(requete)
+        return tuple(self.cache[requete]) if self.cache.get(requete) else None
+
+    geo._Nominatim.geocode, geo._Nominatim._sauver = enregistre, (lambda self: None)
+    try:
+        lieux_geo = geo.LieuxGeo()
+        points = {nom: lieux_geo.point(nom) for nom in ei.LIEUX_DDD_OFFICIELS}
+        os.environ["GUINDIMA_SANS_MODELES"] = "1"
+        app = _charger_module(RACINE / "app.py", "app_guindima_lot_8")
+        with contextlib.redirect_stdout(io.StringIO()):
+            resultat = app.MATCHER.find_line("Sapeur Pompiers", "Sandaga")
+            corniche = app.MATCHER.find_line("Corniche Ouest", "Sandaga")
+    finally:
+        geo._Nominatim.geocode, geo._Nominatim._sauver = geocode_origine, sauver_origine
+    verifie("aucun nom ajouté n'est géocodé (ni point, ni requête)",
+            not any(points.values()) and not demandes, (demandes[:5], [n for n, p in points.items() if p][:5]))
+    verifie("aucun nom ajouté n'a une position sûre",
+            not any(lieux_geo.position_sure(nom) for nom in ei.LIEUX_DDD_OFFICIELS))
+    premiere = (resultat["lignes"] or [{}])[0]
+    verifie("Sapeur Pompiers -> Sandaga : Dem Dikk 1, montée à Sapeur Pompiers",
+            premiere.get("ligne") == "Ligne 1" and premiere.get("monte_a") == "Sapeur Pompiers",
+            (premiere.get("ligne"), premiere.get("monte_a")))
+    verifie("Corniche Ouest n'est jamais rattachée à Sandaga par un point estimé",
+            ei.cle_lieu(corniche.get("depart_matched") or "") != "sandaga", corniche.get("depart_matched"))
+    with open(RACINE / "data" / "corrections" / "corrections_geo_ddd_proposees.csv",
+              encoding="utf-8-sig", newline="") as f:
+        sapeur = next(r for r in csv.DictReader(f) if r["ligne"] == "1" and r["arret"] == "Sapeur Pompiers")
+    data = rdata.load_data()
+    verifie("Sapeur Pompiers (interpolé) n'est pas une position sûre pour le moteur",
+            sapeur["source"] not in rdata.SOURCES_SURES
+            and data.positions_sures[("Dakar Dem Dikk", "Ligne 1")][int(sapeur["ordre"])] is False)
+
+    # 6. Une seule règle : routing/data.py, l'extraction et geo.py partagent le module.
+    verifie("routing/data.py utilise les fonctions de itineraires_app",
+            rdata._nom_ligne_ddd is ia.nom_ligne_ddd and rdata._sans_terminus is ia.sans_terminus)
+    vus = ia.rangees_itineraires()
+    for numero in ("1", "18"):
+        app_liste = list(data.itineraires[(data.itineraires["compagnie"] == "Dakar Dem Dikk")
+                                          & (data.itineraires["ligne"] == f"Ligne {numero}")]
+                         .sort_values("ordre")["arret"])
+        nos = [r["arret"] for r in sorted((r for r in vus if r["ligne"] == f"Ligne {numero}"
+                                           and r["compagnie"] == "Dakar Dem Dikk"), key=lambda r: int(r["ordre"]))]
+        # Le moteur renomme quelques arrêts au chargement (« Ucad » -> « UCAD ») :
+        # on compare les formes normalisées.
+        verifie(f"Ligne {numero} : mêmes arrêts que le moteur ({len(app_liste)})",
+                [ia.cle_lieu(a) for a in nos] == [ia.cle_lieu(a) for a in app_liste],
+                [(a, b) for a, b in zip(nos, app_liste) if ia.cle_lieu(a) != ia.cle_lieu(b)][:3])
+    # geo.py : le contrôle de voisinage ne lit que les lignes Tata, résultat inchangé.
+    with open(RACINE / "data" / "itineraires_dakar.csv", encoding="utf-8", newline="") as f:
+        tata_brut = [r for r in csv.DictReader(f) if r["compagnie"] == "Tata AFTU"]
+    tata_app = [r for r in vus if r["compagnie"] == "Tata AFTU"]
+    verifie("geo.py : mêmes lignes Tata qu'avec le CSV brut",
+            sorted((r["ligne"], int(r["ordre"]), r["arret"]) for r in tata_brut)
+            == sorted((r["ligne"], int(r["ordre"]), r["arret"]) for r in tata_app))
+
+    return echecs, total
+
+
 def test_rapport_lignes_officielles() -> int:
     """Mode rapport : compare les lignes aux fiches officielles, hors ligne.
 
@@ -6904,6 +7063,7 @@ if __name__ == "__main__":
         echecs_lot5, total_lot5 = test_lot_5()
         echecs_lot6, total_lot6 = test_lot_6()
         echecs_lot7, total_lot7 = test_lot_7()
+        echecs_lot8, total_lot8 = test_lot_8()
         echecs = (
             test_local()
             + echecs_partage
@@ -6947,6 +7107,7 @@ if __name__ == "__main__":
             + echecs_lot5
             + echecs_lot6
             + echecs_lot7
+            + echecs_lot8
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -6991,6 +7152,7 @@ if __name__ == "__main__":
             + total_lot5
             + total_lot6
             + total_lot7
+            + total_lot8
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

@@ -18,11 +18,13 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 try:  # import à plat (app.py) ou lancé depuis src/intent/
+    from matching.itineraires_app import cle_lieu, raison_ecart, rangees_ddd_officielles
     from matching.lieux import CHIFFRES_ROMAINS, jetons, lieux_reconnaissables
 except ImportError:  # pragma: no cover
     import sys
 
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from matching.itineraires_app import cle_lieu, raison_ecart, rangees_ddd_officielles
     from matching.lieux import CHIFFRES_ROMAINS, jetons, lieux_reconnaissables
 
 ITINERAIRES_CSV = Path(__file__).resolve().parents[2] / "data" / "itineraires_dakar.csv"
@@ -99,6 +101,58 @@ def _charger_arrets() -> list[str]:
 
 ARRETS = _charger_arrets()
 LIEUX = lieux_reconnaissables(ARRETS)
+
+
+def _lieux_ddd_officiels(deja: list[str]) -> tuple[list[str], dict[str, str]]:
+    """Noms des arrêts Dem Dikk que l'app sert et que le CSV brut ignorait.
+
+    L'app sert les lignes Dem Dikk depuis les listes officielles (voir
+    matching/itineraires_app.py) ; l'extraction ne lisait que le CSV brut, et
+    « maa ngi Sapeur Pompiers » ne trouvait aucun départ. Mêmes formes que pour
+    les autres arrêts (lieux_reconnaissables), puis tri prudent : un nom écarté
+    (note de fiche, faute de frappe, nom qui écraserait un lieu plus large) ne
+    devient jamais un lieu. Renvoie (gardés, écartés -> raison).
+    """
+    connus = {cle_lieu(lieu) for lieu in deja}
+    bruts = set(ARRETS)
+    nouveaux = sorted({r["arret"] for r in rangees_ddd_officielles()} - bruts)
+    gardes: list[str] = []
+    ecartes: dict[str, str] = {}
+    for lieu in lieux_reconnaissables(nouveaux):
+        cle = cle_lieu(lieu)
+        if cle in connus:
+            continue
+        raison = raison_ecart(lieu)
+        if raison is None:
+            # « Rond Point Sahm », « Marché Fass », « Mairie Grand Yoff » : le
+            # nom contient un lieu déjà connu. Dit en entier, il l'écraserait par
+            # un seul arrêt Dem Dikk, alors que le lieu plus large est mieux
+            # desservi (vu au test : « rond point sahm » ne donnait plus Sahm).
+            mots = f" {cle} "
+            contenu = next(
+                (k for k in sorted(connus, key=len, reverse=True) if f" {k} " in mots),
+                None,
+            )
+            if contenu:
+                raison = f"contient « {contenu} », lieu déjà connu et plus large : il reste prioritaire"
+        if raison:
+            ecartes[lieu] = raison
+        else:
+            gardes.append(lieu)
+    # Même règle entre noms nouveaux : « Police Bel Air » ou « Central Bel Air »
+    # écraseraient « Bel Air », « Terrain Acapes » écraserait « Acapes ».
+    cles_gardees = {cle_lieu(lieu): lieu for lieu in gardes}
+    for lieu in list(gardes):
+        mots = f" {cle_lieu(lieu)} "
+        plus_large = next(
+            (k for k in sorted(cles_gardees, key=len, reverse=True)
+             if k != cle_lieu(lieu) and f" {k} " in mots),
+            None,
+        )
+        if plus_large:
+            gardes.remove(lieu)
+            ecartes[lieu] = f"contient « {cles_gardees[plus_large]} », ajouté aussi et plus large : il reste prioritaire"
+    return gardes, ecartes
 
 
 def _build_system_prompt() -> str:
@@ -568,6 +622,13 @@ LIEUX_SUPPLEMENTAIRES = (
     # Lieux incertains, situés par leur position.
     "Mbao", "Yarakh", "Point E", "Cité Soprim", "Soprim", "Cité Keur Gorgui",
 )
+
+# Arrêts Dem Dikk que l'app sert depuis les listes officielles (voir
+# _lieux_ddd_officiels) : comparés à LIEUX et aux lieux ci-dessus, puis ajoutés.
+# Le prompt du LLM est reconstruit pour porter la même liste.
+LIEUX_DDD_OFFICIELS, LIEUX_DDD_ECARTES = _lieux_ddd_officiels(LIEUX + list(LIEUX_SUPPLEMENTAIRES))
+LIEUX = LIEUX + LIEUX_DDD_OFFICIELS
+SYSTEM_PROMPT = _build_system_prompt()
 
 
 def _sans_accents(texte: str) -> str:

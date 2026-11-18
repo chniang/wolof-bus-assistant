@@ -26,8 +26,10 @@ import time
 from pathlib import Path
 
 try:  # import à plat (app.py) ou en paquet
+    from matching.itineraires_app import cle_lieu, noms_seulement_officiels, rangees_itineraires
     from matching.lieux import FAUX_AMIS, relie, sans_accents
 except ImportError:  # pragma: no cover
+    from .itineraires_app import cle_lieu, noms_seulement_officiels, rangees_itineraires
     from .lieux import FAUX_AMIS, relie, sans_accents
 
 DATA = Path(__file__).resolve().parents[2] / "data"
@@ -105,12 +107,15 @@ def _hors_voisinage(
     if not chemin.exists():
         return set()
     lignes: dict[tuple[str, str], list[str]] = {}
-    with open(chemin, newline="", encoding="utf-8") as f:
-        rangees = [
-            rangee
-            for rangee in csv.DictReader(f)
-            if rangee.get("compagnie") == COMPAGNIE_VOISINS
-        ]
+    # Les itinéraires tels que l'app les sert (Dem Dikk depuis les listes
+    # officielles, voir matching/itineraires_app.py). Le contrôle ne regarde
+    # que les lignes Tata : le résultat est le même qu'avec le CSV brut, mais
+    # geo.py ne lit plus une autre version du réseau que le moteur.
+    rangees = [
+        rangee
+        for rangee in rangees_itineraires(chemin)
+        if rangee.get("compagnie") == COMPAGNIE_VOISINS
+    ]
     for rangee in sorted(rangees, key=lambda r: int(r.get("ordre") or 0)):
         lignes.setdefault((rangee["compagnie"], rangee["ligne"]), []).append(rangee["arret"])
     ecartes: set[str] = set()
@@ -322,6 +327,9 @@ class LieuxGeo:
         self._lieux: dict[str, tuple[float, float]] = {}
         self._absents: set[str] = set()
         self._lire_lieux(lieux_geo)
+        # Arrêts Dem Dikk connus seulement par les listes officielles : jamais
+        # géocodés (voir itineraires_app.noms_seulement_officiels).
+        self._sans_geocodage = noms_seulement_officiels()
 
         self._client = _Nominatim(cache)
 
@@ -381,6 +389,9 @@ class LieuxGeo:
         if cle in self._lieux:
             return self._lieux[cle]
         if cle in self._absents:
+            return None
+        if cle_lieu(lieu) in self._sans_geocodage:
+            # Position non sûre : le moteur le trouve par son nom, ou pas du tout.
             return None
         trouve = self._client.geocode(f"{lieu}, Dakar, Sénégal")
         if trouve is not None:

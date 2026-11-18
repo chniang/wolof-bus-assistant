@@ -64,26 +64,14 @@ def _lire(nom: str) -> pd.DataFrame:
     return pd.read_csv(DATA_DIR / FICHIERS[nom], encoding="utf-8")
 
 
-def _nom_ligne_ddd(ligne: object) -> str:
-    """« 1 » -> « Ligne 1 », « 16A » -> « Ligne 16A » ; « TAF TAF » reste tel quel."""
-
-    texte = str(ligne).strip()
-    return f"Ligne {texte}" if texte[:1].isdigit() else texte
-
-
-def _sans_terminus(nom: object) -> str:
-    """« Terminus keur Massar » -> « Keur Massar » : le même arrêt que nos autres lignes.
-
-    « Terminus X (Y) » garde son nom complet : il désigne deux lieux (voir
-    ``terminus_forms``), et le renommer en perdrait un.
-    """
-
-    texte = str(nom).strip()
-    trouve = re.fullmatch(r"terminus\s+([^()]+)", texte, flags=re.IGNORECASE)
-    if not trouve:
-        return texte
-    reste = trouve.group(1).strip()
-    return reste[0].upper() + reste[1:] if not reste.isdigit() else texte
+# La règle de nommage vit dans matching/itineraires_app.py : l'extraction des
+# lieux et geo.py la partagent, pour voir les mêmes arrêts Dem Dikk que l'app.
+try:  # import à plat (app.py) ou en paquet
+    from matching.itineraires_app import nom_ligne_ddd as _nom_ligne_ddd
+    from matching.itineraires_app import sans_terminus as _sans_terminus
+except ImportError:  # pragma: no cover
+    from ..matching.itineraires_app import nom_ligne_ddd as _nom_ligne_ddd
+    from ..matching.itineraires_app import sans_terminus as _sans_terminus
 
 
 def _charger_positions(data: NetworkData, frame: pd.DataFrame) -> None:
