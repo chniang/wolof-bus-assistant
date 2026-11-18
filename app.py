@@ -15,6 +15,7 @@ Le reste du pipeline (extraction, correspondance, voix) tient en CPU et n'a pas
 from __future__ import annotations
 
 import atexit
+import contextvars
 import csv
 import html
 import itertools
@@ -27,7 +28,7 @@ import sys
 import tempfile
 import threading
 import time
-from functools import lru_cache
+from functools import lru_cache, partial
 from pathlib import Path
 
 try:
@@ -44,6 +45,7 @@ RACINE = Path(__file__).resolve().parent
 # que src/ soit dans le chemin, y compris quand app.py est lancé depuis la racine.
 sys.path.insert(0, str(RACINE / "src"))
 
+from app import collecte  # noqa: E402
 from app.cartes import titre_autre_possibilite, titre_autre_possibilite_texte, titre_section  # noqa: E402
 from app.partage import bouton_partage  # noqa: E402
 from asr.transcribe import (  # noqa: E402
@@ -1321,6 +1323,17 @@ def _code_erreur(intent: dict) -> str:
     return "extraction_locale" if intent.get("source") == "local" else "extraction_llm"
 
 
+# Ce que la collecte doit savoir d'une réponse, sans changer les sorties du
+# pipeline. Reste à None hors collecte : _noter ne fait alors rien.
+_TRACE: contextvars.ContextVar[dict | None] = contextvars.ContextVar("trace_collecte", default=None)
+
+
+def _noter(**champs) -> None:
+    trace = _TRACE.get()
+    if trace is not None:
+        trace.update(champs)
+
+
 def _pipeline(
     phrase: str,
     modele_asr: str,
@@ -1341,6 +1354,7 @@ def _pipeline(
     if not phrase:
         _journal(modele_asr, duree_asr, 0, "phrase_vide")
         return quint, False
+    _noter(repondu=True, phrase=phrase, modele_asr=modele_asr)
 
     # L'extraction gère elle-même son repli local : si l'API est saturée, elle
     # rend quand même un départ et une arrivée tant que la phrase les porte.
@@ -1370,6 +1384,7 @@ def _pipeline(
     if intent is None:
         intent = extract_intent(phrase, client=_client_llm())
     depart, arrivee = intent.get("depart") or "", intent.get("arrivee") or ""
+    _noter(depart=depart, arrivee=arrivee)
 
     if not depart and not arrivee:
         # Aucun lieu, même pour le LLM. Une salutation reçoit alors sa réponse
@@ -1428,6 +1443,12 @@ def _pipeline(
         + len(trajets_2)
     )
     _journal(modele_asr, duree_asr, nombre_lignes, _code_erreur(intent))
+    if _TRACE.get() is not None:
+        _noter(
+            depart=depart,
+            arrivee=arrivee,
+            lignes=collecte.lignes_proposees(resultat, MAX_POSSIBILITES),
+        )
 
     return (
         phrase,
@@ -1506,6 +1527,10 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
         if son is None or len(son) < SAMPLE_RATE * 0.3:
             # Moins de 0,3 s : clic involontaire sur le micro, rien à chercher.
             return vide
+        # Sans la case cochée, l'audio ne sort jamais de cette fonction.
+        trace = _TRACE.get()
+        if trace is not None and trace.get("voix_acceptee") is True:
+            trace["son"] = son
         try:
             phrase, modele_asr, duree_asr, _ = transcrir_avec_seconde_chance(
                 son,
@@ -1576,6 +1601,13 @@ NOTE_VIE_PRIVEE = (
     "Ta voix n'est pas enregistrée. Pour comprendre ton trajet, le texte peut "
     "être envoyé à un service d'IA (NVIDIA) et les noms de lieux à OpenStreetMap."
 )
+# La même note quand la collecte est allumée (COLLECTE_ACTIVE).
+NOTE_VIE_PRIVEE_COLLECTE = (
+    "Ta voix n'est pas gardée, sauf si tu coches la case sous le micro. Si tu donnes "
+    "ton avis sur une réponse, il est gardé avec les lieux compris et les lignes "
+    "proposées, sans ta voix. Pour comprendre ton trajet, le texte peut être envoyé "
+    "à un service d'IA (NVIDIA) et les noms de lieux à OpenStreetMap."
+)
 
 MESSAGE_DEMANDE_VIDE = "Écris ton trajet ou choisis un trajet fréquent"
 
@@ -1610,10 +1642,12 @@ def traiter_demande(
         if not phrase:
             return tuple(gr.skip() for _ in range(7))
         mode = etat.get("mode") or "texte"
+        _noter(traitee=True)
         quint, _ = _pipeline(phrase, "", 0.0, compagnie_choix, mode=mode)
         # Le micro et la demande restent tels quels : on ne retranscrit rien.
         return (*quint, gr.skip(), etat)
 
+    _noter(traitee=True)
     if audio:
         quint = trouver_le_bus(audio, phrase_ecrite, compagnie_choix)
         if not quint[0]:
@@ -1688,6 +1722,96 @@ def rechercher_une_fois(
         return tuple(gr.skip() for _ in range(7))
     _DERNIERE_RECHERCHE = (cle, maintenant)
     return traiter_demande(audio, phrase_ecrite, compagnie_choix, etat, True)
+
+
+# --------------------------------------------------------------------------- #
+# Collecte avec consentement (branchée seulement si COLLECTE_ACTIVE est allumée)
+# --------------------------------------------------------------------------- #
+
+
+def _suivre(fonction, *args, consentement: bool = False) -> tuple:
+    """Appelle un handler existant et recueille ce que le pipeline a noté."""
+    trace = {"voix_acceptee": consentement is True}
+    jeton = _TRACE.set(trace)
+    try:
+        return fonction(*args), trace
+    finally:
+        _TRACE.reset(jeton)
+
+
+def _sorties_collecte(trace: dict, consentement: bool, suivi: dict | None, nouvelle: bool) -> tuple:
+    """Suivi, panneau d'avis, message du code, temps saisi.
+
+    Toute erreur s'arrête ici : la réponse de bus est déjà calculée et doit
+    partir. Le journal ne dit que le type d'erreur, sans donnée de l'usager.
+    """
+    if not trace.get("traitee"):
+        # Doublon d'un même geste : l'écran garde ce qu'il affiche.
+        return tuple(gr.skip() for _ in range(4))
+    masque = (None, gr.update(visible=False), "", gr.update(value=None))
+    if not trace.get("repondu"):
+        return masque
+    try:
+        if nouvelle or not suivi:
+            suivi, message = collecte.nouveau_suivi(trace, consentement is True)
+            temps = gr.update(value=None)
+        else:
+            suivi, message, temps = collecte.suivi_mis_a_jour(suivi, trace), gr.skip(), gr.skip()
+    except Exception as exc:
+        print(f"[collecte] contribution ignorée ({type(exc).__name__})", flush=True)
+        return masque
+    return suivi, gr.update(visible=bool(suivi["lignes"])), message, temps
+
+
+def traiter_demande_collecte(
+    audio, phrase_ecrite, compagnie_choix="", etat=None, nouvelle_demande=True,
+    consentement=False, suivi=None,
+) -> tuple:
+    sortie, trace = _suivre(
+        traiter_demande, audio, phrase_ecrite, compagnie_choix, etat, nouvelle_demande,
+        consentement=consentement,
+    )
+    return (*sortie, *_sorties_collecte(trace, consentement, suivi, nouvelle_demande))
+
+
+def rechercher_une_fois_collecte(
+    audio, phrase_ecrite, compagnie_choix="", etat=None, consentement=False, suivi=None,
+) -> tuple:
+    sortie, trace = _suivre(
+        rechercher_une_fois, audio, phrase_ecrite, compagnie_choix, etat,
+        consentement=consentement,
+    )
+    return (*sortie, *_sorties_collecte(trace, consentement, suivi, True))
+
+
+def choisir_trajet_frequent_collecte(choix, compagnie_choix="", consentement=False, suivi=None) -> tuple:
+    sortie, trace = _suivre(choisir_trajet_frequent, choix, compagnie_choix)
+    return (*sortie, *_sorties_collecte(trace, False, suivi, True))
+
+
+def donner_avis(reponse: str, minutes, suivi: dict | None) -> tuple:
+    """Oui / Non / Je ne sais pas, avec le temps réel s'il est déjà saisi."""
+    if not suivi:
+        return gr.skip(), gr.skip()
+    try:
+        return collecte.noter_avis(suivi, reponse, collecte.minutes_valides(minutes))
+    except Exception as exc:
+        print(f"[collecte] avis ignoré ({type(exc).__name__})", flush=True)
+        return gr.skip(), gr.skip()
+
+
+def donner_temps(minutes, suivi: dict | None) -> tuple:
+    """Le temps réel, souvent connu seulement à la fin du trajet."""
+    if not suivi:
+        return gr.skip(), gr.skip()
+    valeur = collecte.minutes_valides(minutes)
+    if valeur is None:
+        return gr.skip(), collecte.MESSAGE_MINUTES
+    try:
+        return collecte.noter_avis(suivi, None, valeur)
+    except Exception as exc:
+        print(f"[collecte] avis ignoré ({type(exc).__name__})", flush=True)
+        return gr.skip(), gr.skip()
 
 
 def _echauffer_llm():
@@ -1939,6 +2063,9 @@ def _construire():
     # delete_cache : en plus de l'effacement juste après la transcription,
     # Gradio vide toutes les 10 min ses fichiers de plus de 10 min (filet de
     # sécurité si un audio n'arrive jamais jusqu'à la transcription).
+    # Collecte éteinte (défaut) : aucun composant ni handler de plus.
+    actif = collecte.collecte_active()
+    consentement_in = None
     with gr.Blocks(title="GuindiMa AI 🚌", delete_cache=(600, 600)) as interface:
         gr.Markdown("# GuindiMa AI 🚌\n### Wax ma fi nga jëm, ma won la bus bi")
         gr.Markdown(
@@ -1966,6 +2093,12 @@ def _construire():
                 show_label=False,
                 elem_id=MICRO_ELEM_ID,
             )
+            if actif:
+                consentement_in = gr.Checkbox(
+                    value=False,
+                    label=collecte.TEXTE_CONSENTEMENT,
+                    elem_id="consentement_voix",
+                )
 
         with gr.Tab("Écrire"):
             texte_in = gr.Textbox(
@@ -1987,7 +2120,7 @@ def _construire():
 
         gr.Markdown(
             "<div style='color:#6B7A72;font-size:12px;margin:2px 0 6px 0;'>"
-            f"{NOTE_VIE_PRIVEE}</div>",
+            f"{NOTE_VIE_PRIVEE_COLLECTE if actif else NOTE_VIE_PRIVEE}</div>",
             elem_id="note_vie_privee",
         )
 
@@ -2006,6 +2139,47 @@ def _construire():
             mention_out.render()
             transcription_out.render()
             trajet_out.render()
+
+        entrees_collecte: list = []
+        sorties_collecte: list = []
+        if actif:
+            suivi_state = gr.State(None)
+            code_out = gr.Markdown(elem_id="code_collecte")
+            with gr.Group(visible=False, elem_id="panneau_avis") as panneau_avis:
+                gr.Markdown("**La ligne est juste ?**")
+                with gr.Row():
+                    boutons_avis = [
+                        (gr.Button("Oui"), "oui"),
+                        (gr.Button("Non"), "non"),
+                        (gr.Button("Je ne sais pas"), "ne_sait_pas"),
+                    ]
+                minutes_in = gr.Number(
+                    value=None,
+                    label="Temps réel du trajet (min)",
+                    minimum=collecte.MINUTES_MIN,
+                    maximum=collecte.MINUTES_MAX,
+                    precision=0,
+                )
+                bouton_temps = gr.Button("Envoyer le temps", size="sm")
+            for bouton_avis, reponse in boutons_avis:
+                bouton_avis.click(
+                    partial(donner_avis, reponse),
+                    inputs=[minutes_in, suivi_state],
+                    outputs=[suivi_state, code_out],
+                    api_visibility="private",
+                )
+            bouton_temps.click(
+                donner_temps,
+                inputs=[minutes_in, suivi_state],
+                outputs=[suivi_state, code_out],
+                api_visibility="private",
+            )
+            entrees_collecte = [consentement_in, suivi_state]
+            sorties_collecte = [suivi_state, panneau_avis, code_out, minutes_in]
+
+        gerer_demande = traiter_demande_collecte if actif else traiter_demande
+        gerer_micro = rechercher_une_fois_collecte if actif else rechercher_une_fois
+        gerer_frequent = choisir_trajet_frequent_collecte if actif else choisir_trajet_frequent
 
         gr.Markdown(
             "<div style='text-align:center;color:#8A968F;font-size:12px;"
@@ -2033,18 +2207,18 @@ def _construire():
         # distingue une nouvelle demande (bouton/micro) d'un simple changement de
         # compagnie, qui relit l'état sans retranscrire l'audio.
         bouton.click(
-            traiter_demande,
-            inputs=[audio_in, texte_in, compagnie_in, demande_state, nouvelle_demande],
-            outputs=[*sorties_avec_micro, demande_state],
+            gerer_demande,
+            inputs=[audio_in, texte_in, compagnie_in, demande_state, nouvelle_demande, *entrees_collecte],
+            outputs=[*sorties_avec_micro, demande_state, *sorties_collecte],
         )
 
         # Un trajet fréquent remplit le texte, lance la recherche avec la
         # compagnie choisie, vide le micro puis remet la liste à vide. Le change
         # provoqué par ce dernier None est ignoré : pas de seconde recherche.
         trajets_in.change(
-            choisir_trajet_frequent,
-            inputs=[trajets_in, compagnie_in],
-            outputs=[texte_in, *sorties_avec_micro, demande_state, trajets_in],
+            gerer_frequent,
+            inputs=[trajets_in, compagnie_in, *entrees_collecte],
+            outputs=[texte_in, *sorties_avec_micro, demande_state, trajets_in, *sorties_collecte],
         )
 
         # Recherche automatique, sans bouton : au relâchement du micro
@@ -2054,9 +2228,9 @@ def _construire():
         # geste et ignore le change dû au vidage.
         for evenement in (audio_in.stop_recording, audio_in.change):
             evenement(
-                rechercher_une_fois,
-                inputs=[audio_in, texte_in, compagnie_in, demande_state],
-                outputs=[*sorties_avec_micro, demande_state],
+                gerer_micro,
+                inputs=[audio_in, texte_in, compagnie_in, demande_state, *entrees_collecte],
+                outputs=[*sorties_avec_micro, demande_state, *sorties_collecte],
             )
 
         # Changer Tata/Dem Dikk/Tous rejoue la dernière demande avec la nouvelle
@@ -2064,9 +2238,9 @@ def _construire():
         # en mémoire : l'étiquette et les lignes suivent donc toujours le choix
         # affiché.
         compagnie_in.change(
-            traiter_demande,
-            inputs=[audio_in, texte_in, compagnie_in, demande_state, relancer_compagnie],
-            outputs=[*sorties_avec_micro, demande_state],
+            gerer_demande,
+            inputs=[audio_in, texte_in, compagnie_in, demande_state, relancer_compagnie, *entrees_collecte],
+            outputs=[*sorties_avec_micro, demande_state, *sorties_collecte],
         )
     return interface
 

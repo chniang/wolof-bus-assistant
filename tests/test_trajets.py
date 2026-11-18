@@ -7137,6 +7137,374 @@ def test_en_ligne() -> int:
     return echecs
 
 
+def test_lot_10() -> tuple[int, int]:
+    """Lot 10 : collecte de voix avec consentement et avis, éteinte par défaut.
+
+    Aucun réseau : le collecteur, l'API Hugging Face, l'ASR et le géocodage sont simulés.
+    """
+    import contextlib
+    import io
+    import json
+    import threading
+    import types
+    import wave
+
+    import gradio as gr
+    import numpy as np
+
+    from app import collecte
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot 10 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    class FauxCollecteur:
+        def __init__(self, accepte: bool = True):
+            self.lots: list[dict] = []
+            self.accepte = accepte
+
+        def soumettre(self, fichiers: dict) -> bool:
+            self.lots.append(fichiers)
+            return self.accepte
+
+        def chemins(self) -> list[str]:
+            return [chemin for lot in self.lots for chemin in lot]
+
+    class CollecteurEnPanne:
+        def soumettre(self, fichiers: dict) -> bool:
+            raise RuntimeError("panne GM-AAAAAA")
+
+    variables = ("COLLECTE_ACTIVE", "HF_TOKEN_COLLECTE", "CONTACT_WHATSAPP", "HF_TOKEN")
+    avant = {nom: os.environ.get(nom) for nom in variables}
+    collecteur_avant = collecte.COLLECTEUR
+    for nom in variables:
+        os.environ.pop(nom, None)
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    PHRASE = "maa ngi Liberté 6, bëgg naa dem Palais"
+    SON = np.full(16_000, 0.25, dtype=np.float32)
+    AUDIO = "faux_micro.webm"
+    NUMERO_FICTIF = "+000 11 222 33 44"
+    INTERDITS = {"nom", "name", "telephone", "phone", "ip", "user_agent", "heure", "time", "timestamp"}
+
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            app = _charger_module(RACINE / "app.py", "app_guindima_lot_10")
+        repli = getattr(app.MATCHER, "_repli", app.MATCHER)
+        repli.geo.point = repli.geo.point_connu
+        effaces: list[str] = []
+        app._decoder_audio = lambda chemin: SON
+        app._effacer_audio_recu = lambda chemin: effaces.append(chemin) or True
+        app.transcrir_avec_seconde_chance = lambda son, *_: (PHRASE, "Modèle test", 0.1, False)
+        app._voix_wolof = lambda *a, **k: None
+        app._client_llm = lambda: None
+
+        def silencieux(fonction, *args, **kwargs):
+            with contextlib.redirect_stdout(io.StringIO()):
+                return fonction(*args, **kwargs)
+
+        def libelles(config: dict) -> list:
+            return [c.get("props", {}).get("label") or c.get("props", {}).get("value")
+                    for c in config["components"]]
+
+        # 1. Éteinte : ni composant, ni stockage, audio effacé comme avant.
+        verifie("éteinte par défaut", collecte.collecte_active() is False)
+        os.environ["COLLECTE_ACTIVE"] = "0"
+        verifie("« 0 » n'allume pas la collecte", collecte.collecte_active() is False)
+        del os.environ["COLLECTE_ACTIVE"]
+        faux = collecte.COLLECTEUR = FauxCollecteur()
+        config = silencieux(app._construire).get_config_file()
+        vus = libelles(config)
+        verifie("éteinte : ni case ni avis dans l'interface",
+                collecte.TEXTE_CONSENTEMENT not in vus and "Temps réel du trajet (min)" not in vus
+                and "La ligne est juste" not in json.dumps(config, ensure_ascii=False, default=str))
+        verifie("éteinte : la note de confidentialité ne change pas",
+                app.NOTE_VIE_PRIVEE in json.dumps(config, ensure_ascii=False, default=str))
+        sortie = silencieux(app.traiter_demande, AUDIO, "", "", None, True)
+        verifie("éteinte : aucun stockage, audio effacé, 7 sorties",
+                not faux.lots and effaces == [AUDIO] and len(sortie) == 7 and sortie[0] == PHRASE,
+                (faux.lots, effaces, len(sortie)))
+        verifie("éteinte : le pipeline ne garde aucune trace", app._TRACE.get() is None)
+
+        # 2. Allumée : la case est décochée, les avis sont présents.
+        os.environ["COLLECTE_ACTIVE"] = "1"
+        os.environ["HF_TOKEN_COLLECTE"] = "jeton-de-test"
+        config = silencieux(app._construire).get_config_file()
+        cases = [c for c in config["components"] if c.get("type") == "checkbox"]
+        verifie("case décochée, texte exact",
+                len(cases) == 1 and cases[0]["props"].get("value") is False
+                and cases[0]["props"].get("label") == (
+                    "J'accepte que mon enregistrement soit gardé pour améliorer la reconnaissance "
+                    "du wolof. Il est anonyme : ni nom, ni numéro. Je peux demander sa suppression "
+                    "avec mon code."), cases)
+        vus = libelles(config)
+        verifie("boutons d'avis et temps réel",
+                all(x in vus for x in ("Oui", "Non", "Je ne sais pas", "Temps réel du trajet (min)")), vus)
+        verifie("note : la voix n'est gardée que si la case est cochée",
+                app.NOTE_VIE_PRIVEE_COLLECTE in json.dumps(config, ensure_ascii=False, default=str)
+                and "sauf si tu coches la case" in app.NOTE_VIE_PRIVEE_COLLECTE)
+
+        # 3. Case décochée : rien à la réponse ; l'avis part sans audio ni phrase.
+        faux = collecte.COLLECTEUR = FauxCollecteur()
+        app._DERNIERE_RECHERCHE = None
+        sortie = silencieux(app.rechercher_une_fois_collecte, AUDIO, "", "", None, False, None)
+        suivi = sortie[7]
+        verifie("décochée : rien n'est envoyé, aucun code affiché",
+                not faux.lots and sortie[9] == "" and suivi["voix"] is False and len(sortie) == 11,
+                (faux.lots, sortie[9]))
+        verifie("décochée : le panneau d'avis apparaît", sortie[8].get("visible") is True, sortie[8])
+        verifie("décochée : l'audio ne reste pas dans le suivi", "son" not in suivi)
+        suivi, message = silencieux(app.donner_avis, "oui", 25, suivi)
+        chemins = faux.chemins()
+        fiche = json.loads(faux.lots[0][chemins[0]]) if chemins else {}
+        verifie("avis sans consentement : un seul fichier, sans audio",
+                chemins == [f"donnees/{suivi['code']}/avis.json"], chemins)
+        verifie("avis sans consentement : ni transcription ni modèle",
+                "transcription" not in fiche and "modele_asr" not in fiche and fiche["avec_voix"] is False, fiche)
+        verifie("avis : réponse, temps et lignes gardés",
+                fiche["reponse"] == "oui" and fiche["minutes_reelles"] == 25 and fiche["lignes_proposees"], fiche)
+        verifie("avis : le code et « ton avis » sont affichés",
+                suivi["code"] in message and "supprimer ton avis" in message, message)
+        _, message = silencieux(app.donner_temps, 400, suivi)
+        verifie("temps invraisemblable : refusé sans envoi",
+                message == collecte.MESSAGE_MINUTES and len(faux.lots) == 1, message)
+
+        # 4. Case cochée : audio 16 kHz et fiche, sans donnée personnelle.
+        faux = collecte.COLLECTEUR = FauxCollecteur()
+        sortie = silencieux(app.traiter_demande_collecte, AUDIO, "", "", None, True, True, None)
+        suivi = sortie[7]
+        code = suivi["code"]
+        lot = faux.lots[0] if faux.lots else {}
+        verifie("cochée : audio et fiche sous le dossier du code",
+                set(lot) == {f"donnees/{code}/audio.wav", f"donnees/{code}/demande.json"}, set(lot))
+        with wave.open(io.BytesIO(lot[f"donnees/{code}/audio.wav"])) as lu:
+            verifie("audio : WAV 16 kHz mono 16 bits, durée conservée",
+                    (lu.getframerate(), lu.getnchannels(), lu.getsampwidth(), lu.getnframes())
+                    == (16_000, 1, 2, 16_000))
+        fiche = json.loads(lot[f"donnees/{code}/demande.json"])
+        verifie("fiche : exactement les champs prévus",
+                set(fiche) == {"code", "date", "consentement_voix", "transcription", "modele_asr",
+                               "depart", "arrivee", "lignes_proposees"}, sorted(fiche))
+        verifie("fiche : transcription, modèle, lieux et lignes",
+                fiche["transcription"] == PHRASE and fiche["modele_asr"] == "Modèle test"
+                and fiche["depart"] and fiche["arrivee"] and fiche["lignes_proposees"], fiche)
+        verifie("fiche : le jour seulement", re.fullmatch(r"\d{4}-\d{2}-\d{2}", fiche["date"]), fiche["date"])
+        verifie("fiche : aucun champ personnel", not INTERDITS & {c.lower() for c in fiche}, sorted(fiche))
+        verifie("cochée : le fichier reçu de Gradio est quand même effacé", effaces[-1] == AUDIO)
+        verifie("cochée : le code est montré à l'usager", code in sortie[9], sortie[9])
+        verifie("format du code", collecte.MOTIF_CODE.fullmatch(code), code)
+        verifie("codes différents d'une demande à l'autre",
+                len({collecte.nouveau_code() for _ in range(200)}) == 200)
+
+        # Changer de compagnie : même code, lignes à jour, aucune nouvelle voix.
+        etat = sortie[6]
+        rejeu = silencieux(app.traiter_demande_collecte, None, "", "Tata AFTU", etat, False, True, suivi)
+        verifie("compagnie : même code, aucun envoi",
+                rejeu[7]["code"] == code and len(faux.lots) == 1, rejeu[7])
+
+        # Un même geste émet deux événements : une seule contribution.
+        faux = collecte.COLLECTEUR = FauxCollecteur()
+        app._DERNIERE_RECHERCHE = None
+        silencieux(app.rechercher_une_fois_collecte, AUDIO, "", "", None, True, None)
+        double = silencieux(app.rechercher_une_fois_collecte, AUDIO, "", "", None, True, None)
+        verifie("doublon d'événement : une seule voix, écran inchangé",
+                len(faux.lots) == 1 and double[7] == gr.skip(), double[7])
+
+        # Une demande écrite n'a pas d'audio, même case cochée.
+        faux = collecte.COLLECTEUR = FauxCollecteur()
+        silencieux(app.traiter_demande_collecte, None, PHRASE, "", None, True, True, None)
+        verifie("demande écrite : rien n'est envoyé", not faux.lots, faux.chemins())
+
+        # 5. La phrase de suppression, avec et sans numéro configuré.
+        os.environ.pop("CONTACT_WHATSAPP", None)
+        attendu = ("Pour faire supprimer ton enregistrement, envoie ce code à la personne "
+                   "qui t'a partagé l'application.")
+        verifie("sans CONTACT_WHATSAPP : renvoi vers la personne qui a partagé",
+                collecte.phrase_suppression() == attendu, collecte.phrase_suppression())
+        message = collecte.message_code("GM-ABCDEF")
+        verifie("sans CONTACT_WHATSAPP : ni WhatsApp ni chiffre affiché",
+                attendu in message and "WhatsApp" not in message and not re.search(r"\d", message), message)
+        os.environ["CONTACT_WHATSAPP"] = "   "
+        verifie("CONTACT_WHATSAPP blanc : traité comme vide", collecte.phrase_suppression() == attendu)
+        os.environ["CONTACT_WHATSAPP"] = NUMERO_FICTIF
+        verifie("avec CONTACT_WHATSAPP : phrase WhatsApp et numéro",
+                collecte.phrase_suppression() == "Pour faire supprimer ton enregistrement, envoie ce "
+                f"code par WhatsApp au {NUMERO_FICTIF}.", collecte.phrase_suppression())
+        del os.environ["CONTACT_WHATSAPP"]
+
+        # 6. Une panne ne touche jamais la réponse ni le journal.
+        collecte.COLLECTEUR = CollecteurEnPanne()
+        journal = io.StringIO()
+        with contextlib.redirect_stdout(journal):
+            sortie = app.traiter_demande_collecte(AUDIO, "", "", None, True, True, None)
+        verifie("panne de collecte : la réponse part quand même",
+                sortie[0] == PHRASE and "Ligne :" in sortie[2], sortie[:2])
+        verifie("panne de collecte : panneau masqué", sortie[7] is None and sortie[8].get("visible") is False)
+        verifie("panne de collecte : journal sans donnée", "GM-" not in journal.getvalue()
+                and PHRASE not in journal.getvalue(), journal.getvalue())
+
+        faux = collecte.COLLECTEUR = FauxCollecteur(accepte=False)
+        sortie = silencieux(app.traiter_demande_collecte, AUDIO, "", "", None, True, True, None)
+        verifie("contribution refusée : aucun code promis", sortie[9] == "" and sortie[7]["voix"] is False)
+
+        envois: list[dict] = []
+        pannes = [ValueError("donnees/GM-AAAAAA/audio.wav"), ValueError("encore GM-AAAAAA")]
+
+        def televerse(lot: dict) -> None:
+            if pannes:
+                raise pannes.pop(0)
+            envois.append(lot)
+
+        collecteur = collecte.Collecteur(televerser=televerse, intervalle=3600)
+        journal = io.StringIO()
+        with contextlib.redirect_stdout(journal):
+            collecteur.soumettre({"donnees/GM-AAAAAA/audio.wav": b"1"})
+            premier = collecteur.vider()
+            second = collecteur.vider()
+            troisieme = collecteur.vider()
+        collecteur.arreter()
+        verifie("envoi en échec : retenté une fois puis abandonné",
+                (premier, second, troisieme) == (0, 0, 0) and not envois, (premier, second, troisieme, envois))
+        verifie("envoi en échec : journal court, sans code",
+                "GM-" not in journal.getvalue() and "ValueError" in journal.getvalue(), journal.getvalue())
+
+        collecteur = collecte.Collecteur(televerser=envois.append, intervalle=3600)
+        collecteur.soumettre({"donnees/GM-AAAAAA/avis.json": b"ancien", "donnees/GM-AAAAAA/audio.wav": b"x"})
+        collecteur.soumettre({"donnees/GM-AAAAAA/avis.json": b"nouveau"})
+        parti = collecteur.vider()
+        collecteur.arreter()
+        verifie("un lot par envoi, dernier avis conservé",
+                parti == 2 and len(envois) == 1 and envois[0]["donnees/GM-AAAAAA/avis.json"] == b"nouveau", envois)
+
+        # L'envoi tourne à côté : un téléversement bloqué ne retient pas soumettre().
+        entre, libere = threading.Event(), threading.Event()
+
+        def bloque(lot: dict) -> None:
+            entre.set()
+            libere.wait(5)
+
+        collecteur = collecte.Collecteur(televerser=bloque, intervalle=0.01)
+        collecteur.soumettre({"a": b"1"})
+        arrive = entre.wait(5)
+        debut = time.perf_counter()
+        accepte = collecteur.soumettre({"b": b"2"})
+        duree = time.perf_counter() - debut
+        libere.set()
+        collecteur.arreter()
+        verifie("envoi bloqué : la demande suivante n'attend pas", arrive and accepte and duree < 0.5, duree)
+
+        collecteur = collecte.Collecteur(televerser=envois.append, capacite=1, intervalle=3600)
+        with contextlib.redirect_stdout(io.StringIO()):
+            collecteur.soumettre({"a": b"1"})
+            plein = collecteur.soumettre({"b": b"2"})
+        collecteur.arreter()
+        verifie("file pleine : refus immédiat", plein is False)
+
+        # Sans jeton dédié, HF_TOKEN ne sert jamais de remplaçant.
+        del os.environ["HF_TOKEN_COLLECTE"]
+        os.environ["HF_TOKEN"] = "autre-jeton"
+        appels: list = []
+        collecteur = collecte.Collecteur(televerser=appels.append, intervalle=3600)
+        journal = io.StringIO()
+        with contextlib.redirect_stdout(journal):
+            accepte = collecteur.soumettre({"a": b"1"})
+            collecteur.soumettre({"b": b"2"})
+            collecteur.vider()
+        verifie("jeton absent : rien n'est envoyé, même avec HF_TOKEN", accepte is False and not appels)
+        verifie("jeton absent : signalé une seule fois", journal.getvalue().count("[collecte]") == 1, journal.getvalue())
+        del os.environ["HF_TOKEN"]
+        os.environ["HF_TOKEN_COLLECTE"] = "jeton-de-test"
+
+        # 7. Le dépôt doit être privé, et l'historique ne cite aucun code.
+        class FausseApi:
+            def __init__(self, prive=True):
+                self.prive, self.commits = prive, []
+
+            def repo_info(self, depot, repo_type=None):
+                return types.SimpleNamespace(private=self.prive)
+
+            def create_commit(self, **kwargs):
+                self.commits.append(kwargs)
+
+        api = FausseApi(prive=False)
+        try:
+            collecte.televerser_hf({"donnees/GM-AAAAAA/audio.wav": b"1"}, api=api)
+            refuse = False
+        except PermissionError:
+            refuse = True
+        verifie("dépôt public : aucune voix ne part", refuse and not api.commits)
+        api = FausseApi()
+        collecte.televerser_hf({"donnees/GM-AAAAAA/audio.wav": b"1"}, api=api)
+        commit = api.commits[0] if api.commits else {}
+        verifie("dépôt privé : commit dans le bon dataset, sans code",
+                commit.get("repo_id") == "PythonMindset/guindima-voix-testeurs"
+                and commit.get("repo_type") == "dataset"
+                and [o.path_in_repo for o in commit.get("operations", [])] == ["donnees/GM-AAAAAA/audio.wav"]
+                and "GM-" not in commit.get("commit_message", "GM-"), commit)
+
+        # 8. Le script de suppression simule par défaut et ne vise que son code.
+        script = _charger_module(RACINE / "scripts" / "supprimer_enregistrement.py", "supprimer_lot_10")
+
+        class ApiDepot:
+            def __init__(self):
+                self.actions: list = []
+
+            def list_repo_files(self, depot, repo_type=None):
+                return ["donnees/GM-AAAAAA/audio.wav", "donnees/GM-AAAAAA/avis.json",
+                        "donnees/GM-BBBBBB/audio.wav", "README.md"]
+
+            def list_lfs_files(self, depot, repo_type=None):
+                return [types.SimpleNamespace(filename="donnees/GM-AAAAAA/audio.wav"),
+                        types.SimpleNamespace(filename="donnees/GM-BBBBBB/audio.wav")]
+
+            def delete_folder(self, chemin, depot, repo_type=None, commit_message=None):
+                self.actions.append(("dossier", chemin))
+
+            def permanently_delete_lfs_files(self, depot, fichiers, rewrite_history=True, repo_type=None):
+                self.actions.append(("lfs", [f.filename for f in fichiers], rewrite_history))
+
+            def super_squash_history(self, depot, repo_type=None, commit_message=None):
+                self.actions.append(("historique",))
+
+        verifie("script : codes malformés refusés",
+                not any(script.code_valide(c) for c in ("../..", "GM-*", "GM-AAAAA", "", "GM-AAAAAA/x")))
+        verifie("script : code normalisé", script.code_valide(" gm-aaaaaa ") == "GM-AAAAAA")
+        api = ApiDepot()
+        nombre = silencieux(script.supprimer, api, "GM-AAAAAA")
+        verifie("script : simulation par défaut", nombre == 2 and not api.actions, api.actions)
+        silencieux(script.supprimer, api, "GM-AAAAAA", executer=True)
+        verifie("script : dossier, audio LFS et historique, ce code seulement",
+                api.actions == [("dossier", "donnees/GM-AAAAAA"),
+                                ("lfs", ["donnees/GM-AAAAAA/audio.wav"], True), ("historique",)], api.actions)
+
+        # 9. Aucun numéro ni e-mail dans le code livré.
+        motifs = (
+            re.compile(r"[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}"),
+            re.compile(r"(?<![\d.])(?:\+|00)221[ .-]?\d"),
+            re.compile(r"(?<![\d.])7[05678][ .-]?\d{3}[ .-]?\d{2}[ .-]?\d{2}(?![\d])"),
+        )
+        trouves = []
+        for fichier in [*sorted((RACINE / "src").rglob("*.py")), RACINE / "app.py",
+                        RACINE / "scripts" / "supprimer_enregistrement.py"]:
+            texte = fichier.read_text(encoding="utf-8")
+            trouves += [fichier.name for motif in motifs if motif.search(texte)]
+        verifie("aucun numéro de téléphone ni e-mail dans src/ et app.py", not trouves, trouves)
+    finally:
+        collecte.COLLECTEUR = collecteur_avant
+        for nom, valeur in avant.items():
+            if valeur is None:
+                os.environ.pop(nom, None)
+            else:
+                os.environ[nom] = valeur
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -7192,6 +7560,7 @@ if __name__ == "__main__":
         echecs_lot7, total_lot7 = test_lot_7()
         echecs_lot8, total_lot8 = test_lot_8()
         echecs_lot9, total_lot9 = test_lot_9()
+        echecs_lot10, total_lot10 = test_lot_10()
         echecs = (
             test_local()
             + echecs_partage
@@ -7237,6 +7606,7 @@ if __name__ == "__main__":
             + echecs_lot7
             + echecs_lot8
             + echecs_lot9
+            + echecs_lot10
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -7283,6 +7653,7 @@ if __name__ == "__main__":
             + total_lot7
             + total_lot8
             + total_lot9
+            + total_lot10
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)
