@@ -49,7 +49,7 @@ CAPACITE_FILE = 100
 
 TEXTE_CONSENTEMENT = (
     "J'accepte que mon enregistrement soit gardé pour améliorer la reconnaissance "
-    "du wolof. Il est anonyme : ni nom, ni numéro. Je peux demander sa suppression "
+    "du wolof. Il est gardé sans ton nom ni ton numéro. Je peux demander sa suppression "
     "avec mon code."
 )
 SUPPRESSION_WHATSAPP = "Pour faire supprimer {quoi}, envoie ce code par WhatsApp au {numero}."
@@ -185,7 +185,12 @@ def televerser_hf(fichiers: dict[str, bytes], api=None) -> None:
     if api is None:
         from huggingface_hub import HfApi
 
-        api = HfApi(token=jeton_collecte())
+        # Sans ce contrôle, un jeton vide ferait retomber la bibliothèque sur
+        # HF_TOKEN ou sur le compte connecté.
+        jeton = jeton_collecte()
+        if not jeton:
+            raise PermissionError("jeton de collecte absent")
+        api = HfApi(token=jeton)
     if api.repo_info(DEPOT, repo_type=TYPE_DEPOT).private is not True:
         raise PermissionError("dépôt non privé")
     api.create_commit(

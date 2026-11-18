@@ -5311,7 +5311,8 @@ def test_securite() -> tuple[int, int]:
         app.load_audio, app.subprocess.run = faux_load, faux_run
         try:
             petit = dossier / "petit.bin"
-            petit.write_bytes(b"pas un wav")
+            # En-tête WebM : le seul contrôle préalable est la signature du format.
+            petit.write_bytes(b"\x1aE\xdf\xa3 pas decodable par soundfile")
             app._decoder_audio(str(petit))
         finally:
             app.load_audio, app.subprocess.run = ancien_load, ancien_run
@@ -7241,7 +7242,7 @@ def test_lot_10() -> tuple[int, int]:
                 len(cases) == 1 and cases[0]["props"].get("value") is False
                 and cases[0]["props"].get("label") == (
                     "J'accepte que mon enregistrement soit gardé pour améliorer la reconnaissance "
-                    "du wolof. Il est anonyme : ni nom, ni numéro. Je peux demander sa suppression "
+                    "du wolof. Il est gardé sans ton nom ni ton numéro. Je peux demander sa suppression "
                     "avec mon code."), cases)
         vus = libelles(config)
         verifie("boutons d'avis et temps réel",
@@ -7455,13 +7456,20 @@ def test_lot_10() -> tuple[int, int]:
             def __init__(self):
                 self.actions: list = []
 
-            def list_repo_files(self, depot, repo_type=None):
-                return ["donnees/GM-AAAAAA/audio.wav", "donnees/GM-AAAAAA/avis.json",
-                        "donnees/GM-BBBBBB/audio.wav", "README.md"]
+            def list_repo_tree(self, depot, recursive=False, repo_type=None):
+                def fichier(chemin, sha=None):
+                    lfs = types.SimpleNamespace(sha256=sha) if sha else None
+                    return types.SimpleNamespace(path=chemin, lfs=lfs)
+
+                return [types.SimpleNamespace(path="donnees"),
+                        fichier("donnees/GM-AAAAAA/audio.wav", "sha-a"),
+                        fichier("donnees/GM-AAAAAA/avis.json"),
+                        fichier("donnees/GM-BBBBBB/audio.wav", "sha-b"),
+                        fichier("README.md")]
 
             def list_lfs_files(self, depot, repo_type=None):
-                return [types.SimpleNamespace(filename="donnees/GM-AAAAAA/audio.wav"),
-                        types.SimpleNamespace(filename="donnees/GM-BBBBBB/audio.wav")]
+                return [types.SimpleNamespace(filename="donnees/GM-AAAAAA/audio.wav", file_oid="sha-a"),
+                        types.SimpleNamespace(filename="donnees/GM-BBBBBB/audio.wav", file_oid="sha-b")]
 
             def delete_folder(self, chemin, depot, repo_type=None, commit_message=None):
                 self.actions.append(("dossier", chemin))
@@ -7502,6 +7510,201 @@ def test_lot_10() -> tuple[int, int]:
                 os.environ.pop(nom, None)
             else:
                 os.environ[nom] = valeur
+    return echecs, total
+
+
+def test_revue_securite() -> tuple[int, int]:
+    """Revue de sécurité avant le test public : chaque correction a sa vérification.
+
+    Aucun réseau : ffmpeg, le LLM, l'ASR et l'API Hugging Face sont simulés.
+    """
+    import contextlib
+    import io
+    import tempfile
+    import types
+    import wave
+
+    from app import collecte
+    from app.limites import LimiteDebit, entier_env
+    from asr import transcribe
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | revue {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    verifie("consentement : nouvelle formule, plus « anonyme »",
+            "Il est gardé sans ton nom ni ton numéro." in collecte.TEXTE_CONSENTEMENT
+            and "anonyme" not in collecte.TEXTE_CONSENTEMENT.lower())
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    with contextlib.redirect_stdout(io.StringIO()):
+        app = _charger_module(RACINE / "app.py", "app_guindima_revue")
+    repli = getattr(app.MATCHER, "_repli", app.MATCHER)
+    repli.geo.point = repli.geo.point_connu
+    INTERNE = r"C:\interne\modele.bin jeton-interne"
+
+    # Les erreurs montrées à l'usager ne citent jamais l'exception.
+    decoder, seconde = app._decoder_audio, app.transcrir_avec_seconde_chance
+    effacer = app._effacer_audio_recu
+    app._effacer_audio_recu = lambda chemin: False
+
+    def leve(*_args):
+        raise RuntimeError(INTERNE)
+
+    journal = io.StringIO()
+    try:
+        app._decoder_audio = leve
+        with contextlib.redirect_stdout(journal):
+            illisible = app.trouver_le_bus("x.webm", "", "")
+        app._decoder_audio = lambda chemin: [0.0] * 16_000
+        app.transcrir_avec_seconde_chance = leve
+        with contextlib.redirect_stdout(journal):
+            impossible = app.trouver_le_bus("x.webm", "", "")
+    finally:
+        app._decoder_audio, app.transcrir_avec_seconde_chance = decoder, seconde
+        app._effacer_audio_recu = effacer
+    verifie("audio illisible : message générique", illisible[2] == app.CARTE_AUDIO_ILLISIBLE, illisible[2])
+    verifie("transcription impossible : message générique",
+            impossible[2] == app.CARTE_TRANSCRIPTION_IMPOSSIBLE, impossible[2])
+    verifie("journal : le type d'erreur, pas son texte",
+            "RuntimeError" in journal.getvalue() and INTERNE not in journal.getvalue(), journal.getvalue())
+    mention = app._mention({"erreur": "modèle=interne statut=500", "source": "llm"})
+    verifie("mention : pas de détail du LLM", "interne" not in mention and "500" not in mention, mention)
+
+    # Signature et durée sont contrôlées avant tout décodage.
+    for nom, debut in (("WAV", b"RIFF\0\0\0\0WAVEfmt "), ("WebM", b"\x1aE\xdf\xa3\x01"), ("Ogg", b"OggS\0"),
+                       ("FLAC", b"fLaC\0"), ("MP3", b"ID3\x04"), ("AAC", b"\xff\xf1P@"),
+                       ("M4A", b"\0\0\0\x1cftypM4A ")):
+        verifie(f"format accepté : {nom}", app._signature_audio(debut))
+    for nom, debut in (("playlist HLS", b"#EXTM3U\n#EXT-X-VERSION:3\n"), ("concat", b"ffconcat version 1.0\n"),
+                       ("HTML", b"<html>"), ("vide", b"")):
+        verifie(f"format refusé : {nom}", not app._signature_audio(debut))
+
+    lancements: list = []
+    lecture, execution = app.load_audio, app.subprocess.run
+
+    def interdit(*args, **kwargs):
+        lancements.append(args)
+        raise AssertionError("décodage non autorisé")
+
+    app.load_audio, app.subprocess.run = interdit, interdit
+    try:
+        with tempfile.TemporaryDirectory() as dossier:
+            playlist = Path(dossier) / "piege.wav"
+            playlist.write_bytes(b"#EXTM3U\n#EXTINF:1,\nfile:///etc/passwd\n")
+            long_wav = Path(dossier) / "long.wav"
+            with wave.open(str(long_wav), "wb") as sortie:
+                sortie.setnchannels(1)
+                sortie.setsampwidth(2)
+                sortie.setframerate(8_000)
+                sortie.writeframes(b"\0\0" * 8_000 * 40)
+            messages = []
+            for chemin in (playlist, long_wav):
+                try:
+                    app._decoder_audio(str(chemin))
+                    messages.append("accepté")
+                except app.AudioRefuse as exc:
+                    messages.append(str(exc))
+    finally:
+        app.load_audio, app.subprocess.run = lecture, execution
+    verifie("playlist déguisée : refusée sans lancer ffmpeg",
+            messages[0] == app.MESSAGE_AUDIO_FORMAT and not lancements, (messages, lancements))
+    verifie("audio trop long : refusé avant décompression",
+            messages[1] == app.MESSAGE_AUDIO_TROP_LONG and not lancements, (messages, lancements))
+
+    source = (RACINE / "app.py").read_text(encoding="utf-8")
+    verifie("Gradio borne les fichiers et la file d'attente",
+            "max_file_size=2 * TAILLE_MAX_AUDIO" in source and "queue(max_size=TAILLE_FILE_ATTENTE)" in source)
+
+    # Plafond du LLM : la recherche continue en local.
+    instant = [0.0]
+    limite = LimiteDebit(2, 3, horloge=lambda: instant[0])
+    suite = [limite.autoriser() for _ in range(3)]
+    instant[0] = 61.0
+    apres_minute = [limite.autoriser(), limite.autoriser()]
+    instant[0] = 86_401.0
+    verifie("plafond par minute puis par jour",
+            suite == [True, True, False] and apres_minute == [True, False] and limite.autoriser(),
+            (suite, apres_minute))
+    os.environ["ESSAI_PLAFOND"] = "abc"
+    verifie("réglage invalide : valeur par défaut", entier_env("ESSAI_PLAFOND", 7) == 7)
+    del os.environ["ESSAI_PLAFOND"]
+
+    appels_llm: list = []
+    plafond, extraction = app.LIMITE_LLM, app.extract_intent
+    app.LIMITE_LLM = LimiteDebit(1, 1, horloge=lambda: 0.0)
+    app.LIMITE_LLM.autoriser()
+    app.extract_intent = lambda *a, **k: appels_llm.append(a) or {}
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            sortie, _ = app._pipeline("phrase sans lieu connu du tout", "", 0.0)
+    finally:
+        app.LIMITE_LLM, app.extract_intent = plafond, extraction
+    verifie("plafond atteint : pas d'appel LLM, réponse quand même",
+            not appels_llm and sortie[0] == "phrase sans lieu connu du tout", appels_llm)
+
+    # Le journal de l'ASR ne recopie pas le message de l'erreur.
+    essais: list = []
+
+    def modele(entree, generate_kwargs=None):
+        essais.append(entree)
+        if len(essais) == 1:
+            raise ValueError("phrase-de-usager")
+        return {"text": "ok"}
+
+    journal = io.StringIO()
+    with contextlib.redirect_stdout(journal):
+        texte = transcribe.transcrire(modele, [0.0] * 16_000)
+    verifie("ASR : second essai sans recopier l'erreur",
+            texte == "ok" and "phrase-de-usager" not in journal.getvalue(), journal.getvalue())
+
+    # L'envoi ne retombe jamais sur un autre jeton.
+    avant = os.environ.pop("HF_TOKEN_COLLECTE", None)
+    try:
+        collecte.televerser_hf({"donnees/GM-AAAAAA/avis.json": b"{}"})
+        refuse = False
+    except PermissionError:
+        refuse = True
+    finally:
+        if avant is not None:
+            os.environ["HF_TOKEN_COLLECTE"] = avant
+    verifie("envoi sans jeton dédié : refusé avant tout appel", refuse)
+
+    # Suppression : un objet LFS partagé avec un autre code est conservé.
+    script = _charger_module(RACINE / "scripts" / "supprimer_enregistrement.py", "supprimer_revue")
+
+    class ApiPartagee:
+        def __init__(self):
+            self.purges: list = []
+
+        def list_repo_tree(self, depot, recursive=False, repo_type=None):
+            lfs = types.SimpleNamespace(sha256="meme-audio")
+            return [types.SimpleNamespace(path="donnees/GM-AAAAAA/audio.wav", lfs=lfs),
+                    types.SimpleNamespace(path="donnees/GM-BBBBBB/audio.wav", lfs=lfs)]
+
+        def list_lfs_files(self, depot, repo_type=None):
+            return [types.SimpleNamespace(filename="donnees/GM-AAAAAA/audio.wav", file_oid="meme-audio")]
+
+        def delete_folder(self, *a, **k):
+            pass
+
+        def permanently_delete_lfs_files(self, depot, fichiers, **k):
+            self.purges.extend(fichiers)
+
+        def super_squash_history(self, *a, **k):
+            pass
+
+    api = ApiPartagee()
+    with contextlib.redirect_stdout(io.StringIO()):
+        script.supprimer(api, "GM-AAAAAA", executer=True)
+    verifie("suppression : audio identique d'un autre code conservé", not api.purges, api.purges)
     return echecs, total
 
 
@@ -7561,6 +7764,7 @@ if __name__ == "__main__":
         echecs_lot8, total_lot8 = test_lot_8()
         echecs_lot9, total_lot9 = test_lot_9()
         echecs_lot10, total_lot10 = test_lot_10()
+        echecs_revue, total_revue = test_revue_securite()
         echecs = (
             test_local()
             + echecs_partage
@@ -7607,6 +7811,7 @@ if __name__ == "__main__":
             + echecs_lot8
             + echecs_lot9
             + echecs_lot10
+            + echecs_revue
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -7654,6 +7859,7 @@ if __name__ == "__main__":
             + total_lot8
             + total_lot9
             + total_lot10
+            + total_revue
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

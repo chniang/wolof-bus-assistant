@@ -34,16 +34,28 @@ def code_valide(brut: str) -> str | None:
 def supprimer(api, code: str, executer: bool = False) -> int:
     """Liste (et supprime si demandé) les fichiers du code ; renvoie leur nombre."""
     prefixe = dossier_du_code(code) + "/"
-    fichiers = [f for f in api.list_repo_files(DEPOT, repo_type=TYPE_DEPOT) if f.startswith(prefixe)]
-    # L'audio peut survivre dans LFS même si le dossier a déjà disparu du dépôt.
-    audios = [
-        f for f in api.list_lfs_files(DEPOT, repo_type=TYPE_DEPOT)
-        if (f.filename or "").startswith(prefixe)
+    # Seuls les fichiers ont un attribut `lfs` (None s'ils ne sont pas en LFS).
+    arbre = [
+        e for e in api.list_repo_tree(DEPOT, recursive=True, repo_type=TYPE_DEPOT)
+        if hasattr(e, "lfs")
     ]
+    fichiers = [e.path for e in arbre if e.path.startswith(prefixe)]
+    empreintes_ici = {e.lfs.sha256 for e in arbre if e.lfs and e.path.startswith(prefixe)}
+    empreintes_ailleurs = {e.lfs.sha256 for e in arbre if e.lfs and not e.path.startswith(prefixe)}
+    # L'audio peut survivre dans LFS même si le dossier a déjà disparu du dépôt.
+    candidats = [
+        f for f in api.list_lfs_files(DEPOT, repo_type=TYPE_DEPOT)
+        if f.file_oid in empreintes_ici or (f.filename or "").startswith(prefixe)
+    ]
+    # Deux envois du même fichier partagent un seul objet LFS : le purger casserait
+    # l'enregistrement de l'autre code.
+    audios = [f for f in candidats if f.file_oid not in empreintes_ailleurs]
     for chemin in fichiers:
         print(f"  {chemin}")
     print(f"{len(fichiers)} fichier(s), {len(audios)} objet(s) LFS pour {code}")
-    if not fichiers and not audios:
+    if len(audios) < len(candidats):
+        print(f"{len(candidats) - len(audios)} objet(s) LFS conservé(s) : utilisés aussi par un autre code.")
+    if not fichiers and not candidats:
         print("Rien à supprimer. Un code tout récent peut mettre 30 min à arriver : réessaie plus tard.")
         return 0
     if not executer:

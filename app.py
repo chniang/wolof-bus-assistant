@@ -18,6 +18,7 @@ import atexit
 import contextvars
 import csv
 import html
+import io
 import itertools
 import json
 import re
@@ -47,6 +48,7 @@ sys.path.insert(0, str(RACINE / "src"))
 
 from app import collecte  # noqa: E402
 from app.cartes import titre_autre_possibilite, titre_autre_possibilite_texte, titre_section  # noqa: E402
+from app.limites import LimiteDebit, entier_env  # noqa: E402
 from app.partage import bouton_partage  # noqa: E402
 from asr.transcribe import (  # noqa: E402
     MODEL_ASR_GPU,
@@ -62,6 +64,7 @@ from intent.extract_intent import (  # noqa: E402
     NVIDIA_BASE_URL,
     TEXTE_MAX,
     TIMEOUT_APPEL,
+    _repli_local,
     extract_intent,
     extract_local,
 )
@@ -248,6 +251,10 @@ MATCHER = _construire_matcher()
 
 _CLIENT = None
 _CLIENT_TENTE = False
+LIMITE_LLM = LimiteDebit(
+    entier_env("LLM_MAX_PAR_MINUTE", 30),
+    entier_env("LLM_MAX_PAR_JOUR", 1000),
+)
 
 
 def _client_llm():
@@ -289,6 +296,7 @@ DUREE_VIE_VOIX = 600  # secondes : un WAV de réponse plus vieux est supprimé
 
 TAILLE_MAX_AUDIO = 10 * 1024 * 1024  # 10 Mo
 DUREE_MAX_AUDIO = 30.0  # secondes
+TAILLE_FILE_ATTENTE = 64  # demandes en attente, au-delà Gradio refuse poliment
 MESSAGE_AUDIO_TROP_LOURD = (
     "Fichier trop lourd : 10 Mo maximum. / Fi bi bari na : 10 Mo rekk."
 )
@@ -296,6 +304,10 @@ MESSAGE_AUDIO_TROP_LONG = (
     "Enregistrement trop long : 30 secondes maximum. / "
     "Mbind mi guddoon na : 30 segond rekk."
 )
+MESSAGE_AUDIO_FORMAT = "Format audio non reconnu. Enregistre-toi avec le micro."
+# Le détail d'une erreur (chemins, commande ffmpeg, nom du modèle) reste au serveur.
+CARTE_AUDIO_ILLISIBLE = "### 🎤 Audio illisible\n\nRéessaie avec un nouvel enregistrement."
+CARTE_TRANSCRIPTION_IMPOSSIBLE = "### 🎤 Transcription impossible\n\nRéessaie dans un instant."
 
 ERREUR_ASR = "\x00ERREUR_ASR "
 
@@ -324,6 +336,39 @@ def _nettoyer_voix_anciennes() -> None:
 atexit.register(shutil.rmtree, DOSSIER_VOIX, ignore_errors=True)
 
 
+def _signature_audio(octets: bytes) -> bool:
+    """Vrai si le début du fichier est celui d'un conteneur audio attendu.
+
+    ffmpeg devine le format d'après le contenu : une « playlist » HLS ou un script
+    concat déposé comme audio lui ferait ouvrir d'autres fichiers. Seuls WAV, WebM,
+    Ogg, FLAC, MP3, AAC et MP4/M4A vont donc jusqu'au décodage.
+    """
+    debut = octets[:12]
+    return (
+        (debut[:4] == b"RIFF" and debut[8:12] == b"WAVE")
+        or debut[:4] in {b"\x1aE\xdf\xa3", b"OggS", b"fLaC"}
+        or debut[:3] == b"ID3"
+        or debut[4:8] == b"ftyp"
+        or (len(debut) >= 2 and debut[0] == 0xFF and debut[1] & 0xE0 == 0xE0)
+    )
+
+
+def _refuser_duree_annoncee(octets: bytes) -> None:
+    """Refuse un audio trop long AVANT de le décompresser.
+
+    10 Mo de FLAC silencieux peuvent représenter des heures, donc des Go en mémoire.
+    Un format que soundfile ne sait pas lire passe par ffmpeg, déjà borné à 31 s.
+    """
+    import soundfile as sf
+
+    try:
+        duree = sf.info(io.BytesIO(octets)).duration
+    except Exception:
+        return
+    if duree > DUREE_MAX_AUDIO + 1:
+        raise AudioRefuse(MESSAGE_AUDIO_TROP_LONG)
+
+
 def _decoder_audio(chemin_audio: str) -> np.ndarray:
     """Lit l'enregistrement (micro ou fichier) en 16 kHz mono, sur CPU.
 
@@ -340,6 +385,9 @@ def _decoder_audio(chemin_audio: str) -> np.ndarray:
         raise AudioRefuse(MESSAGE_AUDIO_TROP_LOURD)
 
     octets = chemin.read_bytes()
+    if not _signature_audio(octets):
+        raise AudioRefuse(MESSAGE_AUDIO_FORMAT)
+    _refuser_duree_annoncee(octets)
     try:
         son = load_audio(octets)
     except Exception:
@@ -350,8 +398,9 @@ def _decoder_audio(chemin_audio: str) -> np.ndarray:
             try:
                 subprocess.run(
                     [
-                        "ffmpeg", "-y", "-loglevel", "error",
+                        "ffmpeg", "-nostdin", "-y", "-loglevel", "error",
                         "-i", str(chemin),
+                        "-vn",
                         "-t", str(int(DUREE_MAX_AUDIO) + 1),
                         "-ar", str(SAMPLE_RATE),
                         "-ac", "1",
@@ -1241,7 +1290,8 @@ def _mention(intent: dict, modele_asr: str = "") -> str:
             "indisponible, la détection a été faite sur place."
         )
     elif intent.get("erreur"):
-        notes.append(f"> ⚠️ {_echapper(intent['erreur'])}")
+        # Le texte de l'erreur cite le modèle et le statut HTTP : il reste au journal.
+        notes.append("> ⚠️ Je n'ai pas tout compris : reformule si la réponse ne convient pas.")
     return "\n\n".join(notes)
 
 
@@ -1382,7 +1432,11 @@ def _pipeline(
         ):
             intent = {**local, "source": "reseau", "erreur": None}
     if intent is None:
-        intent = extract_intent(phrase, client=_client_llm())
+        intent = (
+            extract_intent(phrase, client=_client_llm())
+            if LIMITE_LLM.autoriser()
+            else _repli_local(phrase, "plafond_app")
+        )
     depart, arrivee = intent.get("depart") or "", intent.get("arrivee") or ""
     _noter(depart=depart, arrivee=arrivee)
 
@@ -1515,13 +1569,8 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
             return ("", "", f"### 🎤 {_echapper(str(exc))}", None, "")
         except Exception as exc:
             _effacer_audio_recu(audio)
-            return (
-                "",
-                "",
-                f"### 🎤 Audio illisible\n\n{_echapper(_court(exc))}",
-                None,
-                "",
-            )
+            print(f"[audio] illisible ({type(exc).__name__})", flush=True)
+            return ("", "", CARTE_AUDIO_ILLISIBLE, None, "")
         # Décodé, l'audio est en mémoire : le fichier de l'usager disparaît.
         _effacer_audio_recu(audio)
         if son is None or len(son) < SAMPLE_RATE * 0.3:
@@ -1539,13 +1588,8 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
                 _phrase_donne_un_trajet,
             )
         except Exception as exc:
-            return (
-                "",
-                "",
-                f"### 🎤 Transcription impossible\n\n`{_echapper(_court(exc))}`",
-                None,
-                "",
-            )
+            print(f"[ASR] transcription impossible ({type(exc).__name__})", flush=True)
+            return ("", "", CARTE_TRANSCRIPTION_IMPOSSIBLE, None, "")
         if not phrase:
             return vide
         quint, _ = _pipeline(
@@ -2254,4 +2298,12 @@ if __name__ == "__main__":
     # l'hôte et le port à lancer.
     # Depuis Gradio 6, le thème et le CSS se passent au lancement, plus au
     # constructeur. i18n remplace les libellés anglais du micro.
-    demo.queue().launch(theme=_theme(), css=CSS_GUINDIMA, i18n=I18N_GUINDIMA)
+    # Les deux bornes protègent le Space public : la file ne grossit pas sans fin,
+    # et Gradio refuse un gros fichier avant de l'écrire sur le disque. On laisse
+    # une marge au-dessus de 10 Mo pour que _decoder_audio donne son message clair.
+    demo.queue(max_size=TAILLE_FILE_ATTENTE).launch(
+        theme=_theme(),
+        css=CSS_GUINDIMA,
+        i18n=I18N_GUINDIMA,
+        max_file_size=2 * TAILLE_MAX_AUDIO,
+    )

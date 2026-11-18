@@ -234,7 +234,8 @@ def transcrire(model, audio_16k: np.ndarray) -> str:
         # Kiriku n'accepte pas forcément « task » ni l'inference_mode : on relance
         # exactement comme au banc d'essai Colab (seul max_new_tokens, sans
         # inference_mode), qui a fonctionné.
-        print(f"[ASR] 1er essai échoué ({type(premiere).__name__}: {premiere}), nouvel essai", flush=True)
+        # Le type seul : le message d'une erreur de modèle peut reprendre ses entrées.
+        print(f"[ASR] 1er essai échoué ({type(premiere).__name__}), nouvel essai", flush=True)
         with torch.no_grad():
             prediction = model(
                 {"raw": audio_16k, "sampling_rate": SAMPLE_RATE},
