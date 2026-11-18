@@ -6828,8 +6828,8 @@ def test_lot_8() -> tuple[int, int]:
     for phrase, champ, attendu in plus_larges:
         r = ei.extract_local(phrase)
         verifie(f"« {phrase} » : {champ} = {attendu}", ei.cle_lieu(r[champ]) == ei.cle_lieu(attendu), r[champ])
-    # « daf » (wolof) et le sigle « BOP » ne deviennent pas des lieux. NB : « sama
-    # bopp » donnait déjà le quartier Bopp avant ce lot (arrêt brut) : hors lot.
+    # « daf » (wolof) et le sigle « BOP » ne deviennent pas des lieux. « sama
+    # bopp » est couvert par le lot 9.
     r = ei.extract_local("daf ma neex")
     verifie("« daf » : aucun lieu", not r["depart"] and not r["arrivee"], r)
     verifie("sigles BOP / DAF / TER jamais ajoutés",
@@ -6912,6 +6912,133 @@ def test_lot_8() -> tuple[int, int]:
     verifie("geo.py : mêmes lignes Tata qu'avec le CSV brut",
             sorted((r["ligne"], int(r["ordre"]), r["arret"]) for r in tata_brut)
             == sorted((r["ligne"], int(r["ordre"]), r["arret"]) for r in tata_app))
+
+    return echecs, total
+
+
+def test_lot_9() -> tuple[int, int]:
+    """Lot 9 : « Demba Diop » reconnu, « sama bopp » n'est pas un lieu, aucun e-mail.
+
+    Aucun réseau : le moteur lit les CSV, le LLM et la session HTTP sont simulés.
+    """
+    import contextlib
+    import io
+    import json
+    import tempfile
+
+    import intent.extract_intent as ei
+    from intent.conversation import signal_trajet
+    from matching import geo
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot 9 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    def lieux(phrase: str) -> tuple[str, str]:
+        r = ei.extract_local(phrase)
+        return r["depart"] or "", r["arrivee"] or ""
+
+    # 1. Les noms en « Dem… » ne sont plus coupés par la règle « dem » collé.
+    for phrase, attendu in (
+        # « Stade Demba DIOP » : orthographe de l'arrêt dans le réseau.
+        ("Maa ngi Stade Demba Diop, bëgg naa dem Sandaga", ("Stade Demba DIOP", "Sandaga")),
+        ("Maa ngi Stade Dembadiop, bëgg naa dem Sandaga", ("Stade Dembadiop", "Sandaga")),
+        ("Maa ngi Sandaga, bëgg naa dem Stade Demba Diop", ("Sandaga", "Stade Demba DIOP")),
+        ("Maa ngi Sandaga, bëgg naa dem Stade Dembadiop", ("Sandaga", "Stade Dembadiop")),
+        ("maa ngi stade demba-diop, bëgg naa dem sandaga", ("Stade Demba DIOP", "Sandaga")),
+    ):
+        verifie(f"« {phrase} »", lieux(phrase) == attendu, lieux(phrase))
+    formes = {c for c, _ in ei._CIBLES + ei._CIBLES_COMPLETES + ei._CIBLES_ETENDUES}
+    for cible in sorted(formes):
+        if any(m.startswith("dem") and len(m) > 3 for m in cible.split()):
+            verifie(f"nom protégé intact : « {cible} »", ei._normaliser_phrase(cible) == cible,
+                    ei._normaliser_phrase(cible))
+    moteur = _matcher_hors_ligne()
+    with contextlib.redirect_stdout(io.StringIO()):
+        trajet = moteur.find_line("Stade Demba Diop", "Sandaga")
+    verifie("Stade Demba Diop -> Sandaga : le moteur répond",
+            bool(trajet.get("lignes") or trajet.get("correspondances") or trajet.get("trajets_2")),
+            trajet.get("depart_matched"))
+    # La règle continue de servir pour tout le reste.
+    verifie("« dempale » reste « dem » + Palais", lieux("dempale") == ("", "Palais"), lieux("dempale"))
+    verifie("« demba Colobane » reste « dem ba Colobane »",
+            ei._normaliser_phrase("demba Colobane") == "dem ba colobane" and lieux("demba Colobane") == ("", "Colobane"),
+            ei._normaliser_phrase("demba Colobane"))
+    verifie("« demdikk » reste la compagnie, jamais un lieu",
+            ei.extract_local("demdikk")["compagnie"] == "Dakar Dem Dikk" and lieux("demdikk") == ("", ""),
+            ei.extract_local("demdikk"))
+
+    # 2. « bopp » (soi-même, tête) n'est pas le quartier Bopp.
+    for phrase in (
+        "sama bopp", "Sama bopp day metti", "dama bëgg dem sama bopp", "maa ngi ci sama bopp",
+        "sa bopp", "seen bopp", "suñu bopp", "sunu bopp", "sama-bopp", "sama bop",
+        "bopp bi day metti", "boppam", "dama metti bopp", "damay dem ak sa bopp",
+    ):
+        verifie(f"« {phrase} » : aucun lieu", lieux(phrase) == ("", ""), lieux(phrase))
+    verifie("« damay dem sama bopp » n'est pas une demande de trajet", not signal_trajet("damay dem sama bopp"))
+    for phrase, attendu in (
+        ("maa ngi Bopp, bëgg naa dem Sandaga", ("Bopp", "Sandaga")),
+        ("Bopp laa nekk, bëgg naa dem Sandaga", ("Bopp", "Sandaga")),
+        ("bëgg naa dem Bopp", ("", "Bopp")),
+        ("maa ngi Ouakam, bëgg naa dem ci Bopp", ("Ouakam", "Bopp")),
+        ("maa ngi Ouakam, bëgg naa dem Sandaga ak sama bopp", ("Ouakam", "Sandaga")),
+    ):
+        verifie(f"« {phrase} »", lieux(phrase) == attendu, lieux(phrase))
+
+    # Le LLM ne peut pas ramener le faux lieu : « Bopp » existe dans le réseau.
+    appel_origine = ei._call_llm
+    ei._call_llm = lambda client, texte: (json.dumps({"depart": "Bopp", "arrivee": ""}), "simulé")
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            faux = ei.extract_intent("sama bopp", client=object())
+            vrai = ei.extract_intent("maa ngi Bopp, bëgg naa dem Sandaga", client=object())
+    finally:
+        ei._call_llm = appel_origine
+    verifie("LLM : « Bopp » refusé pour « sama bopp »", not faux["depart"] and not faux["arrivee"], faux)
+    verifie("LLM : « Bopp » gardé quand il est nommé", vrai["depart"] == "Bopp" and vrai["arrivee"] == "Sandaga", vrai)
+
+    # 3. Aucune adresse e-mail dans le code, ni dans l'en-tête envoyé.
+    attendu = "GuindiMa-AI/1.0 (+https://github.com/chniang/wolof-bus-assistant)"
+    verifie("geo.py : User-Agent du projet", geo.USER_AGENT == attendu, geo.USER_AGENT)
+    verifie("geolocaliser_arrets.py : même User-Agent",
+            f'USER_AGENT = "{attendu}"' in (RACINE / "data" / "sources" / "geolocaliser_arrets.py").read_text(encoding="utf-8"))
+
+    class Reponse:
+        def raise_for_status(self) -> None:
+            pass
+
+        def json(self) -> list:
+            return []
+
+    class Session:
+        entetes: dict = {}
+
+        def get(self, url, params=None, headers=None, timeout=None):
+            Session.entetes = headers or {}
+            return Reponse()
+
+    with tempfile.TemporaryDirectory() as dossier:
+        nominatim = geo._Nominatim(Path(dossier) / "cache.json")
+        nominatim.session = Session()
+        nominatim.geocode("lieu de test")
+    verifie("l'en-tête envoyé à Nominatim est celui du projet",
+            Session.entetes.get("User-Agent") == attendu, Session.entetes)
+
+    motif = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")
+    extensions = {".py", ".md", ".txt", ".json", ".toml", ".yml", ".yaml", ".cfg", ".ini", ".html", ".css", ".js", ".csv"}
+    fichiers = [p for p in (RACINE / "src").rglob("*")
+                if p.is_file() and p.suffix.lower() in extensions and "__pycache__" not in p.parts]
+    # Seuls les noms de fichiers sont affichés : jamais l'adresse trouvée.
+    avec_adresse = [p.relative_to(RACINE).as_posix() for p in fichiers
+                    if motif.search(p.read_text(encoding="utf-8", errors="replace"))]
+    verifie(f"aucune adresse e-mail dans src/ ({len(fichiers)} fichiers)", bool(fichiers) and not avec_adresse, avec_adresse)
 
     return echecs, total
 
@@ -7064,6 +7191,7 @@ if __name__ == "__main__":
         echecs_lot6, total_lot6 = test_lot_6()
         echecs_lot7, total_lot7 = test_lot_7()
         echecs_lot8, total_lot8 = test_lot_8()
+        echecs_lot9, total_lot9 = test_lot_9()
         echecs = (
             test_local()
             + echecs_partage
@@ -7108,6 +7236,7 @@ if __name__ == "__main__":
             + echecs_lot6
             + echecs_lot7
             + echecs_lot8
+            + echecs_lot9
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -7153,6 +7282,7 @@ if __name__ == "__main__":
             + total_lot6
             + total_lot7
             + total_lot8
+            + total_lot9
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

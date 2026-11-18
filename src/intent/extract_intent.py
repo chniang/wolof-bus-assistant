@@ -419,8 +419,19 @@ def _parse_json_or_fallback(text: str) -> dict:
 _MOT_AEROPORT = r"(?:aeroports?|earoport|ayeropo{1,2}rt?|a[iy]da+\s*po{1,2}r{1,2}e?|ara{1,2}p{1,2}o{1,2}rt?)"
 _BLAISE_DIAGNE = r"bl(?:aise|aize|ese|eze|eez|ez)\s+(?:diagne|diagn|jaane?|jagne|dia?ngne)"
 _SEP = r"[\s,;.]+"
+# « bopp » veut dire « tête » ou « soi-même », et c'est aussi le quartier Bopp :
+# « sama bopp » (moi-même) donnait un faux lieu « Bopp ». « suñu » arrive ici
+# sans tilde (« sunu »). Le jeton « soimeme » n'est jamais un lieu.
+_POSSESSIFS_BOPP = r"(?:sama|samay|sa|say|seen|seeni|sen|sunu|sunuy)"
 
 REPLACEMENTS_PHRASE = (
+    # Tournures où « bopp » n'est pas le quartier ; « maa ngi Bopp », « dem Bopp »
+    # et « Bopp laa nekk » ne sont pas touchés et restent le vrai lieu.
+    (r"\b" + _POSSESSIFS_BOPP + r"[\s-]+bopp?(?:am|em|u)?\b", " soimeme "),
+    (r"\bbopp(?:am|em|u)\b", " soimeme "),
+    # « bopp bi day metti » (la tête me fait mal), « metit bopp ».
+    (r"\bbopp?\s+(?:bi|yi|day|dafa|dafay)\b", " soimeme "),
+    (r"\b(?:metti|metit|meti|wat)\s+bopp?\b", " soimeme "),
     # géejawaay (whisper-small), géejewaay (Kiriku), gëjjewaay : même lieu.
     (r"(?:geej\s*a\s*waay|ge{1,2}j{1,2}[ae]\s*waa?y)\b", " guediawaye "),
     # (?<!ou) protège la graphie canonique : sans lui « ouakam » deviendrait
@@ -731,7 +742,8 @@ def _normaliser_phrase(phrase: str) -> str:
         texte = re.sub(motif, remplacement, texte)
     # L'ASR colle la préposition au mot suivant (« dempale ») : on la rouvre pour que
     # la répartition départ / arrivée reste possible grâce à la position de « dem ».
-    texte = re.sub(r"\bdem(?=[a-z])", "dem ", texte)
+    # Sauf dans un nom de lieu : voir _MOTIF_DEM_COLLE (« Demba Diop »).
+    texte = _MOTIF_DEM_COLLE.sub("dem ", texte)
     texte = re.sub(r"[^a-z0-9\s]", " ", texte)
     # « jëm » (aller vers) annonce l'arrivée exactement comme « dem » : « Bëgg
     # naa jëm aéroport Diass » doit répartir les lieux autour de lui.
@@ -768,6 +780,8 @@ MOTS_DE_LA_PHRASE = {
     "de", "deu", "dee", "dawal", "jel", "jeel", "won", "ana", "fan", "fu", "diougue",
     # « ban bus » (« quel bus ») : formule, jamais un lieu.
     "ban",
+    # « sama bopp » et ses variantes, réécrits par REPLACEMENTS_PHRASE.
+    "soimeme",
 }
 # Premiers mots de nombreux arrêts : seuls, ils ne désignent aucun lieu
 # (« marché liberté cinq » ne doit pas devenir « Marché aux Poissons »). Un
@@ -829,6 +843,32 @@ def _charger_lieux_complets() -> list[tuple[str, str]]:
 
 _CIBLES_COMPLETES = _charger_lieux_complets()
 _CIBLES_EXACTES |= {cible for cible, _ in _CIBLES_COMPLETES}
+
+
+def _motif_dem_colle() -> re.Pattern[str]:
+    """« dem » collé au mot suivant, sauf dans un nom de lieu connu.
+
+    « Stade Demba Diop » devenait « stade dem ba diop » et n'était jamais reconnu.
+    La liste vient des lieux eux-mêmes : un futur arrêt en « Dem… » est protégé
+    d'office. On protège le nom entier, pas « demba » seul : « demba Colobane »
+    reste « dem ba Colobane » (aller jusqu'à Colobane).
+    """
+    suites = set()
+    for cible, _ in _CIBLES + _CIBLES_COMPLETES + _CIBLES_ETENDUES:
+        mots = cible.split()
+        for i, mot in enumerate(mots):
+            if mot.startswith("dem") and len(mot) > 3:
+                suites.add(" ".join(mots[i:])[3:])
+    if not suites:
+        return re.compile(r"\bdem(?=[a-z])")
+    choix = "|".join(
+        re.escape(suite).replace(r"\ ", r"[\s-]*")
+        for suite in sorted(suites, key=len, reverse=True)
+    )
+    return re.compile(rf"\bdem(?!(?:{choix})\b)(?=[a-z])")
+
+
+_MOTIF_DEM_COLLE = _motif_dem_colle()
 
 # Mots qui n'apparaissent dans le nom d'AUCUN arrêt : un n-gramme qui en contient
 # un ne peut pas viser un lieu, quelle que soit sa longueur. « baobab » (quartier
@@ -1153,6 +1193,15 @@ def _lieu_connu(valeur: str) -> bool:
     return bool(valeur) and _cible(valeur) in _CIBLES_EXACTES
 
 
+def _bopp_non_nomme(valeur: str, transcription: str) -> bool:
+    """Vrai si le LLM rend « Bopp » alors que la phrase ne nomme pas ce quartier.
+
+    Le nom existe bien dans le réseau, _lieu_connu l'accepte donc : sans ce
+    contrôle, « sama bopp » pouvait revenir comme lieu par le LLM.
+    """
+    return _cible(valeur) == "bopp" and not {"bopp", "bop"} & set(_sans_compagnie(transcription).split())
+
+
 def _repli_local(transcription: str, raison: str) -> dict:
     """Bascule sur l'extraction locale, et n'alerte que si un des deux lieux manque."""
     # La cause peut contenir un extrait de la phrase ou de la réponse du modèle :
@@ -1209,6 +1258,10 @@ def extract_intent(transcription: str, client=None) -> dict:
     if depart and not _lieu_connu(depart):
         depart = ""
     if arrivee and not _lieu_connu(arrivee):
+        arrivee = ""
+    if _bopp_non_nomme(depart, transcription):
+        depart = ""
+    if _bopp_non_nomme(arrivee, transcription):
         arrivee = ""
 
     resultat = {

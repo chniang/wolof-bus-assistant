@@ -39,7 +39,7 @@ ITINERAIRES_CSV = DATA / "itineraires_dakar.csv"
 CACHE_LIEUX = DATA / "sources" / "cache_lieux_nominatim.json"
 
 GEOCODE = "https://nominatim.openstreetmap.org/search"
-USER_AGENT = "GuindiMa-AI/1.0 (cheikhniang159@gmail.com)"
+USER_AGENT = "GuindiMa-AI/1.0 (+https://github.com/chniang/wolof-bus-assistant)"
 DELAI_SECONDES = 1.0
 TIMEOUT = 15
 RAYON_METRES = 800.0

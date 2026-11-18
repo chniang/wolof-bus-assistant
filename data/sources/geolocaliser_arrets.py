@@ -48,7 +48,7 @@ CACHE = Path(__file__).resolve().parent / "cache_nominatim.json"
 
 GEOCODE = "https://nominatim.openstreetmap.org/search"
 REVERSE = "https://nominatim.openstreetmap.org/reverse"
-USER_AGENT = "GuindiMa-AI/1.0 (cheikhniang159@gmail.com)"
+USER_AGENT = "GuindiMa-AI/1.0 (+https://github.com/chniang/wolof-bus-assistant)"
 DELAI_SECONDES = 1.0
 TIMEOUT = 30
 ZOOM_REVERSE = 14
