@@ -7708,6 +7708,273 @@ def test_revue_securite() -> tuple[int, int]:
     return echecs, total
 
 
+def test_plafonds_par_client() -> tuple[int, int]:
+    """Plafonds par client (trajets, LLM, collecte), sans réseau ni modèle."""
+    import contextlib
+    import io
+    import json
+    import types
+
+    import gradio as gr
+    import numpy as np
+    from gradio.helpers import special_args
+
+    from app import collecte, limites
+    from app.limites import HEURE, JOUR, MINUTE, LimiteFenetres, LimiteParClient, cle_client
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | plafonds {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    def requete(ip: str = "203.0.113.7", entete: str | None = None):
+        valeur = ip if entete is None else entete
+        return types.SimpleNamespace(headers={"x-forwarded-for": valeur},
+                                     client=types.SimpleNamespace(host="10.0.0.1"))
+
+    class FauxCollecteur:
+        def __init__(self):
+            self.lots: list[dict] = []
+
+        def soumettre(self, fichiers: dict) -> bool:
+            self.lots.append(fichiers)
+            return True
+
+    # 1. Compteurs : fenêtres, clients séparés, mémoire bornée.
+    instant = [0.0]
+    limite = LimiteParClient(((MINUTE, 2), (JOUR, 3)), horloge=lambda: instant[0])
+    verifie("par minute : le 3e appel est refusé",
+            [limite.autoriser("a") for _ in range(3)] == [True, True, False])
+    verifie("un autre client garde son quota", limite.autoriser("b"))
+    instant[0] = 61.0
+    verifie("par jour : la minute passée ne rend que le quota du jour",
+            [limite.autoriser("a"), limite.autoriser("a")] == [True, False])
+    instant[0] = JOUR + 62.0
+    verifie("le lendemain, le client repart de zéro", limite.autoriser("a"))
+    verifie("sans client identifié, rien n'est compté", limite.autoriser(None))
+    petite = LimiteParClient(((MINUTE, 1),), max_clients=3)
+    for numero in range(50):
+        petite.autoriser(f"client-{numero}")
+    verifie("mémoire bornée face à des adresses inventées", len(petite._clients) == 3)
+
+    # 2. Identification : empreinte salée, adresse jamais visible.
+    ip_a, ip_b = "203.0.113.7", "198.51.100.9"
+    os.environ.pop("IP_PROXYS_CONFIANCE", None)
+    journal = io.StringIO()
+    limites._FORMES_SIGNALEES.clear()
+    with contextlib.redirect_stdout(journal):
+        cle_a = cle_client(requete(ip_a))
+        cle_b = cle_client(requete(ip_b))
+    verifie("même adresse, même empreinte", cle_a == silencieux_cle(cle_client, requete(ip_a)))
+    verifie("adresses différentes, empreintes différentes", cle_a != cle_b)
+    verifie("l'empreinte ne contient pas l'adresse", ip_a not in cle_a and len(cle_a) == 32)
+    verifie("journal : ni adresse ni empreinte",
+            ip_a not in journal.getvalue() and cle_a not in journal.getvalue(), journal.getvalue())
+    verifie("sans requête : aucun client", cle_client(None) is None)
+    chaine = f"{ip_a}, {ip_b}"
+    verifie("par défaut : première adresse de la liste",
+            silencieux_cle(cle_client, requete(entete=chaine)) == cle_a)
+    os.environ["IP_PROXYS_CONFIANCE"] = "1"
+    verifie("IP_PROXYS_CONFIANCE=1 : adresse vue par le dernier proxy",
+            silencieux_cle(cle_client, requete(entete=chaine)) == cle_b)
+    del os.environ["IP_PROXYS_CONFIANCE"]
+    hote = silencieux_cle(cle_client, types.SimpleNamespace(headers={}, client=types.SimpleNamespace(host="10.0.0.1")))
+    verifie("adresse fantaisiste : on retombe sur la connexion",
+            silencieux_cle(cle_client, requete(entete="pas-une-ip")) == hote)
+    verifie("IPv6 : tout le /64 compte pour un client",
+            silencieux_cle(cle_client, requete("2001:db8:1:2::1")) == silencieux_cle(cle_client, requete("2001:db8:1:2::ffff")))
+
+    # 3. L'application.
+    variables = ("COLLECTE_ACTIVE", "HF_TOKEN_COLLECTE", "CONTACT_WHATSAPP")
+    avant = {nom: os.environ.get(nom) for nom in variables}
+    sauve = (collecte.COLLECTEUR, collecte.LIMITE_VOIX_CLIENT, collecte.LIMITE_VOIX_JOUR, collecte.LIMITE_AVIS_CLIENT)
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    os.environ["COLLECTE_ACTIVE"] = "1"
+    PHRASE = "maa ngi Liberté 6, bëgg naa dem Palais"
+    INCONNUE = "phrase sans lieu connu du tout"
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            app = _charger_module(RACINE / "app.py", "app_guindima_plafonds")
+        repli = getattr(app.MATCHER, "_repli", app.MATCHER)
+        repli.geo.point = repli.geo.point_connu
+        son = [np.full(16_000, 0.1, dtype=np.float32)]
+        effaces: list = []
+        transcriptions: list = []
+
+        def transcrit(valeur, *_):
+            transcriptions.append(1)
+            return PHRASE, "Modèle test", 0.1, False
+
+        app._decoder_audio = lambda chemin: son[0]
+        app._effacer_audio_recu = lambda chemin: effaces.append(chemin) or True
+        app.transcrir_avec_seconde_chance = transcrit
+        app._voix_wolof = lambda *a, **k: None
+        app._client_llm = lambda: None
+
+        def silencieux(fonction, *args, **kwargs):
+            with contextlib.redirect_stdout(io.StringIO()):
+                return fonction(*args, **kwargs)
+
+        # Gradio doit bien remettre la requête à chaque handler branché.
+        marque = object()
+        for fonction, entrees in (
+            (app.traiter_demande, 5), (app.rechercher_une_fois, 4), (app.choisir_trajet_frequent, 2),
+            (app.repondre_et_vider_micro, 3), (app.traiter_demande_collecte, 7),
+            (app.rechercher_une_fois_collecte, 6), (app.choisir_trajet_frequent_collecte, 4),
+            (app.avis_oui, 2), (app.avis_non, 2), (app.avis_ne_sait_pas, 2), (app.donner_temps, 2),
+        ):
+            valeurs, *_ = special_args(fonction, [None] * entrees, marque)
+            verifie(f"Gradio transmet la requête à {fonction.__name__}",
+                    len(valeurs) == entrees + 1 and valeurs[-1] is marque, len(valeurs))
+
+        # 4. Trajets : 10 par minute, puis message poli, sans travail inutile.
+        app.LIMITE_TRAJETS_CLIENT = LimiteParClient(((MINUTE, 2), (JOUR, 100)))
+        client, autre = requete(ip_a), requete(ip_b)
+        premiers = [silencieux(app.traiter_demande, None, PHRASE, "", None, True, client) for _ in range(2)]
+        transcriptions.clear()
+        effaces.clear()
+        refus = silencieux(app.traiter_demande, "x.webm", "", "", {"phrase": PHRASE, "mode": "texte"}, True, client)
+        verifie("sous le plafond : réponses normales", all(s[0] == PHRASE for s in premiers))
+        verifie("au-delà : message poli en français", refus[2] == app.CARTE_TROP_DE_DEMANDES and "réessayer" in refus[2], refus[2])
+        verifie("refus : aucune transcription lancée", not transcriptions)
+        verifie("refus : l'audio reçu est effacé", effaces == ["x.webm"], effaces)
+        verifie("refus : la dernière demande reste connue", refus[6] == {"phrase": PHRASE, "mode": "texte"}, refus[6])
+        verifie("refus : 7 sorties, micro vidé", len(refus) == 7 and refus[5] is None)
+        verifie("un autre client n'est pas touché",
+                silencieux(app.traiter_demande, None, PHRASE, "", None, True, autre)[0] == PHRASE)
+        verifie("appel interne sans requête : non limité",
+                silencieux(app.traiter_demande, None, PHRASE, "", None, True)[0] == PHRASE)
+        vide = silencieux(app.traiter_demande, None, "", "", None, True, client)
+        verifie("champ vide : pas de message de plafond", vide[2] != app.CARTE_TROP_DE_DEMANDES)
+        verifie("API publique : même plafond",
+                silencieux(app.repondre_et_vider_micro, None, PHRASE, "", client)[2] == app.CARTE_TROP_DE_DEMANDES)
+        changement = silencieux(app.traiter_demande, None, "", "Tata AFTU", {"phrase": PHRASE, "mode": "texte"}, False, client)
+        verifie("changement de compagnie : compté aussi", changement[2] == app.CARTE_TROP_DE_DEMANDES)
+        app.LIMITE_TRAJETS_CLIENT = LimiteParClient(((MINUTE, 50), (JOUR, 2)))
+        for _ in range(2):
+            silencieux(app.traiter_demande, None, PHRASE, "", None, True, client)
+        verifie("plafond par jour",
+                silencieux(app.traiter_demande, None, PHRASE, "", None, True, client)[2] == app.CARTE_TROP_DE_DEMANDES)
+        verifie("valeurs par défaut : 10 par minute, 100 par jour",
+                silencieux(lambda: _charger_module(RACINE / "app.py", "app_plafonds_defaut")).LIMITE_TRAJETS_CLIENT.fenetres
+                == ((MINUTE, 10), (JOUR, 100)))
+
+        # 5. LLM : compté par client, plafond global conservé.
+        app.LIMITE_TRAJETS_CLIENT = LimiteParClient(((MINUTE, 100), (JOUR, 1000)))
+        appels: list = []
+        app.extract_intent = lambda phrase, client=None: appels.append(phrase) or {
+            "depart": "", "arrivee": "", "compagnie": "", "erreur": None, "source": "llm"}
+        app.LIMITE_LLM_CLIENT = LimiteParClient(((MINUTE, 1), (JOUR, 50)))
+        app.LIMITE_LLM = limites.LimiteDebit(100, 1000)
+        for _ in range(3):
+            sortie = silencieux(app.traiter_demande, None, INCONNUE, "", None, True, client)
+        verifie("LLM : un seul appel pour ce client", len(appels) == 1, len(appels))
+        verifie("LLM refusé : la réponse part quand même", sortie[0] == INCONNUE, sortie[0])
+        silencieux(app.traiter_demande, None, INCONNUE, "", None, True, autre)
+        verifie("LLM : un autre client garde le sien", len(appels) == 2, len(appels))
+        verifie("le client n'est plus connu après la demande", app._CLE_CLIENT.get() is None)
+        appels.clear()
+        app.LIMITE_LLM_CLIENT = LimiteParClient(((MINUTE, 100), (JOUR, 100)))
+        app.LIMITE_LLM = limites.LimiteDebit(1, 1000)
+        silencieux(app.traiter_demande, None, INCONNUE, "", None, True, client)
+        silencieux(app.traiter_demande, None, INCONNUE, "", None, True, autre)
+        verifie("plafond global du LLM conservé", len(appels) == 1, len(appels))
+
+        # 6. Collecte : 5 voix par heure et par client, 200 par jour, 20 s.
+        os.environ["HF_TOKEN_COLLECTE"] = "jeton-de-test"
+        faux = collecte.COLLECTEUR = FauxCollecteur()
+        collecte.LIMITE_VOIX_CLIENT = LimiteParClient(((HEURE, 2),))
+        collecte.LIMITE_VOIX_JOUR = LimiteFenetres(((JOUR, 3),))
+
+        def voix(req):
+            return silencieux(app.traiter_demande_collecte, "x.webm", "", "", None, True, True, None, req)
+
+        sorties = [voix(client) for _ in range(3)]
+        verifie("voix : 2 gardées pour ce client, pas la 3e", len(faux.lots) == 2, len(faux.lots))
+        verifie("voix au-delà : réponse normale", sorties[2][0] == PHRASE and "Ligne :" in sorties[2][2])
+        verifie("voix au-delà : ni code ni explication",
+                sorties[2][9] == "" and sorties[2][7]["voix"] is False, sorties[2][9])
+        verifie("voix au-delà : le panneau d'avis reste", sorties[2][8].get("visible") is True)
+        voix(autre)
+        verifie("voix : un autre client passe", len(faux.lots) == 3, len(faux.lots))
+        troisieme = voix(requete("192.0.2.5"))
+        verifie("plafond du jour : plus rien n'est gardé",
+                len(faux.lots) == 3 and troisieme[0] == PHRASE and troisieme[9] == "", len(faux.lots))
+        contenu = b"".join(o for lot in faux.lots for c, o in lot.items() if c.endswith(".json")).decode("utf-8")
+        cles = {silencieux_cle(cle_client, client), silencieux_cle(cle_client, autre)}
+        verifie("ni adresse ni empreinte dans les fiches",
+                not any(x in contenu for x in (ip_a, ip_b, *cles)), contenu[:200])
+        verifie("ni adresse ni empreinte dans le suivi",
+                not any(x in json.dumps(sorties[0][7]) for x in (ip_a, ip_b, *cles)), sorties[0][7])
+
+        faux = collecte.COLLECTEUR = FauxCollecteur()
+        collecte.LIMITE_VOIX_CLIENT = LimiteParClient(((HEURE, 5),))
+        collecte.LIMITE_VOIX_JOUR = LimiteFenetres(((JOUR, 200),))
+        son[0] = np.zeros(21 * 16_000, dtype=np.float32)
+        longue = voix(client)
+        verifie("voix de 21 s : réponse normale, rien de gardé",
+                not faux.lots and longue[0] == PHRASE and longue[9] == "", faux.lots)
+        verifie("voix trop longue : le quota n'est pas entamé", not collecte.LIMITE_VOIX_CLIENT._clients)
+        son[0] = np.zeros(20 * 16_000, dtype=np.float32)
+        voix(client)
+        verifie("voix de 20 s : gardée", len(faux.lots) == 1, len(faux.lots))
+
+        collecte.LIMITE_AVIS_CLIENT = LimiteParClient(((HEURE, 1),))
+        faux = collecte.COLLECTEUR = FauxCollecteur()
+        suivi = {"code": "GM-AAAAAA", "depart": "A", "arrivee": "B", "lignes": ["L"],
+                 "voix": False, "reponse": None, "minutes": None}
+        silencieux(app.avis_oui, None, suivi, client)
+        second = silencieux(app.avis_non, None, suivi, client)
+        verifie("avis : plafond par client, sans message",
+                len(faux.lots) == 1 and second == (gr.skip(), gr.skip()), second)
+
+        # 7. Tous les seuils se règlent par variable d'environnement.
+        reglages = {"COLLECTE_MAX_PAR_CLIENT_HEURE": "7", "COLLECTE_MAX_PAR_JOUR": "11",
+                    "COLLECTE_DUREE_MAX_S": "9", "COLLECTE_AVIS_MAX_PAR_CLIENT_HEURE": "4",
+                    "TRAJETS_MAX_PAR_MINUTE": "3", "TRAJETS_MAX_PAR_JOUR": "6",
+                    "LLM_MAX_PAR_CLIENT_MINUTE": "2", "LLM_MAX_PAR_CLIENT_JOUR": "8"}
+        os.environ.update(reglages)
+        try:
+            module = _charger_module(RACINE / "src" / "app" / "collecte.py", "collecte_reglee")
+            regle = silencieux(lambda: _charger_module(RACINE / "app.py", "app_plafonds_regle"))
+        finally:
+            for nom in reglages:
+                os.environ.pop(nom, None)
+        verifie("collecte réglable",
+                module.LIMITE_VOIX_CLIENT.fenetres == ((HEURE, 7),)
+                and module.LIMITE_VOIX_JOUR.fenetres == ((JOUR, 11),)
+                and module.DUREE_MAX_VOIX_S == 9 and module.LIMITE_AVIS_CLIENT.fenetres == ((HEURE, 4),))
+        verifie("trajets et LLM réglables",
+                regle.LIMITE_TRAJETS_CLIENT.fenetres == ((MINUTE, 3), (JOUR, 6))
+                and regle.LIMITE_LLM_CLIENT.fenetres == ((MINUTE, 2), (JOUR, 8)))
+        verifie("collecte : valeurs par défaut demandées",
+                sauve[1].fenetres == ((HEURE, 5),) and sauve[2].fenetres == ((JOUR, 200),)
+                and collecte.DUREE_MAX_VOIX_S == 20)
+    finally:
+        collecte.COLLECTEUR, collecte.LIMITE_VOIX_CLIENT, collecte.LIMITE_VOIX_JOUR, collecte.LIMITE_AVIS_CLIENT = sauve
+        for nom, valeur in avant.items():
+            if valeur is None:
+                os.environ.pop(nom, None)
+            else:
+                os.environ[nom] = valeur
+    return echecs, total
+
+
+def silencieux_cle(fonction, requete):
+    """Calcule une empreinte sans le message de diagnostic du journal."""
+    import contextlib
+    import io
+
+    with contextlib.redirect_stdout(io.StringIO()):
+        return fonction(requete)
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -7765,6 +8032,7 @@ if __name__ == "__main__":
         echecs_lot9, total_lot9 = test_lot_9()
         echecs_lot10, total_lot10 = test_lot_10()
         echecs_revue, total_revue = test_revue_securite()
+        echecs_plafonds, total_plafonds = test_plafonds_par_client()
         echecs = (
             test_local()
             + echecs_partage
@@ -7812,6 +8080,7 @@ if __name__ == "__main__":
             + echecs_lot9
             + echecs_lot10
             + echecs_revue
+            + echecs_plafonds
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -7860,6 +8129,7 @@ if __name__ == "__main__":
             + total_lot9
             + total_lot10
             + total_revue
+            + total_plafonds
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

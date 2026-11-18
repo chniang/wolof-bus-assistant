@@ -29,7 +29,7 @@ import sys
 import tempfile
 import threading
 import time
-from functools import lru_cache, partial
+from functools import lru_cache
 from pathlib import Path
 
 try:
@@ -48,7 +48,7 @@ sys.path.insert(0, str(RACINE / "src"))
 
 from app import collecte  # noqa: E402
 from app.cartes import titre_autre_possibilite, titre_autre_possibilite_texte, titre_section  # noqa: E402
-from app.limites import LimiteDebit, entier_env  # noqa: E402
+from app.limites import JOUR, MINUTE, LimiteDebit, LimiteParClient, cle_client, entier_env  # noqa: E402
 from app.partage import bouton_partage  # noqa: E402
 from asr.transcribe import (  # noqa: E402
     MODEL_ASR_GPU,
@@ -255,6 +255,21 @@ LIMITE_LLM = LimiteDebit(
     entier_env("LLM_MAX_PAR_MINUTE", 30),
     entier_env("LLM_MAX_PAR_JOUR", 1000),
 )
+LIMITE_LLM_CLIENT = LimiteParClient((
+    (MINUTE, entier_env("LLM_MAX_PAR_CLIENT_MINUTE", 5)),
+    (JOUR, entier_env("LLM_MAX_PAR_CLIENT_JOUR", 50)),
+))
+LIMITE_TRAJETS_CLIENT = LimiteParClient((
+    (MINUTE, entier_env("TRAJETS_MAX_PAR_MINUTE", 10)),
+    (JOUR, entier_env("TRAJETS_MAX_PAR_JOUR", 100)),
+))
+# Le client de la demande en cours, pour compter ses appels au LLM plus bas.
+_CLE_CLIENT: contextvars.ContextVar[str | None] = contextvars.ContextVar("cle_client", default=None)
+
+
+def _llm_autorise() -> bool:
+    """Le plafond du client d'abord : un client bloqué n'entame pas celui du Space."""
+    return LIMITE_LLM_CLIENT.autoriser(_CLE_CLIENT.get()) and LIMITE_LLM.autoriser()
 
 
 def _client_llm():
@@ -308,6 +323,10 @@ MESSAGE_AUDIO_FORMAT = "Format audio non reconnu. Enregistre-toi avec le micro."
 # Le détail d'une erreur (chemins, commande ffmpeg, nom du modèle) reste au serveur.
 CARTE_AUDIO_ILLISIBLE = "### 🎤 Audio illisible\n\nRéessaie avec un nouvel enregistrement."
 CARTE_TRANSCRIPTION_IMPOSSIBLE = "### 🎤 Transcription impossible\n\nRéessaie dans un instant."
+CARTE_TROP_DE_DEMANDES = (
+    "### ⏳ Beaucoup de demandes\n\n"
+    "Tu as fait beaucoup de demandes. Attends un peu avant de réessayer, merci."
+)
 
 ERREUR_ASR = "\x00ERREUR_ASR "
 
@@ -1434,7 +1453,7 @@ def _pipeline(
     if intent is None:
         intent = (
             extract_intent(phrase, client=_client_llm())
-            if LIMITE_LLM.autoriser()
+            if _llm_autorise()
             else _repli_local(phrase, "plafond_app")
         )
     depart, arrivee = intent.get("depart") or "", intent.get("arrivee") or ""
@@ -1662,12 +1681,34 @@ def _sortie_demande_vide() -> tuple:
     return ("", "", carte, None, "")
 
 
+def _sortie_trop_de_demandes() -> tuple:
+    return ("", "", CARTE_TROP_DE_DEMANDES, None, "")
+
+
 def traiter_demande(
     audio: str | None,
     phrase_ecrite: str,
     compagnie_choix: str = "",
     etat: dict | None = None,
     nouvelle_demande: bool = True,
+    request: gr.Request | None = None,
+) -> tuple:
+    """Identifie le client le temps de la demande (Gradio fournit `request`)."""
+    cle = cle_client(request)
+    jeton = _CLE_CLIENT.set(cle)
+    try:
+        return _traiter_demande(audio, phrase_ecrite, compagnie_choix, etat, nouvelle_demande, cle)
+    finally:
+        _CLE_CLIENT.reset(jeton)
+
+
+def _traiter_demande(
+    audio: str | None,
+    phrase_ecrite: str,
+    compagnie_choix: str,
+    etat: dict | None,
+    nouvelle_demande: bool,
+    cle: str | None,
 ) -> tuple:
     """Le seul handler du bouton, du micro et du changement de compagnie.
 
@@ -1686,12 +1727,18 @@ def traiter_demande(
         if not phrase:
             return tuple(gr.skip() for _ in range(7))
         mode = etat.get("mode") or "texte"
-        _noter(traitee=True)
+        if not LIMITE_TRAJETS_CLIENT.autoriser(cle):
+            return (*_sortie_trop_de_demandes(), gr.skip(), etat)
+        _noter(traitee=True, client=cle)
         quint, _ = _pipeline(phrase, "", 0.0, compagnie_choix, mode=mode)
         # Le micro et la demande restent tels quels : on ne retranscrit rien.
         return (*quint, gr.skip(), etat)
 
-    _noter(traitee=True)
+    _noter(traitee=True, client=cle)
+    if (audio or (phrase_ecrite or "").strip()) and not LIMITE_TRAJETS_CLIENT.autoriser(cle):
+        # Refusé avant tout décodage, mais le fichier reçu ne doit pas rester.
+        _effacer_audio_recu(audio)
+        return (*_sortie_trop_de_demandes(), None, etat)
     if audio:
         quint = trouver_le_bus(audio, phrase_ecrite, compagnie_choix)
         if not quint[0]:
@@ -1706,7 +1753,10 @@ def traiter_demande(
 
 
 def repondre_et_vider_micro(
-    audio: str | None, phrase_ecrite: str, compagnie_choix: str = ""
+    audio: str | None,
+    phrase_ecrite: str,
+    compagnie_choix: str = "",
+    request: gr.Request | None = None,
 ) -> tuple:
     """Version à six sorties conservée pour l'API et les anciens tests.
 
@@ -1714,10 +1764,14 @@ def repondre_et_vider_micro(
     changement de compagnie. Le sixième retour remet le micro à None pour
     l'enregistrement suivant, sans toucher aux cartes ni à la voix.
     """
-    return traiter_demande(audio, phrase_ecrite, compagnie_choix, None, True)[:6]
+    return traiter_demande(audio, phrase_ecrite, compagnie_choix, None, True, request)[:6]
 
 
-def choisir_trajet_frequent(choix: str | None, compagnie_choix: str = "") -> tuple:
+def choisir_trajet_frequent(
+    choix: str | None,
+    compagnie_choix: str = "",
+    request: gr.Request | None = None,
+) -> tuple:
     """Remplir la phrase wolof, lancer la recherche, puis vider la liste.
 
     Les neuf sorties sont : la phrase, les sept résultats (dont l'état) et la
@@ -1728,7 +1782,7 @@ def choisir_trajet_frequent(choix: str | None, compagnie_choix: str = "") -> tup
         return tuple(gr.skip() for _ in range(9))
     trajet = CHOIX_TRAJETS_FREQUENTS[choix]
     phrase = f"Maa ngi {trajet['depart']}, bëgg naa dem {trajet['arrivee']}"
-    resultat = traiter_demande(None, phrase, compagnie_choix, None, True)
+    resultat = traiter_demande(None, phrase, compagnie_choix, None, True, request)
     return (phrase, *resultat, None)
 
 
@@ -1744,6 +1798,7 @@ def rechercher_une_fois(
     phrase_ecrite: str,
     compagnie_choix: str = "",
     etat: dict | None = None,
+    request: gr.Request | None = None,
 ) -> tuple:
     """Lancer une demande une seule fois par audio, jamais sur un micro vidé.
 
@@ -1765,7 +1820,7 @@ def rechercher_une_fois(
     ):
         return tuple(gr.skip() for _ in range(7))
     _DERNIERE_RECHERCHE = (cle, maintenant)
-    return traiter_demande(audio, phrase_ecrite, compagnie_choix, etat, True)
+    return traiter_demande(audio, phrase_ecrite, compagnie_choix, etat, True, request)
 
 
 # --------------------------------------------------------------------------- #
@@ -1809,10 +1864,10 @@ def _sorties_collecte(trace: dict, consentement: bool, suivi: dict | None, nouve
 
 def traiter_demande_collecte(
     audio, phrase_ecrite, compagnie_choix="", etat=None, nouvelle_demande=True,
-    consentement=False, suivi=None,
+    consentement=False, suivi=None, request: gr.Request | None = None,
 ) -> tuple:
     sortie, trace = _suivre(
-        traiter_demande, audio, phrase_ecrite, compagnie_choix, etat, nouvelle_demande,
+        traiter_demande, audio, phrase_ecrite, compagnie_choix, etat, nouvelle_demande, request,
         consentement=consentement,
     )
     return (*sortie, *_sorties_collecte(trace, consentement, suivi, nouvelle_demande))
@@ -1820,22 +1875,25 @@ def traiter_demande_collecte(
 
 def rechercher_une_fois_collecte(
     audio, phrase_ecrite, compagnie_choix="", etat=None, consentement=False, suivi=None,
+    request: gr.Request | None = None,
 ) -> tuple:
     sortie, trace = _suivre(
-        rechercher_une_fois, audio, phrase_ecrite, compagnie_choix, etat,
+        rechercher_une_fois, audio, phrase_ecrite, compagnie_choix, etat, request,
         consentement=consentement,
     )
     return (*sortie, *_sorties_collecte(trace, consentement, suivi, True))
 
 
-def choisir_trajet_frequent_collecte(choix, compagnie_choix="", consentement=False, suivi=None) -> tuple:
-    sortie, trace = _suivre(choisir_trajet_frequent, choix, compagnie_choix)
+def choisir_trajet_frequent_collecte(
+    choix, compagnie_choix="", consentement=False, suivi=None, request: gr.Request | None = None,
+) -> tuple:
+    sortie, trace = _suivre(choisir_trajet_frequent, choix, compagnie_choix, request)
     return (*sortie, *_sorties_collecte(trace, False, suivi, True))
 
 
-def donner_avis(reponse: str, minutes, suivi: dict | None) -> tuple:
+def donner_avis(reponse: str, minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
     """Oui / Non / Je ne sais pas, avec le temps réel s'il est déjà saisi."""
-    if not suivi:
+    if not suivi or not collecte.avis_autorise(cle_client(request)):
         return gr.skip(), gr.skip()
     try:
         return collecte.noter_avis(suivi, reponse, collecte.minutes_valides(minutes))
@@ -1844,13 +1902,28 @@ def donner_avis(reponse: str, minutes, suivi: dict | None) -> tuple:
         return gr.skip(), gr.skip()
 
 
-def donner_temps(minutes, suivi: dict | None) -> tuple:
+# Gradio ne fournit `request` qu'aux fonctions annotées : pas de functools.partial ici.
+def avis_oui(minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
+    return donner_avis("oui", minutes, suivi, request)
+
+
+def avis_non(minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
+    return donner_avis("non", minutes, suivi, request)
+
+
+def avis_ne_sait_pas(minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
+    return donner_avis("ne_sait_pas", minutes, suivi, request)
+
+
+def donner_temps(minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
     """Le temps réel, souvent connu seulement à la fin du trajet."""
     if not suivi:
         return gr.skip(), gr.skip()
     valeur = collecte.minutes_valides(minutes)
     if valeur is None:
         return gr.skip(), collecte.MESSAGE_MINUTES
+    if not collecte.avis_autorise(cle_client(request)):
+        return gr.skip(), gr.skip()
     try:
         return collecte.noter_avis(suivi, None, valeur)
     except Exception as exc:
@@ -2193,9 +2266,9 @@ def _construire():
                 gr.Markdown("**La ligne est juste ?**")
                 with gr.Row():
                     boutons_avis = [
-                        (gr.Button("Oui"), "oui"),
-                        (gr.Button("Non"), "non"),
-                        (gr.Button("Je ne sais pas"), "ne_sait_pas"),
+                        (gr.Button("Oui"), avis_oui),
+                        (gr.Button("Non"), avis_non),
+                        (gr.Button("Je ne sais pas"), avis_ne_sait_pas),
                     ]
                 minutes_in = gr.Number(
                     value=None,
@@ -2205,9 +2278,9 @@ def _construire():
                     precision=0,
                 )
                 bouton_temps = gr.Button("Envoyer le temps", size="sm")
-            for bouton_avis, reponse in boutons_avis:
+            for bouton_avis, gerer_avis in boutons_avis:
                 bouton_avis.click(
-                    partial(donner_avis, reponse),
+                    gerer_avis,
                     inputs=[minutes_in, suivi_state],
                     outputs=[suivi_state, code_out],
                     api_visibility="private",

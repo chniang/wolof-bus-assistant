@@ -31,6 +31,8 @@ from datetime import datetime, timezone
 
 import numpy as np
 
+from app.limites import HEURE, JOUR, LimiteFenetres, LimiteParClient, entier_env
+
 DEPOT = "PythonMindset/guindima-voix-testeurs"
 TYPE_DEPOT = "dataset"
 VARIABLE_ACTIVE = "COLLECTE_ACTIVE"
@@ -46,6 +48,14 @@ FREQUENCE = 16_000
 INTERVALLE_ENVOI = 1800.0
 # 30 s de voix font moins de 1 Mo : la file reste sous ~100 Mo en mémoire.
 CAPACITE_FILE = 100
+
+# Contre le remplissage du dépôt par un script. Au-delà, la réponse reste normale
+# et rien n'est gardé : l'usager n'a pas à connaître ces seuils.
+DUREE_MAX_VOIX_S = entier_env("COLLECTE_DUREE_MAX_S", 20)
+LIMITE_VOIX_CLIENT = LimiteParClient(((HEURE, entier_env("COLLECTE_MAX_PAR_CLIENT_HEURE", 5)),))
+LIMITE_VOIX_JOUR = LimiteFenetres(((JOUR, entier_env("COLLECTE_MAX_PAR_JOUR", 200)),))
+# Chaque clic sur un avis occupe une place dans la file d'envoi.
+LIMITE_AVIS_CLIENT = LimiteParClient(((HEURE, entier_env("COLLECTE_AVIS_MAX_PAR_CLIENT_HEURE", 30)),))
 
 TEXTE_CONSENTEMENT = (
     "J'accepte que mon enregistrement soit gardé pour améliorer la reconnaissance "
@@ -286,6 +296,19 @@ class Collecteur:
 COLLECTEUR = Collecteur()
 
 
+def voix_acceptable(son, cle: str | None) -> bool:
+    """Durée, puis plafond du client, puis plafond du jour."""
+    return (
+        len(son) <= DUREE_MAX_VOIX_S * FREQUENCE
+        and LIMITE_VOIX_CLIENT.autoriser(cle)
+        and LIMITE_VOIX_JOUR.autoriser()
+    )
+
+
+def avis_autorise(cle: str | None) -> bool:
+    return LIMITE_AVIS_CLIENT.autoriser(cle)
+
+
 def nouveau_suivi(trace: dict, consentement: bool) -> tuple[dict, str]:
     """Après une réponse : le suivi de session et le message à afficher.
 
@@ -304,6 +327,8 @@ def nouveau_suivi(trace: dict, consentement: bool) -> tuple[dict, str]:
     }
     son, phrase = trace.get("son"), trace.get("phrase")
     if consentement is not True or son is None or not phrase:
+        return suivi, ""
+    if not voix_acceptable(son, trace.get("client")):
         return suivi, ""
     fiche = {
         "code": code,
