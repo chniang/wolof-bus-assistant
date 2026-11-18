@@ -1,8 +1,11 @@
 r"""Compare nos lignes aux listes d'arrêts officielles AFTU et Dem Dikk.
 
-Pour chaque ligne de data/lignes_dakar.csv, on confronte les arrêts de
-data/itineraires_dakar.csv aux fiches officielles copiées dans
-data/reference/ (arrets_toutes_lignes_aftu.csv, arrets_toutes_lignes_ddd.csv).
+Pour chaque ligne de data/lignes_dakar.csv, on confronte ses arrêts, tels que
+l'app les charge, aux fiches officielles copiées dans data/reference/
+(arrets_toutes_lignes_aftu.csv, arrets_toutes_lignes_ddd.csv). Pour Dem Dikk,
+l'app (src/routing/data.py) remplace en mémoire data/itineraires_dakar.csv par
+les listes officielles de data/corrections/corrections_geo_ddd_proposees.csv :
+on mesure donc ces listes-là, sauf pour les lignes de MESURE_BRUTE_CONSERVEE.
 
 Sortie : data/audit/comparaison_lignes_officielles.csv, une rangée par ligne
 de nos données, plus une rangée par fiche officielle absente de nos données.
@@ -63,6 +66,17 @@ DOUTEUSES = {
         "Ligne 220": "deux versions officielles se contredisent (Rufisque–Guédiawaye vs navette Guédiawaye–AIBD)",
         "Ligne 233": "notre fiche dit Baux Maraîchers–Palais 1, l'officiel dit Baux Maraîchers–Aéroport LSS",
     }
+}
+
+# Lot 7 (18/11/2026) : la comparaison lisait data/itineraires_dakar.csv brut,
+# où 27 lignes Dem Dikk n'avaient que 2 à 8 arrêts (A_COMPLETER), alors que
+# l'app les sert depuis les listes officielles complètes. Ces sept lignes
+# gardent pourtant la mesure brute : douteuses (6, 217, 220, 233) ou
+# divergentes (23, 208, 501), elles ont leur propre revue, et la vue de l'app
+# les ferait passer de DIVERGENTE à TERMINUS_DIFFERENT sans qu'on les ait
+# examinées. À retirer d'ici quand leur lot sera fait.
+MESURE_BRUTE_CONSERVEE = {
+    (DEM_DIKK, f"Ligne {numero}") for numero in ("6", "217", "220", "233", "23", "208", "501")
 }
 
 # La fiche officielle ne distingue pas 15A et 15B ; la 228 est rangée sous un
@@ -347,9 +361,45 @@ def lignes_corrigees() -> list[dict]:
     return [corriger_terminus(rangee) for rangee in lire_csv(DATA / "lignes_dakar.csv")]
 
 
+def itineraires_vus_par_app(itineraires: list[dict]) -> list[dict]:
+    """Les itinéraires tels que l'app les charge : Dem Dikk depuis les listes officielles.
+
+    Même règle que src/routing/data.py (_integrer_dem_dikk_officiel) : chaque
+    ligne Dem Dikk présente dans corrections_geo_ddd_proposees.csv remplace
+    celle de data/itineraires_dakar.csv, « Terminus X » devenant « X ». Les
+    lignes de MESURE_BRUTE_CONSERVEE gardent leurs arrêts bruts. Rien n'est
+    écrit : la substitution reste en mémoire, comme dans l'app.
+    """
+    chemin = DATA / "corrections" / "corrections_geo_ddd_proposees.csv"
+    if not chemin.exists():
+        return itineraires
+    sys.path.insert(0, str(RACINE / "src"))
+    from routing.data import _nom_ligne_ddd, _sans_terminus
+
+    officiels = [
+        {
+            "compagnie": rangee["compagnie"],
+            "ligne": _nom_ligne_ddd(rangee["ligne"]),
+            "ordre": rangee["ordre"],
+            "arret": _sans_terminus(rangee["arret"]),
+        }
+        for rangee in lire_csv(chemin)
+    ]
+    remplacees = {
+        (DEM_DIKK, rangee["ligne"]) for rangee in officiels
+    } - MESURE_BRUTE_CONSERVEE
+    return [
+        rangee for rangee in itineraires
+        if (rangee["compagnie"], rangee["ligne"]) not in remplacees
+    ] + [
+        rangee for rangee in officiels
+        if (DEM_DIKK, rangee["ligne"]) in remplacees
+    ]
+
+
 def construire_rangees() -> tuple[list[dict], dict[str, int]]:
     lignes = lignes_corrigees()
-    itineraires = lire_csv(DATA / "itineraires_dakar.csv")
+    itineraires = itineraires_vus_par_app(lire_csv(DATA / "itineraires_dakar.csv"))
     officiels = charger_officiels()
     signatures = signatures_officielles(officiels)
     utilisees: set[tuple[str, str]] = set()

@@ -6648,6 +6648,115 @@ def test_lot_6() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_7() -> tuple[int, int]:
+    """Lot 7 : les 27 lignes Dem Dikk « A_COMPLETER » mesurées comme l'app les sert.
+
+    Constat : l'app (src/routing/data.py) sert déjà ces lignes depuis les listes
+    officielles de data/corrections/corrections_geo_ddd_proposees.csv ; seule la
+    comparaison lisait encore data/itineraires_dakar.csv brut (2 à 8 arrêts).
+    Aucun arrêt n'est ajouté (il ferait doublon), aucun CSV de données modifié.
+    """
+    import csv
+    import importlib.util
+
+    from routing.data import SOURCES_SURES, load_data
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot 7 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    spec = importlib.util.spec_from_file_location(
+        "comparer_lot_7", RACINE / "scripts" / "comparer_lignes_officielles.py"
+    )
+    comparer = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(comparer)
+    rangees, _ = comparer.construire_rangees()
+    classes = {
+        r["ligne"]: r for r in rangees
+        if r["type_ligne"] == "notre_ligne" and r["operateur"] == "Dakar Dem Dikk"
+    }
+
+    # 1. Les 24 lignes complètes dans l'app sont CONFORME, tous points retrouvés
+    #    (TAF TAF : 16/17, « Itinéraire 213 » de la fiche n'est pas un arrêt).
+    conformes = (
+        "1", "2", "4", "5", "7", "8", "9", "10", "11", "12", "13", "16A", "16B", "18",
+        "20", "121", "213", "218", "219", "221", "227", "232", "234",
+    )
+    for numero in conformes:
+        r = classes[f"Ligne {numero}"]
+        verifie(f"Ligne {numero} : CONFORME, {r['points_officiels_trouves']}/{r['points_officiels']}",
+                r["classe"] == "CONFORME" and r["points_officiels_trouves"] == r["points_officiels"],
+                (r["classe"], r["points_officiels_trouves"], r["points_officiels"]))
+    taf = classes["TAF TAF"]
+    verifie("TAF TAF : CONFORME (16/17, « Itinéraire 213 » n'est pas un arrêt)",
+            taf["classe"] == "CONFORME" and taf["points_officiels_non_trouves"] == "Itinéraire 213",
+            (taf["classe"], taf["points_officiels_non_trouves"]))
+
+    # 2. Restent signalées, jamais maquillées : 15A / 15B (la fiche ne distingue
+    #    pas les deux, l'app sert la « Ligne 15 » officielle à côté) et 228 (4/4
+    #    points, mais l'ordre strict bute sur deux arrêts « Rufisque »).
+    verifie("15A et 15B restent A_COMPLETER",
+            classes["Ligne 15A"]["classe"] == classes["Ligne 15B"]["classe"] == "A_COMPLETER")
+    verifie("228 : 4/4 points, ordre strict à 0,75 -> DIVERGENTE signalée",
+            classes["Ligne 228"]["classe"] == "DIVERGENTE"
+            and classes["Ligne 228"]["points_officiels_trouves"] == classes["Ligne 228"]["points_officiels"],
+            classes["Ligne 228"]["classe"])
+
+    # 3. Lignes douteuses et divergentes : mesure brute conservée, hors lot.
+    hors_lot = {"6": "DIVERGENTE", "217": "DIVERGENTE", "233": "DIVERGENTE", "23": "DIVERGENTE",
+                "208": "DIVERGENTE", "501": "DIVERGENTE", "220": "DOUTEUSE"}
+    for numero, attendue in hors_lot.items():
+        verifie(f"Ligne {numero} : hors lot, mesure brute ({attendue})",
+                ("Dakar Dem Dikk", f"Ligne {numero}") in comparer.MESURE_BRUTE_CONSERVEE
+                and classes[f"Ligne {numero}"]["classe"] == attendue,
+                classes[f"Ligne {numero}"]["classe"])
+
+    # 4. La vue de la comparaison est celle de l'app : même liste, même ordre.
+    data = load_data()
+    vus = comparer.itineraires_vus_par_app(comparer.lire_csv(RACINE / "data" / "itineraires_dakar.csv"))
+    for numero in ("1", "18", "234"):
+        app_liste = list(
+            data.itineraires[(data.itineraires["compagnie"] == "Dakar Dem Dikk")
+                             & (data.itineraires["ligne"] == f"Ligne {numero}")]
+            .sort_values("ordre")["arret"]
+        )
+        cmp_liste = [r["arret"] for r in sorted(
+            (r for r in vus if r["compagnie"] == "Dakar Dem Dikk" and r["ligne"] == f"Ligne {numero}"),
+            key=lambda r: int(r["ordre"]))]
+        verifie(f"Ligne {numero} : la comparaison voit les {len(app_liste)} arrêts de l'app",
+                len(cmp_liste) == len(app_liste) > 2, (len(cmp_liste), len(app_liste)))
+
+    # 5. Positions : une estimation n'est jamais un arrêt sûr. Toute position
+    #    interpolée ou géocodée sur ces lignes reste hors SOURCES_SURES.
+    with open(RACINE / "data" / "corrections" / "corrections_geo_ddd_proposees.csv",
+              encoding="utf-8-sig", newline="") as f:
+        officiel = [r for r in csv.DictReader(f) if r["ligne"] in conformes or r["ligne"] == "TAF TAF"]
+    estimees = {"interpolation", "interpolation_sur_trace_osm", "nominatim", "inconnu", "repere_connu"}
+    verifie("positions estimées jamais classées sûres",
+            not (estimees & SOURCES_SURES)
+            and all(r["source"] in SOURCES_SURES | estimees for r in officiel),
+            sorted({r["source"] for r in officiel} - SOURCES_SURES - estimees))
+    cle = ("Dakar Dem Dikk", "Ligne 1")
+    ordres_estimes = [int(r["ordre"]) for r in officiel if r["ligne"] == "1" and r["source"] not in SOURCES_SURES]
+    verifie("Ligne 1 : Sapeur Pompiers (interpolé) n'est pas une position sûre dans l'app",
+            ordres_estimes and not any(data.positions_sures[cle][o] for o in ordres_estimes),
+            ordres_estimes)
+
+    # 6. La 15 officielle est bien servie par l'app, sous « Ligne 15 ».
+    quinze = data.itineraires[(data.itineraires["compagnie"] == "Dakar Dem Dikk")
+                              & (data.itineraires["ligne"] == "Ligne 15")]
+    verifie("Ligne 15 officielle servie (18 arrêts)", len(quinze) == 18, len(quinze))
+
+    return echecs, total
+
+
 def test_rapport_lignes_officielles() -> int:
     """Mode rapport : compare les lignes aux fiches officielles, hors ligne.
 
@@ -6794,6 +6903,7 @@ if __name__ == "__main__":
         echecs_lot4, total_lot4 = test_lot_4()
         echecs_lot5, total_lot5 = test_lot_5()
         echecs_lot6, total_lot6 = test_lot_6()
+        echecs_lot7, total_lot7 = test_lot_7()
         echecs = (
             test_local()
             + echecs_partage
@@ -6836,6 +6946,7 @@ if __name__ == "__main__":
             + echecs_lot4
             + echecs_lot5
             + echecs_lot6
+            + echecs_lot7
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -6879,6 +6990,7 @@ if __name__ == "__main__":
             + total_lot4
             + total_lot5
             + total_lot6
+            + total_lot7
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)
