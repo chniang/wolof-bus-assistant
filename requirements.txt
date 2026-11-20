@@ -10,20 +10,17 @@ soundfile
 python-dotenv
 
 # Interface Gradio de app.py, celle qui tourne sur un Hugging Face Space. torch
-# n'est volontairement pas Ã©pinglÃ© : sur Space, c'est l'image du Space qui fournit
+# n'est volontairement pas epingle : sur Space, c'est l'image du Space qui fournit
 # la version CUDA, et un torch CPU ici casserait le ZeroGPU.
-# spaces 0.52.1 (redéploiement du 20/11) : après 1 ou 2 appels GPU réussis,
-# chaque appel échouait sur « No CUDA GPUs are available » (worker_init de
-# spaces/zero/wrappers.py). 0.51.3 marchait : on la fixe.
-spaces==0.51.3
+# spaces n'est pas epingle : ZeroGPU impose sa propre version (0.52.1 au 20/11),
+# un autre pin fait echouer le build.
 
 # Gradio 6.30 exige pillow<13.0 : Pillow 13.0.0, qui corrige 37 CVE, est donc
-# incompatible avec le runtime actuel. On Ã©pingle la derniÃ¨re version acceptÃ©e
-# en attendant un Gradio qui relÃ¨ve sa contrainte. L'app n'a aucun composant
-# image, ce qui limite l'exposition, mais le risque rÃ©siduel est connu.
+# incompatible avec le runtime actuel. On epingle la derniere version acceptee
+# en attendant un Gradio qui releve sa contrainte. L'app n'a aucun composant
+# image, ce qui limite l'exposition, mais le risque residuel est connu.
 pillow==12.3.0
 
-# GÃ©ocodage Nominatim (src/matching/geo.py) : le repli en ligne pour un lieu absent
-# de data/lieux_geo.csv. Sans lui, seuls les lieux prÃ©calculÃ©s sont localisÃ©s.
+# Geocodage Nominatim (src/matching/geo.py) : le repli en ligne pour un lieu absent
+# de data/lieux_geo.csv. Sans lui, seuls les lieux precalcules sont localises.
 requests
-
