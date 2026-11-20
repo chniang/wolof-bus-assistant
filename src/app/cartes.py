@@ -6,13 +6,14 @@ from html import escape
 # foncé sur vert très pâle : contraste ~9:1, le même dans les deux thèmes.
 TITRE_TEXTE = "#064E2B"
 TITRE_FOND = "#E8F5EE"
-TITRE_BORD = "#00853F"
+# Lot C : bordure sur les quatre côtés, jamais d'un seul (style Koumba).
+TITRE_BORD = "#9BD4B5"
 
 
 def _titre(texte: str, taille: int, graisse: int, marge: str) -> str:
     return (
         f"<div style='color:{TITRE_TEXTE};background:{TITRE_FOND};"
-        f"border-left:5px solid {TITRE_BORD};border-radius:8px;padding:6px 12px;"
+        f"border:1.5px solid {TITRE_BORD};border-radius:12px;padding:8px 12px;"
         f"font-size:{taille}px;font-weight:{graisse};margin:{marge};'>"
         f"{escape(str(texte))}</div>"
     )

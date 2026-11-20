@@ -47,6 +47,19 @@ RACINE = Path(__file__).resolve().parent
 sys.path.insert(0, str(RACINE / "src"))
 
 from app import collecte  # noqa: E402
+from app.apparence import (  # noqa: E402
+    ACCUEIL_HTML,
+    CHOIX_ETOILES,
+    CSS_GUINDIMA,
+    GLOBE_CSS,
+    GLOBE_HTML,
+    HEAD_CLAIR,
+    POLICES,
+    globe_js,
+    livree,
+    ouvrir_carte,
+    pastille_compagnie,
+)
 from app.cartes import titre_autre_possibilite, titre_autre_possibilite_texte, titre_section  # noqa: E402
 from app.limites import JOUR, MINUTE, LimiteDebit, LimiteParClient, cle_client, entier_env  # noqa: E402
 from app.partage import bouton_partage  # noqa: E402
@@ -1030,6 +1043,19 @@ def fourchette_minutes(minutes: float) -> str:
     return f"{bas}–{haut} min"
 
 
+def _taille_numero(affiche: str) -> int:
+    """Taille du numéro de ligne : énorme pour « 7 » ou « 16A », plus petite pour un nom.
+
+    À 360 px, « TAF TAF OUAKAM (TO1) » en 56 px se coupait au milieu de « OUAKAM ».
+    """
+    longueur = len(affiche)
+    if longueur <= 5:
+        return 56
+    if longueur <= 10:
+        return 40
+    return 28
+
+
 def _une_carte(
     match: dict,
     etape: str = "",
@@ -1085,7 +1111,7 @@ def _une_carte(
             )
         )
         trajet = (
-            f"<div style='color:#11301C;font-size:22px;font-weight:800;"
+            f"<div style='color:#11301C;font-size:19px;font-weight:750;"
             f"line-height:1.35;margin-top:8px;'>"
             f"Monte à <b style='color:#081F11;'>{depart_texte}</b> {conseil_monte}<br>"
             f"Descends à <b style='color:#081F11;'>{arrivee_texte}</b> {conseil_descente}{fin}</div>"
@@ -1118,18 +1144,32 @@ def _une_carte(
     categorie = " · ".join(
         x for x in (rappel, _echapper(match.get("categorie", "")), duree, a_confirmer) if x
     )
+    # Lot C : bordure neutre sur les quatre côtés et livrée réelle du bus en
+    # bande (Tata : rayures bleues ; Dem Dikk : vert, jaune, rouge), comme
+    # Koumba. Plus de bordure d'un seul côté.
+    etape_html = (
+        f"<span style='color:#46594D;font-size:14px;font-weight:700;margin-right:8px;'>"
+        f"{_echapper(etape)}</span>"
+        if etape
+        else ""
+    )
+    pastille = pastille_compagnie(match.get("compagnie", "")) or (
+        f"<span style='color:#46594D;font-size:14px;font-weight:700;'>{entete}</span>"
+    )
     return f"""
-<div style="border:1px solid #D6E6DC;border-top:6px solid {VERT};
-            border-radius:12px;padding:16px 20px;margin:8px 0;background:#F6FBF8;">
-  <div style="color:{VERT};font-size:12px;font-weight:700;letter-spacing:.14em;
-              text-transform:uppercase;">{entete}</div>
-  <div style="color:{VERT};font-size:56px;font-weight:800;line-height:1.05;
-              margin:4px 0 6px 0;">{affiche}</div>
+{ouvrir_carte()}{livree(match.get("compagnie", ""))}
+<div style="padding:14px 18px 16px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+    <div>{etape_html}{pastille}</div>
+  </div>
+  <div style="color:{VERT};font-size:{_taille_numero(affiche)}px;font-weight:850;line-height:1.05;
+              letter-spacing:-1px;margin:6px 0 4px 0;">{affiche}</div>
   {trajet}
-  <div style="color:#6B7A72;font-size:13px;margin-top:6px;">
+  <div style="color:#46594D;font-size:14px;margin-top:8px;">
     {categorie}</div>
   {ligne}
   {arrets}
+</div>
 </div>
 """
 
@@ -1163,13 +1203,12 @@ def _carte_a_pied(a_pied: dict) -> str:
         else ""
     )
     return f"""
-<div style="border:1px solid #D6E6DC;border-top:6px solid {VERT};
-            border-radius:12px;padding:16px 20px;margin:8px 0;background:#F6FBF8;">
-  <div style="color:{VERT};font-size:12px;font-weight:700;letter-spacing:.14em;
-              text-transform:uppercase;">À PIED</div>
+{ouvrir_carte()}
+<div style="padding:14px 18px 16px;">
   <div style="color:{VERT};font-size:28px;font-weight:800;line-height:1.1;
-              margin:6px 0 4px 0;">À pied — {duree}</div>
+              margin:2px 0 4px 0;">🚶 À pied, {duree}</div>
   {distance_html}
+</div>
 </div>
 """
 
@@ -1917,27 +1956,28 @@ def _suivre(fonction, *args) -> tuple:
 
 
 def _sorties_collecte(trace: dict, suivi: dict | None, nouvelle: bool) -> tuple:
-    """Suivi, panneau d'avis, message du code, temps saisi.
+    """Suivi, panneau d'avis, message du code, temps saisi, étoiles (remises à vide).
 
     Toute erreur s'arrête ici : la réponse de bus est déjà calculée et doit
     partir. Le journal ne dit que le type d'erreur, sans donnée de l'usager.
     """
     if not trace.get("traitee"):
         # Doublon d'un même geste : l'écran garde ce qu'il affiche.
-        return tuple(gr.skip() for _ in range(4))
-    masque = (None, gr.update(visible=False), "", gr.update(value=None))
+        return tuple(gr.skip() for _ in range(5))
+    masque = (None, gr.update(visible=False), "", gr.update(value=None), gr.update(value=None))
     if not trace.get("repondu"):
         return masque
     try:
         if nouvelle or not suivi:
             suivi, message = collecte.nouveau_suivi(trace)
-            temps = gr.update(value=None)
+            temps = etoiles = gr.update(value=None)
         else:
-            suivi, message, temps = collecte.suivi_mis_a_jour(suivi, trace), gr.skip(), gr.skip()
+            suivi, message = collecte.suivi_mis_a_jour(suivi, trace), gr.skip()
+            temps = etoiles = gr.skip()
     except Exception as exc:
         print(f"[collecte] contribution ignorée ({type(exc).__name__})", flush=True)
         return masque
-    return suivi, gr.update(visible=bool(suivi["lignes"])), message, temps
+    return suivi, gr.update(visible=bool(suivi["lignes"])), message, temps, etoiles
 
 
 def traiter_demande_collecte(
@@ -1987,6 +2027,24 @@ def avis_non(minutes, suivi: dict | None, request: gr.Request | None = None) -> 
 
 def avis_ne_sait_pas(minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
     return donner_avis("ne_sait_pas", minutes, suivi, request)
+
+
+def donner_etoiles(etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
+    """« Note l'application » : 1 à 5 étoiles, dans l'avis.json du même code GM-.
+
+    Même plafond que les autres avis (COLLECTE_AVIS_MAX_PAR_CLIENT_HEURE) ;
+    aucune donnée de l'usager, seulement le chiffre.
+    """
+    if not suivi:
+        return gr.skip(), gr.skip()
+    note = collecte.etoiles_valides(etoiles)
+    if note is None or not collecte.avis_autorise(cle_client(request)):
+        return gr.skip(), gr.skip()
+    try:
+        return collecte.noter_avis(suivi, None, None, note)
+    except Exception as exc:
+        print(f"[collecte] avis ignoré ({type(exc).__name__})", flush=True)
+        return gr.skip(), gr.skip()
 
 
 def donner_temps(minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
@@ -2080,165 +2138,26 @@ CHOIX_TRAJETS_FREQUENTS = {
 
 
 def _theme():
-    """Thème vert Sénégal.
+    """Thème clair GuindiMa : vert Sénégal, polices du téléphone.
 
-    colors.hsl est la voie documentée pour passer une couleur exacte à un thème ;
-    si l'API bouge, on retombe sur le nom « green » plutôt que de planter au
-    démarrage du Space.
+    Polices système seulement : le thème « Soft » allait chercher Montserrat
+    chez Google Fonts (réseau). colors.hsl est la voie documentée pour passer une
+    couleur exacte ; si l'API bouge, on retombe sur le nom « green » plutôt que de
+    planter au démarrage du Space. Le mode sombre est neutralisé par HEAD_CLAIR et
+    CSS_GUINDIMA (src/app/apparence.py).
     """
     try:
         from gradio.themes.utils import colors
 
-        return gr.themes.Soft(primary_hue=colors.hsl(146, 0.90, 0.31))
+        teinte = colors.hsl(146, 0.90, 0.31)
     except Exception:
-        return gr.themes.Soft(primary_hue="green")
+        teinte = "green"
+    return gr.themes.Soft(primary_hue=teinte, neutral_hue="gray", font=POLICES, font_mono=POLICES)
 
 
-# Les classes .record-button, .stop-button et .mic-select viennent du frontend
-# Gradio 6.30.0 installé (assets/audio-*.css), pas d'une supposition : les
-# boutons du micro changent de nom entre les versions. Tout est limité à
-# #micro_guindima pour ne pas toucher les autres composants Audio.
-CSS_GUINDIMA = r"""
-#consigne_micro {
-    --body-text-color: #064E2B !important;
-    --block-label-text-color: #064E2B !important;
-    --link-text-color: #064E2B !important;
-    background: #E8F5EE !important;
-    border: 1px solid #C7E6D4;
-    border-left: 5px solid #00853F;
-    border-right: 5px solid #00853F;
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 1.35;
-    margin: 0 0 10px 0;
-    padding: 12px 14px;
-}
-.dark #consigne_micro {
-    --body-text-color: #064E2B !important;
-    --block-label-text-color: #064E2B !important;
-    --link-text-color: #064E2B !important;
-}
-#consigne_micro,
-#consigne_micro p,
-#consigne_micro strong,
-#consigne_micro span,
-.dark #consigne_micro,
-.dark #consigne_micro p,
-.dark #consigne_micro strong,
-.dark #consigne_micro span {
-    color: #064E2B !important;
-}
-#consigne_micro,
-#consigne_micro *,
-.dark #consigne_micro,
-.dark #consigne_micro * {
-    color: #064E2B !important;
-}
-#consigne_micro p { margin: 0; }
-
-#micro_guindima .mic-wrap,
-#micro_guindima .controls,
-#micro_guindima .wrapper {
-    width: 100%;
-}
-#micro_guindima .mic-wrap { margin: 0; }
-#micro_guindima .controls { justify-content: center; }
-#micro_guindima .wrapper { justify-content: center; }
-
-#micro_guindima .record-button,
-#micro_guindima .stop-button {
-    align-items: center;
-    border: 0 !important;
-    border-radius: 14px;
-    box-sizing: border-box;
-    color: #FFFFFF;
-    cursor: pointer;
-    display: flex;
-    font-size: 20px;
-    font-weight: 800;
-    justify-content: center;
-    line-height: 1.1;
-    min-height: 64px;
-    padding: 0 20px;
-    touch-action: manipulation;
-}
-#micro_guindima .record-button {
-    background: #00853F;
-    box-shadow: 0 4px 14px rgba(0, 133, 63, 0.35);
-    flex: 1 1 100%;
-    width: 100%;
-}
-#micro_guindima .record-button::before {
-    background: none;
-    border-radius: 0;
-    content: "🎙️";
-    height: auto;
-    margin: 0 10px 0 0;
-    width: auto;
-}
-#micro_guindima .record-button:active { transform: translateY(1px); }
-#micro_guindima .record-icon { display: none !important; }
-
-#micro_guindima .stop-button {
-    background: #D62828;
-    animation: guindima-pulse 1.2s ease-in-out infinite;
-    align-self: center;
-    flex: 0 0 25%;
-    margin: 0 auto !important;
-    margin-top: 14px !important;
-    min-width: 120px;
-    width: 25%;
-}
-#micro_guindima .stop-button::before {
-    background: none;
-    border-radius: 0;
-    content: "⏹️";
-    height: auto;
-    margin: 0 10px 0 0;
-    width: auto;
-}
-#micro_guindima .stop-button-paused { background: #D62828; color: #FFFFFF; }
-
-#micro_guindima .mic-select { display: none !important; }
-
-/* La croix du composant Audio efface l'enregistrement avant qu'il soit traité.
-   Le DOM Gradio 6.30.0 la rend en <button class="icon-button" aria-label="Effacer">. */
-#micro_guindima .icon-button-wrapper.top-panel button[aria-label="Effacer"],
-#micro_guindima .icon-button-wrapper.top-panel button[aria-label="Clear"] {
-    display: none !important;
-}
-
-/* Toute la ligne d'une option est cliquable. Les options sont parfois portées
-   hors de #trajets_frequents (position:fixed) : on cible aussi .options, sachant
-   qu'il n'y a qu'un seul Dropdown dans cette interface. */
-#trajets_frequents .item,
-.options .item {
-    align-items: center;
-    box-sizing: border-box;
-    cursor: pointer;
-    display: flex;
-    justify-content: flex-start;
-    min-height: 44px;
-    padding: 10px 12px;
-    width: 100%;
-}
-#trajets_frequents .item:hover,
-.options .item:hover,
-#trajets_frequents .item.selected,
-.options .item.selected {
-    background: #E8F5EE;
-    color: #064E2B;
-}
-
-@keyframes guindima-pulse {
-    0%, 100% { box-shadow: 0 4px 14px rgba(214, 40, 40, 0.35); }
-    50% { box-shadow: 0 4px 24px rgba(214, 40, 40, 0.75); }
-}
-@media (prefers-reduced-motion: reduce) {
-    #micro_guindima .stop-button { animation: none; }
-}
-"""
+# Le CSS, le globe et le script du thème clair vivent dans src/app/apparence.py
+# (CSS_GUINDIMA, GLOBE_*, HEAD_CLAIR). Les classes .record-button, .stop-button et
+# .mic-select viennent du frontend Gradio 6.30.0 installé (assets/audio-*.css).
 
 I18N_GUINDIMA = (
     gr.I18n(
@@ -2257,25 +2176,34 @@ def _construire():
     # Collecte éteinte (défaut) : aucun composant ni handler de plus.
     actif = collecte.collecte_active()
     with gr.Blocks(title="GuindiMa AI 🚌", delete_cache=(600, 600)) as interface:
-        gr.Markdown("# GuindiMa AI 🚌\n### Wax ma fi nga jëm, ma won la bus bi")
-        gr.Markdown(
-            "Dis-moi où tu vas, je te montre le bus. "
-            "Parle ou écris ton trajet en wolof, à Dakar."
-        )
+        # Accueil en wolof, comme Koumba : le nom, la question, une ligne de français.
+        gr.HTML(ACCUEIL_HTML, elem_id="accueil_guindima")
 
         # Les sorties sont créées hors écran : elles servent au bouton, au micro
         # et à la liste de trajets avant d'être affichées plus bas.
-        transcription_out = gr.Textbox(label="Transcription", interactive=False, render=False)
+        # Les elem_id servent au globe : il sait que la réponse est arrivée quand
+        # la carte, la voix ou la transcription changent.
+        transcription_out = gr.Textbox(
+            label="Transcription", interactive=False, render=False, elem_id="transcription_guindima"
+        )
         trajet_out = gr.Textbox(label="Départ → arrivée", interactive=False, render=False)
         mention_out = gr.Markdown(render=False)
-        carte_out = gr.Markdown(render=False)
-        audio_out = gr.Audio(label="Réponse en wolof", autoplay=True, render=False)
+        carte_out = gr.Markdown(render=False, elem_id="reponse_guindima")
+        audio_out = gr.Audio(
+            label="Réponse en wolof", autoplay=True, render=False, elem_id="voix_guindima"
+        )
         sorties = [transcription_out, trajet_out, carte_out, audio_out, mention_out]
 
         with gr.Tab("Parler"):
-            gr.Markdown(
-                "**Appuie sur le bouton vert, dis ton trajet, puis appuie sur Arrête**",
-                elem_id="consigne_micro",
+            # Lot C : un seul grand bouton rond. Un appui démarre, un appui
+            # arrête ; il déclenche le composant d'enregistrement Gradio
+            # ci-dessous, dont les boutons natifs sont cachés : la chaîne audio
+            # (transcription, collecte, code GM-) ne change pas.
+            gr.HTML(
+                GLOBE_HTML,
+                css_template=GLOBE_CSS,
+                js_on_load=globe_js(),
+                elem_id="globe_guindima",
             )
             audio_in = gr.Audio(
                 sources=["microphone", "upload"],
@@ -2313,6 +2241,7 @@ def _construire():
             value="",
             label="Compagnie",
             info="À la voix, ta préférence l'emporte sur ce choix.",
+            elem_id="compagnie_guindima",
         )
 
         bouton = gr.Button("Trouver mon bus", variant="primary", size="lg")
@@ -2337,6 +2266,15 @@ def _construire():
                         (gr.Button("Non"), avis_non),
                         (gr.Button("Je ne sais pas"), avis_ne_sait_pas),
                     ]
+                # Lot C : « Note l'application », 1 à 5 étoiles, dans avis.json.
+                gr.Markdown("**Note l'application**")
+                etoiles_in = gr.Radio(
+                    choices=CHOIX_ETOILES,
+                    value=None,
+                    show_label=False,
+                    container=False,
+                    elem_id="etoiles_guindima",
+                )
                 minutes_in = gr.Number(
                     value=None,
                     label="Temps réel du trajet (min)",
@@ -2358,8 +2296,15 @@ def _construire():
                 outputs=[suivi_state, code_out],
                 api_visibility="private",
             )
+            # .input : seulement un clic de l'usager, jamais la remise à vide.
+            etoiles_in.input(
+                donner_etoiles,
+                inputs=[etoiles_in, suivi_state],
+                outputs=[suivi_state, code_out],
+                api_visibility="private",
+            )
             entrees_collecte = [suivi_state]
-            sorties_collecte = [suivi_state, panneau_avis, code_out, minutes_in]
+            sorties_collecte = [suivi_state, panneau_avis, code_out, minutes_in, etoiles_in]
 
         gerer_demande = traiter_demande_collecte if actif else traiter_demande
         gerer_micro = rechercher_une_fois_collecte if actif else rechercher_une_fois
@@ -2444,6 +2389,7 @@ if __name__ == "__main__":
     demo.queue(max_size=TAILLE_FILE_ATTENTE).launch(
         theme=_theme(),
         css=CSS_GUINDIMA,
+        head=HEAD_CLAIR,
         i18n=I18N_GUINDIMA,
         max_file_size=2 * TAILLE_MAX_AUDIO,
     )

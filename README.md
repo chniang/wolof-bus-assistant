@@ -3,6 +3,7 @@ title: GuindiMa AI
 sdk: gradio
 sdk_version: 6.30.0
 app_file: app.py
+short_description: "Dis ton trajet en wolof : GuindiMa trouve ton bus à Dakar"
 ---
 
 # 🚌 GuindiMa AI

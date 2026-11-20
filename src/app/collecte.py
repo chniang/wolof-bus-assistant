@@ -73,6 +73,8 @@ QUOI_AVIS = "ton avis"
 
 REPONSES_AVIS = {"oui", "non", "ne_sait_pas"}
 MINUTES_MIN, MINUTES_MAX = 1, 300
+# Lot C : « Note l'application », de 1 à 5 étoiles, dans le même avis.json.
+ETOILES_MIN, ETOILES_MAX = 1, 5
 MESSAGE_MINUTES = f"Indique un temps entre {MINUTES_MIN} et {MINUTES_MAX} minutes."
 
 # Ni 0/O, ni 1/I/L : le code se recopie à la main dans WhatsApp. Six signes et non
@@ -341,6 +343,7 @@ def nouveau_suivi(trace: dict) -> tuple[dict, str]:
         "voix": False,
         "reponse": None,
         "minutes": None,
+        "etoiles": None,
     }
     son, phrase = trace.get("son"), trace.get("phrase")
     if son is None or not phrase:
@@ -381,18 +384,40 @@ def suivi_mis_a_jour(suivi: dict, trace: dict) -> dict:
     }
 
 
-def noter_avis(suivi: dict, reponse: str | None = None, minutes: int | None = None) -> tuple[dict, str]:
-    """Enregistre l'avis ; le temps réel peut arriver bien après, une fois le trajet fait."""
+def etoiles_valides(valeur: object) -> int | None:
+    """La note de l'application, entière de 1 à 5, ou None si elle n'est pas valable."""
+    if isinstance(valeur, bool):
+        return None
+    try:
+        note = float(valeur)
+    except (TypeError, ValueError):
+        return None
+    if not note.is_integer() or not ETOILES_MIN <= note <= ETOILES_MAX:
+        return None
+    return int(note)
+
+
+def noter_avis(
+    suivi: dict, reponse: str | None = None, minutes: int | None = None, etoiles: int | None = None
+) -> tuple[dict, str]:
+    """Enregistre l'avis ; le temps réel peut arriver bien après, une fois le trajet fait.
+
+    La note en étoiles (lot C) va dans le même avis.json, sous le même code GM- :
+    un chiffre de 1 à 5, rien d'autre sur l'usager.
+    """
     suivi = dict(suivi)
     if reponse in REPONSES_AVIS:
         suivi["reponse"] = reponse
     if minutes is not None:
         suivi["minutes"] = minutes
+    if etoiles_valides(etoiles) is not None:
+        suivi["etoiles"] = etoiles_valides(etoiles)
     fiche = {
         "code": suivi["code"],
         "date": jour_courant(),
-        "reponse": suivi["reponse"],
-        "minutes_reelles": suivi["minutes"],
+        "reponse": suivi.get("reponse"),
+        "minutes_reelles": suivi.get("minutes"),
+        "etoiles": suivi.get("etoiles"),
         "depart": suivi["depart"],
         "arrivee": suivi["arrivee"],
         "lignes_proposees": suivi["lignes"],

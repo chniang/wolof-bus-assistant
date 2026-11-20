@@ -5491,75 +5491,19 @@ def test_interface_micro() -> tuple[int, int]:
         if not condition and detail:
             print(f"      {detail!r}")
 
+    # Lot C : le globe remplace « Appuie et parle » / « Arrête ». Les boutons
+    # natifs du micro restent dans le DOM (le globe les déclenche), cachés
+    # seulement quand le globe tourne (body.globe-guindima-actif).
     css = app.CSS_GUINDIMA
     verifie(
-        "bouton d'enregistrement vert, large et lisible",
-        all(
-            morceau in css
-            for morceau in (
-                "#micro_guindima .record-button",
-                "#00853F",
-                "width: 100%",
-                "min-height: 64px",
-                "font-size: 20px",
-                "border-radius: 14px",
-                "#FFFFFF",
-            )
-        ),
-        css[:400],
-    )
-    verifie(
-        "bouton Arrêter rouge et pulsation",
-        "#micro_guindima .record-button,\n#micro_guindima .stop-button" in css
-        and "#D62828" in css
-        and "@keyframes guindima-pulse" in css
-        and "animation: guindima-pulse" in css,
+        "boutons natifs du micro cachés seulement si le globe tourne",
+        "body.globe-guindima-actif #micro_guindima .record-button" in css
+        and "body.globe-guindima-actif #micro_guindima .stop-button" in css
+        and "clip-path: inset(50%) !important" in css,
     )
     verifie(
         "sélecteur de périphérique masqué dans le micro",
         "#micro_guindima .mic-select" in css and "display: none !important" in css,
-    )
-    verifie(
-        "consigne bordée en vert à gauche et à droite",
-        "border-left: 5px solid #00853F" in css
-        and "border-right: 5px solid #00853F" in css,
-    )
-    verifie(
-        "bouton Arrête à 25 %, centré, avec largeur minimale",
-        "#micro_guindima .stop-button" in css
-        and "width: 25%" in css
-        and "min-width: 120px" in css
-        and "margin-top: 14px !important" in css
-        and "margin: 0 auto !important" in css,
-    )
-    verifie(
-        "espace entre les boutons et consigne forcée en mode sombre",
-        "margin-top: 14px !important" in css
-        and all(
-            selecteur in css
-            for selecteur in (
-                "#consigne_micro p",
-                "#consigne_micro strong",
-                "#consigne_micro span",
-                ".dark #consigne_micro",
-                ".dark #consigne_micro p",
-                ".dark #consigne_micro strong",
-                ".dark #consigne_micro span",
-            )
-        )
-        and all(
-            css.count(f"{variable}: #064E2B !important;") >= 2
-            for variable in (
-                "--body-text-color",
-                "--block-label-text-color",
-                "--link-text-color",
-            )
-        )
-        and ".dark #consigne_micro {" in css
-        and "#consigne_micro *" in css
-        and ".dark #consigne_micro *" in css
-        and "color: #064E2B !important" in css
-        and "background: #E8F5EE !important" in css,
     )
     verifie(
         "croix d'effacement du micro masquée",
@@ -5570,14 +5514,13 @@ def test_interface_micro() -> tuple[int, int]:
     verifie(
         "chaque option de trajet fréquent est cliquable sur toute la ligne",
         "#trajets_frequents .item" in css
-        and "min-height: 44px" in css
+        and "min-height: 48px" in css
         and "width: 100%" in css,
     )
     verifie(
-        "libellés du micro en français",
-        app.I18N_GUINDIMA is not None
-        and app.I18N_GUINDIMA.translations["fr"]["audio.record"] == "Appuie et parle"
-        and app.I18N_GUINDIMA.translations["fr"]["audio.stop"] == "Arrête",
+        "plus de consigne bordée d'un seul côté ni de bouton « Arrête » à 25 %",
+        "border-left" not in css and "border-right" not in css and "width: 25%" not in css
+        and "consigne_micro" not in css,
     )
 
     interface = app._construire()
@@ -5601,10 +5544,10 @@ def test_interface_micro() -> tuple[int, int]:
         and composant.get("props", {}).get("elem_id") == app.MICRO_ELEM_ID
     ]
     verifie(
-        "consigne simple au-dessus du micro",
-        "Appuie sur le bouton vert, dis ton trajet, puis appuie sur Arrête"
-        in source_app
+        "globe au-dessus du micro, CSS et thème clair au lancement",
+        "GLOBE_HTML" in source_app
         and "css=CSS_GUINDIMA" in source_app
+        and "head=HEAD_CLAIR" in source_app
         and "i18n=I18N_GUINDIMA" in source_app,
     )
     verifie(
@@ -7429,7 +7372,7 @@ def test_lot_10() -> tuple[int, int]:
         sortie = silencieux(app.traiter_demande_collecte, None, PHRASE, "", None, True, None)
         suivi = sortie[7]
         verifie("Écrire : rien n'est envoyé, aucun code affiché",
-                not faux.lots and sortie[9] == "" and suivi["voix"] is False and len(sortie) == 11,
+                not faux.lots and sortie[9] == "" and suivi["voix"] is False and len(sortie) == 12,
                 (faux.lots, sortie[9]))
         verifie("Écrire : le panneau d'avis apparaît", sortie[8].get("visible") is True, sortie[8])
         verifie("le suivi ne contient jamais l'audio", "son" not in suivi)
@@ -9065,6 +9008,220 @@ def test_lot_b_sources() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_c_design() -> tuple[int, int]:
+    """Lot C : thème clair forcé, contrôles lisibles, globe micro, étoiles, cartes en livrée.
+
+    Aucun réseau : le collecteur est un faux, le matcher est hors ligne.
+    """
+    import contextlib
+    import io
+    import json
+    import os
+    import types
+
+    import gradio as gr
+
+    from app import apparence, collecte
+    from app.cartes import titre_section
+    from app.limites import HEURE, LimiteParClient
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot C {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    def silencieux(fonction, *args):
+        with contextlib.redirect_stdout(io.StringIO()):
+            return fonction(*args)
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_c")
+    source_app = (RACINE / "app.py").read_text(encoding="utf-8")
+
+    # 0. Thème clair forcé : ?__theme=light, « dark » retirée, couleurs claires sous .dark.
+    tete = apparence.HEAD_CLAIR
+    verifie("thème clair : ?__theme=light et color-scheme clair",
+            '"__theme", "light"' in tete and 'content="light only"' in tete
+            and "head=HEAD_CLAIR" in source_app)
+    # classList.remove réécrit l'attribut même sans la classe : sur <body>, cela
+    # relançait l'observateur sans fin (page figée en test local).
+    verifie("thème clair : « dark » retirée seulement là où elle est (pas de boucle)",
+            'querySelectorAll(".dark")' in tete and "MutationObserver" in tete
+            and "document.body.classList.remove" not in tete
+            and "documentElement.classList.remove" not in tete)
+    css = apparence.CSS_GUINDIMA
+    verifie("thème clair : variables claires même sous .dark",
+            ":root, .dark, body.dark" in css and "--body-background-fill: #FFFFFF !important" in css
+            and "--input-background-fill: #FFFFFF !important" in css and "color-scheme: light only" in css)
+    theme = app._theme()
+    verifie("thème : polices du téléphone, aucune police téléchargée",
+            not getattr(theme, "_stylesheets", []) and "Roboto" in str(theme.font)
+            and "googleapis" not in theme._get_theme_css())
+
+    # 1. Lisibilité : contours nets, cibles de 48 px, focus visible, contraste AA.
+    verifie("champs et boutons : contour 2 px, coins arrondis, 48 px",
+            "border: 2px solid #5E7A69 !important" in css and "border-radius: 12px !important" in css
+            and css.count("min-height: 48px") >= 5)
+    verifie("focus et appui visibles",
+            ":focus-visible" in css and "outline: 3px solid" in css and "button:active" in css)
+
+    def contraste(a: str, b: str) -> float:
+        def lum(h: str) -> float:
+            c = [int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+            c = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+            return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+        claire, foncee = sorted((lum(a), lum(b)), reverse=True)
+        return (claire + 0.05) / (foncee + 0.05)
+
+    rapports = {
+        "texte": contraste(apparence.ENCRE, apparence.FOND),
+        "texte doux": contraste(apparence.TEXTE_DOUX, apparence.FOND),
+        "vert": contraste(apparence.VERT, apparence.FOND),
+        "blanc sur vert": contraste(apparence.FOND, apparence.VERT),
+        "contour": contraste(apparence.CONTOUR, apparence.FOND),
+        "étoile": contraste(apparence.ETOILE_PLEINE, apparence.FOND),
+    }
+    verifie("contrastes AA (texte >= 4,5, contours et étoiles >= 3)",
+            all(rapports[k] >= 4.5 for k in ("texte", "texte doux", "vert", "blanc sur vert"))
+            and rapports["contour"] >= 3 and rapports["étoile"] >= 3,
+            {k: round(v, 2) for k, v in rapports.items()})
+
+    # Cartes : bordure neutre tout autour, livrée réelle en bande.
+    matcher = _matcher_hors_ligne()
+    ddd = next(t for t in matcher.find_line("Ouakam", "Palais")["lignes"]
+               if t["compagnie"] == "Dakar Dem Dikk")
+    tata = next(t for t in matcher.find_line("Keur Massar", "Croisement Tivaouane Peulh")["lignes"]
+                if t["compagnie"] == "Tata AFTU")
+    carte_ddd = app._une_carte(ddd, depart="Ouakam", arrivee="Palais")
+    carte_tata = app._une_carte(tata, depart="Keur Massar", arrivee="Croisement Tivaouane Peulh")
+    a_pied = app._carte_a_pied({"minutes": 5, "distance_m": 300})
+    verifie("cartes : bordure neutre sur les quatre côtés, aucune d'un seul côté",
+            all("border:1.5px solid" in c and "border-top:" not in c and "border-left" not in c
+                for c in (carte_ddd, carte_tata, a_pied)))
+    verifie("livrée Dem Dikk : vert, jaune, rouge",
+            all(c in carte_ddd for c in ("#00853F 0 33.33%", "#FDEF42 33.33% 66.66%", "#E31B23 66.66% 100%")))
+    verifie("livrée Tata : rayures bleues",
+            "repeating-linear-gradient(135deg,#1F5FAD" in carte_tata and "#4F8BD0" in carte_tata)
+    verifie("titres de section : bordure tout autour",
+            "border-left" not in titre_section("Titre") and "border:1.5px solid" in titre_section("Titre"))
+    verifie("nom de ligne long plus petit qu'un numéro",
+            app._taille_numero("7") == 56 and app._taille_numero("TAF TAF OUAKAM (TO1)") < 40)
+
+    # 2. Globe micro : un bouton, trois états wolof, accessible, sans librairie.
+    verifie("globe : textes wolof des trois états",
+            apparence.TEXTES_GLOBE == {"repos": "Bës te wax", "ecoute": "Maa ngi lay déglu…",
+                                       "traitement": "Maa ngi xool…"})
+    js = apparence.globe_js()
+    verifie("globe : un appui démarre, un appui arrête le micro Gradio",
+            "'.record-button'" in js and "'.stop-button'" in js and ".click()" in js
+            and "getComputedStyle(b).display" in js)
+    verifie("globe : aucune librairie externe ni adresse réseau",
+            "http" not in js and "<script" not in apparence.GLOBE_HTML and "import " not in js)
+    verifie("globe : aria-label, aria-pressed, aria-live et mouvement réduit",
+            'aria-label="' in apparence.GLOBE_HTML and 'aria-pressed="false"' in apparence.GLOBE_HTML
+            and 'aria-live="polite"' in apparence.GLOBE_HTML
+            and "prefers-reduced-motion" in js and "prefers-reduced-motion" in apparence.GLOBE_CSS)
+    verifie("globe : gabarit sans accent grave ni ${ (gabarit JS de gr.HTML)",
+            "`" not in apparence.GLOBE_HTML and "${" not in apparence.GLOBE_HTML
+            and "`" not in apparence.GLOBE_CSS and "${" not in apparence.GLOBE_CSS)
+
+    ancien = os.environ.get("COLLECTE_ACTIVE")
+    os.environ["COLLECTE_ACTIVE"] = "1"
+    try:
+        config = silencieux(app._construire).get_config_file()
+    finally:
+        if ancien is None:
+            os.environ.pop("COLLECTE_ACTIVE", None)
+        else:
+            os.environ["COLLECTE_ACTIVE"] = ancien
+    composants = config["components"]
+    par_id = {c["props"]["elem_id"]: c for c in composants if c.get("props", {}).get("elem_id")}
+    globe = par_id.get("globe_guindima", {})
+    verifie("globe présent dans l'onglet Parler, avant le micro Gradio",
+            globe.get("type") == "html" and "Bës te wax" in str(globe.get("props", {}).get("value"))
+            and "micro_guindima" in par_id and globe["id"] < par_id["micro_guindima"]["id"],
+            (globe.get("type"), sorted(par_id)))
+    verifie("micro Gradio inchangé (mêmes sources, même chaîne audio)",
+            par_id.get("micro_guindima", {}).get("props", {}).get("sources") == ["microphone", "upload"])
+
+    # 3. Étoiles : cinq choix, 1 à 5, dans avis.json du même code GM-.
+    etoiles = par_id.get("etoiles_guindima", {})
+    choix = [c[1] for c in etoiles.get("props", {}).get("choices") or []]
+    verifie("« Note l'application » : 5 étoiles (1 à 5)",
+            etoiles.get("type") == "radio" and choix == [1, 2, 3, 4, 5]
+            and "Note l'application" in json.dumps(config, ensure_ascii=False, default=str), choix)
+    dependances = [d for d in config["dependencies"] if etoiles.get("id") in d.get("inputs", [])]
+    verifie("étoiles : enregistrées au clic (.input), jamais à la remise à vide",
+            dependances and all(cible[1] == "input" for d in dependances for cible in d.get("targets", [])),
+            [d.get("targets") for d in dependances])
+
+    class FauxCollecteur:
+        def __init__(self):
+            self.lots: list[dict] = []
+
+        def soumettre(self, fichiers: dict) -> bool:
+            self.lots.append(fichiers)
+            return True
+
+    def requete(ip: str):
+        return types.SimpleNamespace(headers={"x-forwarded-for": ip},
+                                     client=types.SimpleNamespace(host="10.0.0.1"))
+
+    collecteur_origine, limite_origine = collecte.COLLECTEUR, collecte.LIMITE_AVIS_CLIENT
+    try:
+        faux = collecte.COLLECTEUR = FauxCollecteur()
+        suivi = {"code": "GM-AAAAAA", "depart": "Ouakam", "arrivee": "Palais", "lignes": ["L"],
+                 "voix": False, "reponse": None, "minutes": None}
+        nouveau, message = silencieux(app.donner_etoiles, 4, suivi, requete("203.0.113.40"))
+        fiche = json.loads(faux.lots[-1]["donnees/GM-AAAAAA/avis.json"]) if faux.lots else {}
+        verifie("étoile -> avis.json du même code, champ « etoiles »",
+                fiche.get("etoiles") == 4 and fiche.get("code") == "GM-AAAAAA"
+                and nouveau.get("etoiles") == 4 and "GM-AAAAAA" in message, fiche)
+        verifie("avis.json : aucune donnée personnelle",
+                set(fiche) == {"code", "date", "reponse", "minutes_reelles", "etoiles", "depart",
+                               "arrivee", "lignes_proposees", "avec_voix"}, sorted(fiche))
+        silencieux(app.donner_avis, "oui", None, nouveau, requete("203.0.113.40"))
+        fiche = json.loads(faux.lots[-1]["donnees/GM-AAAAAA/avis.json"])
+        verifie("la note reste avec l'avis Oui qui suit",
+                fiche.get("etoiles") == 4 and fiche["reponse"] == "oui", fiche)
+        avant = len(faux.lots)
+        refus = [silencieux(app.donner_etoiles, v, suivi, requete("203.0.113.41"))
+                 for v in (0, 6, 2.5, "x", None, True)]
+        verifie("étoiles invalides : rien n'est envoyé",
+                len(faux.lots) == avant and all(r == (gr.skip(), gr.skip()) for r in refus), refus)
+        verifie("étoiles sans demande : rien",
+                silencieux(app.donner_etoiles, 3, None, requete("203.0.113.42")) == (gr.skip(), gr.skip()))
+        collecte.LIMITE_AVIS_CLIENT = LimiteParClient(((HEURE, 1),))
+        silencieux(app.donner_etoiles, 5, suivi, requete("203.0.113.43"))
+        second = silencieux(app.donner_etoiles, 2, suivi, requete("203.0.113.43"))
+        verifie("étoiles : plafond COLLECTE_AVIS_* respecté", second == (gr.skip(), gr.skip()), second)
+    finally:
+        collecte.COLLECTEUR, collecte.LIMITE_AVIS_CLIENT = collecteur_origine, limite_origine
+    sorties = app._sorties_collecte({"traitee": True, "repondu": False}, None, True)
+    verifie("nouvelle demande : les étoiles reviennent à vide",
+            len(sorties) == 5 and sorties[4] == gr.update(value=None), sorties)
+
+    # 4. Description du Space en français, <= 60 caractères (limite Hugging Face).
+    entete = (RACINE / "README.md").read_text(encoding="utf-8").split("---", 2)[1]
+    ligne = next((l for l in entete.splitlines() if l.startswith("short_description:")), "")
+    description = ligne.split(":", 1)[1].strip().strip('"') if ligne else ""
+    verifie("short_description en français, <= 60 caractères",
+            description.startswith("Dis ton trajet en wolof") and "Dakar" in description
+            and len(description) <= 60, (description, len(description)))
+
+    # 5. Mobile d'abord : une colonne de 480 px au plus, règles pour 360 px.
+    verifie("mobile : colonne de 480 px, règles sous 380 px",
+            "max-width: 480px !important" in css and "@media (max-width: 380px)" in css)
+
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -9129,6 +9286,7 @@ if __name__ == "__main__":
         echecs_zerogpu, total_zerogpu = test_zerogpu_cuda()
         echecs_f5, total_f5 = test_lot_f5()
         echecs_bsrc, total_bsrc = test_lot_b_sources()
+        echecs_c, total_c = test_lot_c_design()
         echecs = (
             test_local()
             + echecs_partage
@@ -9183,6 +9341,7 @@ if __name__ == "__main__":
             + echecs_zerogpu
             + echecs_f5
             + echecs_bsrc
+            + echecs_c
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -9238,6 +9397,7 @@ if __name__ == "__main__":
             + total_zerogpu
             + total_f5
             + total_bsrc
+            + total_c
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)
