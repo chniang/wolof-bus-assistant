@@ -1045,6 +1045,39 @@ def fourchette_minutes(minutes: float) -> str:
     return f"{bas}–{haut} min"
 
 
+# Lot C5 : au changement, on attend le 2e bus. Sans horaires, une fourchette
+# honnête : 5 à 15 min par changement, ajoutées aux fourchettes des bus.
+ATTENTE_CHANGEMENT_MIN, ATTENTE_CHANGEMENT_MAX = 5, 15
+
+
+def duree_totale(etapes: list[dict]) -> str:
+    """« Durée totale : 45–90 min » pour un trajet avec changement(s), ou « inconnue ».
+
+    Seulement si la durée de chaque bus est connue : une seule inconnue rend le
+    total inconnu, jamais un chiffre inventé. Rien n'est dit à la voix.
+    """
+    changements = max(len(etapes) - 1, 0)
+    minutes = [etape.get("minutes") for etape in etapes]
+    if not etapes or any(m is None for m in minutes):
+        texte = "Durée totale : inconnue"
+    else:
+        total = sum(float(m) for m in minutes)
+        attente_bas = ATTENTE_CHANGEMENT_MIN * changements
+        attente_haut = ATTENTE_CHANGEMENT_MAX * changements
+        bas = _arrondi_5(total + attente_bas)
+        haut = max(_arrondi_5(total * FACTEUR_EMBOUTEILLAGES + attente_haut), bas + ARRONDI_DUREE_MIN)
+        lieu = "au changement" if changements == 1 else "aux changements"
+        texte = (
+            f"Durée totale : {bas}–{haut} min "
+            f"(avec {attente_bas} à {attente_haut} min d'attente {lieu})"
+        )
+    return (
+        "<div class='duree-totale' style='margin:8px 0 4px;padding:10px 14px;"
+        "border:1.5px solid #D3DED7;border-radius:12px;background:#F6F9F7;"
+        f"color:#11251A;font-size:16px;font-weight:750;'>⏱️ {texte}</div>"
+    )
+
+
 def _taille_numero(affiche: str) -> int:
     """Taille du numéro de ligne : énorme pour « 7 » ou « 16A », plus petite pour un nom.
 
@@ -1350,6 +1383,7 @@ def _carte(
                 f"🔁 Change à <b>{_echapper(trajet['changement'])}</b></div>"
             )
             blocs.append(_une_carte(trajet["etape_2"], "2e bus", arrivee=arrivee))
+            blocs.append(duree_totale([trajet["etape_1"], trajet["etape_2"]]))
             blocs.append(bouton_partage(depart, arrivee, resultat, trajet))
 
     if trajets_2:
@@ -1381,6 +1415,7 @@ def _carte(
                         changement=index < len(etapes) - 1,
                     )
                 )
+            blocs.append(duree_totale(etapes))
             blocs.append(bouton_partage(depart, arrivee, resultat, trajet))
 
     if lignes or correspondances or trajets_2 or a_pied:
@@ -2092,9 +2127,23 @@ def _ignore(resultat: tuple) -> bool:
     return resultat == (gr.skip(), gr.skip())
 
 
-def _clic_avis(reponse: str, minutes, suivi, request) -> tuple:
+def _avec_etoiles_affichees(suivi: dict | None, etoiles) -> dict | None:
+    """Le suivi avec la note que l'usager voit à l'écran (lot C5).
+
+    Bug vu dans le dataset : 5 étoiles affichées, « etoiles »: 1 dans avis.json.
+    Chaque envoi (Oui/Non, temps) réécrit tout avis.json : s'il partait d'un
+    suivi où la note n'était pas encore à jour, il remettait l'ancienne. La
+    valeur du composant étoiles fait donc foi à chaque envoi.
+    """
+    note = collecte.etoiles_valides(etoiles)
+    if not suivi or note is None:
+        return suivi
+    return {**suivi, "etoiles": note}
+
+
+def _clic_avis(reponse: str, minutes, etoiles, suivi, request) -> tuple:
     """Oui / Non / Je ne sais pas : suivi, code, retour, retour du bas, trois boutons."""
-    resultat = donner_avis(reponse, minutes, suivi, request)
+    resultat = donner_avis(reponse, minutes, _avec_etoiles_affichees(suivi, etoiles), request)
     if _ignore(resultat):
         return tuple(gr.skip() for _ in range(7))
     nouveau, message = resultat
@@ -2106,16 +2155,16 @@ def _clic_avis(reponse: str, minutes, suivi, request) -> tuple:
     return (nouveau, _code_seul(message) or gr.skip(), retour, retour, *boutons)
 
 
-def clic_avis_oui(minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
-    return _clic_avis("oui", minutes, suivi, request)
+def clic_avis_oui(minutes, etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
+    return _clic_avis("oui", minutes, etoiles, suivi, request)
 
 
-def clic_avis_non(minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
-    return _clic_avis("non", minutes, suivi, request)
+def clic_avis_non(minutes, etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
+    return _clic_avis("non", minutes, etoiles, suivi, request)
 
 
-def clic_avis_ne_sait_pas(minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
-    return _clic_avis("ne_sait_pas", minutes, suivi, request)
+def clic_avis_ne_sait_pas(minutes, etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
+    return _clic_avis("ne_sait_pas", minutes, etoiles, suivi, request)
 
 
 def clic_etoiles(etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
@@ -2132,9 +2181,9 @@ def clic_etoiles(etoiles, suivi: dict | None, request: gr.Request | None = None)
     return (nouveau, _code_seul(message) or gr.skip(), retour, retour)
 
 
-def clic_temps(minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
+def clic_temps(minutes, etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
     """Temps réel : suivi, code, « Temps enregistré : X min ✓ », retour du bas, bouton."""
-    resultat = donner_temps(minutes, suivi, request)
+    resultat = donner_temps(minutes, _avec_etoiles_affichees(suivi, etoiles), request)
     if _ignore(resultat):
         return tuple(gr.skip() for _ in range(5))
     nouveau, message = resultat
@@ -2405,25 +2454,34 @@ def _construire():
                 # même après avoir fait défiler la page.
                 retour_bas = gr.HTML("", elem_id="retour_bas")
             boutons = [bouton for bouton, _ in boutons_avis]
+            # Lot C5 : tous les envois d'avis passent un par un, dans l'ordre
+            # des clics (une seule file), et chacun lit la note affichée : le
+            # dernier choix de l'usager est toujours celui d'avis.json.
+            file_avis = {"concurrency_id": "avis_guindima", "concurrency_limit": 1}
             for bouton_avis, gerer_avis in boutons_avis:
                 bouton_avis.click(
                     gerer_avis,
-                    inputs=[minutes_in, suivi_state],
+                    inputs=[minutes_in, etoiles_in, suivi_state],
                     outputs=[suivi_state, code_out, retour_avis, retour_bas, *boutons],
                     api_visibility="private",
+                    **file_avis,
                 )
             bouton_temps.click(
                 clic_temps,
-                inputs=[minutes_in, suivi_state],
+                inputs=[minutes_in, etoiles_in, suivi_state],
                 outputs=[suivi_state, code_out, retour_temps, retour_bas, bouton_temps],
                 api_visibility="private",
+                **file_avis,
             )
             # .input : seulement un clic de l'usager, jamais la remise à vide.
+            # always_last : deux clics rapides (1 puis 5) finissent toujours sur 5.
             etoiles_in.input(
                 clic_etoiles,
                 inputs=[etoiles_in, suivi_state],
                 outputs=[suivi_state, code_out, retour_etoiles, retour_bas],
                 api_visibility="private",
+                trigger_mode="always_last",
+                **file_avis,
             )
             entrees_collecte = [suivi_state]
             sorties_collecte = [

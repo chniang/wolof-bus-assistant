@@ -9157,7 +9157,10 @@ def test_lot_c_design() -> tuple[int, int]:
     verifie("« Note l'application » : 5 étoiles (1 à 5)",
             etoiles.get("type") == "radio" and choix == [1, 2, 3, 4, 5]
             and "Note l'application" in json.dumps(config, ensure_ascii=False, default=str), choix)
-    dependances = [d for d in config["dependencies"] if etoiles.get("id") in d.get("inputs", [])]
+    # Les envois Oui/Non/temps lisent aussi la note (lot C5) : seuls comptent
+    # ici les événements déclenchés par les étoiles elles-mêmes.
+    dependances = [d for d in config["dependencies"]
+                   if any(cible[0] == etoiles.get("id") for cible in d.get("targets", []))]
     verifie("étoiles : enregistrées au clic (.input), jamais à la remise à vide",
             dependances and all(cible[1] == "input" for d in dependances for cible in d.get("targets", [])),
             [d.get("targets") for d in dependances])
@@ -9367,7 +9370,7 @@ def test_lot_c3_retours() -> tuple[int, int]:
         collecte.COLLECTEUR = FauxCollecteur()
 
         # 1 et 4. Oui / Non / Je ne sais pas : confirmation sous les boutons, bouton choisi plein.
-        sortie = silencieux(app.clic_avis_non, None, suivi(), requete("203.0.113.60"))
+        sortie = silencieux(app.clic_avis_non, None, None, suivi(), requete("203.0.113.60"))
         verifie("avis : 7 sorties (suivi, code, retour, retour du bas, 3 boutons)", len(sortie) == 7, sortie)
         nouveau, code, retour, bas, oui, non, nsp = sortie
         verifie("avis : « Merci, c'est noté ✓ » en vert, sous les boutons",
@@ -9388,23 +9391,23 @@ def test_lot_c3_retours() -> tuple[int, int]:
                 and "retour-ok" in sortie[2], sortie)
 
         # 3. Temps : « Temps enregistré : X min ✓ », bouton « envoyé ».
-        sortie = silencieux(app.clic_temps, 35, suivi(), requete("203.0.113.62"))
+        sortie = silencieux(app.clic_temps, 35, None, suivi(), requete("203.0.113.62"))
         verifie("temps : « Temps enregistré : 35 min ✓ » et bouton « Temps envoyé ✓ »",
                 len(sortie) == 5 and "Temps enregistré : 35 min ✓" in sortie[2]
                 and sortie[4] == gr.update(value=app.TEXTE_TEMPS_ENVOYE, variant="primary"), sortie)
-        sortie = silencieux(app.clic_temps, 0, suivi(), requete("203.0.113.63"))
+        sortie = silencieux(app.clic_temps, 0, None, suivi(), requete("203.0.113.63"))
         verifie("temps invalide : erreur en orange, sous le bouton et en bas",
                 "retour-erreur" in sortie[2] and "entre 1 et 300 minutes" in sortie[2]
                 and sortie[3] == sortie[2] and sortie[0] == gr.skip() and sortie[4] == gr.skip(), sortie)
 
         # File d'envoi pleine : on le dit (orange) au lieu de rien.
         collecte.COLLECTEUR = FauxCollecteur(accepte=False)
-        sortie = silencieux(app.clic_avis_oui, None, suivi(), requete("203.0.113.64"))
+        sortie = silencieux(app.clic_avis_oui, None, None, suivi(), requete("203.0.113.64"))
         verifie("avis non gardé : message orange", "retour-erreur" in sortie[2], sortie[2])
 
         # Sans demande en cours : rien ne bouge.
         verifie("sans demande : aucun changement",
-                silencieux(app.clic_avis_oui, None, None, requete("203.0.113.65"))
+                silencieux(app.clic_avis_oui, None, None, None, requete("203.0.113.65"))
                 == tuple(gr.skip() for _ in range(7))
                 and silencieux(app.clic_etoiles, 3, None, requete("203.0.113.65"))
                 == tuple(gr.skip() for _ in range(4)))
@@ -9518,6 +9521,172 @@ def test_lot_c4_tech_innov() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_c5_retours_chrome() -> tuple[int, int]:
+    """Lot C5 : remise à zéro, lecteur audio sans débordement, durée totale, bug des étoiles.
+
+    Bug vu dans le dataset : 5 étoiles affichées, « etoiles »: 1 dans avis.json.
+    Aucun réseau : le collecteur est un faux, le matcher est hors ligne.
+    """
+    import contextlib
+    import io
+    import json
+    import os
+    import re
+    import types
+
+    import gradio as gr
+
+    from app import apparence, collecte
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot C5 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    def silencieux(fonction, *args):
+        with contextlib.redirect_stdout(io.StringIO()):
+            return fonction(*args)
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_c5")
+    app.MATCHER = _matcher_hors_ligne()
+
+    class FauxCollecteur:
+        def __init__(self):
+            self.lots: list[dict] = []
+
+        def soumettre(self, fichiers: dict) -> bool:
+            self.lots.append(fichiers)
+            return True
+
+        def dernier_avis(self, code: str) -> dict:
+            chemin = f"donnees/{code}/avis.json"
+            for lot in reversed(self.lots):
+                if chemin in lot:
+                    return json.loads(lot[chemin])
+            return {}
+
+    def requete(ip: str):
+        return types.SimpleNamespace(headers={"x-forwarded-for": ip},
+                                     client=types.SimpleNamespace(host="10.0.0.1"))
+
+    def suivi(**champs) -> dict:
+        base = {"code": "GM-DDDDDD", "depart": "Ouakam", "arrivee": "Palais", "lignes": ["L"],
+                "voix": False, "reponse": None, "minutes": None}
+        return {**base, **champs}
+
+    # 5. Étoiles : la dernière note choisie est toujours celle d'avis.json.
+    collecteur_origine = collecte.COLLECTEUR
+    faux = collecte.COLLECTEUR = FauxCollecteur()
+    try:
+        etat = suivi()
+        etat = silencieux(app.clic_etoiles, 1, etat, requete("203.0.113.70"))[0]
+        etat = silencieux(app.clic_etoiles, 5, etat, requete("203.0.113.70"))[0]
+        verifie("clic 1 puis clic 5 : etoiles = 5 dans avis.json et dans le suivi",
+                faux.dernier_avis("GM-DDDDDD").get("etoiles") == 5 and etat["etoiles"] == 5,
+                faux.dernier_avis("GM-DDDDDD"))
+        # Le cas du dataset : un envoi « Oui » parti d'un suivi resté à 1 étoile
+        # alors que l'écran en montre 5. La note affichée fait foi.
+        perime = suivi(etoiles=1)
+        silencieux(app.clic_avis_oui, None, 5, perime, requete("203.0.113.71"))
+        verifie("Oui après une note : avis.json garde la note affichée (5), jamais l'ancienne (1)",
+                faux.dernier_avis("GM-DDDDDD").get("etoiles") == 5
+                and faux.dernier_avis("GM-DDDDDD").get("reponse") == "oui", faux.dernier_avis("GM-DDDDDD"))
+        silencieux(app.clic_temps, 40, 5, perime, requete("203.0.113.72"))
+        verifie("temps après une note : la note affichée (5) est gardée",
+                faux.dernier_avis("GM-DDDDDD").get("etoiles") == 5
+                and faux.dernier_avis("GM-DDDDDD").get("minutes_reelles") == 40, faux.dernier_avis("GM-DDDDDD"))
+        silencieux(app.clic_avis_non, None, None, suivi(etoiles=3), requete("203.0.113.73"))
+        verifie("sans note affichée : la note du suivi reste (pas d'effacement)",
+                faux.dernier_avis("GM-DDDDDD").get("etoiles") == 3, faux.dernier_avis("GM-DDDDDD"))
+    finally:
+        collecte.COLLECTEUR = collecteur_origine
+
+    css = apparence.CSS_GUINDIMA
+    regles_survol = [r for r in re.findall(r"[^{}]*:hover\)[^{}]*\{[^}]*\}", css) if "etoiles_guindima" in r]
+    verifie("étoiles : le survol ne redessine jamais une étoile (piège du premier toucher)",
+            regles_survol and all('content' not in r for r in regles_survol)
+            and "@media (hover: hover) and (pointer: fine)" in css, regles_survol[:1])
+    verifie("étoiles : l'affichage suit la valeur cochée",
+            all(f"label:nth-child({n}) input:checked" in css for n in range(1, 6)))
+
+    ancien = os.environ.get("COLLECTE_ACTIVE")
+    os.environ["COLLECTE_ACTIVE"] = "1"
+    try:
+        interface = silencieux(app._construire)
+        config = interface.get_config_file()
+    finally:
+        if ancien is None:
+            os.environ.pop("COLLECTE_ACTIVE", None)
+        else:
+            os.environ["COLLECTE_ACTIVE"] = ancien
+    files = {getattr(f, "name", ""): getattr(f, "concurrency_id", None) for f in interface.fns.values()}
+    par_id = {c["props"]["elem_id"]: c["id"] for c in config["components"] if c.get("props", {}).get("elem_id")}
+    noms = {c["id"]: c.get("props", {}).get("value") for c in config["components"]}
+    id_etoiles = par_id.get("etoiles_guindima")
+    envois = [d for d in config["dependencies"]
+              if any(noms.get(cible[0]) in ("Oui", "Non", "Je ne sais pas", app.TEXTE_TEMPS)
+                     for cible in d.get("targets", []))]
+    verifie("Oui/Non/Je ne sais pas/temps lisent la note affichée",
+            len(envois) == 4 and all(id_etoiles in d.get("inputs", []) for d in envois), len(envois))
+    clics_etoiles = [d for d in config["dependencies"]
+                     if any(cible[0] == id_etoiles for cible in d.get("targets", []))]
+    noms_avis = ("clic_etoiles", "clic_avis_oui", "clic_avis_non", "clic_avis_ne_sait_pas", "clic_temps")
+    verifie("étoiles : dernier clic gagnant, une seule file pour tous les avis",
+            clics_etoiles and clics_etoiles[0].get("trigger_mode") == "always_last"
+            and {files.get(nom) for nom in noms_avis} == {"avis_guindima"},
+            {nom: files.get(nom) for nom in noms_avis})
+
+    # 1. Nouvelle recherche (écrite ici) : étoiles, Oui/Non, temps et messages à zéro.
+    faux = collecte.COLLECTEUR = FauxCollecteur()
+    try:
+        sortie = silencieux(app.traiter_demande_collecte, None, "Maa ngi Ouakam, bëgg naa dem Palais",
+                            "", None, True, suivi(etoiles=4, reponse="oui", minutes=30))
+    finally:
+        collecte.COLLECTEUR = collecteur_origine
+    remise = sortie[10:]
+    verifie("nouvelle recherche : étoiles, temps, messages, Oui/Non et bouton du temps remis à zéro",
+            len(sortie) == 20 and remise[0] == gr.update(value=None) and remise[1] == gr.update(value=None)
+            and remise[2:6] == ("", "", "", "")
+            and remise[6:9] == tuple(gr.update(variant="secondary") for _ in range(3))
+            and remise[9] == gr.update(value=app.TEXTE_TEMPS, variant="secondary"), remise)
+    sources_collecte = (RACINE / "app.py").read_text(encoding="utf-8")
+    verifie("même remise à zéro pour la voix et les trajets fréquents",
+            all(f"def {f}(" in sources_collecte for f in
+                ("rechercher_une_fois_collecte", "choisir_trajet_frequent_collecte"))
+            and sources_collecte.count("_sorties_collecte(trace, suivi, True)") >= 2)
+
+    # 2. Lecteur « Réponse en wolof » : pas de défilement horizontal à 360 px.
+    verifie("lecteur audio : tient dans la largeur, sans barre de défilement",
+            "#voix_guindima ::part(scroll) { overflow-x: hidden !important;" in css
+            and "#voix_guindima { max-width: 100% !important;" in css)
+
+    # 3. Durée totale d'un trajet avec changement.
+    verifie("durée totale : somme des bus + 5 à 15 min d'attente, en fourchette",
+            "Durée totale : 55–105 min (avec 5 à 15 min d'attente au changement)"
+            in app.duree_totale([{"minutes": 20}, {"minutes": 30}]), app.duree_totale([{"minutes": 20}, {"minutes": 30}]))
+    verifie("durée totale : une durée inconnue -> « inconnue », jamais de chiffre",
+            "Durée totale : inconnue" in app.duree_totale([{"minutes": 20}, {"minutes": None}])
+            and "min" not in app.duree_totale([{"minutes": None}, {"minutes": 30}]).split("inconnue")[-1])
+    verifie("durée totale : deux changements -> 10 à 30 min d'attente",
+            "10 à 30 min d'attente aux changements" in app.duree_totale([{"minutes": 10}] * 3))
+    resultat = app.MATCHER.find_line("Liberté 5", "Guédiawaye")
+    carte = app._carte(resultat, "Liberté 5", "Guédiawaye")
+    verifie("carte d'un trajet avec changement : durée totale affichée",
+            resultat.get("correspondances") and carte.count("Durée totale") == len(
+                resultat["correspondances"][:app.MAX_POSSIBILITES]), carte.count("Durée totale"))
+    corps_voix = sources_collecte.split("def _voix_wolof", 1)[1].split("\ndef ", 1)[0]
+    verifie("aucune durée parlée", "duree_totale" not in corps_voix and "minutes" not in corps_voix)
+
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -9586,6 +9755,7 @@ if __name__ == "__main__":
         echecs_c2, total_c2 = test_lot_c2_logo()
         echecs_c3, total_c3 = test_lot_c3_retours()
         echecs_c4, total_c4 = test_lot_c4_tech_innov()
+        echecs_c5, total_c5 = test_lot_c5_retours_chrome()
         echecs = (
             test_local()
             + echecs_partage
@@ -9644,6 +9814,7 @@ if __name__ == "__main__":
             + echecs_c2
             + echecs_c3
             + echecs_c4
+            + echecs_c5
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -9703,6 +9874,7 @@ if __name__ == "__main__":
             + total_c2
             + total_c3
             + total_c4
+            + total_c5
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

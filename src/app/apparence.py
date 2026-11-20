@@ -477,6 +477,26 @@ body.globe-guindima-actif #micro_guindima {
 }
 .options { background: #FFFFFF !important; border: 2px solid #5E7A69 !important; border-radius: 12px !important; }
 
+/* Lot C5 : « Réponse en wolof » tient dans la largeur. WaveSurfer dessine
+   20 px par seconde : une réponse de 29 s faisait 580 px, d'où une barre de
+   défilement à 360 px. Son conteneur est dans un shadow DOM, joignable par
+   ::part(scroll) ; il continue de suivre la lecture (défilement automatique). */
+#voix_guindima { max-width: 100% !important; min-width: 0 !important; overflow: hidden !important; }
+#voix_guindima ::part(scroll) { overflow-x: hidden !important; scrollbar-width: none; }
+#voix_guindima audio, #voix_guindima .component-wrapper { max-width: 100% !important; }
+
+/* Lot C5 : durée totale d'un trajet avec changement. */
+.gradio-container .duree-totale {
+    margin: 8px 0 4px;
+    padding: 10px 14px;
+    border: 1.5px solid #D3DED7;
+    border-radius: 12px;
+    background: #F6F9F7;
+    color: #11251A;
+    font-size: 16px;
+    font-weight: 750;
+}
+
 @media (max-width: 380px) {
     .gradio-container { padding: 10px 10px 24px !important; }
     #accueil_guindima .marque { font-size: 26px; padding: 6px 16px 7px; }
@@ -490,18 +510,28 @@ body.globe-guindima-actif #micro_guindima {
 
 
 def _css_etoiles() -> str:
-    """Les étoiles jusqu'à la note choisie (et au survol) deviennent pleines."""
+    """Les étoiles jusqu'à la note choisie deviennent pleines : l'écran suit la valeur cochée.
+
+    Lot C5 (bug vu dans le dataset : 5 étoiles à l'écran, « etoiles »: 1 dans
+    avis.json). Le survol remplissait aussi les étoiles (content « ★ ») ; sur
+    téléphone, Safari applique alors le premier toucher comme un simple survol,
+    sans clic : l'écran montrait 5 étoiles alors que la note cochée restait 1.
+    Le survol n'existe plus que sur les appareils à souris, et il ne change que
+    la couleur du contour, jamais le dessin des étoiles.
+    """
     regles = []
     for n in range(1, 6):
         regles.append(
             f"#etoiles_guindima .wrap:has(label:nth-child({n}) input:checked) "
             f"label:nth-child(-n+{n})::before {{ content: \"★\"; color: {ETOILE_PLEINE}; }}"
         )
+    regles.append("@media (hover: hover) and (pointer: fine) {")
     for n in range(1, 6):
         regles.append(
-            f"#etoiles_guindima .wrap:has(label:nth-child({n}):hover) "
-            f"label:nth-child(-n+{n})::before {{ content: \"★\"; color: {ETOILE_PLEINE}; }}"
+            f"    #etoiles_guindima .wrap:has(label:nth-child({n}):hover) "
+            f"label:nth-child(-n+{n})::before {{ color: {ETOILE_PLEINE}; }}"
         )
+    regles.append("}")
     return "\n".join(regles)
 
 
