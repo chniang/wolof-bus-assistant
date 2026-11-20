@@ -72,6 +72,14 @@ _CATEGORIES = {
     for rangee in _DATA.lignes.itertuples(index=False)
 }
 
+# Ligne ajoutée dont un terminus n'a pas de position sûre
+# (data/corrections/lignes_ddd_ajoutees.csv) : la carte le dit.
+_A_CONFIRMER_AJOUTEES = frozenset(
+    (str(rangee.compagnie), str(rangee.ligne))
+    for rangee in _DATA.lignes.itertuples(index=False)
+    if str(getattr(rangee, "statut", "") or "") == "à confirmer"
+)
+
 
 # Une durée ne s'affiche que si elle repose sur des positions : un bus qui
 # roule au moins 15 km d'affilée entre des arrêts dont aucune position n'est
@@ -853,7 +861,9 @@ def chercher_v2(
         + [e for c in correspondances for e in etapes_corr(c)]
         + [e for t in trajets_2 for e in etapes_t2(t)]
     ):
-        etape["a_confirmer"] = ligne_a_confirmer(etape)
+        etape["a_confirmer"] = ligne_a_confirmer(etape) or (
+            (etape.get("compagnie"), etape.get("ligne")) in _A_CONFIRMER_AJOUTEES
+        )
 
     lignes = lignes[:MAX_LIGNES]
     correspondances = correspondances[:MAX_CORRESPONDANCES]

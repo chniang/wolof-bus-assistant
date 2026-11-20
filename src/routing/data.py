@@ -32,6 +32,9 @@ SOURCES_SURES = {
     "projection_sur_trace",
     "terminus_guindima",
     "terminus_officiel_aftu",
+    # Arrêt « bonne » d'arrets_geo.csv, terminus d'une ligne ajoutée
+    # (HLM Grand Yoff pour l'Express AIBD : data/corrections/lignes_ddd_ajoutees.csv).
+    "arrets_geo_bonne",
 }
 
 FICHIERS = {
@@ -68,11 +71,11 @@ def _lire(nom: str) -> pd.DataFrame:
 # lieux et geo.py la partagent, pour voir les mêmes arrêts Dem Dikk que l'app.
 try:  # import à plat (app.py) ou en paquet
     from matching.itineraires_app import nom_ligne_ddd as _nom_ligne_ddd
-    from matching.itineraires_app import rangees_ddd_officielles
+    from matching.itineraires_app import lignes_ddd_ajoutees, rangees_ddd_officielles
     from matching.itineraires_app import sans_terminus as _sans_terminus
 except ImportError:  # pragma: no cover
     from ..matching.itineraires_app import nom_ligne_ddd as _nom_ligne_ddd
-    from ..matching.itineraires_app import rangees_ddd_officielles
+    from ..matching.itineraires_app import lignes_ddd_ajoutees, rangees_ddd_officielles
     from ..matching.itineraires_app import sans_terminus as _sans_terminus
 
 
@@ -144,10 +147,55 @@ def _integrer_dem_dikk_officiel(data: NetworkData) -> None:
     _charger_positions(data, officiel)
 
 
+def _integrer_lignes_ajoutees(data: NetworkData) -> None:
+    """Lignes absentes de nos CSV mais connues officiellement (Express AIBD).
+
+    Deux arrêts, les terminus de la fiche à l'écran, une catégorie qui dit
+    « Navette express, sans arrêt » et un statut « à confirmer » si un terminus
+    n'a pas de position. Aucune durée n'est fixée ici : le moteur la calcule,
+    et adapter.duree_devinee la cache quand la portion n'est pas mesurée
+    (AIBD n'a qu'un repère, à ~40 km de HLM Grand Yoff).
+    """
+
+    ajoutees = lignes_ddd_ajoutees()
+    if not ajoutees:
+        return
+    cles = {(fiche["compagnie"], fiche["ligne"]) for fiche in ajoutees}
+
+    def deja(frame: pd.DataFrame) -> pd.Series:
+        return pd.Series(
+            [cle in cles for cle in zip(frame["compagnie"], frame["ligne"])],
+            index=frame.index,
+            dtype=bool,
+        )
+
+    rangees = pd.DataFrame([r for fiche in ajoutees for r in fiche["rangees"]])
+    rangees["ordre"] = pd.to_numeric(rangees["ordre"])
+    data.itineraires = pd.concat(
+        [
+            data.itineraires[~deja(data.itineraires)],
+            rangees.reindex(columns=data.itineraires.columns),
+        ],
+        ignore_index=True,
+    )
+    champs = ("compagnie", "ligne", "terminus_a", "terminus_b", "categorie", "source", "statut")
+    lignes = pd.DataFrame([{cle: fiche[cle] for cle in champs} for fiche in ajoutees])
+    colonnes = list(data.lignes.columns)
+    if "statut" not in colonnes:
+        colonnes.append("statut")
+    data.lignes = pd.concat(
+        [data.lignes[~deja(data.lignes)], lignes.reindex(columns=colonnes)],
+        ignore_index=True,
+    )
+    data.lignes["statut"] = data.lignes["statut"].fillna("")
+    _charger_positions(data, rangees)
+
+
 def _integrer_donnees_fiables(data: NetworkData) -> None:
     """Itinéraires officiels, positions par ligne et traces : tout reste en mémoire."""
 
     _integrer_dem_dikk_officiel(data)
+    _integrer_lignes_ajoutees(data)
     if CORRECTIONS_TATA.exists():
         _charger_positions(data, pd.read_csv(CORRECTIONS_TATA, encoding="utf-8"))
     data.traces = charger_traces(DOSSIER_TRACES)

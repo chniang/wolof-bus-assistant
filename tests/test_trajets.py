@@ -7869,6 +7869,115 @@ def test_revue_securite() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_b5() -> tuple[int, int]:
+    """Lot B5 : Express AIBD ajoutée (fiche officielle), Corniche Ouest de la TO1 sans faux point.
+
+    Express AIBD : demdikk.sn/offres-de-transport donne une navette HLM Grand-Yoff
+    (en face du stade Léopold Sédar Senghor) -> AIBD par l'autoroute, sans arrêt.
+    Elle n'était dans aucun fichier chargé : « Grand Yoff -> AIBD » ne proposait
+    que le TAF TAF. TO1 : « Corniche ouest » était géocodée au Palais de Justice
+    (Cap Manuel), à ~8 km du Monument de la Renaissance.
+    Aucun réseau : moteur hors ligne, points des CSV seulement.
+    """
+    import os
+
+    from matching.itineraires_app import CATEGORIE_SANS_ARRET, lignes_ddd_ajoutees, rangees_ddd_officielles
+    from matching.lieux import aeroport_ambigu
+    from routing import adapter
+    from routing.network import haversine_m
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot B5 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    # 1. La fiche : deux arrêts, HLM Grand Yoff à sa position « bonne » d'arrets_geo.csv.
+    express = {f["ligne"]: f for f in lignes_ddd_ajoutees()}.get("Express AIBD")
+    verifie("Express AIBD lue dans lignes_ddd_ajoutees.csv", express is not None)
+    if express is not None:
+        arrets = [r["arret"] for r in express["rangees"]]
+        verifie(
+            "Express AIBD : deux arrêts, HLM Grand Yoff (stade LSS) puis AIBD",
+            arrets == ["Terminus HLM Grand Yoff (Stade Léopold Sédar Senghor)", "AIBD"],
+            arrets,
+        )
+        depart = express["rangees"][0]
+        verifie(
+            "HLM Grand Yoff : position « bonne » d'arrets_geo.csv, jamais devinée",
+            (depart["lat"], depart["lon"], depart["source"]) == ("14.741372", "-17.455863", "arrets_geo_bonne"),
+            depart,
+        )
+        verifie("Express AIBD : pas « à confirmer » (les deux terminus sont situés)", express["statut"] == "", express)
+        verifie(
+            "Express AIBD : affichée « navette express, sans arrêt »",
+            express["categorie"] == CATEGORIE_SANS_ARRET and "sans arrêt" in CATEGORIE_SANS_ARRET.lower(),
+            express["categorie"],
+        )
+
+    # 2. Le moteur la propose, sans durée inventée.
+    if os.getenv("GUINDIMA_MOTEUR", "v2").strip().lower() != "v1":
+        matcher = _matcher_hors_ligne()
+        for depart, arrivee in (
+            ("Grand Yoff", "AIBD"),
+            ("Stade Léopold Sédar Senghor", "aéroport Blaise Diagne"),
+        ):
+            resultat = matcher.find_line(depart, arrivee)
+            options = [l for l in resultat.get("lignes") or [] if l.get("ligne") == "Express AIBD"]
+            verifie(f"{depart} -> {arrivee} : Express AIBD proposée", bool(options), _detail(resultat))
+            if options:
+                carte = options[0]
+                verifie(
+                    f"{depart} -> {arrivee} : « sans arrêt », pas de durée inventée",
+                    carte.get("categorie") == CATEGORIE_SANS_ARRET
+                    and carte.get("minutes") is None
+                    and carte.get("duree_inconnue") is True,
+                    carte,
+                )
+                verifie(
+                    f"{depart} -> {arrivee} : descente à l'AIBD, jamais à l'ancien aéroport",
+                    carte.get("descend_a_reseau") == "AIBD",
+                    carte,
+                )
+
+        # « aéroport » seul : toujours la question entre les deux aéroports.
+        verifie("« aéroport » seul reste ambigu", aeroport_ambigu("aéroport"))
+        deux = adapter.deux_aeroports(matcher.find_line, "Stade Léopold Sédar Senghor", "aéroport")
+        lieux = [p["lieu"] for p in (deux or {}).get("lieux_possibles") or []]
+        verifie(
+            "Stade LSS -> « aéroport » : les deux aéroports proposés",
+            len(lieux) == 2 and "AIBD" in lieux,
+            lieux,
+        )
+
+    # 3. TO1 : plus aucun point au Palais de Justice.
+    palais_de_justice = (14.670351, -17.443821)
+    corniche = [
+        r for r in rangees_ddd_officielles()
+        if r["ligne"] == "TAF TAF OUAKAM (TO1)" and r["arret"] == "Corniche ouest"
+    ]
+    verifie(
+        "TO1 : « Corniche ouest » gardée, position retirée (à confirmer)",
+        len(corniche) == 1 and not corniche[0]["lat"] and corniche[0]["source"] == "inconnu",
+        corniche,
+    )
+    positions = adapter._NETWORK.line_positions.get(("Dakar Dem Dikk", "TAF TAF OUAKAM (TO1)")) or ()
+    # 100 m : l'arrêt officiel suivant, « Avenue Peytavin », est à ~380 m du
+    # Palais de Justice, à sa vraie place ; seul le point de la Corniche y était posé.
+    loin = all(p is None or haversine_m(p, palais_de_justice) > 100 for p in positions)
+    verifie(
+        "TO1 ne passe plus par le Palais de Justice",
+        len(positions) == 10 and positions[3] is None and loin,
+        positions,
+    )
+    return echecs, total
+
+
 def test_plafonds_par_client() -> tuple[int, int]:
     """Plafonds par client (trajets, LLM, collecte), sans réseau ni modèle."""
     import contextlib
@@ -8258,6 +8367,7 @@ if __name__ == "__main__":
         echecs_lot10, total_lot10 = test_lot_10()
         echecs_revue, total_revue = test_revue_securite()
         echecs_plafonds, total_plafonds = test_plafonds_par_client()
+        echecs_b5, total_b5 = test_lot_b5()
         echecs = (
             test_local()
             + echecs_partage
@@ -8306,6 +8416,7 @@ if __name__ == "__main__":
             + echecs_lot10
             + echecs_revue
             + echecs_plafonds
+            + echecs_b5
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -8355,6 +8466,7 @@ if __name__ == "__main__":
             + total_lot10
             + total_revue
             + total_plafonds
+            + total_b5
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

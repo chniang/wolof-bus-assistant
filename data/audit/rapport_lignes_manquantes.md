@@ -128,6 +128,8 @@ confondre la navette Palais 2 et celle de l'AIBD.
 - **Manque** : le vrai terminus côté Lac Rose (Niague ? village du Lac ?), une
   position sûre pour Lac Rose, le sens de circulation (boucle ou aller-retour),
   une 2ᵉ source.
+- **À confirmer par Dem Dikk : vrai terminus (Lac Rose ?) et sens de la
+  boucle.** Rien n'est changé pour la 311 d'ici là (lot B5, 20/11/2026).
 
 ### 319 — Liberté 6 ↔ Ouakam (urbain)
 
@@ -207,3 +209,21 @@ confondre la navette Palais 2 et celle de l'AIBD.
 
 À vérifier en ligne après le prochain déploiement : que le Space propose bien
 319, 327 et TO1 comme en local.
+
+## Lot B5 (20/11/2026) : ce qui a changé
+
+- **Express AIBD** : nouvelle fiche `data/corrections/lignes_ddd_ajoutees.csv`,
+  chargée en mémoire par le moteur v2 (`_integrer_lignes_ajoutees`) et par
+  `rangees_itineraires` (reconnaissance des lieux, geo.py). Deux arrêts :
+  « Terminus HLM Grand Yoff (Stade Léopold Sédar Senghor) », à la position
+  « bonne » de « HLM Grand Yoff » dans `arrets_geo.csv`, et « AIBD », au repère
+  de Diass déjà utilisé par le TAF TAF. Carte : « Navette express, sans arrêt »,
+  « durée inconnue » (aucune durée inventée). « Grand Yoff → AIBD » et « Stade
+  Léopold Sédar Senghor → aéroport Blaise Diagne » la proposent ; « aéroport »
+  seul garde la question entre les deux aéroports. Pas de voix pour elle : le
+  segment est sauté.
+- **TO1** : `data/corrections/positions_ddd_retirees.csv` retire la position de
+  « Corniche ouest » (Palais de Justice). `arrets_geo.csv` n'a aucun arrêt
+  « bonne » de la Corniche Ouest (l'arrêt « Corniche » est celui de la Tata 32,
+  à Guédiawaye) : l'arrêt reste sur la ligne, sans position, à confirmer.
+- **311** : inchangée.
