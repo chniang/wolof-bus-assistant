@@ -35,6 +35,14 @@ CORRECTIONS_DDD = DATA / "corrections" / "corrections_geo_ddd_proposees.csv"
 # la 232, point pour point (data/audit/rapport_lignes_divergentes.md). Ces lignes
 # gardent nos terminus de itineraires_dakar.csv.
 LIGNES_EXCLUES = DATA / "corrections" / "lignes_officiel_exclues.csv"
+# Terminus qu'une liste officielle omet mais qu'une autre page officielle donne :
+# la liste de la 501 (demdikk.sn/reseau-urbain-dakar) finit à Leclerc, le
+# catalogue (demdikk.sn/info-voyageurs) dit « Gare de Dakar → Palais 2 ». Sans
+# ce terminus, « Gare de Dakar » ne trouvait jamais la navette TER. Le terminus
+# est ajouté au bout de CETTE ligne seulement : Leclerc n'est pas relié à la gare
+# pour les lignes 1, 2, 4 ou 121.
+TERMINUS_DDD = DATA / "corrections" / "terminus_ddd_officiels.csv"
+ARRETS_GEO = DATA / "arrets_geo.csv"
 DEM_DIKK = "Dakar Dem Dikk"
 
 
@@ -70,12 +78,59 @@ def lignes_officiel_exclues(chemin: Path = LIGNES_EXCLUES) -> frozenset[str]:
     return frozenset(nom_ligne_ddd(r["ligne"]) for r in _lire(chemin) if (r.get("ligne") or "").strip())
 
 
+def _position_sure(arret: str, arrets_geo: Path) -> tuple[str, str]:
+    """(lat, lon) de l'arrêt si arrets_geo.csv le situe avec une confiance « bonne », sinon vide."""
+    if Path(arrets_geo).exists():
+        for rangee in _lire(arrets_geo):
+            if rangee.get("arret") == arret and rangee.get("confiance") == "bonne":
+                return rangee.get("lat") or "", rangee.get("lon") or ""
+    return "", ""
+
+
+def _ajouter_terminus(rangees: list[dict], terminus: Path, arrets_geo: Path) -> list[dict]:
+    """Ajoute au bout de leur ligne les terminus de terminus_ddd_officiels.csv.
+
+    « fin » : après le dernier arrêt ; « debut » : avant le premier. La position
+    vient d'arrets_geo.csv (confiance « bonne ») ou reste vide : jamais devinée.
+    Une ligne absente des listes officielles, ou un terminus qu'elle a déjà, est
+    laissée telle quelle.
+    """
+    if not Path(terminus).exists():
+        return rangees
+    for ajout in _lire(terminus):
+        ligne, nom = nom_ligne_ddd(ajout["ligne"]), (ajout.get("terminus") or "").strip()
+        de_la_ligne = [r for r in rangees if r["ligne"] == ligne]
+        if not nom or not de_la_ligne or any(r["arret"] == nom for r in de_la_ligne):
+            continue
+        ordres = [float(r["ordre"]) for r in de_la_ligne]
+        ordre = max(ordres) + 1 if ajout.get("cote", "fin").strip() != "debut" else min(ordres) - 1
+        lat, lon = _position_sure(nom, arrets_geo)
+        rangees.append({
+            **{cle: "" for cle in de_la_ligne[0]},
+            "compagnie": de_la_ligne[0].get("compagnie") or DEM_DIKK,
+            "ligne": ligne,
+            "ordre": str(int(ordre)),
+            "arret": nom,
+            "lat": lat,
+            "lon": lon,
+            # Hors SOURCES_SURES : le point sert à mesurer la ligne, pas à
+            # situer l'arrêt pour d'autres lignes.
+            "source": "terminus_catalogue_ddd" if lat and lon else "inconnu",
+            "detail": ajout.get("source", ""),
+        })
+    return rangees
+
+
 def rangees_ddd_officielles(
-    chemin: Path = CORRECTIONS_DDD, exclues: Path = LIGNES_EXCLUES
+    chemin: Path = CORRECTIONS_DDD,
+    exclues: Path = LIGNES_EXCLUES,
+    terminus: Path = TERMINUS_DDD,
+    arrets_geo: Path = ARRETS_GEO,
 ) -> list[dict]:
     """Les rangées Dem Dikk officielles, avec la ligne et l'arrêt comme l'app les nomme.
 
     Les lignes de lignes_officiel_exclues.csv n'y sont pas : la nôtre reste servie.
+    Les terminus de terminus_ddd_officiels.csv sont ajoutés au bout de leur ligne.
     """
     if not Path(chemin).exists():
         return []
@@ -84,7 +139,8 @@ def rangees_ddd_officielles(
         {**rangee, "ligne": nom_ligne_ddd(rangee["ligne"]), "arret": sans_terminus(rangee["arret"])}
         for rangee in _lire(chemin)
     )
-    return [rangee for rangee in rangees if rangee["ligne"] not in ecartees]
+    gardees = [rangee for rangee in rangees if rangee["ligne"] not in ecartees]
+    return _ajouter_terminus(gardees, terminus, arrets_geo)
 
 
 def rangees_itineraires(

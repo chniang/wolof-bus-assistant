@@ -6211,7 +6211,9 @@ def test_lot_3() -> tuple[int, int]:
     # Lot B-217 : la liste officielle de la 217 est celle de la 218, point pour
     # point (data/audit/rapport_lignes_divergentes.md) ; celle de la 233 est
     # celle de la 232. Elles sont écartées par data/corrections/lignes_officiel_exclues.csv.
-    from matching.itineraires_app import lignes_officiel_exclues, rangees_ddd_officielles, rangees_itineraires
+    from matching.itineraires_app import (
+        lignes_officiel_exclues, rangees_ddd_officielles, rangees_itineraires, sans_terminus,
+    )
     verifie("listes officielles écartées : 217 et 233",
             lignes_officiel_exclues() == {"Ligne 217", "Ligne 233"}, sorted(lignes_officiel_exclues()))
     verifie("aucune rangée officielle 217 ni 233 chargée",
@@ -6256,6 +6258,44 @@ def test_lot_3() -> tuple[int, int]:
         douteuses[ligne] = next((t for t in resultat["lignes"] if t["ligne"] == ligne), None)
         verifie(f"{depart} -> {arrivee} : DDD {ligne[6:]} proposée et marquée « à confirmer »",
                 douteuses[ligne] is not None and douteuses[ligne]["a_confirmer"] is True, _detail(resultat))
+
+    # 501 : la liste officielle finit à Leclerc, le catalogue dit « Gare de Dakar
+    # → Palais 2 ». data/corrections/terminus_ddd_officiels.csv ajoute la gare au
+    # bout de la 501, et d'elle seule.
+    def arrets_app(ligne: str) -> list[str]:
+        return [r["arret"] for r in sorted(
+            (r for r in rangees_itineraires() if r["compagnie"] == "Dakar Dem Dikk" and r["ligne"] == ligne),
+            key=lambda r: float(r["ordre"]))]
+
+    verifie("501 : Gare de Dakar ajoutée après Leclerc",
+            arrets_app("Ligne 501")[-2:] == ["Leclerc", "Gare de Dakar"], arrets_app("Ligne 501"))
+    resultat = matcher.find_line("Gare de Dakar", "Palais")
+    t501 = next((t for t in resultat["lignes"] if t["ligne"] == "Ligne 501"), None)
+    verifie("Gare de Dakar -> Palais : la 501 est proposée, de la gare à Palais 2",
+            t501 is not None and t501["monte_a"] == "Gare de Dakar" and t501["descend_a"] == "Palais 2",
+            _detail(resultat))
+    verifie("Gare de Dakar -> Palais : la 13 reste proposée", "Ligne 13" in lignes_du_resultat(resultat))
+
+    # Les lignes 1, 2, 4 et 121 finissent aussi à Leclerc : rien ne change pour elles.
+    import csv as _csv
+    with open(RACINE / "data" / "corrections" / "corrections_geo_ddd_proposees.csv", encoding="utf-8", newline="") as f:
+        brutes_ddd = list(_csv.DictReader(f))
+    for numero in ("1", "2", "4", "121"):
+        attendu = [sans_terminus(r["arret"]) for r in sorted(
+            (r for r in brutes_ddd if r["ligne"] == numero), key=lambda r: float(r["ordre"]))]
+        verifie(f"DDD {numero} : liste officielle inchangée, toujours terminée à Leclerc",
+                arrets_app(f"Ligne {numero}") == attendu and attendu[-1] == "Leclerc"
+                and "Gare de Dakar" not in attendu[-1:], arrets_app(f"Ligne {numero}")[-3:])
+    from matching.lieux import score as score_lieu
+    verifie("Leclerc n'est pas relié à Gare de Dakar", score_lieu("Gare de Dakar", "Leclerc") == 0.0)
+    for depart, arrivee, ligne, montee in (("Parcelles Assainies", "Leclerc", "Ligne 1", "Parcelles Assainies"),
+                                           ("Gare de Dakar", "Leclerc", "Ligne 2", "Gare de Dakar"),
+                                           ("Grand Yoff", "Leclerc", "Ligne 121", "Mairie Grand Yoff")):
+        resultat = matcher.find_line(depart, arrivee)
+        trajet = next((t for t in resultat["lignes"] if t["ligne"] == ligne), None)
+        verifie(f"{depart} -> {arrivee} : {ligne} inchangée (montée {montee}, descente Leclerc)",
+                trajet is not None and trajet["monte_a"] == montee and trajet["descend_a"] == "Leclerc",
+                _detail(resultat))
     synthetique = [
         {"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 220"},
         {"compagnie": "Tata AFTU", "ligne": "Ligne 37"},

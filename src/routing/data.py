@@ -67,12 +67,12 @@ def _lire(nom: str) -> pd.DataFrame:
 # La règle de nommage vit dans matching/itineraires_app.py : l'extraction des
 # lieux et geo.py la partagent, pour voir les mêmes arrêts Dem Dikk que l'app.
 try:  # import à plat (app.py) ou en paquet
-    from matching.itineraires_app import lignes_officiel_exclues
     from matching.itineraires_app import nom_ligne_ddd as _nom_ligne_ddd
+    from matching.itineraires_app import rangees_ddd_officielles
     from matching.itineraires_app import sans_terminus as _sans_terminus
 except ImportError:  # pragma: no cover
-    from ..matching.itineraires_app import lignes_officiel_exclues
     from ..matching.itineraires_app import nom_ligne_ddd as _nom_ligne_ddd
+    from ..matching.itineraires_app import rangees_ddd_officielles
     from ..matching.itineraires_app import sans_terminus as _sans_terminus
 
 
@@ -100,13 +100,13 @@ def _integrer_dem_dikk_officiel(data: NetworkData) -> None:
 
     if not CORRECTIONS_DDD.exists():
         return
-    officiel = pd.read_csv(CORRECTIONS_DDD, encoding="utf-8", dtype={"ligne": str})
-    officiel["ligne"] = officiel["ligne"].map(_nom_ligne_ddd)
-    # 217 et 233 : la liste officielle est celle d'une autre ligne (218, 232).
-    # Sans elle, notre ligne (terminus seuls) et sa fiche restent en place.
-    officiel = officiel[~officiel["ligne"].isin(lignes_officiel_exclues())].copy()
+    # Même lecture que l'extraction et geo.py (matching/itineraires_app.py) :
+    # noms de ligne et d'arrêt, listes écartées (217 et 233, copies de la 218 et
+    # de la 232) et terminus ajoutés (Gare de Dakar pour la 501).
+    officiel = pd.DataFrame(rangees_ddd_officielles(CORRECTIONS_DDD))
+    if officiel.empty:
+        return
     officiel["ordre"] = pd.to_numeric(officiel["ordre"])
-    officiel["arret"] = officiel["arret"].map(_sans_terminus)
     remplacees = set(officiel["ligne"])
 
     def officielle(frame: pd.DataFrame) -> pd.Series:
