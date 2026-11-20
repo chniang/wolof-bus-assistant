@@ -154,6 +154,14 @@ INTENTIONS: tuple[Intention, ...] = (
 )
 
 # Rien compris : ni lieu, ni petite conversation.
+# Lot C4 : texte affiché quand il doit en dire plus que l'audio. La voix reste
+# l'enregistrement validé (conversation_createur.wav, « Cheikh Niang moo ma
+# defar. ») : aucune nouvelle synthèse, et Intention.reponse garde le texte
+# exact de l'audio (data/audit/voix_complete.csv).
+REPONSES_ECRITES: dict[str, str] = {
+    "createur": "Cheikh Niang moo ma defar : Cheikh Niang (TECH INNOV), un développeur de Dakar.",
+}
+
 HORS_SUJET = Intention(
     "hors_sujet",
     "Baal ma, bus yi rekk laa xam. Wax ma fan nga nekk ak fan nga bëgga dem.",

@@ -92,7 +92,7 @@ from matching.lieux import AVANT_NUMERO, FAUX_AMIS, joli, sans_accents  # noqa: 
 from matching.stops_matcher import StopsMatcher  # noqa: E402
 from intent.conversation import HORS_SUJET, Intention  # noqa: E402
 from intent.conversation import detecter as detecter_conversation  # noqa: E402
-from intent.conversation import INTENTIONS, signal_trajet  # noqa: E402
+from intent.conversation import INTENTIONS, REPONSES_ECRITES, signal_trajet  # noqa: E402
 from tts.speak import voix_conversation  # noqa: E402
 from tts.speak import (  # noqa: E402
     MAX_POSSIBILITES,
@@ -669,7 +669,8 @@ def _reponse_conversation(
     return (
         phrase,
         "",
-        f"### 💬 {_echapper(intention.reponse)}",
+        # Le texte écrit peut préciser la réponse ; la voix reste l'audio enregistré.
+        f"### 💬 {_echapper(REPONSES_ECRITES.get(intention.nom, intention.reponse))}",
         _ecrire_voix(voix_conversation(intention.fichier)),
         _mention({}, modele_asr),
     )
@@ -1777,16 +1778,21 @@ def _resume_erreur_gpu(exc: BaseException, longueur: int = 220) -> str:
 
 
 # Affichée sous la saisie : ce qui part, et où.
+# Lot C4 : qui répond des données. Aucun numéro d'immatriculation ni adresse ici.
+EDITEUR = "TECH INNOV"
+RESPONSABLE = f"Responsable : {EDITEUR} (Cheikh Niang), Dakar."
 NOTE_VIE_PRIVEE = (
     "Ta voix n'est pas enregistrée. Pour comprendre ton trajet, le texte peut "
-    "être envoyé à un service d'IA (NVIDIA) et les noms de lieux à OpenStreetMap."
+    "être envoyé à un service d'IA (NVIDIA) et les noms de lieux à OpenStreetMap. "
+    f"{RESPONSABLE}"
 )
 # La même note quand la collecte est allumée (COLLECTE_ACTIVE).
 NOTE_VIE_PRIVEE_COLLECTE = (
     "🎙️ Voix gardée pour améliorer le wolof, sans ton nom ni ton numéro (sinon : "
     "Écrire). Si tu donnes ton avis, il est gardé avec les lieux compris et les lignes "
     "proposées. Pour comprendre ton trajet, le texte peut être envoyé "
-    "à un service d'IA (NVIDIA) et les noms de lieux à OpenStreetMap."
+    "à un service d'IA (NVIDIA) et les noms de lieux à OpenStreetMap. "
+    f"{RESPONSABLE}"
 )
 
 MESSAGE_DEMANDE_VIDE = "Écris ton trajet ou choisis un trajet fréquent"
@@ -2432,6 +2438,9 @@ def _construire():
         gr.Markdown(
             "<div style='text-align:center;color:#8A968F;font-size:12px;"
             "border-top:1px solid #E3EAE6;padding-top:10px;margin-top:18px'>"
+            # Lot C4 : l'éditeur, lisible mais discret, au-dessus des crédits.
+            f"<div id='editeur_guindima' style='color:#46594D;font-size:13px;font-weight:700;"
+            f"margin-bottom:4px'>Une application {EDITEUR} · Dakar</div>"
             f"Données : Dakar Dem Dikk, Tata AFTU · IA : {LIBELLE_ASR}, NVIDIA Build · Voix : {LIBELLE_VOIX}"
             "</div>"
         )

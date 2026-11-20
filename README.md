@@ -10,6 +10,8 @@ short_description: "Dis ton trajet en wolof : GuindiMa trouve ton bus à Dakar"
 
 ### Assistant vocal en wolof qui dit aux usagers de Dakar quel bus prendre
 
+Développé par Cheikh Niang — TECH INNOV (Dakar)
+
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Gradio 6.30](https://img.shields.io/badge/Gradio-6.30-F97316?logo=gradio&logoColor=white)](https://www.gradio.app/)
 [![Hugging Face - Live demo](https://img.shields.io/badge/Hugging%20Face-Live%20demo-FFD21E?logo=huggingface&logoColor=white)](https://huggingface.co/spaces/PythonMindset/guindima-ai)

@@ -1959,7 +1959,8 @@ def test_vie_privee() -> tuple[int, int]:
         "note sous la saisie, mot pour mot",
         app.NOTE_VIE_PRIVEE
         == "Ta voix n'est pas enregistrée. Pour comprendre ton trajet, le texte peut "
-        "être envoyé à un service d'IA (NVIDIA) et les noms de lieux à OpenStreetMap."
+        "être envoyé à un service d'IA (NVIDIA) et les noms de lieux à OpenStreetMap. "
+        "Responsable : TECH INNOV (Cheikh Niang), Dakar."
         and "NOTE_VIE_PRIVEE}" in source,
     )
     verifie("Gradio vide son cache (delete_cache)", "delete_cache=(600, 600)" in source)
@@ -7363,7 +7364,7 @@ def test_lot_10() -> tuple[int, int]:
                     "(sinon : Écrire). Si tu donnes ton avis, il est gardé "
                     "avec les lieux compris et les lignes proposées. Pour comprendre "
                     "ton trajet, le texte peut être envoyé à un service d'IA (NVIDIA) et les noms "
-                    "de lieux à OpenStreetMap.")
+                    "de lieux à OpenStreetMap. Responsable : TECH INNOV (Cheikh Niang), Dakar.")
                 and app.NOTE_VIE_PRIVEE_COLLECTE in texte_config
                 and "note_vie_privee" in texte_config, app.NOTE_VIE_PRIVEE_COLLECTE)
 
@@ -9452,6 +9453,71 @@ def test_lot_c3_retours() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_c4_tech_innov() -> tuple[int, int]:
+    """Lot C4 : identité TECH INNOV (pied de page, note, réponse écrite, README), sans RCCM/NINEA/adresse."""
+    import contextlib
+    import io
+    import json
+    import os
+    import re
+
+    from intent.conversation import INTENTIONS, REPONSES_ECRITES
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot C4 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_c4")
+    with contextlib.redirect_stdout(io.StringIO()):
+        config = app._construire().get_config_file()
+    texte_app = json.dumps(config, ensure_ascii=False, default=str)
+
+    # 1. Pied de page : l'éditeur au-dessus des crédits, qu'on garde.
+    verifie("pied de page : « Une application TECH INNOV · Dakar » au-dessus des crédits",
+            "Une application TECH INNOV · Dakar" in texte_app
+            and texte_app.index("Une application TECH INNOV") < texte_app.index("Données : Dakar Dem Dikk"))
+
+    # 2. Note de confidentialité, avec et sans collecte.
+    for nom, note in (("sans collecte", app.NOTE_VIE_PRIVEE), ("avec collecte", app.NOTE_VIE_PRIVEE_COLLECTE)):
+        verifie(f"note de confidentialité ({nom}) : se termine par le responsable",
+                note.endswith("Responsable : TECH INNOV (Cheikh Niang), Dakar."), note[-80:])
+
+    # 3. Réponse écrite à « qui t'a créé ? » ; l'audio ne change pas.
+    createur = next(i for i in INTENTIONS if i.nom == "createur")
+    verifie("audio du créateur inchangé (texte et fichier de l'enregistrement)",
+            createur.reponse == "Cheikh Niang moo ma defar."
+            and createur.fichier == "conversation_createur.wav")
+    with contextlib.redirect_stdout(io.StringIO()):
+        sortie = app._reponse_conversation("kan moo la defar", createur, "", 0.0)
+    verifie("réponse écrite : Cheikh Niang (TECH INNOV), un développeur de Dakar",
+            "TECH INNOV" in sortie[2] and "Cheikh Niang" in sortie[2] and "Dakar" in sortie[2]
+            and "TECH INNOV" in REPONSES_ECRITES["createur"], sortie[2])
+    autres = [i for i in INTENTIONS if i.nom != "createur"]
+    with contextlib.redirect_stdout(io.StringIO()):
+        inchangees = all(app._echapper(i.reponse) in app._reponse_conversation("x", i, "", 0.0)[2]
+                         for i in autres)
+    verifie("les autres réponses écrites restent celles de l'audio", inchangees)
+
+    # 4. README : la ligne d'éditeur, sans RCCM, NINEA ni adresse.
+    readme = (RACINE / "README.md").read_text(encoding="utf-8")
+    verifie("README : « Développé par Cheikh Niang — TECH INNOV (Dakar) »",
+            "Développé par Cheikh Niang — TECH INNOV (Dakar)" in readme)
+    sources = readme + texte_app + (RACINE / "app.py").read_text(encoding="utf-8")
+    verifie("ni RCCM, ni NINEA, ni adresse postale dans l'app ou le README",
+            not re.search(r"(?i)\b(rccm|ninea)\b", sources)
+            and not re.search(r"(?i)\b(bp|b\.p\.|boîte postale|villa n°|rue \d+ x)\b", sources))
+
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -9519,6 +9585,7 @@ if __name__ == "__main__":
         echecs_c, total_c = test_lot_c_design()
         echecs_c2, total_c2 = test_lot_c2_logo()
         echecs_c3, total_c3 = test_lot_c3_retours()
+        echecs_c4, total_c4 = test_lot_c4_tech_innov()
         echecs = (
             test_local()
             + echecs_partage
@@ -9576,6 +9643,7 @@ if __name__ == "__main__":
             + echecs_c
             + echecs_c2
             + echecs_c3
+            + echecs_c4
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -9634,6 +9702,7 @@ if __name__ == "__main__":
             + total_c
             + total_c2
             + total_c3
+            + total_c4
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)
