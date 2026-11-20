@@ -30,6 +30,11 @@ except ImportError:  # pragma: no cover
 DATA = Path(__file__).resolve().parents[2] / "data"
 ITINERAIRES_CSV = DATA / "itineraires_dakar.csv"
 CORRECTIONS_DDD = DATA / "corrections" / "corrections_geo_ddd_proposees.csv"
+# Listes officielles qu'on ne sert pas, même si elles sont dans CORRECTIONS_DDD :
+# la page demdikk.sn donne pour la 217 la liste de la 218 et pour la 233 celle de
+# la 232, point pour point (data/audit/rapport_lignes_divergentes.md). Ces lignes
+# gardent nos terminus de itineraires_dakar.csv.
+LIGNES_EXCLUES = DATA / "corrections" / "lignes_officiel_exclues.csv"
 DEM_DIKK = "Dakar Dem Dikk"
 
 
@@ -58,14 +63,28 @@ def _lire(chemin: Path) -> list[dict]:
         return list(csv.DictReader(fichier))
 
 
-def rangees_ddd_officielles(chemin: Path = CORRECTIONS_DDD) -> list[dict]:
-    """Les rangées Dem Dikk officielles, avec la ligne et l'arrêt comme l'app les nomme."""
+def lignes_officiel_exclues(chemin: Path = LIGNES_EXCLUES) -> frozenset[str]:
+    """Les lignes (« Ligne 217 ») dont la liste officielle est écartée ; vide sans fichier."""
+    if not Path(chemin).exists():
+        return frozenset()
+    return frozenset(nom_ligne_ddd(r["ligne"]) for r in _lire(chemin) if (r.get("ligne") or "").strip())
+
+
+def rangees_ddd_officielles(
+    chemin: Path = CORRECTIONS_DDD, exclues: Path = LIGNES_EXCLUES
+) -> list[dict]:
+    """Les rangées Dem Dikk officielles, avec la ligne et l'arrêt comme l'app les nomme.
+
+    Les lignes de lignes_officiel_exclues.csv n'y sont pas : la nôtre reste servie.
+    """
     if not Path(chemin).exists():
         return []
-    return [
+    ecartees = lignes_officiel_exclues(exclues)
+    rangees = (
         {**rangee, "ligne": nom_ligne_ddd(rangee["ligne"]), "arret": sans_terminus(rangee["arret"])}
         for rangee in _lire(chemin)
-    ]
+    )
+    return [rangee for rangee in rangees if rangee["ligne"] not in ecartees]
 
 
 def rangees_itineraires(

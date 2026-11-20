@@ -12,14 +12,16 @@ from __future__ import annotations
 LIBELLES_COMPAGNIES = {"Tata AFTU": "Tata", "Dakar Dem Dikk": "Dem Dikk"}
 
 
-# Lignes Dem Dikk dont l'itinéraire n'est pas sûr (audit du 12/11/2026,
-# data/audit/fiabilite_rapport.md) : la 6 finit chez nous à Guédiawaye, la
-# référence dit Cambérène 2 ; la 217 à l'Aéroport LSS, la référence dit Ouakam ;
-# la 220 n'a que 62 % d'arrêts situés ; la 233 est réduite à ses deux terminus.
-# Elles restent proposées, mais la carte le dit et elles passent toujours après
-# une ligne confirmée qui fait le même trajet.
+# Lignes Dem Dikk dont l'itinéraire n'est pas sûr (data/audit/fiabilite_rapport.md,
+# puis data/audit/rapport_lignes_divergentes.md du 20/11/2026) : la 6 part chez
+# nous de Guédiawaye, la référence dit Cambérène 2 ; la 208 part de Gorom 01 dans
+# la liste officielle, de Bayakh dans notre fiche ; la 217 et la 233 sont réduites
+# à leurs terminus (liste officielle copiée d'une autre ligne, écartée) ; la 220
+# mêle deux versions (Rufisque–Guédiawaye, navette AIBD). Elles restent
+# proposées, mais la carte le dit et elles passent toujours après une ligne
+# confirmée qui fait le même trajet.
 LIGNES_A_CONFIRMER = frozenset(
-    ("Dakar Dem Dikk", f"Ligne {numero}") for numero in ("6", "217", "220", "233")
+    ("Dakar Dem Dikk", f"Ligne {numero}") for numero in ("6", "208", "217", "220", "233")
 )
 MENTION_A_CONFIRMER = "itinéraire à confirmer"
 

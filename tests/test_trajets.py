@@ -2579,7 +2579,9 @@ def test_duree_et_v1() -> tuple[int, int]:
             all(t["minutes"] is None for t in resultat.get("trajets_2") or []) and bool(resultat.get("trajets_2")),
             _detail(resultat))
     # Les durées qui reposent sur des positions gardent leur chiffre.
-    for dep, arr, ligne in (("Ouakam", "Aéroport LSS", "Ligne 217"), ("Yoff", "UCAD", "Ligne 8"),
+    # La 217 n'a plus que ses terminus (liste officielle = copie de la 218) :
+    # Ouakam -> Aéroport LSS passe par la 218, qui a ses positions.
+    for dep, arr, ligne in (("Ouakam", "Aéroport LSS", "Ligne 218"), ("Yoff", "UCAD", "Ligne 8"),
                             ("Colobane", "Rufisque", "Ligne 15"), ("Parcelles Assainies", "Petersen", "Ligne 25")):
         resultat = matcher.find_line(dep, arr)
         t = next((t for t in resultat["lignes"] if t["ligne"] == ligne), None)
@@ -6203,8 +6205,57 @@ def test_lot_3() -> tuple[int, int]:
             and "Université Cheikh Anta Diop" in LIENS_AFTU.get("ucad claudel", ()))
 
     # 10. DDD douteuses : jamais avant une ligne confirmée du même trajet.
-    verifie("lignes à confirmer : DDD 6, 217, 220, 233",
-            LIGNES_A_CONFIRMER == {("Dakar Dem Dikk", f"Ligne {n}") for n in ("6", "217", "220", "233")})
+    verifie("lignes à confirmer : DDD 6, 208, 217, 220, 233",
+            LIGNES_A_CONFIRMER == {("Dakar Dem Dikk", f"Ligne {n}") for n in ("6", "208", "217", "220", "233")})
+
+    # Lot B-217 : la liste officielle de la 217 est celle de la 218, point pour
+    # point (data/audit/rapport_lignes_divergentes.md) ; celle de la 233 est
+    # celle de la 232. Elles sont écartées par data/corrections/lignes_officiel_exclues.csv.
+    from matching.itineraires_app import lignes_officiel_exclues, rangees_ddd_officielles, rangees_itineraires
+    verifie("listes officielles écartées : 217 et 233",
+            lignes_officiel_exclues() == {"Ligne 217", "Ligne 233"}, sorted(lignes_officiel_exclues()))
+    verifie("aucune rangée officielle 217 ni 233 chargée",
+            not any(r["ligne"] in {"Ligne 217", "Ligne 233"} for r in rangees_ddd_officielles()))
+    nos_217 = [r["arret"] for r in sorted(
+        (r for r in rangees_itineraires() if r["compagnie"] == "Dakar Dem Dikk" and r["ligne"] == "Ligne 217"),
+        key=lambda r: float(r["ordre"]))]
+    verifie("217 servie avec nos terminus seuls : Thiaroye -> Ouakam", nos_217 == ["Thiaroye", "Ouakam"], nos_217)
+    verifie("218 garde sa liste officielle",
+            sum(r["ligne"] == "Ligne 218" for r in rangees_ddd_officielles()) == 15)
+
+    def lignes_du_resultat(resultat: dict) -> list[str]:
+        noms = [t["ligne"] for t in resultat["lignes"]]
+        for trajet in resultat.get("correspondances") or []:
+            noms += [trajet["etape_1"]["ligne"], trajet["etape_2"]["ligne"]]
+        for trajet in resultat.get("trajets_2") or []:
+            noms += [etape["ligne"] for etape in trajet.get("etapes") or []]
+        return noms
+
+    # Trajets que seule la copie de la 218 faisait passer par la 217.
+    for depart, arrivee in (("Ouakam", "Aéroport LSS"), ("Bountou Pikine", "Ngor"),
+                            ("Dépôt Thiaroye", "Aéroport LSS")):
+        resultat = matcher.find_line(depart, arrivee)
+        noms = lignes_du_resultat(resultat)
+        verifie(f"{depart} -> {arrivee} : la 218, plus jamais la 217 avec ses arrêts",
+                "Ligne 218" in noms and "Ligne 217" not in noms, _detail(resultat))
+    resultat = matcher.find_line("Thiaroye", "Ouakam")
+    t217 = next((t for t in resultat["lignes"] if t["ligne"] == "Ligne 217"), None)
+    verifie("Thiaroye -> Ouakam : la 217 entre ses terminus, sans les arrêts de la 218",
+            t217 is not None and t217["monte_a"] == "Thiaroye" and t217["descend_a"] == "Ouakam"
+            and not any(nom in str(t217.get("arrets_trajet")) for nom in ("Sipses", "Bountou Pikine", "VDN")),
+            t217 and (t217["monte_a"], t217["descend_a"], t217.get("arrets_trajet")))
+
+    # Les lignes douteuses portent toutes la marque « à confirmer ».
+    douteuses = {}
+    for depart, arrivee, ligne in (
+        ("Parcelles Assainies", "Colobane", "Ligne 6"), ("Bambilor", "Rufisque", "Ligne 208"),
+        ("Thiaroye", "Ouakam", "Ligne 217"), ("Malika", "Guédiawaye", "Ligne 220"),
+        ("Baux Maraîchers", "Palais", "Ligne 233"),
+    ):
+        resultat = matcher.find_line(depart, arrivee)
+        douteuses[ligne] = next((t for t in resultat["lignes"] if t["ligne"] == ligne), None)
+        verifie(f"{depart} -> {arrivee} : DDD {ligne[6:]} proposée et marquée « à confirmer »",
+                douteuses[ligne] is not None and douteuses[ligne]["a_confirmer"] is True, _detail(resultat))
     synthetique = [
         {"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 220"},
         {"compagnie": "Tata AFTU", "ligne": "Ligne 37"},
@@ -6236,6 +6287,9 @@ def test_lot_3() -> tuple[int, int]:
             all(MENTION_A_CONFIRMER not in carte for ligne, carte in cartes.items() if ligne != "Ligne 6"))
     carte = app._carte(resultat, "Parcelles Assainies", "Colobane")
     verifie("réponse complète : la mention apparaît", MENTION_A_CONFIRMER in carte)
+    for ligne, trajet in douteuses.items():
+        verifie(f"carte DDD {ligne[6:]} : « itinéraire à confirmer »",
+                trajet is not None and MENTION_A_CONFIRMER in app._une_carte(trajet))
 
     # ------------------------------------------------------------ voix
     # 12. Phrase validée par le locuteur natif, en attente de génération.

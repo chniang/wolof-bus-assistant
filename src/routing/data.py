@@ -67,9 +67,11 @@ def _lire(nom: str) -> pd.DataFrame:
 # La règle de nommage vit dans matching/itineraires_app.py : l'extraction des
 # lieux et geo.py la partagent, pour voir les mêmes arrêts Dem Dikk que l'app.
 try:  # import à plat (app.py) ou en paquet
+    from matching.itineraires_app import lignes_officiel_exclues
     from matching.itineraires_app import nom_ligne_ddd as _nom_ligne_ddd
     from matching.itineraires_app import sans_terminus as _sans_terminus
 except ImportError:  # pragma: no cover
+    from ..matching.itineraires_app import lignes_officiel_exclues
     from ..matching.itineraires_app import nom_ligne_ddd as _nom_ligne_ddd
     from ..matching.itineraires_app import sans_terminus as _sans_terminus
 
@@ -100,6 +102,9 @@ def _integrer_dem_dikk_officiel(data: NetworkData) -> None:
         return
     officiel = pd.read_csv(CORRECTIONS_DDD, encoding="utf-8", dtype={"ligne": str})
     officiel["ligne"] = officiel["ligne"].map(_nom_ligne_ddd)
+    # 217 et 233 : la liste officielle est celle d'une autre ligne (218, 232).
+    # Sans elle, notre ligne (terminus seuls) et sa fiche restent en place.
+    officiel = officiel[~officiel["ligne"].isin(lignes_officiel_exclues())].copy()
     officiel["ordre"] = pd.to_numeric(officiel["ordre"])
     officiel["arret"] = officiel["arret"].map(_sans_terminus)
     remplacees = set(officiel["ligne"])
