@@ -1667,8 +1667,8 @@ NOTE_VIE_PRIVEE = (
 # La même note quand la collecte est allumée (COLLECTE_ACTIVE).
 NOTE_VIE_PRIVEE_COLLECTE = (
     "Ta voix est gardée pour améliorer le wolof, sans ton nom ni ton numéro (sinon, "
-    "utilise Écrire). Si tu donnes ton avis sur une réponse, il est gardé avec les lieux compris et les lignes "
-    "proposées, sans ta voix. Pour comprendre ton trajet, le texte peut être envoyé "
+    "utilise Écrire). Si tu donnes ton avis, il est gardé avec les lieux compris et les lignes "
+    "proposées. Pour comprendre ton trajet, le texte peut être envoyé "
     "à un service d'IA (NVIDIA) et les noms de lieux à OpenStreetMap."
 )
 
