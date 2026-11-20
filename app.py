@@ -1595,9 +1595,9 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
         if son is None or len(son) < SAMPLE_RATE * 0.3:
             # Moins de 0,3 s : clic involontaire sur le micro, rien à chercher.
             return vide
-        # Sans la case cochée, l'audio ne sort jamais de cette fonction.
+        # Hors collecte, il n'y a pas de trace : l'audio ne sort jamais de cette fonction.
         trace = _TRACE.get()
-        if trace is not None and trace.get("voix_acceptee") is True:
+        if trace is not None:
             trace["son"] = son
         try:
             phrase, modele_asr, duree_asr, _ = transcrir_avec_seconde_chance(
@@ -1666,8 +1666,8 @@ NOTE_VIE_PRIVEE = (
 )
 # La même note quand la collecte est allumée (COLLECTE_ACTIVE).
 NOTE_VIE_PRIVEE_COLLECTE = (
-    "Ta voix n'est pas gardée, sauf si tu coches la case sous le micro. Si tu donnes "
-    "ton avis sur une réponse, il est gardé avec les lieux compris et les lignes "
+    "Ta voix est gardée pour améliorer le wolof, sans ton nom ni ton numéro (sinon, "
+    "utilise Écrire). Si tu donnes ton avis sur une réponse, il est gardé avec les lieux compris et les lignes "
     "proposées, sans ta voix. Pour comprendre ton trajet, le texte peut être envoyé "
     "à un service d'IA (NVIDIA) et les noms de lieux à OpenStreetMap."
 )
@@ -1824,13 +1824,14 @@ def rechercher_une_fois(
 
 
 # --------------------------------------------------------------------------- #
-# Collecte avec consentement (branchée seulement si COLLECTE_ACTIVE est allumée)
+# Collecte (branchée seulement si COLLECTE_ACTIVE est allumée) : utiliser l'onglet
+# Parler vaut accord, décision du propriétaire du projet ; Écrire ne garde jamais de voix.
 # --------------------------------------------------------------------------- #
 
 
-def _suivre(fonction, *args, consentement: bool = False) -> tuple:
+def _suivre(fonction, *args) -> tuple:
     """Appelle un handler existant et recueille ce que le pipeline a noté."""
-    trace = {"voix_acceptee": consentement is True}
+    trace: dict = {}
     jeton = _TRACE.set(trace)
     try:
         return fonction(*args), trace
@@ -1838,7 +1839,7 @@ def _suivre(fonction, *args, consentement: bool = False) -> tuple:
         _TRACE.reset(jeton)
 
 
-def _sorties_collecte(trace: dict, consentement: bool, suivi: dict | None, nouvelle: bool) -> tuple:
+def _sorties_collecte(trace: dict, suivi: dict | None, nouvelle: bool) -> tuple:
     """Suivi, panneau d'avis, message du code, temps saisi.
 
     Toute erreur s'arrête ici : la réponse de bus est déjà calculée et doit
@@ -1852,7 +1853,7 @@ def _sorties_collecte(trace: dict, consentement: bool, suivi: dict | None, nouve
         return masque
     try:
         if nouvelle or not suivi:
-            suivi, message = collecte.nouveau_suivi(trace, consentement is True)
+            suivi, message = collecte.nouveau_suivi(trace)
             temps = gr.update(value=None)
         else:
             suivi, message, temps = collecte.suivi_mis_a_jour(suivi, trace), gr.skip(), gr.skip()
@@ -1864,31 +1865,27 @@ def _sorties_collecte(trace: dict, consentement: bool, suivi: dict | None, nouve
 
 def traiter_demande_collecte(
     audio, phrase_ecrite, compagnie_choix="", etat=None, nouvelle_demande=True,
-    consentement=False, suivi=None, request: gr.Request | None = None,
+    suivi=None, request: gr.Request | None = None,
 ) -> tuple:
     sortie, trace = _suivre(
         traiter_demande, audio, phrase_ecrite, compagnie_choix, etat, nouvelle_demande, request,
-        consentement=consentement,
     )
-    return (*sortie, *_sorties_collecte(trace, consentement, suivi, nouvelle_demande))
+    return (*sortie, *_sorties_collecte(trace, suivi, nouvelle_demande))
 
 
 def rechercher_une_fois_collecte(
-    audio, phrase_ecrite, compagnie_choix="", etat=None, consentement=False, suivi=None,
+    audio, phrase_ecrite, compagnie_choix="", etat=None, suivi=None,
     request: gr.Request | None = None,
 ) -> tuple:
-    sortie, trace = _suivre(
-        rechercher_une_fois, audio, phrase_ecrite, compagnie_choix, etat, request,
-        consentement=consentement,
-    )
-    return (*sortie, *_sorties_collecte(trace, consentement, suivi, True))
+    sortie, trace = _suivre(rechercher_une_fois, audio, phrase_ecrite, compagnie_choix, etat, request)
+    return (*sortie, *_sorties_collecte(trace, suivi, True))
 
 
 def choisir_trajet_frequent_collecte(
-    choix, compagnie_choix="", consentement=False, suivi=None, request: gr.Request | None = None,
+    choix, compagnie_choix="", suivi=None, request: gr.Request | None = None,
 ) -> tuple:
     sortie, trace = _suivre(choisir_trajet_frequent, choix, compagnie_choix, request)
-    return (*sortie, *_sorties_collecte(trace, False, suivi, True))
+    return (*sortie, *_sorties_collecte(trace, suivi, True))
 
 
 def donner_avis(reponse: str, minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
@@ -2182,7 +2179,6 @@ def _construire():
     # sécurité si un audio n'arrive jamais jusqu'à la transcription).
     # Collecte éteinte (défaut) : aucun composant ni handler de plus.
     actif = collecte.collecte_active()
-    consentement_in = None
     with gr.Blocks(title="GuindiMa AI 🚌", delete_cache=(600, 600)) as interface:
         gr.Markdown("# GuindiMa AI 🚌\n### Wax ma fi nga jëm, ma won la bus bi")
         gr.Markdown(
@@ -2210,12 +2206,6 @@ def _construire():
                 show_label=False,
                 elem_id=MICRO_ELEM_ID,
             )
-            if actif:
-                consentement_in = gr.Checkbox(
-                    value=False,
-                    label=collecte.TEXTE_CONSENTEMENT,
-                    elem_id="consentement_voix",
-                )
 
         with gr.Tab("Écrire"):
             texte_in = gr.Textbox(
@@ -2291,7 +2281,7 @@ def _construire():
                 outputs=[suivi_state, code_out],
                 api_visibility="private",
             )
-            entrees_collecte = [consentement_in, suivi_state]
+            entrees_collecte = [suivi_state]
             sorties_collecte = [suivi_state, panneau_avis, code_out, minutes_in]
 
         gerer_demande = traiter_demande_collecte if actif else traiter_demande

@@ -7139,7 +7139,7 @@ def test_en_ligne() -> int:
 
 
 def test_lot_10() -> tuple[int, int]:
-    """Lot 10 : collecte de voix avec consentement et avis, éteinte par défaut.
+    """Lot 10 : collecte des voix de l'onglet Parler et avis, éteinte par défaut.
 
     Aucun réseau : le collecteur, l'API Hugging Face, l'ASR et le géocodage sont simulés.
     """
@@ -7223,7 +7223,8 @@ def test_lot_10() -> tuple[int, int]:
         config = silencieux(app._construire).get_config_file()
         vus = libelles(config)
         verifie("éteinte : ni case ni avis dans l'interface",
-                collecte.TEXTE_CONSENTEMENT not in vus and "Temps réel du trajet (min)" not in vus
+                not any(c.get("type") == "checkbox" for c in config["components"])
+                and "Temps réel du trajet (min)" not in vus
                 and "La ligne est juste" not in json.dumps(config, ensure_ascii=False, default=str))
         verifie("éteinte : la note de confidentialité ne change pas",
                 app.NOTE_VIE_PRIVEE in json.dumps(config, ensure_ascii=False, default=str))
@@ -7233,40 +7234,42 @@ def test_lot_10() -> tuple[int, int]:
                 (faux.lots, effaces, len(sortie)))
         verifie("éteinte : le pipeline ne garde aucune trace", app._TRACE.get() is None)
 
-        # 2. Allumée : la case est décochée, les avis sont présents.
+        # 2. Allumée : aucune case, les avis sont présents, la note prévient.
         os.environ["COLLECTE_ACTIVE"] = "1"
         os.environ["HF_TOKEN_COLLECTE"] = "jeton-de-test"
         config = silencieux(app._construire).get_config_file()
-        cases = [c for c in config["components"] if c.get("type") == "checkbox"]
-        verifie("case décochée, texte exact",
-                len(cases) == 1 and cases[0]["props"].get("value") is False
-                and cases[0]["props"].get("label") == (
-                    "J'accepte que mon enregistrement soit gardé pour améliorer la reconnaissance "
-                    "du wolof. Il est gardé sans ton nom ni ton numéro. Je peux demander sa suppression "
-                    "avec mon code."), cases)
+        texte_config = json.dumps(config, ensure_ascii=False, default=str)
+        verifie("aucune case de consentement",
+                not any(c.get("type") == "checkbox" for c in config["components"])
+                and "J'accepte" not in texte_config and "consentement_voix" not in texte_config)
         vus = libelles(config)
         verifie("boutons d'avis et temps réel",
                 all(x in vus for x in ("Oui", "Non", "Je ne sais pas", "Temps réel du trajet (min)")), vus)
-        verifie("note : la voix n'est gardée que si la case est cochée",
-                app.NOTE_VIE_PRIVEE_COLLECTE in json.dumps(config, ensure_ascii=False, default=str)
-                and "sauf si tu coches la case" in app.NOTE_VIE_PRIVEE_COLLECTE)
+        verifie("note : nouveau début, suite conservée, même emplacement",
+                app.NOTE_VIE_PRIVEE_COLLECTE == (
+                    "Ta voix est gardée pour améliorer le wolof, sans ton nom ni ton numéro "
+                    "(sinon, utilise Écrire). Si tu donnes ton avis sur une réponse, il est gardé "
+                    "avec les lieux compris et les lignes proposées, sans ta voix. Pour comprendre "
+                    "ton trajet, le texte peut être envoyé à un service d'IA (NVIDIA) et les noms "
+                    "de lieux à OpenStreetMap.")
+                and app.NOTE_VIE_PRIVEE_COLLECTE in texte_config
+                and "note_vie_privee" in texte_config, app.NOTE_VIE_PRIVEE_COLLECTE)
 
-        # 3. Case décochée : rien à la réponse ; l'avis part sans audio ni phrase.
+        # 3. Onglet Écrire : jamais de voix ; l'avis part sans audio ni phrase.
         faux = collecte.COLLECTEUR = FauxCollecteur()
-        app._DERNIERE_RECHERCHE = None
-        sortie = silencieux(app.rechercher_une_fois_collecte, AUDIO, "", "", None, False, None)
+        sortie = silencieux(app.traiter_demande_collecte, None, PHRASE, "", None, True, None)
         suivi = sortie[7]
-        verifie("décochée : rien n'est envoyé, aucun code affiché",
+        verifie("Écrire : rien n'est envoyé, aucun code affiché",
                 not faux.lots and sortie[9] == "" and suivi["voix"] is False and len(sortie) == 11,
                 (faux.lots, sortie[9]))
-        verifie("décochée : le panneau d'avis apparaît", sortie[8].get("visible") is True, sortie[8])
-        verifie("décochée : l'audio ne reste pas dans le suivi", "son" not in suivi)
+        verifie("Écrire : le panneau d'avis apparaît", sortie[8].get("visible") is True, sortie[8])
+        verifie("le suivi ne contient jamais l'audio", "son" not in suivi)
         suivi, message = silencieux(app.donner_avis, "oui", 25, suivi)
         chemins = faux.chemins()
         fiche = json.loads(faux.lots[0][chemins[0]]) if chemins else {}
-        verifie("avis sans consentement : un seul fichier, sans audio",
+        verifie("avis après Écrire : un seul fichier, sans audio",
                 chemins == [f"donnees/{suivi['code']}/avis.json"], chemins)
-        verifie("avis sans consentement : ni transcription ni modèle",
+        verifie("avis après Écrire : ni transcription ni modèle",
                 "transcription" not in fiche and "modele_asr" not in fiche and fiche["avec_voix"] is False, fiche)
         verifie("avis : réponse, temps et lignes gardés",
                 fiche["reponse"] == "oui" and fiche["minutes_reelles"] == 25 and fiche["lignes_proposees"], fiche)
@@ -7276,13 +7279,14 @@ def test_lot_10() -> tuple[int, int]:
         verifie("temps invraisemblable : refusé sans envoi",
                 message == collecte.MESSAGE_MINUTES and len(faux.lots) == 1, message)
 
-        # 4. Case cochée : audio 16 kHz et fiche, sans donnée personnelle.
+        # 4. Onglet Parler : chaque voix traitée part, sans donnée personnelle.
         faux = collecte.COLLECTEUR = FauxCollecteur()
-        sortie = silencieux(app.traiter_demande_collecte, AUDIO, "", "", None, True, True, None)
+        app._DERNIERE_RECHERCHE = None
+        sortie = silencieux(app.rechercher_une_fois_collecte, AUDIO, "", "", None, None)
         suivi = sortie[7]
         code = suivi["code"]
         lot = faux.lots[0] if faux.lots else {}
-        verifie("cochée : audio et fiche sous le dossier du code",
+        verifie("Parler : audio et fiche sous le dossier du code, sans case",
                 set(lot) == {f"donnees/{code}/audio.wav", f"donnees/{code}/demande.json"}, set(lot))
         with wave.open(io.BytesIO(lot[f"donnees/{code}/audio.wav"])) as lu:
             verifie("audio : WAV 16 kHz mono 16 bits, durée conservée",
@@ -7297,30 +7301,46 @@ def test_lot_10() -> tuple[int, int]:
                 and fiche["depart"] and fiche["arrivee"] and fiche["lignes_proposees"], fiche)
         verifie("fiche : le jour seulement", re.fullmatch(r"\d{4}-\d{2}-\d{2}", fiche["date"]), fiche["date"])
         verifie("fiche : aucun champ personnel", not INTERDITS & {c.lower() for c in fiche}, sorted(fiche))
-        verifie("cochée : le fichier reçu de Gradio est quand même effacé", effaces[-1] == AUDIO)
-        verifie("cochée : le code est montré à l'usager", code in sortie[9], sortie[9])
+        verifie("fiche : l'accord vient de l'usage de Parler",
+                fiche["consentement_voix"] == "usage_onglet_parler", fiche["consentement_voix"])
+        verifie("Parler : le fichier reçu de Gradio est quand même effacé", effaces[-1] == AUDIO)
+        verifie("Parler : le code et la phrase de suppression avec la réponse",
+                code in sortie[9] and sortie[0] == PHRASE
+                and "Pour faire supprimer ton enregistrement, envoie ce code à la personne "
+                "qui t'a partagé l'application." in sortie[9], sortie[9])
+        _, message = silencieux(app.donner_avis, "non", None, suivi)
+        avis = faux.lots[-1] if len(faux.lots) == 2 else {}
+        fiche_avis = json.loads(avis.get(f"donnees/{code}/avis.json", b"{}"))
+        verifie("avis après Parler : même code, rattaché à la voix",
+                set(avis) == {f"donnees/{code}/avis.json"} and fiche_avis.get("avec_voix") is True
+                and fiche_avis.get("code") == code and code in message, (set(avis), fiche_avis))
+        _, message = silencieux(app.donner_temps, 35, suivi)
+        fiche_temps = json.loads(faux.lots[-1].get(f"donnees/{code}/avis.json", b"{}"))
+        verifie("temps après Parler : même code",
+                fiche_temps.get("minutes_reelles") == 35 and len(faux.lots) == 3, fiche_temps)
+        del faux.lots[1:]
         verifie("format du code", collecte.MOTIF_CODE.fullmatch(code), code)
         verifie("codes différents d'une demande à l'autre",
                 len({collecte.nouveau_code() for _ in range(200)}) == 200)
 
         # Changer de compagnie : même code, lignes à jour, aucune nouvelle voix.
         etat = sortie[6]
-        rejeu = silencieux(app.traiter_demande_collecte, None, "", "Tata AFTU", etat, False, True, suivi)
+        rejeu = silencieux(app.traiter_demande_collecte, None, "", "Tata AFTU", etat, False, suivi)
         verifie("compagnie : même code, aucun envoi",
                 rejeu[7]["code"] == code and len(faux.lots) == 1, rejeu[7])
 
         # Un même geste émet deux événements : une seule contribution.
         faux = collecte.COLLECTEUR = FauxCollecteur()
         app._DERNIERE_RECHERCHE = None
-        silencieux(app.rechercher_une_fois_collecte, AUDIO, "", "", None, True, None)
-        double = silencieux(app.rechercher_une_fois_collecte, AUDIO, "", "", None, True, None)
+        silencieux(app.rechercher_une_fois_collecte, AUDIO, "", "", None, None)
+        double = silencieux(app.rechercher_une_fois_collecte, AUDIO, "", "", None, None)
         verifie("doublon d'événement : une seule voix, écran inchangé",
                 len(faux.lots) == 1 and double[7] == gr.skip(), double[7])
 
-        # Une demande écrite n'a pas d'audio, même case cochée.
+        # Un trajet fréquent (onglet Écrire) n'a pas d'audio non plus.
         faux = collecte.COLLECTEUR = FauxCollecteur()
-        silencieux(app.traiter_demande_collecte, None, PHRASE, "", None, True, True, None)
-        verifie("demande écrite : rien n'est envoyé", not faux.lots, faux.chemins())
+        silencieux(app.choisir_trajet_frequent_collecte, next(iter(app.CHOIX_TRAJETS_FREQUENTS)), "", None)
+        verifie("trajet fréquent : rien n'est envoyé", not faux.lots, faux.chemins())
 
         # 5. La phrase de suppression, avec et sans numéro configuré.
         os.environ.pop("CONTACT_WHATSAPP", None)
@@ -7343,7 +7363,7 @@ def test_lot_10() -> tuple[int, int]:
         collecte.COLLECTEUR = CollecteurEnPanne()
         journal = io.StringIO()
         with contextlib.redirect_stdout(journal):
-            sortie = app.traiter_demande_collecte(AUDIO, "", "", None, True, True, None)
+            sortie = app.traiter_demande_collecte(AUDIO, "", "", None, True, None)
         verifie("panne de collecte : la réponse part quand même",
                 sortie[0] == PHRASE and "Ligne :" in sortie[2], sortie[:2])
         verifie("panne de collecte : panneau masqué", sortie[7] is None and sortie[8].get("visible") is False)
@@ -7351,7 +7371,7 @@ def test_lot_10() -> tuple[int, int]:
                 and PHRASE not in journal.getvalue(), journal.getvalue())
 
         faux = collecte.COLLECTEUR = FauxCollecteur(accepte=False)
-        sortie = silencieux(app.traiter_demande_collecte, AUDIO, "", "", None, True, True, None)
+        sortie = silencieux(app.traiter_demande_collecte, AUDIO, "", "", None, True, None)
         verifie("contribution refusée : aucun code promis", sortie[9] == "" and sortie[7]["voix"] is False)
 
         envois: list[dict] = []
@@ -7539,9 +7559,9 @@ def test_revue_securite() -> tuple[int, int]:
         if not condition and detail:
             print(f"      {detail!r}")
 
-    verifie("consentement : nouvelle formule, plus « anonyme »",
-            "Il est gardé sans ton nom ni ton numéro." in collecte.TEXTE_CONSENTEMENT
-            and "anonyme" not in collecte.TEXTE_CONSENTEMENT.lower())
+    verifie("plus de case de consentement, plus « anonyme »",
+            not hasattr(collecte, "TEXTE_CONSENTEMENT")
+            and "anonyme" not in (RACINE / "src" / "app" / "collecte.py").read_text(encoding="utf-8").lower())
 
     os.environ["GUINDIMA_SANS_MODELES"] = "1"
     with contextlib.redirect_stdout(io.StringIO()):
@@ -7825,8 +7845,8 @@ def test_plafonds_par_client() -> tuple[int, int]:
         marque = object()
         for fonction, entrees in (
             (app.traiter_demande, 5), (app.rechercher_une_fois, 4), (app.choisir_trajet_frequent, 2),
-            (app.repondre_et_vider_micro, 3), (app.traiter_demande_collecte, 7),
-            (app.rechercher_une_fois_collecte, 6), (app.choisir_trajet_frequent_collecte, 4),
+            (app.repondre_et_vider_micro, 3), (app.traiter_demande_collecte, 6),
+            (app.rechercher_une_fois_collecte, 5), (app.choisir_trajet_frequent_collecte, 3),
             (app.avis_oui, 2), (app.avis_non, 2), (app.avis_ne_sait_pas, 2), (app.donner_temps, 2),
         ):
             valeurs, *_ = special_args(fonction, [None] * entrees, marque)
@@ -7893,7 +7913,7 @@ def test_plafonds_par_client() -> tuple[int, int]:
         collecte.LIMITE_VOIX_JOUR = LimiteFenetres(((JOUR, 3),))
 
         def voix(req):
-            return silencieux(app.traiter_demande_collecte, "x.webm", "", "", None, True, True, None, req)
+            return silencieux(app.traiter_demande_collecte, "x.webm", "", "", None, True, None, req)
 
         sorties = [voix(client) for _ in range(3)]
         verifie("voix : 2 gardées pour ce client, pas la 3e", len(faux.lots) == 2, len(faux.lots))

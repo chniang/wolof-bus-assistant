@@ -1,13 +1,15 @@
-"""Collecte de voix AVEC consentement et avis sur les réponses (désactivée par défaut).
+"""Collecte de voix et avis sur les réponses (désactivée par défaut).
 
 Rien ne se passe tant que la variable COLLECTE_ACTIVE n'est pas allumée : l'app
 efface alors l'audio après la transcription, comme avant.
 
 Une fois allumée :
-- la voix n'est gardée que si la case est cochée, pour cette demande-là ;
-- un avis (« La ligne est juste ? ») est gardé même sans la case, mais sans audio
-  ni transcription : seulement les lieux compris et les lignes proposées, sans
-  quoi « oui » ou « non » ne voudrait rien dire ;
+- chaque enregistrement de l'onglet Parler est gardé : l'utiliser vaut accord,
+  décision du propriétaire du projet, annoncée par la note sous la saisie ;
+- l'onglet Écrire ne garde jamais de voix ;
+- un avis (« La ligne est juste ? ») est rattaché au code de la demande ; après
+  une demande écrite, il ne garde que les lieux compris et les lignes proposées,
+  sans quoi « oui » ou « non » ne voudrait rien dire ;
 - on ne garde jamais nom, téléphone, adresse IP, navigateur ni heure : chaque
   fiche est construite champ par champ, jamais copiée depuis la requête.
 
@@ -57,11 +59,8 @@ LIMITE_VOIX_JOUR = LimiteFenetres(((JOUR, entier_env("COLLECTE_MAX_PAR_JOUR", 20
 # Chaque clic sur un avis occupe une place dans la file d'envoi.
 LIMITE_AVIS_CLIENT = LimiteParClient(((HEURE, entier_env("COLLECTE_AVIS_MAX_PAR_CLIENT_HEURE", 30)),))
 
-TEXTE_CONSENTEMENT = (
-    "J'accepte que mon enregistrement soit gardé pour améliorer la reconnaissance "
-    "du wolof. Il est gardé sans ton nom ni ton numéro. Je peux demander sa suppression "
-    "avec mon code."
-)
+# Ce qui vaut accord, écrit dans chaque fiche de voix.
+ORIGINE_ACCORD = "usage_onglet_parler"
 SUPPRESSION_WHATSAPP = "Pour faire supprimer {quoi}, envoie ce code par WhatsApp au {numero}."
 SUPPRESSION_PARTAGE = (
     "Pour faire supprimer {quoi}, envoie ce code à la personne qui t'a partagé l'application."
@@ -309,11 +308,12 @@ def avis_autorise(cle: str | None) -> bool:
     return LIMITE_AVIS_CLIENT.autoriser(cle)
 
 
-def nouveau_suivi(trace: dict, consentement: bool) -> tuple[dict, str]:
+def nouveau_suivi(trace: dict) -> tuple[dict, str]:
     """Après une réponse : le suivi de session et le message à afficher.
 
-    Sans case cochée (ou sans audio, pour une demande écrite), rien n'est envoyé
-    ici : seul un avis donné ensuite produira une fiche.
+    Une demande vocale est mise en file et son code affiché. Une demande écrite
+    n'a pas d'audio : rien n'est envoyé ici, seul un avis donné ensuite produira
+    une fiche. Au-delà des plafonds, rien n'est gardé et aucun code n'est promis.
     """
     code = nouveau_code()
     suivi = {
@@ -326,14 +326,14 @@ def nouveau_suivi(trace: dict, consentement: bool) -> tuple[dict, str]:
         "minutes": None,
     }
     son, phrase = trace.get("son"), trace.get("phrase")
-    if consentement is not True or son is None or not phrase:
+    if son is None or not phrase:
         return suivi, ""
     if not voix_acceptable(son, trace.get("client")):
         return suivi, ""
     fiche = {
         "code": code,
         "date": jour_courant(),
-        "consentement_voix": True,
+        "consentement_voix": ORIGINE_ACCORD,
         "transcription": phrase,
         "modele_asr": trace.get("modele_asr") or "",
         "depart": suivi["depart"],
