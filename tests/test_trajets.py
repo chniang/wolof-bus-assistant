@@ -51,15 +51,17 @@ TRAJETS = [
     # Ligne 78 : Liberté 5 -> Golf (Guédiawaye), DIRECT. « Département de
     # Guédiawaye » compte pour Guédiawaye quand l'utilisateur dit « Guédiawaye »
     # (jamais « Dakar »), et une ligne directe passe avant une correspondance.
-    # L'itinéraire officiel de Dem Dikk 6 relie aussi les deux directement.
-    ("Maa ngi Liberté 5, dama bëgg dem Guédiawaye", {"Ligne 6", "Ligne 78"}),
+    # Lot B-sources (20/11) : la DDD 6, seule ligne directe (et « à confirmer »),
+    # commence désormais à Camberene (terminus Cambérène 2, demdikk.sn/info-
+    # voyageurs + ArcGIS) : elle ne dessert plus Guédiawaye. Le trajet passe par
+    # un changement (13 puis 2, ou 78 puis 26), juste plutôt que direct douteux.
+    ("Maa ngi Liberté 5, dama bëgg dem Guédiawaye", {"corr:Ligne 13", "corr:Ligne 78"}),
     ("Maa ngi Pikine, bëgg naa dem Guédiawaye", {"Ligne 37", "Ligne 41", "Ligne 46"}),
 ]
 
 # Trajets qui doivent rester DIRECTS, sans correspondance proposée :
 # phrase -> lignes directes acceptées (au moins une).
 TRAJETS_DIRECTS = {
-    "Maa ngi Liberté 5, dama bëgg dem Guédiawaye": {"Ligne 6", "Ligne 78"},
     "Rond-Point Sahm, bëgg naa dem Colobane": {"Ligne 62"},
 }
 
@@ -3743,9 +3745,13 @@ def test_voix() -> tuple[int, int]:
         phrase_corr in {attendu_corr, attendu_corr_officiel, attendu_corr_plancher, attendu_corr_lot3},
         phrase_corr,
     )
+    # La DDD 220 est confirmée depuis le 20/11 (deux pages Dem Dikk) : elle
+    # peut de nouveau passer en premier. Tant qu'elle était à confirmer, jamais.
+    from matching.compagnie import LIGNES_A_CONFIRMER as _a_confirmer
     verifie(
-        "voix 2 changements : jamais la DDD 220 (à confirmer) en premier",
-        "numero ñaari téeméer ak ñaar fukk, moo" not in phrase_corr.split("Walla")[0],
+        "voix 2 changements : la DDD 220 en premier seulement si elle est confirmée",
+        ("Dakar Dem Dikk", "Ligne 220") not in _a_confirmer
+        or "numero ñaari téeméer ak ñaar fukk, moo" not in phrase_corr.split("Walla")[0],
         phrase_corr,
     )
     verifie(
@@ -6208,8 +6214,11 @@ def test_lot_3() -> tuple[int, int]:
             and "Université Cheikh Anta Diop" in LIENS_AFTU.get("ucad claudel", ()))
 
     # 10. DDD douteuses : jamais avant une ligne confirmée du même trajet.
-    verifie("lignes à confirmer : DDD 6, 208, 217, 220, 233",
-            LIGNES_A_CONFIRMER == {("Dakar Dem Dikk", f"Ligne {n}") for n in ("6", "208", "217", "220", "233")})
+    # Lot B-sources (20/11) : la 208 et la 220 sont confirmées par les deux
+    # pages Dem Dikk (data/corrections/statut_lignes_ddd.csv).
+    verifie("lignes à confirmer : DDD 6, 217, 233",
+            LIGNES_A_CONFIRMER == {("Dakar Dem Dikk", f"Ligne {n}") for n in ("6", "217", "233")},
+            sorted(LIGNES_A_CONFIRMER))
 
     # Lot B-217 : la liste officielle de la 217 est celle de la 218, point pour
     # point (data/audit/rapport_lignes_divergentes.md) ; celle de la 233 est
@@ -6253,14 +6262,21 @@ def test_lot_3() -> tuple[int, int]:
     # Les lignes douteuses portent toutes la marque « à confirmer ».
     douteuses = {}
     for depart, arrivee, ligne in (
-        ("Parcelles Assainies", "Colobane", "Ligne 6"), ("Bambilor", "Rufisque", "Ligne 208"),
-        ("Thiaroye", "Ouakam", "Ligne 217"), ("Malika", "Guédiawaye", "Ligne 220"),
+        ("Parcelles Assainies", "Colobane", "Ligne 6"),
+        ("Thiaroye", "Ouakam", "Ligne 217"),
         ("Baux Maraîchers", "Palais", "Ligne 233"),
     ):
         resultat = matcher.find_line(depart, arrivee)
         douteuses[ligne] = next((t for t in resultat["lignes"] if t["ligne"] == ligne), None)
         verifie(f"{depart} -> {arrivee} : DDD {ligne[6:]} proposée et marquée « à confirmer »",
                 douteuses[ligne] is not None and douteuses[ligne]["a_confirmer"] is True, _detail(resultat))
+    # Confirmées le 20/11 : toujours proposées, sans la marque.
+    confirmees = {}
+    for depart, arrivee, ligne in (("Bambilor", "Rufisque", "Ligne 208"), ("Malika", "Guédiawaye", "Ligne 220")):
+        resultat = matcher.find_line(depart, arrivee)
+        confirmees[ligne] = next((t for t in resultat["lignes"] if t["ligne"] == ligne), None)
+        verifie(f"{depart} -> {arrivee} : DDD {ligne[6:]} proposée, confirmée (sans « à confirmer »)",
+                confirmees[ligne] is not None and not confirmees[ligne]["a_confirmer"], _detail(resultat))
 
     # 501 : la liste officielle finit à Leclerc, le catalogue dit « Gare de Dakar
     # → Palais 2 ». data/corrections/terminus_ddd_officiels.csv ajoute la gare au
@@ -6306,10 +6322,10 @@ def test_lot_3() -> tuple[int, int]:
         {"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 16A"},
     ]
     ordre = [t["ligne"] for t in _confirmees_dabord(synthetique, lambda t: [t])]
-    verifie("tri : confirmées d'abord, ordre gardé", ordre == ["Ligne 37", "Ligne 16A", "Ligne 220", "Ligne 6"], ordre)
+    # La 220, confirmée le 20/11, garde sa place ; la 6 reste derrière.
+    verifie("tri : confirmées d'abord, ordre gardé", ordre == ["Ligne 220", "Ligne 37", "Ligne 16A", "Ligne 6"], ordre)
     for depart, arrivee, douteuse in (
         ("Parcelles Assainies", "Colobane", "Ligne 6"),
-        ("Malika", "Guédiawaye", "Ligne 220"),
     ):
         resultat = matcher.find_line(depart, arrivee)
         rangs = [ligne["ligne"] for ligne in resultat["lignes"]]
@@ -6333,6 +6349,9 @@ def test_lot_3() -> tuple[int, int]:
     for ligne, trajet in douteuses.items():
         verifie(f"carte DDD {ligne[6:]} : « itinéraire à confirmer »",
                 trajet is not None and MENTION_A_CONFIRMER in app._une_carte(trajet))
+    for ligne, trajet in confirmees.items():
+        verifie(f"carte DDD {ligne[6:]} confirmée : plus de « itinéraire à confirmer »",
+                trajet is not None and MENTION_A_CONFIRMER not in app._une_carte(trajet))
 
     # ------------------------------------------------------------ voix
     # 12. Phrase validée par le locuteur natif, en attente de génération.
@@ -8882,6 +8901,170 @@ def test_lot_f5() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_b_sources() -> tuple[int, int]:
+    """Lot B-sources : DDD 6, 208, 220, 311 et 233 d'après les pages Dem Dikk du 20/11.
+
+    Sources : demdikk.sn/reseau-urbain-dakar et demdikk.sn/info-voyageurs,
+    consultées le 20/11/2026. Corrections dans deux NOUVEAUX fichiers
+    (itineraires_ddd_revus.csv, statut_lignes_ddd.csv) ; aucun CSV existant
+    modifié ; positions seulement « bonne » (arrets_geo.csv) ou OSM, sinon
+    estimées. AIBD inchangé. Aucun réseau.
+    """
+    import contextlib
+    import csv as _csv
+    import io
+
+    from matching.compagnie import LIGNES_A_CONFIRMER
+    from matching.itineraires_app import (
+        cle_lieu, lignes_ddd_ajoutees, lignes_officiel_exclues, position_revue,
+        positions_corrigees, rangees_ddd_officielles,
+    )
+    from routing.data import SOURCES_SURES, load_data
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot B-sources {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    officielles = rangees_ddd_officielles()
+
+    def arrets(ligne: str) -> list[str]:
+        return [r["arret"] for r in sorted((r for r in officielles if r["ligne"] == ligne),
+                                           key=lambda r: int(r["ordre"]))]
+
+    def rangees(ligne: str) -> dict[str, dict]:
+        return {r["arret"]: r for r in officielles if r["ligne"] == ligne}
+
+    with contextlib.redirect_stdout(io.StringIO()):
+        data = load_data()
+    lignes = data.lignes[data.lignes["compagnie"] == "Dakar Dem Dikk"].set_index("ligne")
+
+    def terminus(ligne: str) -> tuple[str, str]:
+        return (str(lignes.at[ligne, "terminus_a"]), str(lignes.at[ligne, "terminus_b"]))
+
+    def a_confirmer(ligne: str) -> bool:
+        return ("Dakar Dem Dikk", ligne) in LIGNES_A_CONFIRMER
+
+    # Ligne 6 : de Camberene au Palais, terminus Cambérène 2 -> Palais 2.
+    six = arrets("Ligne 6")
+    verifie("6 : arrêts de « Camberene » jusqu'au Palais (23)",
+            len(six) == 23 and six[0] == "Camberene" and six[-1] == "Palais 1"
+            and not {"Guédiawaye", "Marche Jeudi", "Hôpital Dalal Diam"} & set(six), six)
+    verifie("6 : terminus affichés Cambérène 2 -> Palais 2", terminus("Ligne 6") == ("Cambérène 2", "Palais 2"),
+            terminus("Ligne 6"))
+    verifie("6 : toujours « itinéraire à confirmer »", a_confirmer("Ligne 6"))
+    r6 = rangees("Ligne 6")
+    verifie("6 : « Rond point 26 » sans position (géocodé sur le Rond-Point Liberté 6)",
+            r6["Rond point 26"]["source"] == "inconnu" and not r6["Rond point 26"]["lat"])
+    verifie("6 : « Sipres » estimée, jamais l'homonyme de Dakar (14,69° N)",
+            r6["Sipres"]["source"] == "estimee" and float(r6["Sipres"]["lat"]) > 14.73, r6["Sipres"])
+
+    # Ligne 208 : Bayakh -> Rufisque, confirmée, arrêts dans l'ordre.
+    deux_cent_huit = arrets("Ligne 208")
+    verifie("208 : Bayakh, Gorom 01, Gorom 02, Bambilor, Noflaye, Sangalkam, Keur Ndiaye Lo, Rufisque",
+            deux_cent_huit == ["Bayakh", "Gorom 01", "Gorom 02", "Bambilor", "Noflaye", "Sangalkam",
+                               "Keur Ndiaye Lo", "Rufisque"], deux_cent_huit)
+    verifie("208 : terminus Bayakh -> Rufisque", terminus("Ligne 208") == ("Bayakh", "Rufisque"),
+            terminus("Ligne 208"))
+    verifie("208 : confirmée (plus « à confirmer »)", not a_confirmer("Ligne 208"))
+    r208 = rangees("Ligne 208")
+    verifie("208 : Bayakh sans position (introuvable), jamais devinée",
+            r208["Bayakh"]["source"] == "inconnu" and not r208["Bayakh"]["lat"])
+    lats = [float(r208[nom]["lat"]) for nom in deux_cent_huit if r208[nom]["lat"]]
+    lons = [float(r208[nom]["lon"]) for nom in deux_cent_huit if r208[nom]["lon"]]
+    verifie("208 : arrêts placés dans l'ordre, vers le sud-ouest, sans zigzag",
+            len(lats) == 7 and lats == sorted(lats, reverse=True) and lons == sorted(lons, reverse=True),
+            list(zip(lats, lons)))
+
+    # Ligne 220 : Rufisque -> Guédiawaye, confirmée, sans navette AIBD.
+    deux_cent_vingt = arrets("Ligne 220")
+    attendus_220 = ["Rufisque", "Djoutiba", "HLM Rufisque", "SIPRES", "SEDIMA", "Lycée Jaxaay", "2 voies",
+                    "Jaxaay", "Station Keur Massar", "Malika", "Malika Plage", "gadaye", "Serigne Assane",
+                    "Marche boubess", "Lycée Limamoulaye", "Guediawaye"]
+    verifie("220 : les 16 arrêts des deux pages", deux_cent_vingt == attendus_220, deux_cent_vingt)
+    verifie("220 : ni AIBD ni Espace BRT (points Senego retirés)",
+            not any(("aibd" in cle_lieu(a) or "blaise" in cle_lieu(a) or "brt" in cle_lieu(a))
+                    for a in deux_cent_vingt))
+    verifie("220 : terminus Rufisque -> Guédiawaye", terminus("Ligne 220") == ("Rufisque", "Guédiawaye"),
+            terminus("Ligne 220"))
+    verifie("220 : confirmée (plus « à confirmer »)", not a_confirmer("Ligne 220"))
+    r220 = rangees("Ligne 220")
+    verifie("220 : HLM Rufisque, SIPRES, SEDIMA, Serigne Assane jamais sûrs (homonymes, hors ordre)",
+            all(r220[nom]["source"] not in SOURCES_SURES
+                for nom in ("HLM Rufisque", "SIPRES", "SEDIMA", "Serigne Assane")),
+            {nom: r220[nom]["source"] for nom in ("HLM Rufisque", "SIPRES", "SEDIMA", "Serigne Assane")})
+
+    # Ligne 311 : boucle, « Retour vers Lac Rose » n'est pas un arrêt.
+    trois_cent_onze = arrets("Ligne 311")
+    verifie("311 : cinq arrêts, sans « Retour vers Lac Rose »",
+            trois_cent_onze == ["Lac rose croissement Niague", "Croissement Tivaoune Peulh", "Keur Massar",
+                                "Station Keur Massar", "Croissement Keur Massar"], trois_cent_onze)
+    verifie("311 : terminus « Lac Rose (croisement Niague) -> Croisement Keur Massar »",
+            terminus("Ligne 311") == ("Lac Rose (croisement Niague)", "Croisement Keur Massar"),
+            terminus("Ligne 311"))
+
+    # Ligne 233 : terminus confirmés, liste (copie de la 232) toujours exclue.
+    verifie("233 : liste officielle toujours exclue, « à confirmer »",
+            "Ligne 233" in lignes_officiel_exclues() and not arrets("Ligne 233") and a_confirmer("Ligne 233"))
+    verifie("233 : terminus Baux Maraîchers -> Palais 1",
+            terminus("Ligne 233") == ("Baux Maraîchers", "Palais 1"), terminus("Ligne 233"))
+    verifie("217 inchangée : toujours « à confirmer »", a_confirmer("Ligne 217"))
+
+    # Positions : seulement « bonne » ou OSM, sinon estimée ou absente.
+    with open(RACINE / "data" / "corrections" / "itineraires_ddd_revus.csv", encoding="utf-8",
+              newline="") as fichier:
+        revues = list(_csv.DictReader(fichier))
+    non_resolues = [r["arret"] for r in revues
+                    if r["position"] == "bonne" and position_revue(r["reference_position"]) is None]
+    verifie("chaque position « bonne » existe (arrets_geo « bonne » ou positions_corrigees)",
+            not non_resolues, non_resolues)
+    with open(RACINE / "data" / "arrets_geo.csv", encoding="utf-8", newline="") as fichier:
+        bonnes = {(r["lat"], r["lon"]) for r in _csv.DictReader(fichier) if r["confiance"] == "bonne"}
+    bonnes |= {(f"{lat:.6f}", f"{lon:.6f}") for lat, lon, _ in positions_corrigees().values()}
+    sources = {r["source"] for ligne in ("Ligne 6", "Ligne 208", "Ligne 220", "Ligne 311")
+               for r in rangees(ligne).values()}
+    verifie("sources : arrets_geo_bonne, osm_arret, estimee ou inconnu seulement",
+            sources <= {"arrets_geo_bonne", "osm_arret", "estimee", "inconnu"}, sources)
+    hors_bonnes = [(ligne, r["arret"]) for ligne in ("Ligne 6", "Ligne 208", "Ligne 220", "Ligne 311")
+                   for r in rangees(ligne).values()
+                   if r["source"] in SOURCES_SURES and (r["lat"], r["lon"]) not in bonnes]
+    verifie("toute position sûre est un point « bonne » ou OSM du dépôt", not hors_bonnes, hors_bonnes)
+
+    # AIBD inchangé : l'Express AIBD et le repère de Diass restent.
+    express = [l for l in lignes_ddd_ajoutees() if l["ligne"] == "Express AIBD"]
+    verifie("AIBD inchangé : Express AIBD toujours servi, repère de Diass",
+            len(express) == 1 and "aibd" in positions_corrigees()
+            and positions_corrigees()["aibd"][:2] == (14.67, -17.0733), express and express[0]["rangees"])
+
+    # Trajets : les lignes revues répondent, avec les bons terminus.
+    matcher = _matcher_hors_ligne()
+    for depart, arrivee, ligne, bouts in (
+        ("Bambilor", "Rufisque", "Ligne 208", ("Bayakh", "Rufisque")),
+        ("Malika", "Guédiawaye", "Ligne 220", ("Rufisque", "Guédiawaye")),
+        ("Parcelles Assainies", "Colobane", "Ligne 6", ("Cambérène 2", "Palais 2")),
+    ):
+        resultat = matcher.find_line(depart, arrivee)
+        trajet = next((t for t in resultat["lignes"] if t["ligne"] == ligne), None)
+        verifie(f"{depart} -> {arrivee} : {ligne} proposée, terminus {bouts[0]} / {bouts[1]}",
+                trajet is not None and {trajet["depart"], trajet["arrivee"]} == set(bouts), _detail(resultat))
+    # 311 : le moteur charge bien la boucle revue (Keur Massar <-> Tivaouane
+    # Peulh est déjà servi par les Tata 81, 80 et 74, plus directes, qui
+    # remplissent les trois réponses).
+    itin = data.itineraires
+    servis_311 = list(itin[(itin["compagnie"] == "Dakar Dem Dikk") & (itin["ligne"] == "Ligne 311")]
+                      .sort_values("ordre")["arret"])
+    verifie("311 : le moteur sert les cinq arrêts revus", len(servis_311) == 5
+            and "Retour vers Lac Rose" not in servis_311, servis_311)
+
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -8945,6 +9128,7 @@ if __name__ == "__main__":
         echecs_2011, total_2011 = test_lot_20_11()
         echecs_zerogpu, total_zerogpu = test_zerogpu_cuda()
         echecs_f5, total_f5 = test_lot_f5()
+        echecs_bsrc, total_bsrc = test_lot_b_sources()
         echecs = (
             test_local()
             + echecs_partage
@@ -8998,6 +9182,7 @@ if __name__ == "__main__":
             + echecs_2011
             + echecs_zerogpu
             + echecs_f5
+            + echecs_bsrc
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -9052,6 +9237,7 @@ if __name__ == "__main__":
             + total_2011
             + total_zerogpu
             + total_f5
+            + total_bsrc
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

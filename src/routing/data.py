@@ -86,13 +86,13 @@ try:  # import à plat (app.py) ou en paquet
     from matching.itineraires_app import nom_ligne_ddd as _nom_ligne_ddd
     from matching.itineraires_app import cle_lieu as _cle_lieu
     from matching.itineraires_app import lignes_ddd_ajoutees, rangees_ddd_officielles
-    from matching.itineraires_app import positions_corrigees, positions_estimees
+    from matching.itineraires_app import positions_corrigees, positions_estimees, terminus_ddd_revus
     from matching.itineraires_app import sans_terminus as _sans_terminus
 except ImportError:  # pragma: no cover
     from ..matching.itineraires_app import nom_ligne_ddd as _nom_ligne_ddd
     from ..matching.itineraires_app import cle_lieu as _cle_lieu
     from ..matching.itineraires_app import lignes_ddd_ajoutees, rangees_ddd_officielles
-    from ..matching.itineraires_app import positions_corrigees, positions_estimees
+    from ..matching.itineraires_app import positions_corrigees, positions_estimees, terminus_ddd_revus
     from ..matching.itineraires_app import sans_terminus as _sans_terminus
 
 
@@ -211,11 +211,30 @@ def _integrer_lignes_ajoutees(data: NetworkData) -> None:
     _charger_positions(data, rangees)
 
 
+def _terminus_dem_dikk_revus(data: NetworkData) -> None:
+    """Terminus affichés d'après les pages officielles (data/corrections/statut_lignes_ddd.csv).
+
+    Seulement l'affichage : la liste d'arrêts et le sens ne changent pas. La 6
+    commence à Camberene mais son terminus est Cambérène 2 ; la 311 est une
+    boucle « Lac Rose (croisement Niague) -> Croisement Keur Massar ».
+    """
+
+    revus = terminus_ddd_revus()
+    if not revus:
+        return
+    lignes = data.lignes.copy()
+    for index, rangee in lignes.iterrows():
+        if rangee["compagnie"] == DEM_DIKK and rangee["ligne"] in revus:
+            lignes.at[index, "terminus_a"], lignes.at[index, "terminus_b"] = revus[rangee["ligne"]]
+    data.lignes = lignes
+
+
 def _integrer_donnees_fiables(data: NetworkData) -> None:
     """Itinéraires officiels, positions par ligne et traces : tout reste en mémoire."""
 
     _integrer_dem_dikk_officiel(data)
     _integrer_lignes_ajoutees(data)
+    _terminus_dem_dikk_revus(data)
     if CORRECTIONS_TATA.exists():
         _charger_positions(data, pd.read_csv(CORRECTIONS_TATA, encoding="utf-8"))
     data.traces = charger_traces(DOSSIER_TRACES)

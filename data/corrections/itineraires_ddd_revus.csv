@@ -1,0 +1,53 @@
+ligne,ordre,arret,position,reference_position,raison
+6,1,Camberene,bonne,Cambérène,arrets_geo.csv « Cambérène » (bonne)
+6,2,Case PA,estimee,,interpolation de la liste officielle : aucun arrêt « bonne » ni OSM
+6,3,Police de Parcelles Assainies,estimee,,"point officiel « Police de Parcelles Assainies – Marché Grand Médine », gardé en deux arrêts comme les corrections servies ; position Tata non reprise"
+6,4,Marché Grand Médine,estimee,,"géocodage (parking du marché de Patte d'Oie) : à confirmer"
+6,5,Rond point 26,inconnue,,"géocodage faux : posé sur le Rond-Point Liberté 6, 1,8 km plus au sud, il faisait zigzaguer la ligne"
+6,6,Foire,bonne,Foire,arrets_geo.csv « Foire » (bonne)
+6,7,Sipres,estimee,,"arrets_geo.csv « Sipres » (bonne) est un homonyme à 14,69° N, hors du tracé Foire -> Liberté 6 : position du géocodage (Cité Sipres, Grand Yoff)"
+6,8,Rond point Liberté 6,bonne,Rond-Point Liberté 6,arrets_geo.csv « Rond-Point Liberté 6 » (bonne)
+6,9,Terminus Liberté 5,bonne,Liberté 5,arrets_geo.csv « Liberté 5 » (bonne)
+6,10,Allées Khalifa Ababacar Sy,estimee,,géocodage : aucun arrêt « bonne » ni OSM
+6,11,Jet d’Eau,estimee,,"géocodage : connu seulement comme lieu (lieux_geo.csv), pas comme arrêt"
+6,12,Niary Tally,bonne,Niary Tally,arrets_geo.csv « Niary Tally » (bonne)
+6,13,Eglise Sainte Thérèse,estimee,,géocodage : aucun arrêt « bonne » ni OSM
+6,14,ENA,estimee,,géocodage : aucun arrêt « bonne » ni OSM
+6,15,Boulevard Général De Gaule,estimee,,interpolation de la liste officielle
+6,16,Allées Papa Gueye Fall,bonne,Allées Papa Gueye Fall,arrets_geo.csv « Allées Papa Gueye Fall » (bonne)
+6,17,Avenue Faidherbe,estimee,,"géocodage d'une avenue : un point de la voie, pas l'arrêt"
+6,18,Avenue Lamine Gueye,estimee,,"géocodage d'une avenue : un point de la voie, pas l'arrêt"
+6,19,Avenue André Peytavin,estimee,,interpolation de la liste officielle
+6,20,Avenue Jean Jaurès,estimee,,"géocodage d'une avenue : un point de la voie, pas l'arrêt"
+6,21,Boulevard de la République,estimee,,interpolation de la liste officielle
+6,22,Avenue Nelson Mandela,estimee,,"géocodage d'une avenue : un point de la voie, pas l'arrêt"
+6,23,Palais 1,bonne,Palais 1,arrets_geo.csv « Palais 1 » (bonne)
+208,1,Bayakh,inconnue,,"terminus des deux pages Dem Dikk ; « introuvable » dans arrets_geo.csv, aucun arrêt OSM : sans position"
+208,2,Gorom 01,bonne,Gorom 1,arrets_geo.csv « Gorom 1 » (bonne) : même arrêt (01 = 1)
+208,3,Gorom 02,bonne,Gorom 2,arrets_geo.csv « Gorom 2 » (bonne) : même arrêt ; la liste servie écrivait « Gororm 02 »
+208,4,Bambilor,bonne,Bambilor,arrets_geo.csv « Bambilor » (bonne)
+208,5,Noflaye,estimee,,"géocodage (Noflaye, Sangalkam) : entre Bambilor et Sangalkam, dans l'ordre"
+208,6,Sangalkam,bonne,Sangalkam,arrets_geo.csv « Sangalkam » (bonne)
+208,7,Keur Ndiaye Lo,bonne,Keur Ndiaye Lo,arrets_geo.csv « Keur Ndiaye Lo » (bonne)
+208,8,Rufisque,bonne,Rufisque,arrets_geo.csv « Rufisque » (bonne)
+220,1,Terminus Rufisque,bonne,Rufisque,arrets_geo.csv « Rufisque » (bonne)
+220,2,Djoutiba,estimee,,interpolation de la liste officielle
+220,3,HLM Rufisque,estimee,,"arrets_geo.csv « HLM Rufisque » (bonne) est à 14,81° N, loin de Rufisque et hors de l'ordre de la ligne : interpolation gardée, non sûre"
+220,4,SIPRES,estimee,,"arrets_geo.csv « Sipres » (bonne) est l'homonyme de Dakar (14,69° N) : interpolation gardée, non sûre"
+220,5,SEDIMA,estimee,,"position Tata côté Keur Massar (-17,317) alors que la liste la place avant Lycée Jaxaay et Jaxaay (-17,28) : non sûre"
+220,6,Lycée Jaxaay,bonne,Lycée Jaxaay,arrets_geo.csv « Lycée Jaxaay » (bonne)
+220,7,2 voies,estimee,,interpolation de la liste officielle
+220,8,Jaxaay,bonne,Jaxaay,arrets_geo.csv « Jaxaay » (bonne)
+220,9,Station Keur Massar,bonne,Station Keur Massar,arrets_geo.csv « Station Keur Massar » (bonne)
+220,10,Terminus Malika,bonne,Malika,arrets_geo.csv « Malika » (bonne)
+220,11,Malika Plage,bonne,Malika Plage,arrets_geo.csv « Malika Plage » (bonne)
+220,12,gadaye,bonne,Gadaye,arrets_geo.csv « Gadaye » (bonne)
+220,13,Serigne Assane,estimee,,"arrets_geo.csv « Serigne Assane » est « douteuse » (posée à Dakar) : position Tata gardée, non sûre"
+220,14,Marche boubess,bonne,Marché Boubess,arrets_geo.csv « Marché Boubess » (bonne)
+220,15,Lycée Limamoulaye,bonne,Lycée Limamoulaye,arrets_geo.csv « Lycée Limamoulaye » (bonne)
+220,16,Terminus Guediawaye,bonne,Guédiawaye,arrets_geo.csv « Guédiawaye » (bonne)
+311,1,Lac rose croissement Niague,inconnue,,"aucun arrêt « bonne » ni OSM à ce croisement (Niague n'est qu'un lieu de lieux_geo.csv) : sans position"
+311,2,Croissement Tivaoune Peulh,bonne,Croissement Tivaoune Peulh,"positions_corrigees.csv : arrêt OSM « Croisement tivavouane Peulh » (lien revu)"
+311,3,Terminus keur Massar,bonne,Keur Massar,arrets_geo.csv « Keur Massar » (bonne)
+311,4,Station Keur Massar,bonne,Station Keur Massar,arrets_geo.csv « Station Keur Massar » (bonne)
+311,5,Croissement Keur Massar,bonne,Croisement Keur Massar,"arrets_geo.csv « Croisement Keur Massar » (bonne) ; même point que le croisement de Tivaouane Peulh : la boucle repasse par le même carrefour"

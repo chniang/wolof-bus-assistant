@@ -61,6 +61,21 @@ POSITIONS_CORRIGEES = DATA / "corrections" / "positions_corrigees.csv"
 # (Avenue Cheikh Anta Diop), homonyme (Apix du Plateau). Elles deviennent
 # « estimée » : jamais un arrêt conseillé précis, jamais une proximité.
 POSITIONS_ESTIMEES = DATA / "corrections" / "positions_estimees.csv"
+# Lot B-sources (pages demdikk.sn/reseau-urbain-dakar et /info-voyageurs du
+# 20/11/2026) : listes d'arrêts revues à la main pour les lignes 6, 208, 220 et
+# 311. Elles remplacent la liste officielle servie pour ces lignes. Chaque
+# position y est décidée arrêt par arrêt, jamais copiée d'un homonyme :
+# - « bonne » : un arrêt « bonne » d'arrets_geo.csv ou une position revue de
+#   positions_corrigees.csv (arrêt OSM), nommé dans reference_position ;
+# - « estimee » : la position de la liste servie jusqu'ici (interpolation,
+#   géocodage), gardée pour mesurer la ligne mais jamais sûre ;
+# - « inconnue » : aucune position (Bayakh, introuvable).
+ITINERAIRES_REVUS = DATA / "corrections" / "itineraires_ddd_revus.csv"
+SOURCE_ESTIMEE = "estimee"
+# Statut et terminus affichés des mêmes lignes (et de la 233) d'après les deux
+# pages : « Cambérène 2 -> Palais 2 » pour la 6 alors que sa liste commence à
+# Camberene, « Lac Rose (croisement Niague) -> Croisement Keur Massar » pour la 311.
+STATUT_LIGNES = DATA / "corrections" / "statut_lignes_ddd.csv"
 CATEGORIE_SANS_ARRET = "Navette express, sans arrêt"
 STATUT_A_CONFIRMER = "à confirmer"
 DEM_DIKK = "Dakar Dem Dikk"
@@ -141,26 +156,101 @@ def _ajouter_terminus(rangees: list[dict], terminus: Path, arrets_geo: Path) -> 
     return rangees
 
 
+def position_revue(
+    reference: str, arrets_geo: Path = ARRETS_GEO, corrigees: Path = POSITIONS_CORRIGEES
+) -> tuple[str, str, str] | None:
+    """(lat, lon, source) d'une position « bonne » nommée, ou None si elle n'existe pas.
+
+    D'abord positions_corrigees.csv (arrêt OSM ou arrêt identique revu), puis
+    un arrêt « bonne » d'arrets_geo.csv au nom exact. Jamais un homonyme
+    approché : le nom de référence a été choisi à la main.
+    """
+    revue = positions_corrigees(corrigees).get(cle_lieu(reference))
+    if revue is not None:
+        lat, lon, origine = revue
+        source = "osm_arret" if "osm" in origine.lower() else "arrets_geo_bonne"
+        return f"{lat:.6f}", f"{lon:.6f}", source
+    lat, lon = _position_sure(reference, arrets_geo)
+    return (lat, lon, "arrets_geo_bonne") if lat and lon else None
+
+
+def _appliquer_itineraires_revus(
+    rangees: list[dict], chemin: Path, arrets_geo: Path
+) -> list[dict]:
+    """Remplace la liste servie des lignes d'itineraires_ddd_revus.csv par la liste revue."""
+    if not Path(chemin).exists():
+        return rangees
+    revues: dict[str, list[dict]] = {}
+    for r in _lire(chemin):
+        revues.setdefault(nom_ligne_ddd(r["ligne"]), []).append(r)
+    # Positions de la liste servie jusqu'ici, pour les arrêts « estimee ».
+    anciennes = {(r["ligne"], cle_lieu(r["arret"])): r for r in rangees if r.get("lat") and r.get("lon")}
+    modele = rangees[0] if rangees else {}
+    nouvelles = [r for r in rangees if r["ligne"] not in revues]
+    for ligne, arrets in revues.items():
+        for r in sorted(arrets, key=lambda x: int(x["ordre"])):
+            arret = sans_terminus(r["arret"])
+            decision = (r.get("position") or "").strip()
+            lat = lon = ""
+            source, detail = "inconnu", f"position inconnue : {r.get('raison', '')}"
+            if decision == "bonne":
+                trouvee = position_revue(r.get("reference_position") or arret, arrets_geo)
+                if trouvee is not None:
+                    lat, lon, source = trouvee
+                    detail = r.get("raison", "")
+            elif decision == SOURCE_ESTIMEE:
+                ancienne = anciennes.get((ligne, cle_lieu(arret)))
+                if ancienne is not None:
+                    lat, lon, source = ancienne["lat"], ancienne["lon"], SOURCE_ESTIMEE
+                    detail = f"position estimée : {r.get('raison', '')}"
+            nouvelles.append({
+                **{cle: "" for cle in modele},
+                "compagnie": DEM_DIKK,
+                "ligne": ligne,
+                "ordre": str(int(r["ordre"])),
+                "arret": arret,
+                "lat": lat,
+                "lon": lon,
+                "source": source,
+                "detail": detail,
+            })
+    return nouvelles
+
+
 def rangees_ddd_officielles(
     chemin: Path = CORRECTIONS_DDD,
     exclues: Path = LIGNES_EXCLUES,
     terminus: Path = TERMINUS_DDD,
     arrets_geo: Path = ARRETS_GEO,
+    revus: Path = ITINERAIRES_REVUS,
 ) -> list[dict]:
     """Les rangées Dem Dikk officielles, avec la ligne et l'arrêt comme l'app les nomme.
 
     Les lignes de lignes_officiel_exclues.csv n'y sont pas : la nôtre reste servie.
+    Les listes d'itineraires_ddd_revus.csv remplacent celles de leur ligne.
     Les terminus de terminus_ddd_officiels.csv sont ajoutés au bout de leur ligne.
     """
     if not Path(chemin).exists():
         return []
     ecartees = lignes_officiel_exclues(exclues)
-    rangees = (
+    rangees = [
         {**rangee, "ligne": nom_ligne_ddd(rangee["ligne"]), "arret": sans_terminus(rangee["arret"])}
         for rangee in _lire(chemin)
-    )
+    ]
+    rangees = _appliquer_itineraires_revus(rangees, revus, arrets_geo)
     gardees = [rangee for rangee in rangees if rangee["ligne"] not in ecartees]
     return _retirer_positions(_ajouter_terminus(gardees, terminus, arrets_geo))
+
+
+def terminus_ddd_revus(chemin: Path = STATUT_LIGNES) -> dict[str, tuple[str, str]]:
+    """« Ligne 6 » -> (terminus_a, terminus_b) à afficher ; vide sans fichier."""
+    if not Path(chemin).exists():
+        return {}
+    return {
+        nom_ligne_ddd(r["ligne"]): (r["terminus_a"].strip(), r["terminus_b"].strip())
+        for r in _lire(chemin)
+        if (r.get("terminus_a") or "").strip() and (r.get("terminus_b") or "").strip()
+    }
 
 
 def positions_corrigees(chemin: Path = POSITIONS_CORRIGEES) -> dict[str, tuple[float, float, str]]:

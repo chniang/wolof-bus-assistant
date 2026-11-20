@@ -597,3 +597,36 @@ Garder nos terminus ; ne pas importer la liste 232 ; reconstruire le tracé avec
 | 217 | l'officiel semble faux (copie d'une autre ligne) | Ne plus servir la liste 218 sous le numéro 217 : revenir à Thiaroye → Ouakam (terminus seuls, « estimé ») jusqu'à confirmation de Dem Dikk. |
 | 220 | vraie divergence à trancher | Garder Rufisque → Guédiawaye sans les 2 points de presse ; trancher avec Dem Dikk (33 824 10 10) si le numéro 220 a été réutilisé pour la navette AIBD. |
 | 233 | l'officiel semble faux (copie d'une autre ligne) | Garder nos terminus ; ne pas importer la liste 232 ; reconstruire le tracé avec Dem Dikk ou un relevé terrain (indice du 18/11 : Gueule Tapée, direction Palais 2), et trancher Palais 1 / Palais 2. |
+
+## Mise à jour du 20/11/2026 : lot B-sources
+
+Nouvelles sources : les pages officielles https://demdikk.sn/reseau-urbain-dakar/ et https://demdikk.sn/info-voyageurs/, consultées le 20/11/2026. Les corrections vivent dans deux **nouveaux** fichiers, sans toucher aux CSV existants :
+
+- `data/corrections/itineraires_ddd_revus.csv` : la liste d'arrêts revue des lignes 6, 208, 220 et 311, qui remplace en mémoire la liste servie. Chaque position y est décidée arrêt par arrêt : « bonne » (arrêt « bonne » d'`arrets_geo.csv` ou arrêt OSM de `positions_corrigees.csv`, nommé), « estimee » (position de la liste servie jusqu'ici, gardée pour mesurer la ligne mais jamais sûre) ou « inconnue ».
+- `data/corrections/statut_lignes_ddd.csv` : le statut (confirmé / à confirmer) et les terminus affichés, avec les sources.
+
+L'AIBD n'est pas touché (Express AIBD et repère de Diass inchangés).
+
+| Ligne | Sources du 20/11 | Ce que l'app sert maintenant | Statut |
+|---|---|---|---|
+| 6 | info-voyageurs : Cambérène 2 ↔ Palais 2 ; reseau-urbain : Guédiawaye ↔ Palais 1 (liste) | Terminus affichés **Cambérène 2 → Palais 2** (info-voyageurs + ArcGIS). Arrêts de la liste reseau-urbain à partir de « Camberene » jusqu'à Palais 1 (23 arrêts) : Guédiawaye, Marché Jeudi et Hôpital Dalal Diam ne sont plus servis par la 6. | à confirmer (les deux pages se contredisent) |
+| 208 | les deux pages : Bayakh ↔ Rufisque | **Bayakh** (sans position : « introuvable ») → Gorom 01 → Gorom 02 → Bambilor → Noflaye → Sangalkam → Keur Ndiaye Lo → Rufisque. 6 positions « bonne » sur 7 placées, Noflaye estimée, dans l'ordre et sans zigzag. « Gororm 02 » devient « Gorom 02 ». | **confirmé** |
+| 220 | les deux pages : Rufisque ↔ Guédiawaye | Les 16 arrêts des pages, sans les 2 points de l'article Senego (Espace BRT, AIBD) : pas de navette AIBD. | **confirmé** |
+| 311 | Lac Rose ↔ Croisement Keur Massar (boucle) | 5 arrêts : Lac rose croissement Niague, Croissement Tivaoune Peulh, Keur Massar, Station Keur Massar, Croissement Keur Massar. « Retour vers Lac Rose » retiré (indication de sens, pas un arrêt). Terminus affichés **Lac Rose (croisement Niague) → Croisement Keur Massar**. | inchangé |
+| 233 | les deux pages : Baux Maraîchers ↔ Palais 1 | Terminus confirmés ; la liste officielle reste exclue (copie de la 232). | à confirmer |
+
+### Positions écartées (homonymes ou hors ordre)
+
+- **6 « Rond point 26 »** : le géocodage le posait sur le Rond-Point Liberté 6, 1,8 km plus au sud (zigzag). Sans position.
+- **6 « Sipres »** et **220 « SIPRES »** : le « Sipres » « bonne » d'`arrets_geo.csv` est la cité de Dakar (14,69° N), hors des deux tracés. Positions estimées.
+- **220 « HLM Rufisque »** : la position « bonne » est à 14,81° N, loin de Rufisque et hors de l'ordre de la ligne. Estimée.
+- **220 « SEDIMA »** : position Tata côté Keur Massar (-17,317) alors que la liste la place avant Lycée Jaxaay et Jaxaay (-17,28). Estimée, à vérifier sur le terrain.
+- **220 « Serigne Assane »** : `arrets_geo.csv` la dit « douteuse » (posée à Dakar). Estimée.
+- **311 « Lac rose croissement Niague »** et **208 « Bayakh »** : aucun arrêt « bonne » ni OSM. Sans position.
+- **311** : « Croissement Tivaoune Peulh » (OSM) et « Croisement Keur Massar » (« bonne ») sont au même point ; la boucle repasse par le même carrefour.
+
+### Effet sur les réponses
+
+- La 208 et la 220 ne portent plus « itinéraire à confirmer » et ne sont plus reléguées derrière les lignes confirmées.
+- **Liberté 5 → Guédiawaye** n'a plus de bus direct : la seule ligne directe était la 6 (« à confirmer »), qui ne dessert plus Guédiawaye. L'app propose un changement (Dem Dikk 13 puis 2, ou Tata 78 puis 26). À revoir si Dem Dikk confirme que la 6 part bien de Guédiawaye.
+- Le point officiel « Police de Parcelles Assainies – Marché Grand Médine » de la 6 reste coupé en deux arrêts, comme avant.
