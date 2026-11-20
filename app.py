@@ -120,6 +120,12 @@ except ImportError:
 # qui ne doit couvrir que le calcul. Un échec de chargement ne fait que garder
 # None ; la transcription du GPU renvoie alors ERREUR_ASR et l'app s'appuie sur
 # l'autre modèle préchargé.
+# Audit du 20/11 (panne « No CUDA GPUs » après le 1er appel) : hors de
+# transcrire_wolof, CUDA n'est touché qu'ici, au démarrage, par
+# _precharger_kiriku (torch.cuda.is_available, que spaces patche) et
+# _charger_kiriku_gpu (device=0, le .to("cuda") que ZeroGPU diffère). C'est le
+# schéma documenté de ZeroGPU ; aucun chemin de requête (seconde chance,
+# whisper CPU, journal) n'y revient. tests/test_trajets.py le vérifie.
 _MODELE_CPU = None
 _MODELE_GPU = None
 
@@ -478,7 +484,10 @@ def transcrire_wolof(audio: np.ndarray) -> str:
     if _MODELE_GPU is None:
         return f"{ERREUR_ASR}Kiriku non chargé (pas de GPU au démarrage)"
     try:
-        return transcrire(_MODELE_GPU, audio)
+        # Toujours un str Python : rien de ce qui sort du worker ZeroGPU ne doit
+        # être un tenseur CUDA, que le processus principal toucherait ensuite
+        # hors de la réservation (panne « No CUDA GPUs » du 20/11).
+        return str(transcrire(_MODELE_GPU, audio) or "")
     except Exception as exc:
         import traceback
 

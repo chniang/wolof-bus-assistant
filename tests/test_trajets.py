@@ -8618,6 +8618,163 @@ def test_lot_20_11() -> tuple[int, int]:
     return echecs, total
 
 
+def test_zerogpu_cuda() -> tuple[int, int]:
+    """Aucun appel CUDA hors de la fonction @spaces.GPU (panne du 20/11).
+
+    Sur ZeroGPU, le 1er appel GPU marchait et les suivants échouaient sur « No
+    CUDA GPUs are available ». Le processus principal ne doit jamais toucher
+    CUDA pendant une requête : seuls le chargement au démarrage (schéma
+    documenté de ZeroGPU) et transcrire_wolof y ont droit. Recherche dans le
+    code exécuté au runtime (app.py, src/**), sans les commentaires.
+    """
+    import ast
+    import contextlib
+    import io
+    import os
+    import tokenize
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | zerogpu {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    motif_cuda = re.compile(
+        r"torch\.cuda\b|\.cuda\(|torch\.device\(|device_map"
+        r"|device\s*=\s*(?:0|[1-9]|['\"](?:cuda|auto))|\.to\(\s*['\"]cuda"
+        r"|torch\.accelerator\b|['\"]cuda(?::\d)?['\"]"
+    )
+    # Fonctions où CUDA est permis : le calcul GPU et le chargement au démarrage.
+    autorisees = {"transcrire_wolof", "_charger_kiriku_gpu", "_precharger_kiriku"}
+
+    def lignes_code(chemin: Path) -> dict[int, str]:
+        """Lignes de code sans les commentaires (les chaînes restent : 'cuda')."""
+        lignes: dict[int, list[str]] = {}
+        with chemin.open(encoding="utf-8") as fichier:
+            for jeton in tokenize.generate_tokens(fichier.readline):
+                if jeton.type in (tokenize.COMMENT, tokenize.NL, tokenize.NEWLINE):
+                    continue
+                for numero in range(jeton.start[0], jeton.end[0] + 1):
+                    lignes.setdefault(numero, []).append(jeton.string)
+        # Jetons recollés sans espace : « torch.cuda », « device=0 ».
+        return {n: "".join(morceaux) for n, morceaux in lignes.items()}
+
+    def plages_autorisees(chemin: Path) -> list[tuple[int, int]]:
+        arbre = ast.parse(chemin.read_text(encoding="utf-8"))
+        return [
+            (noeud.lineno - len(noeud.decorator_list), noeud.end_lineno)
+            for noeud in ast.walk(arbre)
+            if isinstance(noeud, ast.FunctionDef) and noeud.name in autorisees
+        ]
+
+    fichiers = [RACINE / "app.py"] + sorted((RACINE / "src").rglob("*.py"))
+    hors_gpu = []
+    vus_autorises = []
+    for chemin in fichiers:
+        plages = plages_autorisees(chemin) if chemin.name == "app.py" else []
+        for numero, code in lignes_code(chemin).items():
+            # Une docstring qui cite CUDA n'est pas un appel : seules les
+            # lignes qui ne sont pas entièrement une chaîne comptent.
+            if not motif_cuda.search(code) or re.fullmatch(r"\s*(['\"]).*", code):
+                continue
+            nom = f"{chemin.relative_to(RACINE).as_posix()}:{numero}"
+            if any(debut <= numero <= fin for debut, fin in plages):
+                vus_autorises.append(nom)
+            else:
+                hors_gpu.append((nom, code.strip()[:80]))
+    verifie("aucun appel CUDA hors de transcrire_wolof et du chargement",
+            not hors_gpu, hors_gpu)
+    verifie("le scan voit bien le chargement Kiriku (device=0, is_available)",
+            len(vus_autorises) >= 2, vus_autorises)
+
+    # Le chargement CUDA n'est déclenché qu'au niveau module, jamais par une
+    # requête : _precharger_kiriku est appelé une seule fois, hors fonction, et
+    # _charger_kiriku_gpu seulement par lui.
+    arbre = ast.parse((RACINE / "app.py").read_text(encoding="utf-8"))
+    appels: dict[str, list[str]] = {"_precharger_kiriku": [], "_charger_kiriku_gpu": []}
+
+    def parcourir(noeud: ast.AST, fonction: str) -> None:
+        for enfant in ast.iter_child_nodes(noeud):
+            if isinstance(enfant, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                parcourir(enfant, enfant.name)
+                continue
+            if (
+                isinstance(enfant, ast.Call)
+                and isinstance(enfant.func, ast.Name)
+                and enfant.func.id in appels
+            ):
+                appels[enfant.func.id].append(fonction)
+            parcourir(enfant, fonction)
+
+    parcourir(arbre, "<module>")
+    verifie("chargement GPU lancé une fois, au démarrage du module",
+            appels == {"_precharger_kiriku": ["<module>"],
+                       "_charger_kiriku_gpu": ["_precharger_kiriku"]}, appels)
+
+    # _MODELE_GPU (le pipeline sur cuda) n'est lu que dans transcrire_wolof.
+    lecteurs = set()
+
+    def lecteurs_modele(noeud: ast.AST, fonction: str) -> None:
+        for enfant in ast.iter_child_nodes(noeud):
+            if isinstance(enfant, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                lecteurs_modele(enfant, enfant.name)
+                continue
+            if (
+                isinstance(enfant, ast.Name)
+                and enfant.id == "_MODELE_GPU"
+                and isinstance(enfant.ctx, ast.Load)
+            ):
+                lecteurs.add(fonction)
+            lecteurs_modele(enfant, fonction)
+
+    lecteurs_modele(arbre, "<module>")
+    verifie("Kiriku (_MODELE_GPU) utilisé seulement dans transcrire_wolof",
+            lecteurs == {"transcrire_wolof"}, lecteurs)
+
+    # transcrire_wolof ne rend que du texte Python, jamais un objet du modèle.
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_zerogpu")
+    import numpy as np
+
+    class FauxTenseur:
+        def __str__(self) -> str:
+            return "maa ngi Ouakam"
+
+    transcrire_origine = app.transcrire
+    app._MODELE_GPU = object()
+    try:
+        audio = np.zeros(16_000, dtype=np.float32)
+        app.transcrire = lambda modele, son: FauxTenseur()
+        sortie_objet = app.transcrire_wolof(audio)
+        app.transcrire = lambda modele, son: None
+        sortie_vide = app.transcrire_wolof(audio)
+
+        def leve(modele, son):
+            raise RuntimeError("panne simulée")
+
+        app.transcrire = leve
+        with contextlib.redirect_stderr(io.StringIO()):
+            sortie_erreur = app.transcrire_wolof(audio)
+    finally:
+        app.transcrire = transcrire_origine
+        app._MODELE_GPU = None
+    verifie("transcrire_wolof rend un str, jamais l'objet du modèle",
+            type(sortie_objet) is str and sortie_objet == "maa ngi Ouakam", repr(sortie_objet))
+    verifie("transcrire_wolof : rien du modèle -> chaîne vide", sortie_vide == "", repr(sortie_vide))
+    verifie("transcrire_wolof : erreur -> str préfixé ERREUR_ASR",
+            type(sortie_erreur) is str and sortie_erreur.startswith(app.ERREUR_ASR), sortie_erreur)
+    source_app = (RACINE / "app.py").read_text(encoding="utf-8")
+    verifie("durée GPU toujours fixe à 20 s",
+            "@spaces.GPU(duration=20)\ndef transcrire_wolof" in source_app)
+
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -8679,6 +8836,7 @@ if __name__ == "__main__":
         echecs_b5, total_b5 = test_lot_b5()
         echecs_f4, total_f4 = test_lot_f4()
         echecs_2011, total_2011 = test_lot_20_11()
+        echecs_zerogpu, total_zerogpu = test_zerogpu_cuda()
         echecs = (
             test_local()
             + echecs_partage
@@ -8730,6 +8888,7 @@ if __name__ == "__main__":
             + echecs_b5
             + echecs_f4
             + echecs_2011
+            + echecs_zerogpu
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -8782,6 +8941,7 @@ if __name__ == "__main__":
             + total_b5
             + total_f4
             + total_2011
+            + total_zerogpu
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)
