@@ -1,0 +1,1000 @@
+compagnie,ligne,index,arret,lat,lon,source,motif,distance_voisin_mesure_m,confiance_arrets_geo
+Dakar Dem Dikk,Express AIBD,1,AIBD,14.670000,-17.073300,arrets_geo,non mesurée,41904,estimee
+Dakar Dem Dikk,Ligne 1,1,Sapeur Pompiers,14.760414,-17.439314,interpolation_sur_trace_osm,non mesurée,145,estimee
+Dakar Dem Dikk,Ligne 1,2,Unités 09 10 15,14.758449,-17.447704,interpolation_sur_trace_osm,non mesurée,88,estimee
+Dakar Dem Dikk,Ligne 1,5,Unités 22 24,14.751595,-17.453800,interpolation_sur_trace_osm,non mesurée,859,estimee
+Dakar Dem Dikk,Ligne 1,6,Marché Grand Médine,14.751947,-17.455335,interpolation_sur_trace_osm,non mesurée,981,estimee
+Dakar Dem Dikk,Ligne 1,7,Rond point 26,14.743716,-17.469909,interpolation_sur_trace_osm,non mesurée,2795,estimee
+Dakar Dem Dikk,Ligne 1,8,VDN-Foire,14.741312,-17.471686,nominatim,non mesurée,3095,estimee
+Dakar Dem Dikk,Ligne 1,9,Cité Keur Gorgui,14.711689,-17.468716,nominatim,non mesurée,1473,estimee
+Dakar Dem Dikk,Ligne 1,12,Rond point Sham,14.684564,-17.453600,nominatim,non mesurée,498,estimee
+Dakar Dem Dikk,Ligne 1,15,Difoncé,14.673530,-17.442308,interpolation_sur_trace_osm,non mesurée,573,estimee
+Dakar Dem Dikk,Ligne 1,16,Sandaga,14.670496,-17.437220,nominatim,non mesurée,617,estimee
+Dakar Dem Dikk,Ligne 1,17,Avenue George Pompidou,14.669365,-17.434857,nominatim,non mesurée,354,estimee
+Dakar Dem Dikk,Ligne 1,19,Gare TER,14.670251,-17.431692,interpolation_sur_trace_osm,non mesurée,83,estimee
+Dakar Dem Dikk,Ligne 1,20,Embarcadère,14.672615,-17.428762,interpolation_sur_trace_osm,non mesurée,459,estimee
+Dakar Dem Dikk,Ligne 1,21,Leclerc,14.672023,-17.427802,repere_connu,non mesurée,492,estimee
+Dakar Dem Dikk,Ligne 10,0,Terminus liberté 5 (Dieuppeul),14.716353,-17.452929,nominatim,non mesurée,1689,estimee
+Dakar Dem Dikk,Ligne 10,1,Cité Derklé,14.715361,-17.452562,nominatim,non mesurée,1806,estimee
+Dakar Dem Dikk,Ligne 10,2,Rond point Liberté 6,14.728551,-17.456967,nominatim,non mesurée,286,estimee
+Dakar Dem Dikk,Ligne 10,4,Cité Marine,14.731191,-17.455218,nominatim,non mesurée,155,estimee
+Dakar Dem Dikk,Ligne 10,5,CEM Ousmane Socé Diop,14.720676,-17.453056,nominatim,non mesurée,930,estimee
+Dakar Dem Dikk,Ligne 10,6,Eglise Martyrs de l’Ouganda,14.719032,-17.456341,interpolation_sur_trace_osm,non mesurée,580,estimee
+Dakar Dem Dikk,Ligne 10,7,SDE,14.716066,-17.459516,interpolation_sur_trace_osm,non mesurée,209,estimee
+Dakar Dem Dikk,Ligne 10,8,Dakar sacré coeur,14.713376,-17.462296,nominatim,non mesurée,400,estimee
+Dakar Dem Dikk,Ligne 10,13,Rue Aimé césaire,14.693879,-17.468730,nominatim,non mesurée,365,estimee
+Dakar Dem Dikk,Ligne 10,14,Ministère de la Santé,14.693298,-17.468832,nominatim,non mesurée,418,estimee
+Dakar Dem Dikk,Ligne 10,15,Corniche Ouest,14.687207,-17.469767,interpolation_sur_trace_osm,non mesurée,1057,estimee
+Dakar Dem Dikk,Ligne 10,16,IFAN,14.683566,-17.467741,nominatim,non mesurée,1399,estimee
+Dakar Dem Dikk,Ligne 10,17,Hotel Terrou,14.677222,-17.467053,nominatim,non mesurée,2096,estimee
+Dakar Dem Dikk,Ligne 10,18,Tunnel de soumbédioune,14.677889,-17.463261,interpolation_sur_trace_osm,non mesurée,2045,estimee
+Dakar Dem Dikk,Ligne 10,19,Village Artisanal de Soumbédioune,14.676852,-17.457810,nominatim,non mesurée,2318,estimee
+Dakar Dem Dikk,Ligne 10,20,Prison Rebeus,14.674666,-17.452774,interpolation_sur_trace_osm,non mesurée,2342,estimee
+Dakar Dem Dikk,Ligne 10,21,Turbinal de dakar,14.672503,-17.448144,interpolation_sur_trace_osm,non mesurée,1799,estimee
+Dakar Dem Dikk,Ligne 10,22,Boulevard de la République,14.668898,-17.444114,interpolation_sur_trace_osm,non mesurée,1211,estimee
+Dakar Dem Dikk,Ligne 10,23,Sorano,14.666317,-17.439471,nominatim,non mesurée,641,estimee
+Dakar Dem Dikk,Ligne 10,24,Avenue Léopold Sédar Senghor,14.663551,-17.433910,nominatim,non mesurée,158,estimee
+Dakar Dem Dikk,Ligne 10,26,Rond point assemblée nationale,14.659009,-17.435942,interpolation_sur_trace_osm,non mesurée,409,estimee
+Dakar Dem Dikk,Ligne 10,27,Institut Pasteur,14.656185,-17.435034,nominatim,non mesurée,406,estimee
+Dakar Dem Dikk,Ligne 11,2,Croissement Keur Massar,14.773758,-17.336810,interpolation,non mesurée,1744,bonne
+Dakar Dem Dikk,Ligne 11,3,Fass Mbao,14.764560,-17.349954,nominatim,non mesurée,3489,bonne
+Dakar Dem Dikk,Ligne 11,4,Diamaguène,14.756056,-17.351587,nominatim,non mesurée,3080,bonne
+Dakar Dem Dikk,Ligne 11,5,Poste Thiaroye,14.746040,-17.378287,ancre_tata,mesurée mais loin de ses voisins mesurés,7165,bonne
+Dakar Dem Dikk,Ligne 11,6,Autoroute a Peage,14.727372,-17.410224,interpolation,non mesurée,4013,estimee
+Dakar Dem Dikk,Ligne 11,7,Corniche des Hlm,14.708703,-17.442161,nominatim,non mesurée,921,estimee
+Dakar Dem Dikk,Ligne 11,9,Boulevard Général De Gaule (Centenaire),14.690009,-17.442682,interpolation,non mesurée,1165,estimee
+Dakar Dem Dikk,Ligne 11,11,Rond Point,14.678422,-17.444858,interpolation,non mesurée,177,estimee
+Dakar Dem Dikk,Ligne 11,13,Blaise Diagne,14.679663,-17.449177,nominatim,non mesurée,436,estimee
+Dakar Dem Dikk,Ligne 11,14,Sandaga,14.670204,-17.440238,nominatim,non mesurée,170,estimee
+Dakar Dem Dikk,Ligne 12,1,Lycée Canada,14.766754,-17.391317,interpolation,non mesurée,1160,bonne
+Dakar Dem Dikk,Ligne 12,3,Marché Sandika,14.751021,-17.396748,interpolation,non mesurée,747,estimee
+Dakar Dem Dikk,Ligne 12,5,National 1,14.740452,-17.411778,interpolation,non mesurée,1302,estimee
+Dakar Dem Dikk,Ligne 12,6,Croissement Camberene,14.735250,-17.422622,interpolation,non mesurée,2603,estimee
+Dakar Dem Dikk,Ligne 12,7,Autoroute,14.730047,-17.433467,interpolation,non mesurée,1302,douteuse
+Dakar Dem Dikk,Ligne 12,8,Cité des Eaux,14.724845,-17.444312,ancre_tata,mesurée mais loin de ses voisins mesurés,3152,bonne
+Dakar Dem Dikk,Ligne 12,9,Station Castors,14.721142,-17.447522,nominatim,non mesurée,537,estimee
+Dakar Dem Dikk,Ligne 12,12,Avenue Cheikh Anta Diop (Hôpital Fann),14.691628,-17.459839,interpolation,non mesurée,1033,estimee
+Dakar Dem Dikk,Ligne 12,13,Rond Point Sahm,14.684564,-17.453600,nominatim,non mesurée,593,estimee
+Dakar Dem Dikk,Ligne 12,15,Avenue Jean Jaurès,14.670460,-17.440157,nominatim,non mesurée,1542,estimee
+Dakar Dem Dikk,Ligne 12,16,Boulevard de la République,14.667005,-17.437034,interpolation,non mesurée,1816,estimee
+Dakar Dem Dikk,Ligne 12,17,Avenue Léopold Sedar Senghor,14.663551,-17.433910,nominatim,non mesurée,1392,estimee
+Dakar Dem Dikk,Ligne 12,18,Avenue Nelson Mandela,14.662643,-17.435756,nominatim,non mesurée,1314,estimee
+Dakar Dem Dikk,Ligne 121,1,Mairie Grand Yoff,14.738968,-17.457836,nominatim,non mesurée,356,estimee
+Dakar Dem Dikk,Ligne 121,2,Pentola,14.735016,-17.461802,nominatim,non mesurée,739,estimee
+Dakar Dem Dikk,Ligne 121,3,Les deux voies de Sipres,14.733696,-17.461268,interpolation_sur_trace_osm,non mesurée,744,estimee
+Dakar Dem Dikk,Ligne 121,4,Camp penal,14.732994,-17.459910,nominatim,non mesurée,670,estimee
+Dakar Dem Dikk,Ligne 121,5,Les deux voies de Liberté 6,14.736764,-17.460174,interpolation_sur_trace_osm,non mesurée,531,estimee
+Dakar Dem Dikk,Ligne 121,6,Rond point JVC,14.738917,-17.458362,interpolation_sur_trace_osm,non mesurée,399,estimee
+Dakar Dem Dikk,Ligne 121,7,Boulangerie Zone,14.741155,-17.456706,nominatim,non mesurée,490,estimee
+Dakar Dem Dikk,Ligne 121,9,Scor liberté,14.711276,-17.463463,interpolation_sur_trace_osm,non mesurée,611,estimee
+Dakar Dem Dikk,Ligne 121,10,Sicap rue 10,14.708926,-17.459335,nominatim,non mesurée,1007,estimee
+Dakar Dem Dikk,Ligne 121,11,Lycée Blaise Diagne,14.696891,-17.452854,nominatim,non mesurée,2160,estimee
+Dakar Dem Dikk,Ligne 121,12,Place ONU,14.696957,-17.451409,nominatim,non mesurée,2101,estimee
+Dakar Dem Dikk,Ligne 121,13,Canal 4,14.699401,-17.451571,nominatim,non mesurée,2350,bonne
+Dakar Dem Dikk,Ligne 121,14,HLM Fass,14.695860,-17.450957,nominatim,non mesurée,1969,estimee
+Dakar Dem Dikk,Ligne 121,15,Travaux communaux,14.691905,-17.453506,interpolation_sur_trace_osm,non mesurée,1727,estimee
+Dakar Dem Dikk,Ligne 121,16,Rue 22 prolongée,14.688548,-17.454797,nominatim,non mesurée,1552,estimee
+Dakar Dem Dikk,Ligne 121,20,Avenue Faidherbe,14.675580,-17.438488,nominatim,non mesurée,306,estimee
+Dakar Dem Dikk,Ligne 121,22,Albert Sarraut,14.669681,-17.429452,nominatim,non mesurée,229,estimee
+Dakar Dem Dikk,Ligne 121,23,BCEAO,14.670098,-17.426394,nominatim,non mesurée,561,estimee
+Dakar Dem Dikk,Ligne 121,24,Leclerc,14.672023,-17.427802,repere_connu,non mesurée,492,estimee
+Dakar Dem Dikk,Ligne 13,0,Terminus liberté 5 (Dieuppeul),14.716353,-17.452929,nominatim,non mesurée,2227,estimee
+Dakar Dem Dikk,Ligne 13,1,Avenue Cheikh Ahmadou Bamba (ex rue 13 Prolongée),14.718748,-17.450226,interpolation,non mesurée,2458,estimee
+Dakar Dem Dikk,Ligne 13,2,Station Castors,14.721142,-17.447522,nominatim,non mesurée,2726,estimee
+Dakar Dem Dikk,Ligne 13,3,Marché HLM,14.714355,-17.451333,nominatim,non mesurée,1981,estimee
+Dakar Dem Dikk,Ligne 13,4,Ouagou Niayes,14.707366,-17.449003,nominatim,non mesurée,1189,estimee
+Dakar Dem Dikk,Ligne 13,5,BOP,14.710365,-17.448417,nominatim,non mesurée,1524,estimee
+Dakar Dem Dikk,Ligne 13,6,Masalikul Djinane,14.704201,-17.448166,interpolation,non mesurée,843,estimee
+Dakar Dem Dikk,Ligne 13,7,CSS,14.698038,-17.447915,nominatim,non mesurée,198,estimee
+Dakar Dem Dikk,Ligne 13,9,Boulevard Général De Gaule,14.691835,-17.447336,interpolation,non mesurée,570,estimee
+Dakar Dem Dikk,Ligne 13,10,Centenaire,14.686997,-17.445575,nominatim,non mesurée,848,estimee
+Dakar Dem Dikk,Ligne 13,15,Avenue Faidherbe,14.676488,-17.442437,nominatim,non mesurée,138,estimee
+Dakar Dem Dikk,Ligne 13,16,Esso Port,14.676046,-17.437845,interpolation,non mesurée,373,estimee
+Dakar Dem Dikk,Ligne 13,17,Gare de Dakar,14.675604,-17.433252,nominatim,non mesurée,701,bonne
+Dakar Dem Dikk,Ligne 13,19,Avenue Léopold Sédar Senghor,14.666201,-17.432957,nominatim,non mesurée,397,estimee
+Dakar Dem Dikk,Ligne 13,21,Rond point assemblée nationale,14.659372,-17.434994,interpolation,non mesurée,354,estimee
+Dakar Dem Dikk,Ligne 13,22,Institut pasteur,14.656185,-17.435034,nominatim,non mesurée,406,estimee
+Dakar Dem Dikk,Ligne 15,1,Djoutiba,14.739730,-17.280739,interpolation,non mesurée,2696,estimee
+Dakar Dem Dikk,Ligne 15,2,Sortie Rufisque,14.763042,-17.287633,interpolation,non mesurée,2696,estimee
+Dakar Dem Dikk,Ligne 15,3,Croissement Keur Massar,14.786355,-17.294528,ancre_tata,mesurée mais loin de ses voisins mesurés,8089,bonne
+Dakar Dem Dikk,Ligne 15,4,Fass Mbao,14.760402,-17.347715,nominatim,non mesurée,3655,bonne
+Dakar Dem Dikk,Ligne 15,5,Diamaguène,14.756056,-17.351587,nominatim,non mesurée,3080,bonne
+Dakar Dem Dikk,Ligne 15,6,Poste Thiaroye,14.746040,-17.378287,ancre_tata,mesurée mais loin de ses voisins mesurés,8492,bonne
+Dakar Dem Dikk,Ligne 15,7,Croisement Bountou Pikine,14.750143,-17.376872,interpolation,non mesurée,481,estimee
+Dakar Dem Dikk,Ligne 15,8,National 1,14.754246,-17.375456,nominatim,non mesurée,962,estimee
+Dakar Dem Dikk,Ligne 15,9,Croissement Camberene,14.736309,-17.397513,interpolation,non mesurée,2334,estimee
+Dakar Dem Dikk,Ligne 15,10,autoroute,14.718371,-17.419569,interpolation,non mesurée,3099,estimee
+Dakar Dem Dikk,Ligne 15,11,Colobane,14.700434,-17.441626,osm_arret,mesurée mais loin de ses voisins mesurés,3604,bonne
+Dakar Dem Dikk,Ligne 15,12,(Scoa),14.690127,-17.438275,interpolation,non mesurée,1201,estimee
+Dakar Dem Dikk,Ligne 15,13,Esso Port,14.679820,-17.434925,interpolation,non mesurée,1201,estimee
+Dakar Dem Dikk,Ligne 15,15,Avenue Léopold Sédar Senghor,14.666201,-17.432957,nominatim,non mesurée,397,estimee
+Dakar Dem Dikk,Ligne 15,16,Avenue Nelson Mandela,14.662643,-17.435756,nominatim,non mesurée,887,estimee
+Dakar Dem Dikk,Ligne 16A,2,Terminus 221 (Gadaye),14.786474,-17.368853,nominatim,non mesurée,2507,estimee
+Dakar Dem Dikk,Ligne 16A,3,Hamo,14.782030,-17.387027,nominatim,non mesurée,636,estimee
+Dakar Dem Dikk,Ligne 16A,4,Guédiawaye,14.777121,-17.390071,ancre_tata,mesurée mais loin de ses voisins mesurés,6405,bonne
+Dakar Dem Dikk,Ligne 16A,5,Marché Sahm,14.773692,-17.395135,nominatim,non mesurée,665,estimee
+Dakar Dem Dikk,Ligne 16A,6,Ecole Canada,14.767644,-17.390436,interpolation,non mesurée,1055,estimee
+Dakar Dem Dikk,Ligne 16A,7,Icotaf,14.761595,-17.385738,nominatim,non mesurée,1788,estimee
+Dakar Dem Dikk,Ligne 16A,8,Cité Lobatt Fall,14.746305,-17.399710,interpolation,non mesurée,3580,estimee
+Dakar Dem Dikk,Ligne 16A,9,Rond Point Lobatt Fall,14.731015,-17.413682,interpolation,non mesurée,4538,estimee
+Dakar Dem Dikk,Ligne 16A,10,Autoroute,14.715724,-17.427654,interpolation,non mesurée,2269,douteuse
+Dakar Dem Dikk,Ligne 16A,11,Colobane,14.700434,-17.441626,osm_arret,mesurée mais loin de ses voisins mesurés,3604,bonne
+Dakar Dem Dikk,Ligne 16A,12,Rond Point Colobane,14.697751,-17.443939,nominatim,non mesurée,388,estimee
+Dakar Dem Dikk,Ligne 16A,13,Place Bakou,14.692103,-17.441466,interpolation,non mesurée,927,estimee
+Dakar Dem Dikk,Ligne 16A,14,Cfao Technologies,14.686456,-17.438993,interpolation,non mesurée,1580,estimee
+Dakar Dem Dikk,Ligne 16A,15,Cyrnos,14.680808,-17.436520,interpolation,non mesurée,1364,estimee
+Dakar Dem Dikk,Ligne 16A,16,Arsenal,14.675160,-17.434047,interpolation,non mesurée,682,estimee
+Dakar Dem Dikk,Ligne 16B,0,Malika,14.800719,-17.323838,nominatim,non mesurée,1975,bonne
+Dakar Dem Dikk,Ligne 16B,1,Station Keur Massar,14.782955,-17.323666,ancre_tata,mesurée mais loin de ses voisins mesurés,8501,bonne
+Dakar Dem Dikk,Ligne 16B,2,Croisement Keur Massar,14.772159,-17.317335,nominatim,non mesurée,1380,bonne
+Dakar Dem Dikk,Ligne 16B,3,LGI Mbao,14.750932,-17.349143,nominatim,non mesurée,4493,estimee
+Dakar Dem Dikk,Ligne 16B,4,Diamaguène,14.751518,-17.356075,nominatim,non mesurée,3888,bonne
+Dakar Dem Dikk,Ligne 16B,5,Thiaroye,14.747343,-17.368778,nominatim,non mesurée,2454,bonne
+Dakar Dem Dikk,Ligne 16B,7,Sotiba (seras),14.739394,-17.403696,interpolation,non mesurée,1409,estimee
+Dakar Dem Dikk,Ligne 16B,9,Capa Virmaud,14.726076,-17.421146,interpolation,non mesurée,1185,estimee
+Dakar Dem Dikk,Ligne 16B,10,Place Bakou,14.716555,-17.426091,interpolation,non mesurée,2370,estimee
+Dakar Dem Dikk,Ligne 16B,11,(Scoa),14.707033,-17.431036,interpolation,non mesurée,2785,estimee
+Dakar Dem Dikk,Ligne 16B,12,Police Bel Air,14.697511,-17.435980,nominatim,non mesurée,1616,estimee
+Dakar Dem Dikk,Ligne 16B,13,Bel Air,14.702220,-17.428474,nominatim,non mesurée,2411,estimee
+Dakar Dem Dikk,Ligne 16B,14,GMD,14.697516,-17.431258,interpolation,non mesurée,1808,estimee
+Dakar Dem Dikk,Ligne 16B,15,Sofrigal (môle 8),14.692812,-17.434041,interpolation,non mesurée,1205,estimee
+Dakar Dem Dikk,Ligne 16B,16,Cyrnos (sur le pont),14.688108,-17.436825,interpolation,non mesurée,603,estimee
+Dakar Dem Dikk,Ligne 16B,18,Avenue Lamine Guèye (Sandaga),14.679089,-17.439792,interpolation,non mesurée,480,estimee
+Dakar Dem Dikk,Ligne 16B,19,Avenue André Peytavin,14.674775,-17.439975,interpolation,non mesurée,960,estimee
+Dakar Dem Dikk,Ligne 16B,20,Avenue Jean Jaurès,14.670460,-17.440157,nominatim,non mesurée,1042,estimee
+Dakar Dem Dikk,Ligne 16B,21,Boulevard de la République,14.667826,-17.438423,interpolation,non mesurée,694,estimee
+Dakar Dem Dikk,Ligne 16B,22,Avenue Léopold Sédar Senghor (Roume),14.665192,-17.436689,interpolation,non mesurée,347,estimee
+Dakar Dem Dikk,Ligne 16B,24,Assemblée Nationale,14.662718,-17.438009,nominatim,non mesurée,329,estimee
+Dakar Dem Dikk,Ligne 16B,25,Hôpital Le Dantec,14.657246,-17.436664,nominatim,non mesurée,619,estimee
+Dakar Dem Dikk,Ligne 18,0,Terminus Liberté 5 (Dieuppeul),14.716353,-17.452929,nominatim,non mesurée,1689,estimee
+Dakar Dem Dikk,Ligne 18,1,Cité Derklé,14.715361,-17.452562,nominatim,non mesurée,1806,estimee
+Dakar Dem Dikk,Ligne 18,2,Rond Point Liberté 6,14.728551,-17.456967,nominatim,non mesurée,286,estimee
+Dakar Dem Dikk,Ligne 18,3,Khar Yalla,14.731109,-17.456657,osm_arret,mesurée mais loin de ses voisins mesurés,3773,bonne
+Dakar Dem Dikk,Ligne 18,4,Cité Marine,14.731191,-17.455218,nominatim,non mesurée,155,estimee
+Dakar Dem Dikk,Ligne 18,5,Avenue Cheikh Ahmadou Bamba (ex rue 13 Prolongée),14.726337,-17.452612,interpolation_sur_trace_osm,non mesurée,686,estimee
+Dakar Dem Dikk,Ligne 18,6,Station Castors,14.721142,-17.447522,nominatim,non mesurée,1481,estimee
+Dakar Dem Dikk,Ligne 18,7,Marché HLM,14.714355,-17.451333,nominatim,non mesurée,1865,estimee
+Dakar Dem Dikk,Ligne 18,8,Ouagou Niayes,14.707366,-17.449003,nominatim,non mesurée,1103,estimee
+Dakar Dem Dikk,Ligne 18,9,BOP,14.710365,-17.448417,nominatim,non mesurée,1322,estimee
+Dakar Dem Dikk,Ligne 18,10,Masalikul Djinane,14.704123,-17.446911,interpolation_sur_trace_osm,non mesurée,698,estimee
+Dakar Dem Dikk,Ligne 18,11,CSS,14.698038,-17.447915,nominatim,non mesurée,723,estimee
+Dakar Dem Dikk,Ligne 18,13,Service des mines,14.698277,-17.438134,nominatim,non mesurée,449,estimee
+Dakar Dem Dikk,Ligne 18,14,Place BAKOU,14.697873,-17.437278,interpolation_sur_trace_osm,non mesurée,551,estimee
+Dakar Dem Dikk,Ligne 18,15,Police Bel Air,14.697511,-17.435980,nominatim,non mesurée,692,estimee
+Dakar Dem Dikk,Ligne 18,16,Grand Moulin de Dakar,14.697112,-17.435722,interpolation_sur_trace_osm,non mesurée,738,estimee
+Dakar Dem Dikk,Ligne 18,17,Bel Air,14.696880,-17.435387,interpolation_sur_trace_osm,non mesurée,782,estimee
+Dakar Dem Dikk,Ligne 18,18,Arsanel,14.689240,-17.434821,interpolation_sur_trace_osm,non mesurée,1446,estimee
+Dakar Dem Dikk,Ligne 18,19,Gare de dakar,14.687692,-17.435947,interpolation_sur_trace_osm,non mesurée,1544,estimee
+Dakar Dem Dikk,Ligne 18,20,Esso Port,14.686607,-17.436608,interpolation_sur_trace_osm,non mesurée,1630,estimee
+Dakar Dem Dikk,Ligne 18,21,Place de l’Indépendance,14.686607,-17.436608,interpolation_sur_trace_osm,non mesurée,1630,bonne
+Dakar Dem Dikk,Ligne 18,22,Avenue Georges Pompidou,14.686607,-17.436608,interpolation_sur_trace_osm,non mesurée,1630,estimee
+Dakar Dem Dikk,Ligne 18,23,Rond point Sandaga,14.686607,-17.436608,interpolation_sur_trace_osm,non mesurée,1630,estimee
+Dakar Dem Dikk,Ligne 18,24,Avenue André Peytavin,14.674990,-17.449775,interpolation_sur_trace_osm,non mesurée,1191,estimee
+Dakar Dem Dikk,Ligne 18,25,Lat Dior,14.674990,-17.449775,interpolation_sur_trace_osm,non mesurée,1191,bonne
+Dakar Dem Dikk,Ligne 18,26,Route de la Corniche,14.674990,-17.449775,interpolation_sur_trace_osm,non mesurée,1191,estimee
+Dakar Dem Dikk,Ligne 18,27,Reubeuss,14.674681,-17.446265,nominatim,non mesurée,1494,estimee
+Dakar Dem Dikk,Ligne 18,28,Mosquée Seydou Nourrou Tall,14.674990,-17.449775,interpolation_sur_trace_osm,non mesurée,1191,estimee
+Dakar Dem Dikk,Ligne 18,29,DAF,14.674328,-17.449595,nominatim,non mesurée,1259,estimee
+Dakar Dem Dikk,Ligne 18,30,Rue 6,14.676408,-17.451265,interpolation_sur_trace_osm,non mesurée,967,bonne
+Dakar Dem Dikk,Ligne 18,31,Médina,14.680487,-17.450928,nominatim,non mesurée,733,bonne
+Dakar Dem Dikk,Ligne 18,33,Lycée Delafosse,14.683533,-17.457471,interpolation_sur_trace_osm,non mesurée,77,estimee
+Dakar Dem Dikk,Ligne 18,34,Canal 4,14.684106,-17.457827,interpolation_sur_trace_osm,non mesurée,150,bonne
+Dakar Dem Dikk,Ligne 18,35,Rond point Sham,14.684241,-17.457911,interpolation_sur_trace_osm,non mesurée,167,estimee
+Dakar Dem Dikk,Ligne 18,36,Avenue Cheikh Anta Diop,14.686829,-17.455859,nominatim,non mesurée,466,bonne
+Dakar Dem Dikk,Ligne 18,37,Ecole Normale Supérieure,14.692805,-17.461549,interpolation_sur_trace_osm,non mesurée,1197,estimee
+Dakar Dem Dikk,Ligne 18,38,Avenue Bourguiba,14.708281,-17.459109,nominatim,non mesurée,2833,bonne
+Dakar Dem Dikk,Ligne 18,39,Stade Demba DIOP,14.710853,-17.457604,nominatim,non mesurée,3112,estimee
+Dakar Dem Dikk,Ligne 18,40,Rond Point Jet d’eau,14.712961,-17.455420,nominatim,non mesurée,3352,estimee
+Dakar Dem Dikk,Ligne 18,41,Allées Ababacar Sy,14.714223,-17.455310,nominatim,non mesurée,3493,estimee
+Dakar Dem Dikk,Ligne 18,42,Terminus Liberté 5 (Dieuppeul),14.716353,-17.452929,nominatim,non mesurée,3753,estimee
+Dakar Dem Dikk,Ligne 2,1,Corniche,14.783482,-17.381215,interpolation,non mesurée,645,bonne
+Dakar Dem Dikk,Ligne 2,2,Hamo,14.782030,-17.387027,nominatim,non mesurée,636,estimee
+Dakar Dem Dikk,Ligne 2,4,Marché Sahm,14.773692,-17.395135,nominatim,non mesurée,665,estimee
+Dakar Dem Dikk,Ligne 2,5,Ravin,14.770856,-17.399258,nominatim,non mesurée,1209,estimee
+Dakar Dem Dikk,Ligne 2,6,Ecole Canada,14.764556,-17.399677,interpolation,non mesurée,1737,estimee
+Dakar Dem Dikk,Ligne 2,7,Rte des Niayes,14.758255,-17.400095,interpolation,non mesurée,1404,estimee
+Dakar Dem Dikk,Ligne 2,8,Tally Boumack,14.751954,-17.400514,interpolation,non mesurée,702,estimee
+Dakar Dem Dikk,Ligne 2,11,PEAGE Pikine,14.735346,-17.416961,interpolation,non mesurée,3165,estimee
+Dakar Dem Dikk,Ligne 2,12,Cité des Eaux,14.724845,-17.444312,ancre_tata,mesurée mais loin de ses voisins mesurés,3175,bonne
+Dakar Dem Dikk,Ligne 2,13,Station Castors,14.721142,-17.447522,nominatim,non mesurée,537,estimee
+Dakar Dem Dikk,Ligne 2,14,Avenue Cheikh Ahmadou Bamba,14.701493,-17.447117,nominatim,non mesurée,577,estimee
+Dakar Dem Dikk,Ligne 2,15,Marché HLM,14.706039,-17.444544,nominatim,non mesurée,1151,estimee
+Dakar Dem Dikk,Ligne 2,16,Masalikul Djinane,14.704839,-17.446624,interpolation,non mesurée,946,estimee
+Dakar Dem Dikk,Ligne 2,17,Bopp,14.703639,-17.448705,nominatim,non mesurée,776,estimee
+Dakar Dem Dikk,Ligne 2,18,Rond Point Colobane,14.697751,-17.443939,nominatim,non mesurée,568,estimee
+Dakar Dem Dikk,Ligne 2,20,Boulevard Général De Gaule,14.695717,-17.449031,interpolation,non mesurée,107,estimee
+Dakar Dem Dikk,Ligne 2,21,Obélisque,14.694762,-17.448964,nominatim,non mesurée,213,estimee
+Dakar Dem Dikk,Ligne 2,22,Rue 39,14.698958,-17.456016,nominatim,non mesurée,786,bonne
+Dakar Dem Dikk,Ligne 2,23,Douta Seck,14.682022,-17.451740,nominatim,non mesurée,263,estimee
+Dakar Dem Dikk,Ligne 2,26,Difoncé,14.673732,-17.443108,interpolation,non mesurée,499,estimee
+Dakar Dem Dikk,Ligne 2,27,Sandaga,14.670204,-17.440238,nominatim,non mesurée,935,estimee
+Dakar Dem Dikk,Ligne 2,28,Asecna,14.667570,-17.439532,nominatim,non mesurée,883,estimee
+Dakar Dem Dikk,Ligne 2,29,Boulevard de la République,14.666886,-17.436245,interpolation,non mesurée,581,estimee
+Dakar Dem Dikk,Ligne 2,30,Avenue Léopold Sédar Senghor,14.666201,-17.432957,nominatim,non mesurée,397,estimee
+Dakar Dem Dikk,Ligne 2,32,Gare de dakar,14.675604,-17.433252,nominatim,non mesurée,701,estimee
+Dakar Dem Dikk,Ligne 2,33,Embarcadère,14.673813,-17.430527,interpolation,non mesurée,491,estimee
+Dakar Dem Dikk,Ligne 2,34,Leclerc,14.672023,-17.427802,repere_connu,non mesurée,492,estimee
+Dakar Dem Dikk,Ligne 20,0,Dieuppeul,14.719814,-17.453231,nominatim,non mesurée,2725,bonne
+Dakar Dem Dikk,Ligne 20,1,Allées Ababacar Sy,14.714223,-17.455310,nominatim,non mesurée,2079,estimee
+Dakar Dem Dikk,Ligne 20,2,Jet d’Eau,14.713594,-17.455895,nominatim,non mesurée,1986,estimee
+Dakar Dem Dikk,Ligne 20,3,Avenue Bourguiba,14.711070,-17.456639,nominatim,non mesurée,1710,bonne
+Dakar Dem Dikk,Ligne 20,4,Stade Demba Diop,14.710853,-17.457604,nominatim,non mesurée,1631,bonne
+Dakar Dem Dikk,Ligne 20,7,Avenue Cheikh Anta Diop,14.698974,-17.468697,nominatim,non mesurée,422,bonne
+Dakar Dem Dikk,Ligne 20,9,Canal 4,14.699401,-17.451571,nominatim,non mesurée,1321,bonne
+Dakar Dem Dikk,Ligne 20,10,Lycée Delafosse,14.691134,-17.454427,interpolation,non mesurée,855,estimee
+Dakar Dem Dikk,Ligne 20,12,Rue 6,14.683129,-17.454856,interpolation,non mesurée,263,bonne
+Dakar Dem Dikk,Ligne 20,14,DAF,14.674328,-17.449595,nominatim,non mesurée,1039,estimee
+Dakar Dem Dikk,Ligne 20,15,Mosquée seydou Nourrou Tall,14.674505,-17.447930,interpolation,non mesurée,906,estimee
+Dakar Dem Dikk,Ligne 20,16,Reubeuss,14.674681,-17.446265,nominatim,non mesurée,793,estimee
+Dakar Dem Dikk,Ligne 20,18,Avenue Peytavin,14.668848,-17.440642,nominatim,non mesurée,101,estimee
+Dakar Dem Dikk,Ligne 20,19,Rond point Sandaga,14.669069,-17.437620,interpolation,non mesurée,416,estimee
+Dakar Dem Dikk,Ligne 20,20,Avenue Gorges Pompidou,14.669291,-17.434597,interpolation,non mesurée,326,estimee
+Dakar Dem Dikk,Ligne 20,22,Gare Ter,14.674179,-17.432309,interpolation,non mesurée,525,estimee
+Dakar Dem Dikk,Ligne 20,23,Esso Port,14.678846,-17.433043,interpolation,non mesurée,1050,estimee
+Dakar Dem Dikk,Ligne 20,24,Boulevard de l’Arsenal,14.683512,-17.433777,interpolation,non mesurée,1575,estimee
+Dakar Dem Dikk,Ligne 20,25,Central Bel Air (MTOA),14.688179,-17.434512,interpolation,non mesurée,1565,estimee
+Dakar Dem Dikk,Ligne 20,26,Grands Moulin de Dakar,14.692845,-17.435246,interpolation,non mesurée,1090,estimee
+Dakar Dem Dikk,Ligne 20,27,Police Bel Air,14.697511,-17.435980,nominatim,non mesurée,692,estimee
+Dakar Dem Dikk,Ligne 20,28,Service des Mines,14.698277,-17.438134,nominatim,non mesurée,449,estimee
+Dakar Dem Dikk,Ligne 20,29,Colobane,14.700430,-17.441666,osm_arret,mesurée mais loin de ses voisins mesurés,3605,bonne
+Dakar Dem Dikk,Ligne 20,30,CSS,14.698038,-17.447915,nominatim,non mesurée,723,estimee
+Dakar Dem Dikk,Ligne 20,31,Masalikul Djinane,14.699573,-17.447257,interpolation,non mesurée,609,estimee
+Dakar Dem Dikk,Ligne 20,32,Cité Port,14.701107,-17.446600,nominatim,non mesurée,536,estimee
+Dakar Dem Dikk,Ligne 20,33,Ouagou niayes,14.707366,-17.449003,nominatim,non mesurée,1103,estimee
+Dakar Dem Dikk,Ligne 20,34,Marché HLM,14.714355,-17.451333,nominatim,non mesurée,1865,estimee
+Dakar Dem Dikk,Ligne 20,35,Station Castors,14.721142,-17.447522,nominatim,non mesurée,1488,estimee
+Dakar Dem Dikk,Ligne 20,36,Avenue Cheikh Ahmadou Bamba,14.726166,-17.451370,interpolation,non mesurée,797,estimee
+Dakar Dem Dikk,Ligne 20,37,Cité Marine,14.731191,-17.455218,nominatim,non mesurée,145,estimee
+Dakar Dem Dikk,Ligne 20,38,Khar Yalla,14.731272,-17.456566,osm_arret,mesurée mais loin de ses voisins mesurés,3785,bonne
+Dakar Dem Dikk,Ligne 20,39,Rond Point LIBERTE6,14.725003,-17.453043,interpolation,non mesurée,793,estimee
+Dakar Dem Dikk,Ligne 20,40,Cité Derklé,14.718735,-17.449519,nominatim,non mesurée,1587,estimee
+Dakar Dem Dikk,Ligne 20,41,Dieuppeul,14.719814,-17.453231,nominatim,non mesurée,1324,bonne
+Dakar Dem Dikk,Ligne 208,1,Gororm 02,14.812489,-17.168264,interpolation,non mesurée,1946,estimee
+Dakar Dem Dikk,Ligne 208,2,Bambilor,14.803912,-17.184041,ancre_tata,mesurée mais loin de ses voisins mesurés,3892,bonne
+Dakar Dem Dikk,Ligne 208,3,Noflaye,14.786413,-17.215700,nominatim,non mesurée,1565,estimee
+Dakar Dem Dikk,Ligne 208,4,Sangalkam,14.779304,-17.228261,guindima_origine,mesurée mais loin de ses voisins mesurés,4356,bonne
+Dakar Dem Dikk,Ligne 208,5,Keur Ndiaye Lo,14.743114,-17.243779,ancre_tata,mesurée mais loin de ses voisins mesurés,4131,bonne
+Dakar Dem Dikk,Ligne 213,0,Gare de Rufisque,14.715715,-17.270342,nominatim,non mesurée,3791,estimee
+Dakar Dem Dikk,Ligne 213,1,HLM SIPRES,14.723064,-17.286243,interpolation,non mesurée,1895,estimee
+Dakar Dem Dikk,Ligne 213,3,Rond Point Grand Mbao,14.737728,-17.308847,interpolation,non mesurée,1087,estimee
+Dakar Dem Dikk,Ligne 213,5,Croisement Petit Mbao,14.748281,-17.335812,interpolation,non mesurée,2208,estimee
+Dakar Dem Dikk,Ligne 213,6,Diamaguene,14.751518,-17.356075,nominatim,non mesurée,2465,estimee
+Dakar Dem Dikk,Ligne 213,7,poste Thiaroye,14.746040,-17.378287,ancre_tata,mesurée mais loin de ses voisins mesurés,6747,estimee
+Dakar Dem Dikk,Ligne 213,8,péage,14.745252,-17.401217,interpolation,non mesurée,2467,estimee
+Dakar Dem Dikk,Ligne 213,9,sortie Croissement Cambérène,14.744465,-17.424146,interpolation,non mesurée,2467,estimee
+Dakar Dem Dikk,Ligne 213,12,Police Grand Yoff,14.739009,-17.447669,nominatim,non mesurée,126,estimee
+Dakar Dem Dikk,Ligne 213,13,Rond Point Liberté 6,14.728838,-17.457082,nominatim,non mesurée,1458,estimee
+Dakar Dem Dikk,Ligne 213,14,2 voies Liberté 6,14.725830,-17.455798,interpolation,non mesurée,1669,estimee
+Dakar Dem Dikk,Ligne 213,15,Rond Point JVC,14.722822,-17.454515,interpolation,non mesurée,1925,estimee
+Dakar Dem Dikk,Ligne 213,16,Dieuppeul,14.719814,-17.453231,nominatim,non mesurée,2211,bonne
+Dakar Dem Dikk,Ligne 218,0,Dépôt Thiaroye,14.763511,-17.388649,nominatim,non mesurée,2385,estimee
+Dakar Dem Dikk,Ligne 218,1,Sipses,14.754582,-17.394791,interpolation,non mesurée,1192,estimee
+Dakar Dem Dikk,Ligne 218,2,Bountou Pikine,14.745654,-17.400933,ancre_tata,mesurée mais loin de ses voisins mesurés,8963,bonne
+Dakar Dem Dikk,Ligne 218,3,patte d’oies,14.740252,-17.432425,interpolation,non mesurée,3439,estimee
+Dakar Dem Dikk,Ligne 218,4,Foire,14.734850,-17.463917,nominatim,non mesurée,2857,bonne
+Dakar Dem Dikk,Ligne 218,5,VDN,14.720835,-17.472634,nominatim,non mesurée,1041,douteuse
+Dakar Dem Dikk,Ligne 218,6,Sipres,14.709343,-17.477038,nominatim,non mesurée,343,bonne
+Dakar Dem Dikk,Ligne 218,9,marché Ouakam,14.723691,-17.487504,nominatim,non mesurée,287,estimee
+Dakar Dem Dikk,Ligne 218,11,route des mamelles,14.728667,-17.505260,nominatim,non mesurée,2215,estimee
+Dakar Dem Dikk,Ligne 218,12,route des Almadies,14.746459,-17.509137,nominatim,non mesurée,678,estimee
+Dakar Dem Dikk,Ligne 219,3,Sapeur pompier Guédiawaye,14.772045,-17.397584,interpolation,non mesurée,1298,estimee
+Dakar Dem Dikk,Ligne 219,4,Marché Jeudi corniche,14.766758,-17.408343,interpolation,non mesurée,2595,estimee
+Dakar Dem Dikk,Ligne 219,5,Hôpital Dalal Diam,14.761472,-17.419102,interpolation,non mesurée,1298,estimee
+Dakar Dem Dikk,Ligne 219,6,Case bi,14.756185,-17.429861,osm_arret,mesurée mais loin de ses voisins mesurés,5191,bonne
+Dakar Dem Dikk,Ligne 219,7,Pont Sénégal 92,14.747069,-17.438935,interpolation,non mesurée,1407,estimee
+Dakar Dem Dikk,Ligne 219,8,Collège Hyacinthe Thiandoum,14.737954,-17.448008,interpolation,non mesurée,2814,estimee
+Dakar Dem Dikk,Ligne 219,9,Rond Point liberté 6,14.728838,-17.457082,nominatim,non mesurée,2804,estimee
+Dakar Dem Dikk,Ligne 219,10,Rond Point JVC,14.724577,-17.461667,interpolation,non mesurée,2121,estimee
+Dakar Dem Dikk,Ligne 219,11,Rond Point Boulangerie Jaune,14.720316,-17.466252,interpolation,non mesurée,1440,estimee
+Dakar Dem Dikk,Ligne 219,12,Immeuble Mariama,14.716055,-17.470838,nominatim,non mesurée,764,estimee
+Dakar Dem Dikk,Ligne 219,14,Hôpital militaire de Ouakam,14.715055,-17.480816,nominatim,non mesurée,516,estimee
+Dakar Dem Dikk,Ligne 219,15,Comico,14.726995,-17.483530,nominatim,non mesurée,301,estimee
+Dakar Dem Dikk,Ligne 219,16,Cité Asecna,14.729481,-17.491085,nominatim,non mesurée,835,estimee
+Dakar Dem Dikk,Ligne 219,17,Cité Assemblée,14.730452,-17.494159,nominatim,non mesurée,1166,estimee
+Dakar Dem Dikk,Ligne 220,1,Djoutiba,14.731019,-17.284529,interpolation,non mesurée,1989,estimee
+Dakar Dem Dikk,Ligne 220,2,HLM Rufisque,14.745620,-17.295215,interpolation,non mesurée,3978,bonne
+Dakar Dem Dikk,Ligne 220,3,Sipres,14.760222,-17.305900,interpolation,non mesurée,1989,bonne
+Dakar Dem Dikk,Ligne 220,5,Lycée Jaxaay,14.776856,-17.318356,interpolation,non mesurée,295,bonne
+Dakar Dem Dikk,Ligne 220,6,2 voies,14.778889,-17.320126,interpolation,non mesurée,591,estimee
+Dakar Dem Dikk,Ligne 220,7,Jaxaay,14.780922,-17.321896,interpolation,non mesurée,295,bonne
+Dakar Dem Dikk,Ligne 221,1,Corniche Daroukhane,14.785710,-17.376543,interpolation,non mesurée,831,estimee
+Dakar Dem Dikk,Ligne 221,4,PAI,14.770330,-17.405260,interpolation,non mesurée,1475,bonne
+Dakar Dem Dikk,Ligne 221,5,Hôpital Dalal Diam,14.764341,-17.417498,interpolation,non mesurée,2949,estimee
+Dakar Dem Dikk,Ligne 221,6,Case,14.758353,-17.429736,nominatim,non mesurée,4424,estimee
+Dakar Dem Dikk,Ligne 221,7,Police PA,14.752580,-17.440470,nominatim,non mesurée,3789,estimee
+Dakar Dem Dikk,Ligne 221,8,Pont Sénégal emergent (92),14.754015,-17.458025,interpolation,non mesurée,1894,estimee
+Dakar Dem Dikk,Ligne 221,9,Route de l’aéroport,14.755450,-17.475580,ancre_tata,mesurée mais loin de ses voisins mesurés,4237,estimee
+Dakar Dem Dikk,Ligne 221,10,Yoff Tonghor,14.762249,-17.480593,nominatim,non mesurée,928,estimee
+Dakar Dem Dikk,Ligne 221,11,Cite Asecna,14.749923,-17.490531,nominatim,non mesurée,1721,estimee
+Dakar Dem Dikk,Ligne 221,13,Ngor village,14.746562,-17.515962,interpolation,non mesurée,313,estimee
+Dakar Dem Dikk,Ligne 227,1,Tolou Abdoulaye Wade,14.790558,-17.299103,interpolation,non mesurée,1595,estimee
+Dakar Dem Dikk,Ligne 227,2,Croissement Tivaoune Peulh,14.798860,-17.287006,ancre_tata,mesurée mais loin de ses voisins mesurés,3190,bonne
+Dakar Dem Dikk,Ligne 227,3,Apix,14.798860,-17.287006,nominatim,non mesurée,0,bonne
+Dakar Dem Dikk,Ligne 227,4,Malika plage,14.806691,-17.338939,ancre_tata,mesurée mais loin de ses voisins mesurés,4547,bonne
+Dakar Dem Dikk,Ligne 227,10,CES Canada,14.765284,-17.404373,interpolation,non mesurée,1661,estimee
+Dakar Dem Dikk,Ligne 227,11,Hôpital Dalal Diam,14.759672,-17.418685,interpolation,non mesurée,1661,estimee
+Dakar Dem Dikk,Ligne 227,14,Eglise PA,14.757783,-17.436723,interpolation,non mesurée,564,estimee
+Dakar Dem Dikk,Ligne 227,15,Parcelles,14.761589,-17.440192,nominatim,non mesurée,1128,estimee
+Dakar Dem Dikk,Ligne 228,1,Ville de Rufisque,14.713013,-17.276732,nominatim,non mesurée,490,estimee
+Dakar Dem Dikk,Ligne 228,2,Bargny,14.698179,-17.229166,osm_arret,mesurée mais loin de ses voisins mesurés,5216,bonne
+Dakar Dem Dikk,Ligne 228,3,Diamniadio Yenne,14.645221,-17.163372,nominatim,non mesurée,9207,estimee
+Dakar Dem Dikk,Ligne 23,0,Des Parcelles,14.760274,-17.438657,nominatim,non mesurée,945,estimee
+Dakar Dem Dikk,Ligne 23,3,Hlm Grand Médine,14.760955,-17.449515,nominatim,non mesurée,374,estimee
+Dakar Dem Dikk,Ligne 23,4,Dior,14.758627,-17.447606,nominatim,non mesurée,561,estimee
+Dakar Dem Dikk,Ligne 23,5,Acapes,14.756865,-17.446882,nominatim,non mesurée,699,estimee
+Dakar Dem Dikk,Ligne 23,6,Dispensaire Norade,14.755735,-17.446417,nominatim,non mesurée,804,estimee
+Dakar Dem Dikk,Ligne 23,7,Hopital Mame Abdou,14.756375,-17.442139,interpolation_sur_trace_osm,non mesurée,927,estimee
+Dakar Dem Dikk,Ligne 23,8,Eglise,14.757235,-17.437909,interpolation_sur_trace_osm,non mesurée,592,estimee
+Dakar Dem Dikk,Ligne 23,9,Unité 11,14.757800,-17.433615,nominatim,non mesurée,490,estimee
+Dakar Dem Dikk,Ligne 23,12,Pont Emergent,14.745000,-17.446559,interpolation_sur_trace_osm,non mesurée,1074,estimee
+Dakar Dem Dikk,Ligne 23,13,Ecole Hyacinthe Thiandoum,14.738504,-17.454184,interpolation_sur_trace_osm,non mesurée,864,estimee
+Dakar Dem Dikk,Ligne 23,14,Rond point Liberté 6,14.728838,-17.457082,nominatim,non mesurée,257,estimee
+Dakar Dem Dikk,Ligne 23,16,Front de Terre,14.727187,-17.445733,nominatim,non mesurée,302,bonne
+Dakar Dem Dikk,Ligne 23,18,Station castor,14.720939,-17.447947,interpolation_sur_trace_osm,non mesurée,584,estimee
+Dakar Dem Dikk,Ligne 23,19,Avenue Bourguiba,14.716939,-17.451471,nominatim,non mesurée,1169,bonne
+Dakar Dem Dikk,Ligne 23,20,Stade Demba Diop,14.710853,-17.457604,nominatim,non mesurée,1631,bonne
+Dakar Dem Dikk,Ligne 23,23,Avenue Cheikh Anta Diop,14.698974,-17.468697,nominatim,non mesurée,422,bonne
+Dakar Dem Dikk,Ligne 23,25,Rond Point  Sahm,14.684564,-17.453600,nominatim,non mesurée,1154,estimee
+Dakar Dem Dikk,Ligne 23,26,Canal 4,14.683193,-17.451987,interpolation_sur_trace_osm,non mesurée,924,bonne
+Dakar Dem Dikk,Ligne 23,27,Gueule Tapée,14.681751,-17.450440,interpolation_sur_trace_osm,non mesurée,693,bonne
+Dakar Dem Dikk,Ligne 23,28,Rue 6,14.680298,-17.448912,interpolation_sur_trace_osm,non mesurée,462,bonne
+Dakar Dem Dikk,Ligne 23,29,DAF,14.678854,-17.447371,interpolation_sur_trace_osm,non mesurée,232,estimee
+Dakar Dem Dikk,Ligne 23,31,Difoncé,14.674072,-17.442605,interpolation_sur_trace_osm,non mesurée,507,estimee
+Dakar Dem Dikk,Ligne 23,32,Sandaga,14.670204,-17.440238,nominatim,non mesurée,998,estimee
+Dakar Dem Dikk,Ligne 23,33,Asecna,14.667570,-17.439532,nominatim,non mesurée,744,estimee
+Dakar Dem Dikk,Ligne 23,34,Bld de la République,14.665584,-17.436713,interpolation_sur_trace_osm,non mesurée,386,estimee
+Dakar Dem Dikk,Ligne 23,35,Avenue Léopold Sédar Senghor,14.663551,-17.433910,nominatim,non mesurée,158,estimee
+Dakar Dem Dikk,Ligne 23,37,Rond point assemblée nationale,14.659009,-17.435942,interpolation_sur_trace_osm,non mesurée,409,estimee
+Dakar Dem Dikk,Ligne 23,38,Institut Pasteur,14.656185,-17.435034,nominatim,non mesurée,406,estimee
+Dakar Dem Dikk,Ligne 232,2,Cafétéria,14.730006,-17.427672,interpolation,non mesurée,1376,estimee
+Dakar Dem Dikk,Ligne 232,3,Hann Maristes,14.724564,-17.439165,nominatim,non mesurée,2017,estimee
+Dakar Dem Dikk,Ligne 232,4,Cours Sainte Marie de Hann,14.733283,-17.436071,nominatim,non mesurée,2153,estimee
+Dakar Dem Dikk,Ligne 232,5,Sortie Mariste,14.731251,-17.439292,interpolation,non mesurée,1867,estimee
+Dakar Dem Dikk,Ligne 232,6,Usine des eaux,14.729219,-17.442512,interpolation,non mesurée,1536,estimee
+Dakar Dem Dikk,Ligne 232,7,Front de terre,14.727187,-17.445733,nominatim,non mesurée,1253,estimee
+Dakar Dem Dikk,Ligne 232,9,Rond Point Liberté 6,14.728838,-17.457082,nominatim,non mesurée,257,estimee
+Dakar Dem Dikk,Ligne 232,10,Deux voies vers Camp Leclerc,14.735075,-17.464384,interpolation,non mesurée,915,estimee
+Dakar Dem Dikk,Ligne 232,11,VDN,14.741312,-17.471686,nominatim,non mesurée,410,douteuse
+Dakar Dem Dikk,Ligne 232,13,Yoff,14.744430,-17.479367,interpolation,non mesurée,1234,douteuse
+Dakar Dem Dikk,Ligne 234,2,2 voies Jaxaay,14.778587,-17.305921,interpolation,non mesurée,1969,estimee
+Dakar Dem Dikk,Ligne 234,3,Station Keur Massar,14.782955,-17.323666,ancre_tata,mesurée mais loin de ses voisins mesurés,3570,bonne
+Dakar Dem Dikk,Ligne 234,4,Croisement Keur Massar,14.772159,-17.317335,nominatim,non mesurée,1380,bonne
+Dakar Dem Dikk,Ligne 234,5,Fass Mbao,14.756638,-17.342692,guindima_origine,mesurée mais loin de ses voisins mesurés,3570,bonne
+Dakar Dem Dikk,Ligne 234,6,Diamagueune,14.748422,-17.352133,nominatim,non mesurée,1366,estimee
+Dakar Dem Dikk,Ligne 234,7,Poste Thiaroye,14.746040,-17.378287,ancre_tata,mesurée mais loin de ses voisins mesurés,4005,bonne
+Dakar Dem Dikk,Ligne 234,8,Péage,14.731237,-17.388190,interpolation,non mesurée,1960,douteuse
+Dakar Dem Dikk,Ligne 234,9,Grand théâtre,14.716433,-17.398093,interpolation,non mesurée,3921,estimee
+Dakar Dem Dikk,Ligne 234,10,Esso Port,14.701630,-17.407996,interpolation,non mesurée,5882,estimee
+Dakar Dem Dikk,Ligne 234,11,Place de l’independace Avenue Sarraut,14.686826,-17.417899,interpolation,non mesurée,7842,estimee
+Dakar Dem Dikk,Ligne 234,12,Leclerc,14.672023,-17.427802,repere_connu,non mesurée,9803,estimee
+Dakar Dem Dikk,Ligne 311,0,Lac rose croissement Niague,,,inconnu,sans position,,
+Dakar Dem Dikk,Ligne 311,4,Croissement Keur Massar,14.786355,-17.294528,ancre_tata,mesurée mais loin de ses voisins mesurés,3155,bonne
+Dakar Dem Dikk,Ligne 311,5,Retour vers Lac Rose,,,inconnu,sans position,,
+Dakar Dem Dikk,Ligne 319,1,Rond Point Liberté 6,14.728369,-17.457300,nominatim,non mesurée,306,estimee
+Dakar Dem Dikk,Ligne 319,2,Deux voies liberté 6,14.725242,-17.460297,interpolation,non mesurée,168,estimee
+Dakar Dem Dikk,Ligne 319,3,Rond point JVC,14.722116,-17.463294,interpolation,non mesurée,642,estimee
+Dakar Dem Dikk,Ligne 319,4,Boulangerie Jaune,14.718989,-17.466291,nominatim,non mesurée,1116,estimee
+Dakar Dem Dikk,Ligne 319,5,Immeuble Mariama,14.716055,-17.470838,nominatim,non mesurée,764,estimee
+Dakar Dem Dikk,Ligne 319,6,Rond point Cheikh Bethio,14.714238,-17.473854,interpolation,non mesurée,382,estimee
+Dakar Dem Dikk,Ligne 319,8,IHO,14.713789,-17.477780,interpolation,non mesurée,181,estimee
+Dakar Dem Dikk,Ligne 319,9,Entrée ouakam,14.715158,-17.478691,interpolation,non mesurée,362,estimee
+Dakar Dem Dikk,Ligne 319,10,Pharmacie cité Aviaon,14.716526,-17.479601,interpolation,non mesurée,543,estimee
+Dakar Dem Dikk,Ligne 319,11,Pharmacie Mame Seynabou,14.717895,-17.480512,interpolation,non mesurée,724,estimee
+Dakar Dem Dikk,Ligne 319,12,Case des tous petit,14.719263,-17.481423,interpolation,non mesurée,724,estimee
+Dakar Dem Dikk,Ligne 319,13,Station shell,14.720632,-17.482334,interpolation,non mesurée,543,estimee
+Dakar Dem Dikk,Ligne 319,14,Lycée d’excellence privée,14.722000,-17.483244,interpolation,non mesurée,362,estimee
+Dakar Dem Dikk,Ligne 319,15,Boulangerie N’wely,14.723369,-17.484155,interpolation,non mesurée,181,estimee
+Dakar Dem Dikk,Ligne 327,1,Tolou Abdoulaye Wade,14.790558,-17.299103,interpolation,non mesurée,1595,estimee
+Dakar Dem Dikk,Ligne 327,2,Croissement Tivaoune Peulh,14.798860,-17.287006,ancre_tata,mesurée mais loin de ses voisins mesurés,3190,bonne
+Dakar Dem Dikk,Ligne 327,3,Apix,14.798860,-17.287006,nominatim,non mesurée,0,bonne
+Dakar Dem Dikk,Ligne 327,4,Malika plage,14.806691,-17.338939,ancre_tata,mesurée mais loin de ses voisins mesurés,5651,bonne
+Dakar Dem Dikk,Ligne 327,5,Malibu,14.775288,-17.408104,osm_arret,mesurée mais loin de ses voisins mesurés,3569,estimee
+Dakar Dem Dikk,Ligne 327,6,Hôpital Dalal Diam,14.764674,-17.420550,interpolation,non mesurée,1784,estimee
+Dakar Dem Dikk,Ligne 327,9,Eglise PA,14.757783,-17.436723,interpolation,non mesurée,564,estimee
+Dakar Dem Dikk,Ligne 327,10,Parcelles,14.761589,-17.440192,nominatim,non mesurée,1128,estimee
+Dakar Dem Dikk,Ligne 4,0,Terminus Liberté 5 (Dieuppeul),14.716353,-17.452929,nominatim,non mesurée,1689,estimee
+Dakar Dem Dikk,Ligne 4,1,Cité Derklé,14.715361,-17.452562,nominatim,non mesurée,1806,estimee
+Dakar Dem Dikk,Ligne 4,2,Rond point Liberté 6,14.728551,-17.456967,nominatim,non mesurée,286,estimee
+Dakar Dem Dikk,Ligne 4,3,Khar Yalla,14.731109,-17.456657,osm_arret,mesurée mais loin de ses voisins mesurés,5566,bonne
+Dakar Dem Dikk,Ligne 4,4,Cité Marine,14.731191,-17.455218,nominatim,non mesurée,155,estimee
+Dakar Dem Dikk,Ligne 4,5,CEM Dieuppeul 3,14.726588,-17.456737,interpolation_sur_trace_osm,non mesurée,503,estimee
+Dakar Dem Dikk,Ligne 4,6,Eglise Martyrs de l’ouganda,14.722929,-17.458361,interpolation_sur_trace_osm,non mesurée,928,estimee
+Dakar Dem Dikk,Ligne 4,7,SDE,14.716028,-17.459551,interpolation_sur_trace_osm,non mesurée,1706,estimee
+Dakar Dem Dikk,Ligne 4,8,Collège Sacré Cœur,14.713110,-17.463559,nominatim,non mesurée,2135,bonne
+Dakar Dem Dikk,Ligne 4,9,Sicap Karack,14.711299,-17.463723,interpolation_sur_trace_osm,non mesurée,2330,estimee
+Dakar Dem Dikk,Ligne 4,10,Point E,14.702789,-17.461671,interpolation_sur_trace_osm,non mesurée,2671,estimee
+Dakar Dem Dikk,Ligne 4,11,Université Amphate BA,14.699442,-17.458659,interpolation_sur_trace_osm,non mesurée,2195,estimee
+Dakar Dem Dikk,Ligne 4,12,Canal 4,14.696111,-17.455856,interpolation_sur_trace_osm,non mesurée,1738,bonne
+Dakar Dem Dikk,Ligne 4,13,Marché Fass,14.693172,-17.452036,nominatim,non mesurée,1319,estimee
+Dakar Dem Dikk,Ligne 4,14,Gueule Tapée,14.688248,-17.451600,interpolation_sur_trace_osm,non mesurée,771,bonne
+Dakar Dem Dikk,Ligne 4,15,Rond Point Sham,14.684564,-17.453600,nominatim,non mesurée,498,estimee
+Dakar Dem Dikk,Ligne 4,18,Difoncé,14.674072,-17.442605,interpolation_sur_trace_osm,non mesurée,507,estimee
+Dakar Dem Dikk,Ligne 4,19,Sandaga,14.670204,-17.440238,nominatim,non mesurée,935,estimee
+Dakar Dem Dikk,Ligne 4,20,Asecna,14.667570,-17.439532,nominatim,non mesurée,883,estimee
+Dakar Dem Dikk,Ligne 4,21,Boulevard de la République,14.666806,-17.437065,interpolation_sur_trace_osm,non mesurée,663,estimee
+Dakar Dem Dikk,Ligne 4,22,Avenue Léopold Sédar Senghor,14.666201,-17.432957,nominatim,non mesurée,397,estimee
+Dakar Dem Dikk,Ligne 4,24,Gare TER,14.670251,-17.431692,interpolation_sur_trace_osm,non mesurée,83,estimee
+Dakar Dem Dikk,Ligne 4,25,Embarcadère,14.672615,-17.428762,interpolation_sur_trace_osm,non mesurée,459,estimee
+Dakar Dem Dikk,Ligne 4,26,Leclerc,14.672023,-17.427802,repere_connu,non mesurée,492,estimee
+Dakar Dem Dikk,Ligne 5,2,Hôpital Dalal Diam,14.767524,-17.413805,interpolation,non mesurée,1752,estimee
+Dakar Dem Dikk,Ligne 5,3,Case PA,14.759098,-17.427572,interpolation,non mesurée,1752,estimee
+Dakar Dem Dikk,Ligne 5,5,Pont Sénégal 92 (Pont de l’émergence),14.748579,-17.441015,interpolation,non mesurée,235,estimee
+Dakar Dem Dikk,Ligne 5,7,Autoroute,14.712300,-17.438844,interpolation,non mesurée,3807,douteuse
+Dakar Dem Dikk,Ligne 5,8,Intendance,14.678111,-17.436998,nominatim,non mesurée,3034,estimee
+Dakar Dem Dikk,Ligne 5,9,Avenue Lamine Gueye,14.672288,-17.437406,nominatim,non mesurée,2400,estimee
+Dakar Dem Dikk,Ligne 5,10,Avenue André Peytavin,14.670104,-17.436532,interpolation,non mesurée,2145,estimee
+Dakar Dem Dikk,Ligne 5,11,Avenue Jean Jaurès (Direction Général ASCENA),14.667919,-17.435658,interpolation,non mesurée,1892,estimee
+Dakar Dem Dikk,Ligne 5,12,Boulevard de la République,14.665735,-17.434784,interpolation,non mesurée,1640,estimee
+Dakar Dem Dikk,Ligne 5,13,Avenue Léopold Sédar Senghor,14.663551,-17.433910,nominatim,non mesurée,1392,estimee
+Dakar Dem Dikk,Ligne 5,14,Avenue Nelson Mandela,14.662643,-17.435756,nominatim,non mesurée,1314,estimee
+Dakar Dem Dikk,Ligne 501,1,Avenue Nelson Mandela,14.662643,-17.435756,nominatim,non mesurée,887,estimee
+Dakar Dem Dikk,Ligne 501,2,Avenue Léopold Sédar Senghor,14.666201,-17.432957,nominatim,non mesurée,397,estimee
+Dakar Dem Dikk,Ligne 501,4,Esso Port Embarcadère,14.670768,-17.429688,interpolation,non mesurée,246,estimee
+Dakar Dem Dikk,Ligne 501,5,Leclerc,14.672023,-17.427802,repere_connu,non mesurée,492,estimee
+Dakar Dem Dikk,Ligne 501,6,Gare de Dakar,14.676464,-17.433683,terminus_catalogue_ddd,non mesurée,806,bonne
+Dakar Dem Dikk,Ligne 502,2,Hampathé Ba,14.696264,-17.455001,interpolation,non mesurée,832,estimee
+Dakar Dem Dikk,Ligne 502,4,Lycee De Lafosse,14.690348,-17.459249,interpolation,non mesurée,442,estimee
+Dakar Dem Dikk,Ligne 502,5,Police 4em,14.687456,-17.456425,interpolation,non mesurée,885,estimee
+Dakar Dem Dikk,Ligne 502,6,Rond Point Sham,14.684564,-17.453600,nominatim,non mesurée,1327,estimee
+Dakar Dem Dikk,Ligne 502,7,Gare Colobane,14.684861,-17.440355,nominatim,non mesurée,2515,estimee
+Dakar Dem Dikk,Ligne 502B,1,Hôpital Abass Ndao,14.689559,-17.459395,arrets_geo,non mesurée,1625,estimee
+Dakar Dem Dikk,Ligne 503,1,Rond Point Bel Air,14.697805,-17.441034,interpolation,non mesurée,193,estimee
+Dakar Dem Dikk,Ligne 503,2,Mole 8,14.697631,-17.439248,interpolation,non mesurée,386,estimee
+Dakar Dem Dikk,Ligne 503,3,Cité Isra,14.697457,-17.437461,interpolation,non mesurée,579,estimee
+Dakar Dem Dikk,Ligne 503,4,Zone industrielle,14.697283,-17.435675,nominatim,non mesurée,772,estimee
+Dakar Dem Dikk,Ligne 503,5,Service des mines,14.698277,-17.438134,nominatim,non mesurée,505,estimee
+Dakar Dem Dikk,Ligne 6,2,Hôpital Dalal Diam,14.773477,-17.411867,interpolation,non mesurée,1301,estimee
+Dakar Dem Dikk,Ligne 6,4,Case PA,14.760837,-17.432519,interpolation,non mesurée,1476,estimee
+Dakar Dem Dikk,Ligne 6,6,Marché Grand Médine,14.746272,-17.442614,nominatim,non mesurée,508,estimee
+Dakar Dem Dikk,Ligne 6,7,Rond point 26,14.728879,-17.457270,nominatim,non mesurée,1136,estimee
+Dakar Dem Dikk,Ligne 6,8,Foire,14.739645,-17.465721,nominatim,non mesurée,2078,bonne
+Dakar Dem Dikk,Ligne 6,9,Sipres,14.740695,-17.467421,nominatim,non mesurée,2217,bonne
+Dakar Dem Dikk,Ligne 6,10,Rond point Liberté 6,14.728629,-17.457502,nominatim,non mesurée,1099,estimee
+Dakar Dem Dikk,Ligne 6,12,Allées Khalifa Ababacar Sy,14.714223,-17.455310,nominatim,non mesurée,867,estimee
+Dakar Dem Dikk,Ligne 6,13,Jet d’Eau,14.713239,-17.454705,nominatim,non mesurée,742,estimee
+Dakar Dem Dikk,Ligne 6,15,Eglise Sainte Thérèse,14.700929,-17.452926,nominatim,non mesurée,665,estimee
+Dakar Dem Dikk,Ligne 6,16,ENA,14.699667,-17.452365,nominatim,non mesurée,805,estimee
+Dakar Dem Dikk,Ligne 6,17,Boulevard Général De Gaule,14.688772,-17.446926,interpolation,non mesurée,1345,estimee
+Dakar Dem Dikk,Ligne 6,18,Allées Papa Gueye Fall,14.677877,-17.441487,ancre_tata,mesurée mais loin de ses voisins mesurés,3107,bonne
+Dakar Dem Dikk,Ligne 6,19,Avenue Faidherbe,14.675580,-17.438488,nominatim,non mesurée,411,estimee
+Dakar Dem Dikk,Ligne 6,20,Avenue Lamine Gueye,14.672288,-17.437406,nominatim,non mesurée,761,estimee
+Dakar Dem Dikk,Ligne 6,21,Avenue André Peytavin,14.671374,-17.438781,interpolation,non mesurée,779,estimee
+Dakar Dem Dikk,Ligne 6,22,Avenue Jean Jaurès,14.670460,-17.440157,nominatim,non mesurée,837,estimee
+Dakar Dem Dikk,Ligne 6,23,Boulevard de la République,14.666552,-17.437956,interpolation,non mesurée,1315,estimee
+Dakar Dem Dikk,Ligne 6,24,Avenue Nelson Mandela,14.662643,-17.435756,nominatim,non mesurée,1314,estimee
+Dakar Dem Dikk,Ligne 7,1,Cité Assemblée,14.722503,-17.484433,interpolation_sur_trace_osm,non mesurée,258,estimee
+Dakar Dem Dikk,Ligne 7,2,Cité Comico,14.715149,-17.482310,interpolation_sur_trace_osm,non mesurée,1107,estimee
+Dakar Dem Dikk,Ligne 7,3,Sortie Ouakam,14.712709,-17.481416,interpolation_sur_trace_osm,non mesurée,1394,estimee
+Dakar Dem Dikk,Ligne 7,4,Hopital IHO,14.706046,-17.478719,interpolation_sur_trace_osm,non mesurée,1587,estimee
+Dakar Dem Dikk,Ligne 7,5,Mermoz,14.704587,-17.473116,nominatim,non mesurée,1001,bonne
+Dakar Dem Dikk,Ligne 7,6,ENEA,14.704603,-17.479365,nominatim,non mesurée,1573,estimee
+Dakar Dem Dikk,Ligne 7,9,Rond point Sham,14.684564,-17.453600,nominatim,non mesurée,498,estimee
+Dakar Dem Dikk,Ligne 7,12,Difoncé,14.673530,-17.442308,interpolation_sur_trace_osm,non mesurée,573,estimee
+Dakar Dem Dikk,Ligne 7,13,Sandaga,14.670496,-17.437220,nominatim,non mesurée,617,estimee
+Dakar Dem Dikk,Ligne 7,14,Avenue George Pompidou,14.669365,-17.434857,nominatim,non mesurée,354,estimee
+Dakar Dem Dikk,Ligne 7,16,Avenue Léopold Sédar Senghor,14.666201,-17.432957,nominatim,non mesurée,397,estimee
+Dakar Dem Dikk,Ligne 7,18,Rond point assemblée nationale,14.659009,-17.435942,interpolation_sur_trace_osm,non mesurée,409,estimee
+Dakar Dem Dikk,Ligne 7,19,Institut pasteur,14.656185,-17.435034,nominatim,non mesurée,406,estimee
+Dakar Dem Dikk,Ligne 8,1,Cité Asecna,14.749923,-17.490531,nominatim,non mesurée,396,estimee
+Dakar Dem Dikk,Ligne 8,2,Yoff Village,14.755509,-17.475938,interpolation_sur_trace_osm,non mesurée,1881,bonne
+Dakar Dem Dikk,Ligne 8,3,Pond Foire,14.749940,-17.464316,interpolation_sur_trace_osm,non mesurée,1980,estimee
+Dakar Dem Dikk,Ligne 8,4,Stade Léopold Sédar Senghor,14.746772,-17.451914,nominatim,non mesurée,624,estimee
+Dakar Dem Dikk,Ligne 8,6,Grand Yoff,14.736611,-17.445333,interpolation_sur_trace_osm,non mesurée,808,bonne
+Dakar Dem Dikk,Ligne 8,7,Hopital Général Idrissa Pouye (Ex CTO ),14.731189,-17.446299,interpolation_sur_trace_osm,non mesurée,737,estimee
+Dakar Dem Dikk,Ligne 8,9,Station Castor,14.720939,-17.447947,interpolation_sur_trace_osm,non mesurée,584,estimee
+Dakar Dem Dikk,Ligne 8,10,Avenue Bourguiba,14.716939,-17.451471,nominatim,non mesurée,1169,bonne
+Dakar Dem Dikk,Ligne 8,11,Jet d’eau,14.712961,-17.455420,nominatim,non mesurée,1507,estimee
+Dakar Dem Dikk,Ligne 8,12,Stade demba Diop,14.710853,-17.457604,nominatim,non mesurée,1292,estimee
+Dakar Dem Dikk,Ligne 8,13,Dial Diop (ex rue 10),14.704337,-17.457530,interpolation_sur_trace_osm,non mesurée,588,estimee
+Dakar Dem Dikk,Ligne 8,15,Point E,14.695701,-17.457705,interpolation_sur_trace_osm,non mesurée,472,estimee
+Dakar Dem Dikk,Ligne 8,17,Rond point Sham,14.684564,-17.453600,nominatim,non mesurée,498,estimee
+Dakar Dem Dikk,Ligne 8,20,Difoncé,14.674072,-17.442605,interpolation_sur_trace_osm,non mesurée,507,estimee
+Dakar Dem Dikk,Ligne 8,21,Sandaga,14.670204,-17.440238,nominatim,non mesurée,998,estimee
+Dakar Dem Dikk,Ligne 8,22,Asecna,14.667570,-17.439532,nominatim,non mesurée,744,estimee
+Dakar Dem Dikk,Ligne 8,23,Bld de la République,14.665584,-17.436713,interpolation_sur_trace_osm,non mesurée,386,estimee
+Dakar Dem Dikk,Ligne 8,24,Avenue Léopold Sédar Senghor,14.663551,-17.433910,nominatim,non mesurée,158,estimee
+Dakar Dem Dikk,Ligne 8,26,Rond point Assemblée Nationale,14.659009,-17.435942,interpolation_sur_trace_osm,non mesurée,409,estimee
+Dakar Dem Dikk,Ligne 8,27,Institut Pasteur,14.656185,-17.435034,nominatim,non mesurée,406,estimee
+Dakar Dem Dikk,Ligne 9,1,Rond Point JVC,14.721728,-17.463260,interpolation_sur_trace_osm,non mesurée,585,estimee
+Dakar Dem Dikk,Ligne 9,2,Sacré Cœur,14.716798,-17.464335,nominatim,non mesurée,1109,bonne
+Dakar Dem Dikk,Ligne 9,3,IPG,14.719216,-17.461539,nominatim,non mesurée,748,estimee
+Dakar Dem Dikk,Ligne 9,4,Dieuppeul,14.719814,-17.453231,nominatim,non mesurée,954,bonne
+Dakar Dem Dikk,Ligne 9,5,Allées Ababacar Sy,14.714223,-17.455310,nominatim,non mesurée,867,estimee
+Dakar Dem Dikk,Ligne 9,6,Rond Point Jet d’Eau,14.713239,-17.454705,nominatim,non mesurée,742,estimee
+Dakar Dem Dikk,Ligne 9,8,Eglise Sainte Thérèse,14.700929,-17.452926,nominatim,non mesurée,627,estimee
+Dakar Dem Dikk,Ligne 9,9,Lycée Blaise Diagne,14.696891,-17.452854,nominatim,non mesurée,405,estimee
+Dakar Dem Dikk,Ligne 9,11,Obelisque,14.694391,-17.448324,nominatim,non mesurée,267,estimee
+Dakar Dem Dikk,Ligne 9,12,Centenaire,14.686997,-17.445575,nominatim,non mesurée,1084,estimee
+Dakar Dem Dikk,Ligne 9,13,Rond point RTS,14.682590,-17.444429,interpolation_sur_trace_osm,non mesurée,616,estimee
+Dakar Dem Dikk,Ligne 9,15,Difoncé,14.673530,-17.442308,interpolation_sur_trace_osm,non mesurée,573,estimee
+Dakar Dem Dikk,Ligne 9,16,Sandaga,14.670496,-17.437220,nominatim,non mesurée,617,estimee
+Dakar Dem Dikk,Ligne 9,17,Avenue George Pompidou,14.669365,-17.434857,nominatim,non mesurée,354,estimee
+Dakar Dem Dikk,Ligne 9,19,Avenue Léopold Sédar Senghor,14.666201,-17.432957,nominatim,non mesurée,397,estimee
+Dakar Dem Dikk,Ligne 9,21,Rond point assemblée nationale,14.659009,-17.435942,interpolation_sur_trace_osm,non mesurée,409,estimee
+Dakar Dem Dikk,Ligne 9,22,Institut pasteur,14.656185,-17.435034,nominatim,non mesurée,406,estimee
+Dakar Dem Dikk,TAF TAF,2,Croisement Almadies,14.737073,-17.509341,nominatim,non mesurée,1426,estimee
+Dakar Dem Dikk,TAF TAF,4,Yoff,14.760358,-17.468149,nominatim,non mesurée,968,douteuse
+Dakar Dem Dikk,TAF TAF,7,VDN,14.741312,-17.471686,nominatim,non mesurée,410,douteuse
+Dakar Dem Dikk,TAF TAF,8,Direction Générale DDD,14.737154,-17.466818,interpolation,non mesurée,609,estimee
+Dakar Dem Dikk,TAF TAF,9,Rond Point JVC,14.732996,-17.461950,interpolation,non mesurée,1244,estimee
+Dakar Dem Dikk,TAF TAF,10,Rond Point Liberté 6,14.728838,-17.457082,nominatim,non mesurée,1865,estimee
+Dakar Dem Dikk,TAF TAF,11,Police Grand Yoff,14.739009,-17.447669,nominatim,non mesurée,349,estimee
+Dakar Dem Dikk,TAF TAF,13,Autoroute à Péage,14.734376,-17.248786,nominatim,non mesurée,5807,estimee
+Dakar Dem Dikk,TAF TAF,14,Diamniadio,14.715869,-17.198292,osm_arret,mesurée mais loin de ses voisins mesurés,26769,douteuse
+Dakar Dem Dikk,TAF TAF,15,AIBD,14.670000,-17.073300,repere_connu,non mesurée,14379,estimee
+Dakar Dem Dikk,TAF TAF OUAKAM (TO1),1,Brioche d’orée Ouakam,14.724068,-17.488934,interpolation,non mesurée,423,estimee
+Dakar Dem Dikk,TAF TAF OUAKAM (TO1),2,Monument de la Renaissance,14.723398,-17.492802,nominatim,non mesurée,845,estimee
+Dakar Dem Dikk,TAF TAF OUAKAM (TO1),3,Corniche ouest,,,inconnu,sans position,,interpolee
+Dakar Dem Dikk,TAF TAF OUAKAM (TO1),4,Avenue Peytavin,14.668848,-17.440642,nominatim,non mesurée,978,estimee
+Dakar Dem Dikk,TAF TAF OUAKAM (TO1),5,Avenue Pompidou,14.669365,-17.434857,nominatim,non mesurée,354,estimee
+Dakar Dem Dikk,TAF TAF OUAKAM (TO1),7,Avenue Léopold Sédar Senghor,14.666201,-17.432957,nominatim,non mesurée,397,estimee
+Dakar Dem Dikk,TAF TAF OUAKAM (TO1),8,Avenue Nelson Mandela,14.662643,-17.435756,nominatim,non mesurée,887,estimee
+Tata AFTU,Ligne 1,1,Rue Sandiniery,14.669967,-17.442216,interpolation_sur_trace,non mesurée,159,estimee
+Tata AFTU,Ligne 1,2,Rue de la Somme,14.670432,-17.442803,interpolation_sur_trace,non mesurée,134,estimee
+Tata AFTU,Ligne 1,3,Rue de Reims Prolongée,14.670887,-17.442594,interpolation_sur_trace,non mesurée,82,estimee
+Tata AFTU,Ligne 1,16,2 Voies de Liberté VI,14.737002,-17.464315,interpolation_sur_trace,non mesurée,1014,estimee
+Tata AFTU,Ligne 1,17,VDN,14.741537,-17.471399,interpolation_sur_trace,non mesurée,1779,douteuse
+Tata AFTU,Ligne 1,18,Rte Corniche de HLM Gd Médine,14.747308,-17.464567,interpolation_sur_trace,non mesurée,1030,estimee
+Tata AFTU,Ligne 2,0,Route Principale des Parcelles Assainies,14.759883,-17.438452,arrets_geo,non mesurée,2057,estimee
+Tata AFTU,Ligne 2,1,Croisement Dior,14.702743,-17.448595,arrets_geo,non mesurée,4580,douteuse
+Tata AFTU,Ligne 2,3,Route du Marché des Parcelles Assainies,14.748517,-17.441267,arrets_geo,non mesurée,897,estimee
+Tata AFTU,Ligne 2,4,Route des Niayes,14.745586,-17.446317,interpolation_sur_trace,non mesurée,268,douteuse
+Tata AFTU,Ligne 2,5,Pont de l'Émergence,14.743032,-17.449582,arrets_geo,non mesurée,185,estimee
+Tata AFTU,Ligne 2,6,Avenue Cardinal Hyacinthe Thiandoum,14.736835,-17.455371,interpolation_sur_trace,non mesurée,952,estimee
+Tata AFTU,Ligne 2,8,Route du Front de Terre,14.722815,-17.453122,interpolation_sur_trace,non mesurée,981,bonne
+Tata AFTU,Ligne 2,14,Rue 25 (Retour Par Rue 37),14.687769,-17.450972,arrets_geo,non mesurée,868,estimee
+Tata AFTU,Ligne 2,16,Av Emile Badiane,14.676204,-17.443504,arrets_geo,non mesurée,238,estimee
+Tata AFTU,Ligne 24,1,Avenue Cheikh Anta Diop,14.697701,-17.467592,interpolation_sur_trace,non mesurée,773,bonne
+Tata AFTU,Ligne 24,2,Rd Point Seydou N Tall,14.700104,-17.466396,interpolation_sur_trace,non mesurée,483,estimee
+Tata AFTU,Ligne 24,4,Route du Front de Terre,14.726205,-17.440776,projection_sur_trace,mesurée mais loin de ses voisins mesurés,3520,bonne
+Tata AFTU,Ligne 24,5,Echangeur de Hann,14.739621,-17.439088,interpolation_sur_trace,non mesurée,1503,estimee
+Tata AFTU,Ligne 24,6,Autoroute,14.746245,-17.416439,interpolation_sur_trace,non mesurée,3046,douteuse
+Tata AFTU,Ligne 24,7,Branche Est Autoroute,14.751753,-17.396095,interpolation_sur_trace,non mesurée,1655,estimee
+Tata AFTU,Ligne 24,10,Route des Niayes,14.762106,-17.388223,interpolation_sur_trace,non mesurée,789,douteuse
+Tata AFTU,Ligne 24,11,Prolongement Rue 10,14.765541,-17.393586,interpolation_sur_trace,non mesurée,1024,estimee
+Tata AFTU,Ligne 24,12,Sapeurs-Pompiers de Gw,14.769240,-17.395442,interpolation_sur_trace,non mesurée,846,estimee
+Tata AFTU,Ligne 25,1,Route Principale des Parcelles Assainies,14.759883,-17.438452,arrets_geo,non mesurée,38,estimee
+Tata AFTU,Ligne 25,3,Carrefour HLM Gd Medine/diamalaye,14.751396,-17.456880,interpolation_sur_trace,non mesurée,1342,estimee
+Tata AFTU,Ligne 25,4,VDN Prolongée,14.744124,-17.469587,interpolation_sur_trace,non mesurée,2919,estimee
+Tata AFTU,Ligne 25,5,Echangeur de la Foire,14.730402,-17.473071,interpolation_sur_trace,non mesurée,4231,estimee
+Tata AFTU,Ligne 25,6,Voie de Dégagement Nord (VDN),14.716114,-17.471678,interpolation_sur_trace,non mesurée,4579,estimee
+Tata AFTU,Ligne 25,7,Carrefour Seydou N Tall,14.701831,-17.469382,interpolation_sur_trace,non mesurée,3154,estimee
+Tata AFTU,Ligne 25,8,Avenue Cheikh Anta Diop,14.691162,-17.459754,interpolation_sur_trace,non mesurée,1580,bonne
+Tata AFTU,Ligne 25,10,Avenue Emile Badiane,14.677649,-17.447091,arrets_geo,non mesurée,451,estimee
+Tata AFTU,Ligne 26,1,Groupement National des Sapeurs-Pompiers,14.758601,-17.429138,arrets_geo,non mesurée,221,estimee
+Tata AFTU,Ligne 26,2,Unités de Voisinage : 10,14.758601,-17.429138,arrets_geo,non mesurée,221,estimee
+Tata AFTU,Ligne 26,3,Case de Cambérène,14.758601,-17.429138,arrets_geo,non mesurée,221,estimee
+Tata AFTU,Ligne 26,4,Unités 5,14.758601,-17.429138,arrets_geo,non mesurée,221,estimee
+Tata AFTU,Ligne 27,3,UE 02,14.762915,-17.384759,interpolation_sur_trace,non mesurée,600,estimee
+Tata AFTU,Ligne 27,4,Rue Cheik Ahmadou Bamba Prolongée,14.756367,-17.392600,interpolation_sur_trace,non mesurée,1065,estimee
+Tata AFTU,Ligne 27,6,Rues 754 et 759,14.753395,-17.400090,arrets_geo,non mesurée,205,estimee
+Tata AFTU,Ligne 27,8,Cité Lobatt Fall,14.750351,-17.405849,interpolation_sur_trace,non mesurée,906,estimee
+Tata AFTU,Ligne 27,9,Route Nationale 1,14.745969,-17.418868,interpolation_sur_trace,non mesurée,2375,estimee
+Tata AFTU,Ligne 27,10,Croisement Cambérène,14.742740,-17.433481,interpolation_sur_trace,non mesurée,3968,bonne
+Tata AFTU,Ligne 27,11,Branche Est-Autoroute,14.730856,-17.440172,interpolation_sur_trace,non mesurée,5186,estimee
+Tata AFTU,Ligne 27,12,Echangeur Patte d'Oie,14.715445,-17.441203,interpolation_sur_trace,non mesurée,4132,estimee
+Tata AFTU,Ligne 27,13,Rocade Fann Bel Air,14.700037,-17.442294,interpolation_sur_trace,non mesurée,2415,estimee
+Tata AFTU,Ligne 27,14,(Scoa),14.692374,-17.437361,interpolation_sur_trace,non mesurée,1730,estimee
+Tata AFTU,Ligne 27,16,Port (Môle 10 et 8),14.678150,-17.442979,arrets_geo,non mesurée,163,estimee
+Tata AFTU,Ligne 28,1,Hamo IV,14.780645,-17.388987,interpolation_sur_trace,non mesurée,683,estimee
+Tata AFTU,Ligne 28,4,Cité Enseignants,14.775377,-17.405477,interpolation_sur_trace,non mesurée,588,estimee
+Tata AFTU,Ligne 28,5,Hamo III,14.773953,-17.408519,interpolation_sur_trace,non mesurée,939,estimee
+Tata AFTU,Ligne 28,6,Croisement Cheikh Bethio,14.769820,-17.410026,interpolation_sur_trace,non mesurée,591,estimee
+Tata AFTU,Ligne 28,11,Croisement Cambérène,14.743072,-17.433120,interpolation_sur_trace,non mesurée,1339,bonne
+Tata AFTU,Ligne 28,12,Branche Est Autoroute,14.728638,-17.440345,interpolation_sur_trace,non mesurée,3121,estimee
+Tata AFTU,Ligne 28,13,Echangeur Patte d'Oie,14.710411,-17.441551,interpolation_sur_trace,non mesurée,3898,estimee
+Tata AFTU,Ligne 28,14,Autoroute,14.692174,-17.442702,interpolation_sur_trace,non mesurée,1875,douteuse
+Tata AFTU,Ligne 29,2,Cinéma Parcelles,14.759084,-17.427351,interpolation_sur_trace,non mesurée,1648,estimee
+Tata AFTU,Ligne 29,3,Rte des Niayes (Police Parcelles),14.754279,-17.432926,interpolation_sur_trace,non mesurée,2451,estimee
+Tata AFTU,Ligne 29,4,Rond-Point de Cambérène (Casebi),14.750854,-17.439669,interpolation_sur_trace,non mesurée,3208,estimee
+Tata AFTU,Ligne 29,5,Rte des Niayes Prolongée (Police Parcelles),14.746560,-17.445627,interpolation_sur_trace,non mesurée,2432,estimee
+Tata AFTU,Ligne 29,6,Pont Stade LSS,14.741660,-17.451267,interpolation_sur_trace,non mesurée,1637,estimee
+Tata AFTU,Ligne 29,7,Avenue Hyacinthe Thiandoum,14.735790,-17.455764,interpolation_sur_trace,non mesurée,829,estimee
+Tata AFTU,Ligne 29,12,Carrefour Seydou N Tall,14.696125,-17.465756,interpolation_sur_trace,non mesurée,845,estimee
+Tata AFTU,Ligne 29,13,Avenue Cheikh Anta Diop,14.688691,-17.457463,interpolation_sur_trace,non mesurée,1211,bonne
+Tata AFTU,Ligne 3,1,Autoroute Seydinalimamoulaye,14.749572,-17.491623,interpolation_sur_trace,non mesurée,1877,estimee
+Tata AFTU,Ligne 3,2,Aéroport L S Senghor,14.751779,-17.501025,interpolation_sur_trace,non mesurée,1423,estimee
+Tata AFTU,Ligne 3,3,Route de Ngor,14.746406,-17.513040,arrets_geo,mesurée mais loin de ses voisins mesurés,4152,bonne
+Tata AFTU,Ligne 3,4,Village de Ngor,14.749863,-17.491790,interpolation_sur_trace,non mesurée,1850,estimee
+Tata AFTU,Ligne 3,5,Route de l'Aéroport,14.755450,-17.475580,arrets_geo,mesurée mais loin de ses voisins mesurés,4057,bonne
+Tata AFTU,Ligne 3,6,Les Mamelles (Monument Renaissance),14.753853,-17.494308,interpolation_sur_trace,non mesurée,2022,estimee
+Tata AFTU,Ligne 3,7,Cité ASECNA,14.723393,-17.493597,projection_sur_trace,mesurée mais loin de ses voisins mesurés,3673,douteuse
+Tata AFTU,Ligne 3,8,Village de Ouakam,14.718729,-17.488725,interpolation_sur_trace,non mesurée,737,estimee
+Tata AFTU,Ligne 3,9,Route de Ouakam,14.699775,-17.469718,arrets_geo,mesurée mais loin de ses voisins mesurés,3015,bonne
+Tata AFTU,Ligne 3,10,Avenue Cheikh Antadiop,14.689806,-17.457825,arrets_geo,non mesurée,1328,estimee
+Tata AFTU,Ligne 3,12,Avenue Emile Badiane,14.677649,-17.447091,arrets_geo,non mesurée,451,estimee
+Tata AFTU,Ligne 30,3,Rue Cheikh Wade,14.777185,-17.387965,arrets_geo,non mesurée,671,estimee
+Tata AFTU,Ligne 30,4,Sam Notaire,14.776618,-17.378389,interpolation_sur_trace,non mesurée,544,estimee
+Tata AFTU,Ligne 30,7,Route des Niayes,14.753102,-17.434399,arrets_geo,non mesurée,3779,douteuse
+Tata AFTU,Ligne 30,8,Rond-Point de Cambérène (Casebi),14.749518,-17.442701,interpolation_sur_trace,non mesurée,2885,estimee
+Tata AFTU,Ligne 30,9,Route des Niayes Prolongée (Police des P Assainies),14.743304,-17.448959,interpolation_sur_trace,non mesurée,1927,estimee
+Tata AFTU,Ligne 30,10,Avenue Hyacinthe Thiandoum,14.737058,-17.455237,interpolation_sur_trace,non mesurée,980,estimee
+Tata AFTU,Ligne 30,11,Giratoire Liberté VI,14.729218,-17.459404,arrets_geo,mesurée mais loin de ses voisins mesurés,3287,bonne
+Tata AFTU,Ligne 30,12,Allées Ababacar Sy (Dieuppeul/derklé),14.722127,-17.457917,interpolation_sur_trace,non mesurée,805,estimee
+Tata AFTU,Ligne 30,13,Allées Cheikh Sidaty Aïdara (Niaritalli),14.713983,-17.455126,interpolation_sur_trace,non mesurée,1574,estimee
+Tata AFTU,Ligne 30,14,Rue El Hadj Amadou Malick Gaye (Bopp),14.705878,-17.452389,interpolation_sur_trace,non mesurée,708,estimee
+Tata AFTU,Ligne 31,0,Tally Icotaf X Rte des Niayes (Pikine),14.755344,-17.390401,arrets_geo,non mesurée,8,estimee
+Tata AFTU,Ligne 31,1,Tally Icotaf,14.755384,-17.390460,arrets_geo,mesurée mais loin de ses voisins mesurés,7964,bonne
+Tata AFTU,Ligne 31,2,Sortie Pikine,14.747739,-17.397461,interpolation_sur_trace,non mesurée,1136,bonne
+Tata AFTU,Ligne 31,3,Khourounar,14.746815,-17.406818,interpolation_sur_trace,non mesurée,2000,estimee
+Tata AFTU,Ligne 31,4,Cité Lobattfall,14.745847,-17.417087,interpolation_sur_trace,non mesurée,3053,estimee
+Tata AFTU,Ligne 31,5,Branche Est Autoroute,14.744037,-17.427810,interpolation_sur_trace,non mesurée,3776,estimee
+Tata AFTU,Ligne 31,6,Echangeur Patte d'Oie,14.742107,-17.438505,interpolation_sur_trace,non mesurée,2666,estimee
+Tata AFTU,Ligne 31,7,Pont Stade LSS,14.744348,-17.448861,interpolation_sur_trace,non mesurée,2029,estimee
+Tata AFTU,Ligne 31,8,Avenue Hyacinthe Thiandom,14.738602,-17.454227,interpolation_sur_trace,non mesurée,1183,estimee
+Tata AFTU,Ligne 31,13,Canal de la Gueule Tapée,14.701581,-17.455514,interpolation_sur_trace,non mesurée,1097,estimee
+Tata AFTU,Ligne 32,4,Autoroute,14.735725,-17.439709,interpolation_sur_trace,non mesurée,1307,douteuse
+Tata AFTU,Ligne 32,5,Croisement Cambérène,14.744449,-17.426946,interpolation_sur_trace,non mesurée,1872,bonne
+Tata AFTU,Ligne 32,6,Lobatt Fall,14.746671,-17.409689,arrets_geo,mesurée mais loin de ses voisins mesurés,4444,bonne
+Tata AFTU,Ligne 32,7,Tally Boumack,14.752657,-17.399608,interpolation_sur_trace,non mesurée,1272,estimee
+Tata AFTU,Ligne 32,8,Route des Niayes,14.764531,-17.390708,interpolation_sur_trace,non mesurée,2848,douteuse
+Tata AFTU,Ligne 32,9,Canada,14.772282,-17.400461,interpolation_sur_trace,non mesurée,3016,douteuse
+Tata AFTU,Ligne 32,10,Corniche,14.776656,-17.395467,interpolation_sur_trace,non mesurée,2361,bonne
+Tata AFTU,Ligne 32,11,Hamo 6,14.784945,-17.384233,arrets_geo,non mesurée,856,douteuse
+Tata AFTU,Ligne 33,4,Front de Terre,14.717795,-17.446038,interpolation_sur_trace,non mesurée,882,bonne
+Tata AFTU,Ligne 33,5,Kharyalla,14.724362,-17.445554,arrets_geo,non mesurée,1343,estimee
+Tata AFTU,Ligne 33,8,Pont de l'Émergence,14.743032,-17.449582,arrets_geo,non mesurée,569,estimee
+Tata AFTU,Ligne 34,2,VDN,14.736787,-17.464056,interpolation_sur_trace,non mesurée,768,douteuse
+Tata AFTU,Ligne 34,3,2 Voies Liberté 6,14.727036,-17.458622,interpolation_sur_trace,non mesurée,1664,estimee
+Tata AFTU,Ligne 35,1,Aéroport,14.750263,-17.503962,interpolation_sur_trace,non mesurée,1194,bonne
+Tata AFTU,Ligne 35,2,Yoff,14.755211,-17.469739,projection_sur_trace,mesurée mais loin de ses voisins mesurés,3306,douteuse
+Tata AFTU,Ligne 35,4,Croisement Cambérène,14.753551,-17.467234,interpolation_sur_trace,non mesurée,2985,bonne
+Tata AFTU,Ligne 35,5,Route Nationale,14.744991,-17.454385,interpolation_sur_trace,non mesurée,1375,estimee
+Tata AFTU,Ligne 35,6,Cité Lobatt Fall,14.742156,-17.438295,interpolation_sur_trace,non mesurée,384,estimee
+Tata AFTU,Ligne 35,7,Khourounar,14.745572,-17.422402,interpolation_sur_trace,non mesurée,70,estimee
+Tata AFTU,Ligne 36,1,Parc Lambaye,14.776318,-17.382270,interpolation_sur_trace,non mesurée,378,estimee
+Tata AFTU,Ligne 36,2,Quartier Cheikh Wade,14.773036,-17.384324,interpolation_sur_trace,non mesurée,774,estimee
+Tata AFTU,Ligne 36,3,2 Voies Notaire,14.772378,-17.387796,interpolation_sur_trace,non mesurée,477,estimee
+Tata AFTU,Ligne 36,5,Cité Enseignants,14.775603,-17.402510,interpolation_sur_trace,non mesurée,819,estimee
+Tata AFTU,Ligne 36,8,Unité 3 Cinéma,14.761586,-17.421728,arrets_geo,non mesurée,921,estimee
+Tata AFTU,Ligne 36,11,Église,14.760192,-17.441611,interpolation_sur_trace,non mesurée,350,estimee
+Tata AFTU,Ligne 36,12,Caserne Sapeurs Pompiers,14.759606,-17.444471,interpolation_sur_trace,non mesurée,315,bonne
+Tata AFTU,Ligne 36,14,Centre Aéré de la BCEAO,14.760126,-17.455616,arrets_geo,non mesurée,892,estimee
+Tata AFTU,Ligne 36,16,Aéroport,14.749420,-17.489502,interpolation_sur_trace,non mesurée,2739,bonne
+Tata AFTU,Ligne 37,2,Cité SOTRAC,14.786238,-17.298844,interpolation_sur_trace,non mesurée,1770,douteuse
+Tata AFTU,Ligne 37,5,Ecobank,14.783067,-17.323368,interpolation_sur_trace,non mesurée,34,estimee
+Tata AFTU,Ligne 37,7,Malika Montagne,14.793758,-17.335899,interpolation_sur_trace,non mesurée,1781,estimee
+Tata AFTU,Ligne 37,8,Malika Terminus,14.804395,-17.343542,interpolation_sur_trace,non mesurée,3202,estimee
+Tata AFTU,Ligne 37,9,VDN,14.797438,-17.360658,interpolation_sur_trace,non mesurée,1504,douteuse
+Tata AFTU,Ligne 37,10,Croisement Gadaye,14.786474,-17.368853,arrets_geo,mesurée mais loin de ses voisins mesurés,4874,bonne
+Tata AFTU,Ligne 37,11,49,14.740522,-17.408624,interpolation_sur_trace,non mesurée,6663,bonne
+Tata AFTU,Ligne 37,12,30 & 42,14.693425,-17.447938,arrets_geo,mesurée mais loin de ses voisins mesurés,10788,bonne
+Tata AFTU,Ligne 37,13,Monument Serigne Saliou,14.710171,-17.441542,interpolation_sur_trace,non mesurée,1985,estimee
+Tata AFTU,Ligne 37,14,Police Wakhinane,14.726774,-17.437074,interpolation_sur_trace,non mesurée,3888,bonne
+Tata AFTU,Ligne 37,15,Hamo VI,14.738093,-17.423089,interpolation_sur_trace,non mesurée,5284,estimee
+Tata AFTU,Ligne 37,16,Rond-Point Dial Mbaay,14.740431,-17.407113,interpolation_sur_trace,non mesurée,3987,estimee
+Tata AFTU,Ligne 37,17,Allées Cherif Macky Sall,14.759417,-17.401953,interpolation_sur_trace,non mesurée,2009,estimee
+Tata AFTU,Ligne 37,21,Croisement Cambérène,14.748801,-17.408851,interpolation_sur_trace,non mesurée,272,bonne
+Tata AFTU,Ligne 37,22,Maristes (Par Station Titan),14.738774,-17.407196,interpolation_sur_trace,non mesurée,1376,estimee
+Tata AFTU,Ligne 37,23,Pharmicie Abdourahmane,14.733884,-17.418962,interpolation_sur_trace,non mesurée,792,estimee
+Tata AFTU,Ligne 37,25,Keur Ngoor (Rond-Point École Mariste),14.729976,-17.435736,interpolation_sur_trace,non mesurée,1172,estimee
+Tata AFTU,Ligne 37,26,Pont Hann,14.721510,-17.440772,interpolation_sur_trace,non mesurée,2176,estimee
+Tata AFTU,Ligne 37,27,Autoroute,14.706270,-17.441832,interpolation_sur_trace,non mesurée,1299,douteuse
+Tata AFTU,Ligne 37,33,Rond-Point Fann,14.680555,-17.460497,interpolation_sur_trace,non mesurée,280,bonne
+Tata AFTU,Ligne 38,2,Golf Fadia,14.763420,-17.423155,interpolation_sur_trace,non mesurée,956,estimee
+Tata AFTU,Ligne 39,1,Poste Médine,14.682349,-17.456720,interpolation_sur_trace,non mesurée,2255,estimee
+Tata AFTU,Ligne 39,3,Gueule Tapée Claudel,14.699209,-17.464154,arrets_geo,non mesurée,215,estimee
+Tata AFTU,Ligne 39,9,Pont de l'Émergence,14.743032,-17.449582,arrets_geo,non mesurée,430,estimee
+Tata AFTU,Ligne 39,11,Croisement 22,14.751739,-17.446301,interpolation_sur_trace,non mesurée,436,bonne
+Tata AFTU,Ligne 39,12,Dior,14.758228,-17.447647,interpolation_sur_trace,non mesurée,656,estimee
+Tata AFTU,Ligne 4,1,Autoroute Seydina Limamoulaye,14.740423,-17.471539,interpolation_sur_trace,non mesurée,1600,estimee
+Tata AFTU,Ligne 4,2,Echangeur de la Foire,14.727218,-17.472135,interpolation_sur_trace,non mesurée,3061,estimee
+Tata AFTU,Ligne 4,3,Voie de Dégagement Nord (VDN),14.713647,-17.471890,interpolation_sur_trace,non mesurée,4360,estimee
+Tata AFTU,Ligne 4,4,Carrefour Seydou N Tall,14.700302,-17.468792,interpolation_sur_trace,non mesurée,2986,estimee
+Tata AFTU,Ligne 4,5,Avenue Cheikh Anta Diop,14.690640,-17.459148,interpolation_sur_trace,non mesurée,1493,bonne
+Tata AFTU,Ligne 4,7,Avenue Emile Badiane,14.677649,-17.447091,arrets_geo,non mesurée,451,estimee
+Tata AFTU,Ligne 40,1,Route Nationale 1,14.746953,-17.321682,interpolation_sur_trace,non mesurée,1828,estimee
+Tata AFTU,Ligne 40,2,Fass Mbao,14.749438,-17.341763,projection_sur_trace,mesurée mais loin de ses voisins mesurés,3372,bonne
+Tata AFTU,Ligne 40,3,Poste Thiaroye,14.746040,-17.378287,arrets_geo,mesurée mais loin de ses voisins mesurés,3946,bonne
+Tata AFTU,Ligne 40,4,Route de Yarakh,14.742712,-17.396282,interpolation_sur_trace,non mesurée,1970,estimee
+Tata AFTU,Ligne 40,5,Cafeteria,14.698336,-17.447432,projection_sur_trace,mesurée mais loin de ses voisins mesurés,3785,bonne
+Tata AFTU,Ligne 40,6,Maristes,14.726629,-17.429036,interpolation_sur_trace,non mesurée,69,bonne
+Tata AFTU,Ligne 40,7,Echangeur Hann,14.727182,-17.428744,projection_sur_trace,mesurée mais loin de ses voisins mesurés,3785,bonne
+Tata AFTU,Ligne 40,8,Autoroute,14.708751,-17.441635,interpolation_sur_trace,non mesurée,1570,douteuse
+Tata AFTU,Ligne 41,3,Echangeur Cyrnos,14.681640,-17.437146,arrets_geo,non mesurée,254,estimee
+Tata AFTU,Ligne 41,5,Rond-Point Môle 8,14.696078,-17.434135,interpolation_sur_trace,non mesurée,640,estimee
+Tata AFTU,Ligne 41,8,CAPA,14.719266,-17.432198,arrets_geo,mesurée mais loin de ses voisins mesurés,3311,bonne
+Tata AFTU,Ligne 41,9,Marché aux Poissons,14.751230,-17.399880,arrets_geo,non mesurée,630,estimee
+Tata AFTU,Ligne 41,10,Bountou Pikine,14.745654,-17.400933,arrets_geo,mesurée mais loin de ses voisins mesurés,3152,bonne
+Tata AFTU,Ligne 41,11,Tallyboumack,14.751205,-17.400725,interpolation_sur_trace,non mesurée,618,estimee
+Tata AFTU,Ligne 41,12,Route des Niayes,14.757974,-17.395615,interpolation_sur_trace,non mesurée,1484,douteuse
+Tata AFTU,Ligne 41,13,Rue 10 Prolongée,14.764789,-17.391042,interpolation_sur_trace,non mesurée,774,estimee
+Tata AFTU,Ligne 41,15,Station Toure,14.773335,-17.384081,interpolation_sur_trace,non mesurée,459,estimee
+Tata AFTU,Ligne 41,16,Quartier Cheikh Wade,14.776484,-17.382347,interpolation_sur_trace,non mesurée,360,estimee
+Tata AFTU,Ligne 42,2,Cité des Enseignants,14.776647,-17.396049,interpolation_sur_trace,non mesurée,1465,bonne
+Tata AFTU,Ligne 42,4,Route des Niayes,14.753102,-17.434399,arrets_geo,non mesurée,738,douteuse
+Tata AFTU,Ligne 42,7,Route du Stade LSS (Taliboubess),14.750153,-17.459056,interpolation_sur_trace,non mesurée,1906,estimee
+Tata AFTU,Ligne 42,8,VDN,14.737917,-17.472492,interpolation_sur_trace,non mesurée,2738,douteuse
+Tata AFTU,Ligne 42,9,Ancienne Piste d'Envol,14.718789,-17.471441,interpolation_sur_trace,non mesurée,1240,estimee
+Tata AFTU,Ligne 42,11,Route Principale de Ouakam (Marché),14.717985,-17.486830,interpolation_sur_trace,non mesurée,571,estimee
+Tata AFTU,Ligne 42,12,Boutikou Diallo,14.723101,-17.487750,interpolation_sur_trace,non mesurée,898,estimee
+Tata AFTU,Ligne 43,1,Siège Expresso Ouakam,14.706723,-17.479442,interpolation_sur_trace,non mesurée,1692,estimee
+Tata AFTU,Ligne 43,3,Bourguiba,14.706964,-17.460056,interpolation_sur_trace,non mesurée,1125,bonne
+Tata AFTU,Ligne 43,4,Rue 10,14.699205,-17.453474,interpolation_sur_trace,non mesurée,670,douteuse
+Tata AFTU,Ligne 43,8,Pont Hann,14.738797,-17.439301,interpolation_sur_trace,non mesurée,1642,estimee
+Tata AFTU,Ligne 43,9,Autoroute,14.745584,-17.420877,interpolation_sur_trace,non mesurée,2145,douteuse
+Tata AFTU,Ligne 43,10,Bountou Pikine,14.745654,-17.400933,arrets_geo,mesurée mais loin de ses voisins mesurés,3365,bonne
+Tata AFTU,Ligne 43,11,Tally Bou Bess,14.757591,-17.391641,interpolation_sur_trace,non mesurée,1661,estimee
+Tata AFTU,Ligne 44,1,Route Nationale 1,14.743074,-17.314367,interpolation_sur_trace,non mesurée,1339,estimee
+Tata AFTU,Ligne 44,6,Autoroute,14.745635,-17.401600,interpolation_sur_trace,non mesurée,2507,douteuse
+Tata AFTU,Ligne 44,8,Pont de l'Émergence,14.743032,-17.449582,arrets_geo,non mesurée,825,estimee
+Tata AFTU,Ligne 45,1,ZAC 3 Bis Kounoune,14.786266,-17.298429,interpolation_sur_trace,non mesurée,5700,estimee
+Tata AFTU,Ligne 45,2,Kounoune Cité Assurance,14.774321,-17.326362,interpolation_sur_trace,non mesurée,3079,estimee
+Tata AFTU,Ligne 45,4,Cité Yacine Diop,14.781547,-17.354588,interpolation_sur_trace,non mesurée,552,estimee
+Tata AFTU,Ligne 45,5,Shell SEDIMA,14.790496,-17.345518,interpolation_sur_trace,non mesurée,1847,estimee
+Tata AFTU,Ligne 45,6,Lycée Jaxaay,14.793768,-17.355338,interpolation_sur_trace,non mesurée,1911,bonne
+Tata AFTU,Ligne 45,7,Rond-Point Cité Pénitence,14.787801,-17.365486,interpolation_sur_trace,non mesurée,1688,estimee
+Tata AFTU,Ligne 45,8,Auchan Keur Massar,14.781016,-17.373020,interpolation_sur_trace,non mesurée,1141,estimee
+Tata AFTU,Ligne 45,10,Virage Gauche Torino,14.775556,-17.371370,arrets_geo,non mesurée,1201,estimee
+Tata AFTU,Ligne 45,11,Darou Missel,14.775556,-17.371370,arrets_geo,non mesurée,1201,estimee
+Tata AFTU,Ligne 45,12,Tenn Bi,14.775556,-17.371370,arrets_geo,non mesurée,1201,estimee
+Tata AFTU,Ligne 45,13,Mbédou Fass,14.791270,-17.363461,interpolation_sur_trace,non mesurée,1835,bonne
+Tata AFTU,Ligne 45,17,Cité ASECNA,14.786331,-17.348099,interpolation_sur_trace,non mesurée,1726,douteuse
+Tata AFTU,Ligne 45,18,49,14.793984,-17.353493,interpolation_sur_trace,non mesurée,2165,bonne
+Tata AFTU,Ligne 45,19,Serigne Assane,14.786964,-17.366514,interpolation_sur_trace,non mesurée,1424,bonne
+Tata AFTU,Ligne 45,25,Cité des Enseignants,14.775435,-17.402430,interpolation_sur_trace,non mesurée,814,bonne
+Tata AFTU,Ligne 45,32,Parcelles Église,14.757617,-17.439645,arrets_geo,non mesurée,274,estimee
+Tata AFTU,Ligne 46,2,Lycée Limamou Laye,14.765490,-17.391487,interpolation_sur_trace,non mesurée,861,estimee
+Tata AFTU,Ligne 46,3,Préfecture,14.757416,-17.397511,interpolation_sur_trace,non mesurée,1764,estimee
+Tata AFTU,Ligne 46,4,Rue10 Pikine,14.749331,-17.402924,interpolation_sur_trace,non mesurée,790,estimee
+Tata AFTU,Ligne 46,5,Cité Lobattfall,14.746775,-17.410504,interpolation_sur_trace,non mesurée,73,estimee
+Tata AFTU,Ligne 46,6,Route Nationale,14.745719,-17.420690,interpolation_sur_trace,non mesurée,1174,estimee
+Tata AFTU,Ligne 46,7,Technopole,14.746962,-17.409850,projection_sur_trace,mesurée mais loin de ses voisins mesurés,3478,bonne
+Tata AFTU,Ligne 46,8,Croisement Cambérène,14.742397,-17.440517,interpolation_sur_trace,non mesurée,158,bonne
+Tata AFTU,Ligne 46,13,Dieuppeul (Sapeurs Pompiers),14.714350,-17.458712,arrets_geo,non mesurée,1278,estimee
+Tata AFTU,Ligne 46,14,Stade Dembadiop,14.714350,-17.458712,arrets_geo,non mesurée,1278,estimee
+Tata AFTU,Ligne 46,17,Avenue Cheikh Antadiop,14.689806,-17.457825,arrets_geo,non mesurée,1328,estimee
+Tata AFTU,Ligne 47,1,Service d'Hygiène,14.674208,-17.442729,interpolation_sur_trace,non mesurée,438,estimee
+Tata AFTU,Ligne 47,3,Av Cheikh Anta Diop,14.690177,-17.458503,interpolation_sur_trace,non mesurée,1563,bonne
+Tata AFTU,Ligne 47,5,Route du Front de Terre,14.714517,-17.453579,interpolation_sur_trace,non mesurée,1616,bonne
+Tata AFTU,Ligne 47,7,Av Hyacinthe Thiandoum (Grand-Yoff),14.730463,-17.456647,interpolation_sur_trace,non mesurée,199,estimee
+Tata AFTU,Ligne 47,8,Pont de l'Émergence,14.743032,-17.449582,arrets_geo,non mesurée,1779,estimee
+Tata AFTU,Ligne 47,13,Rond-Point Almadies,14.737030,-17.509910,interpolation_sur_trace,non mesurée,1096,douteuse
+Tata AFTU,Ligne 48,1,HLM Rufisque,14.731382,-17.303572,interpolation_sur_trace,non mesurée,1734,bonne
+Tata AFTU,Ligne 48,2,Dioutyba,14.748443,-17.328371,interpolation_sur_trace,non mesurée,3170,estimee
+Tata AFTU,Ligne 48,3,Route Nationale 1,14.747100,-17.359752,interpolation_sur_trace,non mesurée,3409,estimee
+Tata AFTU,Ligne 48,6,Autoroute,14.743438,-17.430381,interpolation_sur_trace,non mesurée,761,douteuse
+Tata AFTU,Ligne 48,7,Patte d'Oie,14.741585,-17.437198,projection_sur_trace,mesurée mais loin de ses voisins mesurés,3926,bonne
+Tata AFTU,Ligne 48,10,Poste Médine,14.675930,-17.444441,interpolation_sur_trace,non mesurée,413,estimee
+Tata AFTU,Ligne 49,1,Marché Khelcom,14.783096,-17.375576,arrets_geo,non mesurée,815,estimee
+Tata AFTU,Ligne 49,2,Carrefour Serigne Assane,14.783096,-17.375576,arrets_geo,non mesurée,815,estimee
+Tata AFTU,Ligne 49,4,Deux Voies Notaire,14.777332,-17.386825,arrets_geo,non mesurée,554,estimee
+Tata AFTU,Ligne 49,8,Route des Niayes,14.762551,-17.387442,interpolation_sur_trace,non mesurée,862,douteuse
+Tata AFTU,Ligne 49,14,Echangeur de Hann,14.727024,-17.445527,interpolation_sur_trace,non mesurée,1530,estimee
+Tata AFTU,Ligne 49,20,Rond-Point Almadies,14.726116,-17.500463,arrets_geo,non mesurée,219,douteuse
+Tata AFTU,Ligne 5,2,Route des Niayes,14.753102,-17.434399,arrets_geo,non mesurée,355,douteuse
+Tata AFTU,Ligne 5,3,Pont Stade LSS,14.749263,-17.443123,interpolation_sur_trace,non mesurée,1088,estimee
+Tata AFTU,Ligne 5,7,Route du Front de Terre,14.728126,-17.446480,interpolation_sur_trace,non mesurée,1608,bonne
+Tata AFTU,Ligne 5,9,Avenue Cheikh Amadou Bamba Mbacke (Rue 13),14.713708,-17.446871,interpolation_sur_trace,non mesurée,2127,estimee
+Tata AFTU,Ligne 5,10,Rue 39,14.750287,-17.441211,projection_sur_trace,mesurée mais loin de ses voisins mesurés,5988,bonne
+Tata AFTU,Ligne 5,11,Retour Rue 17,14.705631,-17.453598,interpolation_sur_trace,non mesurée,850,estimee
+Tata AFTU,Ligne 5,16,Av. Emile Badiane,14.677649,-17.447091,arrets_geo,non mesurée,451,estimee
+Tata AFTU,Ligne 50,3,Echangeur Cyrnos,14.681640,-17.437146,arrets_geo,non mesurée,734,estimee
+Tata AFTU,Ligne 50,5,Môle 8,14.699139,-17.442010,interpolation_sur_trace,non mesurée,1408,bonne
+Tata AFTU,Ligne 50,6,Rocade Fannbel-Air,14.712426,-17.441283,interpolation_sur_trace,non mesurée,2774,estimee
+Tata AFTU,Ligne 50,7,Pont de Colobane,14.725707,-17.440358,interpolation_sur_trace,non mesurée,4215,estimee
+Tata AFTU,Ligne 50,8,Autoroute,14.738792,-17.438698,interpolation_sur_trace,non mesurée,4132,douteuse
+Tata AFTU,Ligne 50,9,Echangeur Patte d'Oie,14.744401,-17.427334,interpolation_sur_trace,non mesurée,2842,estimee
+Tata AFTU,Ligne 50,10,Croisement Cambérène,14.746385,-17.413880,interpolation_sur_trace,non mesurée,1395,bonne
+Tata AFTU,Ligne 50,13,Route des Niayes,14.760275,-17.383592,interpolation_sur_trace,non mesurée,917,douteuse
+Tata AFTU,Ligne 50,16,Route de Yeumbeul,14.778633,-17.357578,interpolation_sur_trace,non mesurée,1528,bonne
+Tata AFTU,Ligne 50,17,Bene Baraque,14.787232,-17.346472,interpolation_sur_trace,non mesurée,1447,estimee
+Tata AFTU,Ligne 51,1,Station Keurmassar,14.766853,-17.308869,interpolation_sur_trace,non mesurée,1880,estimee
+Tata AFTU,Ligne 51,6,Route des Niayes,14.760944,-17.379304,interpolation_sur_trace,non mesurée,1584,douteuse
+Tata AFTU,Ligne 51,7,Tallyicotaf,14.755359,-17.390473,interpolation_sur_trace,non mesurée,1559,introuvable
+Tata AFTU,Ligne 52,0,Beaux Maraîchers,14.745654,-17.400933,arrets_geo,non mesurée,0,estimee
+Tata AFTU,Ligne 52,1,Bountou Pikine,14.745654,-17.400933,arrets_geo,mesurée mais loin de ses voisins mesurés,3364,bonne
+Tata AFTU,Ligne 52,2,Marché Chavanel,14.752415,-17.399762,interpolation_sur_trace,non mesurée,762,estimee
+Tata AFTU,Ligne 52,3,Tally Boumack,14.761159,-17.393216,interpolation_sur_trace,non mesurée,1913,estimee
+Tata AFTU,Ligne 52,4,Route des Niayes,14.761026,-17.384867,interpolation_sur_trace,non mesurée,1053,douteuse
+Tata AFTU,Ligne 52,8,Bene Baraque,14.787748,-17.345568,interpolation_sur_trace,non mesurée,1238,estimee
+Tata AFTU,Ligne 53,0,Keur Massar (Marché),14.782257,-17.311199,arrets_geo,non mesurée,442,estimee
+Tata AFTU,Ligne 53,2,Croisement Tivaouane Peulh,14.786455,-17.296853,interpolation_sur_trace,non mesurée,1300,bonne
+Tata AFTU,Ligne 53,5,Croisement Niagues,14.777388,-17.250223,interpolation_sur_trace,non mesurée,2627,estimee
+Tata AFTU,Ligne 53,6,Ndiakhirate,14.768810,-17.227247,arrets_geo,mesurée mais loin de ses voisins mesurés,3365,bonne
+Tata AFTU,Ligne 53,10,SONADIS,14.712608,-17.268318,arrets_geo,non mesurée,789,estimee
+Tata AFTU,Ligne 53,11,Poste Courant,14.701882,-17.245798,interpolation_sur_trace,non mesurée,1735,estimee
+Tata AFTU,Ligne 53,12,SOCOCIM,14.698328,-17.224665,interpolation_sur_trace,non mesurée,664,douteuse
+Tata AFTU,Ligne 53,13,Bargny,14.696663,-17.230595,projection_sur_trace,mesurée mais loin de ses voisins mesurés,4619,bonne
+Tata AFTU,Ligne 53,14,Diamniadio,14.720219,-17.184244,arrets_geo,non mesurée,5367,douteuse
+Tata AFTU,Ligne 54,5,Fassmbao,14.748769,-17.347064,interpolation_sur_trace,non mesurée,1822,estimee
+Tata AFTU,Ligne 54,6,Route Nationale N° 1,14.746692,-17.362582,interpolation_sur_trace,non mesurée,1690,estimee
+Tata AFTU,Ligne 54,7,Poste Thiaroye,14.746040,-17.378287,arrets_geo,mesurée mais loin de ses voisins mesurés,4098,bonne
+Tata AFTU,Ligne 54,8,Rond-Point Seven Up,14.743730,-17.396010,interpolation_sur_trace,non mesurée,1923,estimee
+Tata AFTU,Ligne 54,9,Bld Centenaire de la Commune de Dakar,14.746544,-17.413426,interpolation_sur_trace,non mesurée,3779,estimee
+Tata AFTU,Ligne 54,10,Place Bakou,14.743506,-17.431295,interpolation_sur_trace,non mesurée,5451,estimee
+Tata AFTU,Ligne 54,11,Pont de Colobane,14.730873,-17.440198,interpolation_sur_trace,non mesurée,3807,estimee
+Tata AFTU,Ligne 55,1,Boulevard Maurice Gueye,14.729226,-17.299811,interpolation_sur_trace,non mesurée,3143,estimee
+Tata AFTU,Ligne 55,2,Route Nationale N° 1,14.743771,-17.315012,interpolation_sur_trace,non mesurée,5385,estimee
+Tata AFTU,Ligne 55,3,Keurmbaye Fall,14.749922,-17.335244,interpolation_sur_trace,non mesurée,4649,estimee
+Tata AFTU,Ligne 55,4,Croisement Keurmassar,14.747489,-17.356623,interpolation_sur_trace,non mesurée,2335,estimee
+Tata AFTU,Ligne 55,7,Croisement Cambérène,14.744673,-17.426520,interpolation_sur_trace,non mesurée,2754,bonne
+Tata AFTU,Ligne 55,8,Echangeur Patte d'Oie,14.728172,-17.440372,interpolation_sur_trace,non mesurée,4665,estimee
+Tata AFTU,Ligne 55,9,Autoroute,14.702880,-17.442037,interpolation_sur_trace,non mesurée,2732,douteuse
+Tata AFTU,Ligne 56,3,Croisement Keur Massar,14.749949,-17.337887,interpolation_sur_trace,non mesurée,3467,bonne
+Tata AFTU,Ligne 56,6,Croisement Cambérène,14.744709,-17.426434,interpolation_sur_trace,non mesurée,2744,bonne
+Tata AFTU,Ligne 56,7,Echangeur Patte d'Oie,14.728249,-17.440404,interpolation_sur_trace,non mesurée,4665,estimee
+Tata AFTU,Ligne 56,8,Autoroute,14.702929,-17.442050,interpolation_sur_trace,non mesurée,2737,douteuse
+Tata AFTU,Ligne 57,1,Av Hyacinthe Thiandoum,14.732656,-17.455023,arrets_geo,non mesurée,507,estimee
+Tata AFTU,Ligne 57,3,Pont de l'Émergence,14.743032,-17.449582,arrets_geo,non mesurée,787,estimee
+Tata AFTU,Ligne 57,4,Croisement Cambérène,14.744520,-17.427124,interpolation_sur_trace,non mesurée,2819,bonne
+Tata AFTU,Ligne 57,7,Croisement Keur Massar,14.748812,-17.346675,interpolation_sur_trace,non mesurée,3373,bonne
+Tata AFTU,Ligne 57,8,Keur Mbaye Fall,14.745044,-17.315549,arrets_geo,mesurée mais loin de ses voisins mesurés,6747,bonne
+Tata AFTU,Ligne 57,9,Route Nationale N°1,14.745847,-17.389610,arrets_geo,non mesurée,7964,estimee
+Tata AFTU,Ligne 57,10,Bd Maurice Gueye,14.747330,-17.357846,interpolation_sur_trace,non mesurée,4555,estimee
+Tata AFTU,Ligne 57,11,Poste Courant,14.748058,-17.326530,interpolation_sur_trace,non mesurée,1227,estimee
+Tata AFTU,Ligne 57,12,Marché Colobane Rufisque,14.730435,-17.302013,interpolation_sur_trace,non mesurée,2181,estimee
+Tata AFTU,Ligne 57,13,Rufisque Gouye Mouride,14.716417,-17.273844,arrets_geo,non mesurée,5500,estimee
+Tata AFTU,Ligne 58,0,Fass Mbao (Rail-Ba),14.685638,-17.454299,arrets_geo,non mesurée,13081,estimee
+Tata AFTU,Ligne 58,1,Route Nationale 1,14.725666,-17.444900,interpolation_sur_trace,non mesurée,10331,estimee
+Tata AFTU,Ligne 58,2,Fass Mbao,14.743096,-17.403270,interpolation_sur_trace,non mesurée,5558,bonne
+Tata AFTU,Ligne 58,6,Péage,14.745942,-17.410601,interpolation_sur_trace,non mesurée,3475,douteuse
+Tata AFTU,Ligne 58,7,Echangeur Hann,14.731021,-17.440198,projection_sur_trace,mesurée mais loin de ses voisins mesurés,3962,bonne
+Tata AFTU,Ligne 59,6,Canada,14.764862,-17.418613,interpolation_sur_trace,non mesurée,1996,douteuse
+Tata AFTU,Ligne 59,7,Route des Niayes,14.753102,-17.434399,arrets_geo,non mesurée,4086,douteuse
+Tata AFTU,Ligne 59,12,Keur Massar,14.782257,-17.311199,arrets_geo,mesurée mais loin de ses voisins mesurés,3337,bonne
+Tata AFTU,Ligne 59,13,Cité SOTRAC,14.779590,-17.293198,interpolation_sur_trace,non mesurée,1958,douteuse
+Tata AFTU,Ligne 60,1,Auto Route,14.743234,-17.432131,interpolation_sur_trace,non mesurée,5260,estimee
+Tata AFTU,Ligne 60,2,Route Nationale 1,14.746642,-17.405090,interpolation_sur_trace,non mesurée,5862,estimee
+Tata AFTU,Ligne 60,6,Croisement Keur Massar,14.736621,-17.308702,interpolation_sur_trace,non mesurée,3819,bonne
+Tata AFTU,Ligne 60,7,Dioutyba (Rufisque),14.723460,-17.289327,interpolation_sur_trace,non mesurée,6323,estimee
+Tata AFTU,Ligne 60,8,SONADIS,14.712608,-17.268318,arrets_geo,non mesurée,4430,estimee
+Tata AFTU,Ligne 60,9,SOCOCIM,14.701896,-17.245775,interpolation_sur_trace,non mesurée,1736,douteuse
+Tata AFTU,Ligne 61,1,Aéroport,14.752866,-17.487459,interpolation_sur_trace,non mesurée,3374,bonne
+Tata AFTU,Ligne 61,4,Autoroute,14.743935,-17.395189,interpolation_sur_trace,non mesurée,1833,douteuse
+Tata AFTU,Ligne 61,8,Route Nationale 1,14.752124,-17.324604,interpolation_sur_trace,non mesurée,1862,estimee
+Tata AFTU,Ligne 62,1,Arafat,14.726437,-17.265962,interpolation_sur_trace,non mesurée,214,estimee
+Tata AFTU,Ligne 62,2,Marché Mardi,14.725265,-17.267439,interpolation_sur_trace,non mesurée,380,estimee
+Tata AFTU,Ligne 62,3,Poste Courant,14.723872,-17.268674,interpolation_sur_trace,non mesurée,330,estimee
+Tata AFTU,Ligne 62,4,SONADIS,14.722849,-17.270006,interpolation_sur_trace,non mesurée,289,estimee
+Tata AFTU,Ligne 62,7,HLM Rufisque,14.729985,-17.301226,interpolation_sur_trace,non mesurée,2673,bonne
+Tata AFTU,Ligne 62,8,Dioutyba,14.747056,-17.322057,interpolation_sur_trace,non mesurée,5484,estimee
+Tata AFTU,Ligne 62,9,Route Nationale 1,14.748423,-17.349619,interpolation_sur_trace,non mesurée,3094,estimee
+Tata AFTU,Ligne 62,10,Poste Thiaroye,14.746040,-17.378287,arrets_geo,mesurée mais loin de ses voisins mesurés,7481,bonne
+Tata AFTU,Ligne 62,11,Autoroute A Péage,14.745842,-17.414438,interpolation_sur_trace,non mesurée,3887,douteuse
+Tata AFTU,Ligne 62,15,Fass,14.695591,-17.453011,interpolation_sur_trace,non mesurée,682,bonne
+Tata AFTU,Ligne 63,1,Marché Mardi,14.724424,-17.260076,interpolation_sur_trace,non mesurée,337,estimee
+Tata AFTU,Ligne 63,2,Rond-Point Arafat,14.727795,-17.258711,interpolation_sur_trace,non mesurée,713,estimee
+Tata AFTU,Ligne 63,3,Passage A Niveau,14.728035,-17.262856,interpolation_sur_trace,non mesurée,816,estimee
+Tata AFTU,Ligne 63,4,Khaar,14.728875,-17.267117,interpolation_sur_trace,non mesurée,462,estimee
+Tata AFTU,Ligne 63,7,Route des HLM Rufisque,14.723513,-17.289414,interpolation_sur_trace,non mesurée,975,estimee
+Tata AFTU,Ligne 63,8,Rond-Point Djouti Ba Rufisque,14.731977,-17.304478,interpolation_sur_trace,non mesurée,1878,estimee
+Tata AFTU,Ligne 63,9,Keur Mbaye Fall,14.745044,-17.315549,arrets_geo,mesurée mais loin de ses voisins mesurés,4195,bonne
+Tata AFTU,Ligne 63,10,Croisement Keur Massar,14.748676,-17.346747,interpolation_sur_trace,non mesurée,3379,bonne
+Tata AFTU,Ligne 63,13,Croisement Cambérène,14.745961,-17.418250,interpolation_sur_trace,non mesurée,1675,bonne
+Tata AFTU,Ligne 63,16,Route du Stade (Taliboubess),14.749638,-17.445966,interpolation_sur_trace,non mesurée,511,estimee
+Tata AFTU,Ligne 64,0,Diamniadio,14.720219,-17.184244,arrets_geo,non mesurée,5629,douteuse
+Tata AFTU,Ligne 64,3,Boulevard Maurice Gueye,14.717783,-17.277465,interpolation_sur_trace,non mesurée,2606,estimee
+Tata AFTU,Ligne 64,4,Rond-Point Dioutyba,14.728670,-17.298761,interpolation_sur_trace,non mesurée,2564,estimee
+Tata AFTU,Ligne 64,5,Keur Mbaye Fall,14.745044,-17.315549,arrets_geo,mesurée mais loin de ses voisins mesurés,6747,bonne
+Tata AFTU,Ligne 64,6,Croisement Keur Massar,14.748827,-17.346574,interpolation_sur_trace,non mesurée,3363,bonne
+Tata AFTU,Ligne 64,9,Tally Boumack,14.752613,-17.399679,interpolation_sur_trace,non mesurée,785,estimee
+Tata AFTU,Ligne 64,10,Route des Niayes,14.761445,-17.392981,interpolation_sur_trace,non mesurée,796,douteuse
+Tata AFTU,Ligne 64,12,Croisement PAI,14.770743,-17.398402,interpolation_sur_trace,non mesurée,407,estimee
+Tata AFTU,Ligne 64,13,72,14.772526,-17.402868,interpolation_sur_trace,non mesurée,653,estimee
+Tata AFTU,Ligne 64,14,Dial Mbaay,14.775408,-17.402755,interpolation_sur_trace,non mesurée,619,estimee
+Tata AFTU,Ligne 65,1,Rocade Fann Bel-Air,14.709607,-17.434315,interpolation_sur_trace,non mesurée,1584,estimee
+Tata AFTU,Ligne 65,2,Place Bakou,14.726583,-17.429014,interpolation_sur_trace,non mesurée,3510,estimee
+Tata AFTU,Ligne 65,3,Bld du Centenaire de la Commune de Dakar,14.736881,-17.413853,interpolation_sur_trace,non mesurée,3958,estimee
+Tata AFTU,Ligne 65,4,Rond-Point Seven Up,14.742642,-17.396594,interpolation_sur_trace,non mesurée,2005,estimee
+Tata AFTU,Ligne 65,5,Poste Thiaroye,14.746040,-17.378287,arrets_geo,mesurée mais loin de ses voisins mesurés,7286,bonne
+Tata AFTU,Ligne 65,6,Croisement Keur Massar,14.749851,-17.337614,interpolation_sur_trace,non mesurée,3456,bonne
+Tata AFTU,Ligne 65,7,Rond-Point Station Shell Keur Massar,14.773517,-17.316776,arrets_geo,mesurée mais loin de ses voisins mesurés,3365,bonne
+Tata AFTU,Ligne 65,8,Route de Jaxxay,14.767028,-17.309367,interpolation_sur_trace,non mesurée,1075,estimee
+Tata AFTU,Ligne 65,9,Collège la Liberté,14.761125,-17.301720,interpolation_sur_trace,non mesurée,1279,estimee
+Tata AFTU,Ligne 66,2,Patte d'Oie,14.742825,-17.442061,projection_sur_trace,mesurée mais loin de ses voisins mesurés,3868,bonne
+Tata AFTU,Ligne 66,3,Croisement Cambérène,14.740498,-17.439715,interpolation_sur_trace,non mesurée,361,bonne
+Tata AFTU,Ligne 66,4,Cité Lobatt Fall,14.745519,-17.421406,interpolation_sur_trace,non mesurée,2202,estimee
+Tata AFTU,Ligne 66,8,Diamaguène,14.748196,-17.350383,projection_sur_trace,mesurée mais loin de ses voisins mesurés,3010,bonne
+Tata AFTU,Ligne 66,9,Fassmbao,14.748677,-17.346707,interpolation_sur_trace,non mesurée,399,estimee
+Tata AFTU,Ligne 66,10,Croisement Keur Massar,14.748946,-17.331006,interpolation_sur_trace,non mesurée,1718,bonne
+Tata AFTU,Ligne 66,11,Keur Mbaye Fall,14.745044,-17.315549,arrets_geo,mesurée mais loin de ses voisins mesurés,3762,bonne
+Tata AFTU,Ligne 66,12,Croisement Grand Mbao,14.730658,-17.302734,interpolation_sur_trace,non mesurée,2111,estimee
+Tata AFTU,Ligne 66,13,Cap des Biches,14.721371,-17.285602,interpolation_sur_trace,non mesurée,2455,bonne
+Tata AFTU,Ligne 66,14,SONADIS,14.712608,-17.268318,arrets_geo,non mesurée,1022,estimee
+Tata AFTU,Ligne 66,15,Poste Courant,14.713522,-17.265578,interpolation_sur_trace,non mesurée,790,estimee
+Tata AFTU,Ligne 66,16,Castors,14.715599,-17.263531,interpolation_sur_trace,non mesurée,506,bonne
+Tata AFTU,Ligne 67,0,Boutique Diallo (Ouakam),14.724737,-17.485066,arrets_geo,non mesurée,235,estimee
+Tata AFTU,Ligne 67,5,Score Liberté,14.701041,-17.464770,arrets_geo,non mesurée,297,estimee
+Tata AFTU,Ligne 67,9,Tableau Ferrailles,14.719480,-17.433235,interpolation_sur_trace,non mesurée,114,estimee
+Tata AFTU,Ligne 67,10,SERAS,14.719716,-17.433872,interpolation_sur_trace,non mesurée,187,bonne
+Tata AFTU,Ligne 67,11,Route de Hann,14.720360,-17.434188,arrets_geo,non mesurée,246,douteuse
+Tata AFTU,Ligne 67,17,Grand Mbao,14.733684,-17.305996,interpolation_sur_trace,non mesurée,1628,bonne
+Tata AFTU,Ligne 67,18,Cap des Biches,14.725786,-17.293429,interpolation_sur_trace,non mesurée,1612,bonne
+Tata AFTU,Ligne 67,20,SONADIS,14.712608,-17.268318,arrets_geo,non mesurée,669,estimee
+Tata AFTU,Ligne 68,1,Yeumbeul Bene Baraque,14.783389,-17.350064,arrets_geo,non mesurée,1349,estimee
+Tata AFTU,Ligne 68,4,Croisement Keur Massar,14.744079,-17.315311,interpolation_sur_trace,non mesurée,4415,bonne
+Tata AFTU,Ligne 68,5,Rufisque,14.716417,-17.273844,arrets_geo,mesurée mais loin de ses voisins mesurés,5143,bonne
+Tata AFTU,Ligne 68,6,Bargny,14.696719,-17.230578,projection_sur_trace,mesurée mais loin de ses voisins mesurés,5143,bonne
+Tata AFTU,Ligne 68,7,Diamniadio,14.720219,-17.184244,arrets_geo,non mesurée,5367,douteuse
+Tata AFTU,Ligne 69,1,Croisement Dior,14.759411,-17.445257,interpolation_sur_trace,non mesurée,836,douteuse
+Tata AFTU,Ligne 69,4,Route des Niayes,14.753102,-17.434399,arrets_geo,non mesurée,157,douteuse
+Tata AFTU,Ligne 69,6,Croisement Cambérène,14.744894,-17.421954,interpolation_sur_trace,non mesurée,1492,bonne
+Tata AFTU,Ligne 69,7,Branche Est Autoroute,14.745606,-17.410948,interpolation_sur_trace,non mesurée,1077,estimee
+Tata AFTU,Ligne 69,13,Tivaouane Peulh,14.802122,-17.283128,arrets_geo,mesurée mais loin de ses voisins mesurés,3328,bonne
+Tata AFTU,Ligne 69,14,Namora,14.802122,-17.283128,arrets_geo,non mesurée,0,estimee
+Tata AFTU,Ligne 70,0,Daroukhane Keur Serigne Assane,14.784935,-17.375404,arrets_geo,non mesurée,976,estimee
+Tata AFTU,Ligne 70,1,SDE Guédiawaye,14.781692,-17.372949,interpolation_sur_trace,non mesurée,608,estimee
+Tata AFTU,Ligne 70,3,Bld des Martyrs,14.772223,-17.384969,interpolation_sur_trace,non mesurée,1281,estimee
+Tata AFTU,Ligne 70,4,Poste de Guédiawaye,14.768779,-17.395871,interpolation_sur_trace,non mesurée,1961,estimee
+Tata AFTU,Ligne 70,5,Route des Niayes Prolongée,14.762895,-17.388040,interpolation_sur_trace,non mesurée,913,estimee
+Tata AFTU,Ligne 70,8,Diamaguène,14.748199,-17.350396,projection_sur_trace,mesurée mais loin de ses voisins mesurés,3009,bonne
+Tata AFTU,Ligne 70,9,Croisement Keur Massar,14.748348,-17.325097,interpolation_sur_trace,non mesurée,2720,bonne
+Tata AFTU,Ligne 70,12,Croisement Mame Abdou,14.755911,-17.288332,interpolation_sur_trace,non mesurée,830,estimee
+Tata AFTU,Ligne 71,1,Station Keur Massar,14.768482,-17.311913,interpolation_sur_trace,non mesurée,3264,bonne
+Tata AFTU,Ligne 71,2,Croisement Keur Massar,14.760857,-17.321505,interpolation_sur_trace,non mesurée,1949,bonne
+Tata AFTU,Ligne 71,7,Croisement Cambérène,14.743153,-17.432675,interpolation_sur_trace,non mesurée,2922,bonne
+Tata AFTU,Ligne 71,10,Garage Guédiawaye,14.714723,-17.451295,interpolation_sur_trace,non mesurée,36,estimee
+Tata AFTU,Ligne 71,14,Rue 10,14.702918,-17.461600,interpolation_sur_trace,non mesurée,854,douteuse
+Tata AFTU,Ligne 72,0,Guédiawaye Cité des Enseignants,14.777121,-17.390071,arrets_geo,non mesurée,2196,estimee
+Tata AFTU,Ligne 72,1,Av Oumar Foutiyou Tall (Golf Nord),14.770024,-17.393297,interpolation_sur_trace,non mesurée,1807,estimee
+Tata AFTU,Ligne 72,2,Route des Niayes,14.763959,-17.389767,interpolation_sur_trace,non mesurée,1125,douteuse
+Tata AFTU,Ligne 72,5,Route Nationale N°1,14.747300,-17.357262,interpolation_sur_trace,non mesurée,2265,estimee
+Tata AFTU,Ligne 72,6,Croisement Keur Massar,14.749932,-17.336242,interpolation_sur_trace,non mesurée,2291,bonne
+Tata AFTU,Ligne 72,10,Allées Médina ZAC,14.741655,-17.297365,interpolation_sur_trace,non mesurée,1352,estimee
+Tata AFTU,Ligne 72,11,Cité CAPEC,14.736960,-17.287851,interpolation_sur_trace,non mesurée,1701,estimee
+Tata AFTU,Ligne 72,12,Route des HLM Rufisque,14.726957,-17.282345,interpolation_sur_trace,non mesurée,2164,estimee
+Tata AFTU,Ligne 72,13,Rond-Point Djouti Ba Rufisque,14.718708,-17.279215,interpolation_sur_trace,non mesurée,2271,estimee
+Tata AFTU,Ligne 72,14,Bld Maurice Gueye,14.712614,-17.268418,interpolation_sur_trace,non mesurée,1797,estimee
+Tata AFTU,Ligne 72,15,SONADIS Rufisque,14.718604,-17.261355,interpolation_sur_trace,non mesurée,882,estimee
+Tata AFTU,Ligne 72,17,Route de Sangalkam,14.734461,-17.254073,interpolation_sur_trace,non mesurée,1081,estimee
+Tata AFTU,Ligne 72,19,Cité SAGEF,14.746133,-17.241219,interpolation_sur_trace,non mesurée,831,estimee
+Tata AFTU,Ligne 72,20,Cité Baba Guisse,14.752074,-17.237022,interpolation_sur_trace,non mesurée,1580,estimee
+Tata AFTU,Ligne 73,1,Croisement Niagues,14.799931,-17.254941,interpolation_sur_trace,non mesurée,3907,estimee
+Tata AFTU,Ligne 73,2,Darou Thioub,14.782959,-17.261452,interpolation_sur_trace,non mesurée,5349,estimee
+Tata AFTU,Ligne 73,3,Niakourab,14.786369,-17.276325,interpolation_sur_trace,non mesurée,3777,introuvable
+Tata AFTU,Ligne 73,4,Cité SAFCO,14.786333,-17.294842,interpolation_sur_trace,non mesurée,1816,estimee
+Tata AFTU,Ligne 74,1,Colobane Rufisque,14.706228,-17.239321,interpolation_sur_trace,non mesurée,1409,estimee
+Tata AFTU,Ligne 74,2,Poste Courant,14.709228,-17.251161,interpolation_sur_trace,non mesurée,2662,estimee
+Tata AFTU,Ligne 74,3,Route Nationale N°1,14.715265,-17.264792,interpolation_sur_trace,non mesurée,4273,estimee
+Tata AFTU,Ligne 74,4,Bld Maurice Gueye,14.716694,-17.275499,interpolation_sur_trace,non mesurée,5138,estimee
+Tata AFTU,Ligne 74,5,Rond-Point Djouti Ba Rufisque,14.725559,-17.282303,interpolation_sur_trace,non mesurée,3945,estimee
+Tata AFTU,Ligne 74,6,Route des HLM Rufisque,14.737989,-17.288083,interpolation_sur_trace,non mesurée,2433,estimee
+Tata AFTU,Ligne 74,7,Echangeur Rufisque-Ouest,14.751056,-17.285371,interpolation_sur_trace,non mesurée,1379,estimee
+Tata AFTU,Ligne 74,10,Keurmassar,14.786463,-17.297234,interpolation_sur_trace,non mesurée,2547,estimee
+Tata AFTU,Ligne 74,13,Cité COCEHAS,14.802122,-17.283128,arrets_geo,non mesurée,2546,estimee
+Tata AFTU,Ligne 75,5,Route Nationale N°1,14.745847,-17.389610,arrets_geo,non mesurée,1218,estimee
+Tata AFTU,Ligne 75,7,Croisement Cambérène,14.740340,-17.410174,interpolation_sur_trace,non mesurée,1156,bonne
+Tata AFTU,Ligne 75,12,Av Cheikh Ahmadou Bamba (Rue 13 des HLM),14.709590,-17.447719,arrets_geo,non mesurée,1285,estimee
+Tata AFTU,Ligne 76,4,Croisement Cambérène,14.745928,-17.418600,interpolation_sur_trace,non mesurée,1900,bonne
+Tata AFTU,Ligne 77,0,Rufisque Cité Tacco,14.716417,-17.273844,arrets_geo,non mesurée,5500,estimee
+Tata AFTU,Ligne 77,1,Pont Dangou,14.719802,-17.281795,interpolation_sur_trace,non mesurée,4588,estimee
+Tata AFTU,Ligne 77,2,SONADIS Rufisque,14.723636,-17.289458,interpolation_sur_trace,non mesurée,3680,estimee
+Tata AFTU,Ligne 77,3,Bld Maurice Gueye,14.727736,-17.297059,interpolation_sur_trace,non mesurée,2767,estimee
+Tata AFTU,Ligne 77,4,Rond-Point Djouti Ba Rufisque,14.732043,-17.304456,interpolation_sur_trace,non mesurée,1874,estimee
+Tata AFTU,Ligne 77,5,Route Nationale N° 1,14.738387,-17.310203,interpolation_sur_trace,non mesurée,937,estimee
+Tata AFTU,Ligne 77,6,Keur Mbaye Fall,14.745044,-17.315549,arrets_geo,mesurée mais loin de ses voisins mesurés,6747,bonne
+Tata AFTU,Ligne 77,7,Croisement Keur Massar,14.748800,-17.346691,interpolation_sur_trace,non mesurée,3375,bonne
+Tata AFTU,Ligne 77,10,Croisement Cambérène,14.746218,-17.416643,interpolation_sur_trace,non mesurée,1691,bonne
+Tata AFTU,Ligne 78,3,Poste de Police Thiaroye,14.765721,-17.394034,interpolation_sur_trace,non mesurée,910,estimee
+Tata AFTU,Ligne 78,6,Corniche Fadia,14.761881,-17.421331,arrets_geo,non mesurée,975,estimee
+Tata AFTU,Ligne 78,9,Pont de l'Émergence,14.743032,-17.449582,arrets_geo,non mesurée,1228,estimee
+Tata AFTU,Ligne 79,2,Croisement Niagues,14.773425,-17.243523,interpolation_sur_trace,non mesurée,1824,estimee
+Tata AFTU,Ligne 79,3,Darou Thioub,14.779975,-17.257990,interpolation_sur_trace,non mesurée,1746,estimee
+Tata AFTU,Ligne 79,4,Niacourab,14.783846,-17.273726,arrets_geo,mesurée mais loin de ses voisins mesurés,5270,bonne
+Tata AFTU,Ligne 79,5,Croisement Tivaouane Peulh,14.785105,-17.302337,interpolation_sur_trace,non mesurée,3079,bonne
+Tata AFTU,Ligne 79,6,Station Keurmassar,14.780017,-17.322158,interpolation_sur_trace,non mesurée,2908,estimee
+Tata AFTU,Ligne 79,7,Malika,14.801484,-17.337600,arrets_geo,mesurée mais loin de ses voisins mesurés,4207,bonne
+Tata AFTU,Ligne 79,8,VDN 3,14.800752,-17.352714,interpolation_sur_trace,non mesurée,1627,douteuse
+Tata AFTU,Ligne 79,10,Serigneassane,14.781381,-17.371339,arrets_geo,non mesurée,399,estimee
+Tata AFTU,Ligne 79,13,Cité Nations Unies (Derriere Hôpital Dalal Diam),14.770923,-17.407568,interpolation_sur_trace,non mesurée,1734,estimee
+Tata AFTU,Ligne 80,8,Pikine Texaco,14.760001,-17.382938,interpolation_sur_trace,non mesurée,1978,bonne
+Tata AFTU,Ligne 80,14,Croisement Tivaouane Peulh,14.786367,-17.292707,interpolation_sur_trace,non mesurée,2040,bonne
+Tata AFTU,Ligne 80,15,Niacourab,14.783846,-17.273726,arrets_geo,mesurée mais loin de ses voisins mesurés,4033,bonne
+Tata AFTU,Ligne 81,6,Tournal Boune,14.770787,-17.361233,arrets_geo,non mesurée,545,estimee
+Tata AFTU,Ligne 82,1,Service d'Hygiène,14.676834,-17.445405,interpolation_sur_trace,non mesurée,638,estimee
+Tata AFTU,Ligne 82,4,Rue 22,14.686148,-17.450405,interpolation_sur_trace,non mesurée,525,bonne
+Tata AFTU,Ligne 82,9,Autoroute A Péage,14.743594,-17.429817,interpolation_sur_trace,non mesurée,5548,douteuse
+Tata AFTU,Ligne 82,10,Poste Thiaroye,14.746040,-17.378287,arrets_geo,mesurée mais loin de ses voisins mesurés,3704,bonne
+Tata AFTU,Ligne 83,1,HLM Rufisque,14.758584,-17.295344,interpolation_sur_trace,non mesurée,2912,bonne
+Tata AFTU,Ligne 83,4,Malika Plage,14.806691,-17.338939,arrets_geo,mesurée mais loin de ses voisins mesurés,3108,bonne
+Tata AFTU,Ligne 83,5,VDN 3,14.791629,-17.376112,interpolation_sur_trace,non mesurée,3890,douteuse
+Tata AFTU,Ligne 83,6,Rond-Point Malibu,14.775288,-17.408104,arrets_geo,mesurée mais loin de ses voisins mesurés,3027,bonne
+Tata AFTU,Ligne 83,7,Cité Nations Unies,14.767915,-17.422395,interpolation_sur_trace,non mesurée,1423,estimee
+Tata AFTU,Ligne 83,8,Case Ba,14.756593,-17.428563,arrets_geo,mesurée mais loin de ses voisins mesurés,3027,bonne
+Tata AFTU,Ligne 83,9,Pont de l'Émergence,14.743032,-17.449582,arrets_geo,non mesurée,787,estimee
+Tata AFTU,Ligne 83,11,Route de Front de Terre,14.728851,-17.457290,interpolation_sur_trace,non mesurée,995,estimee
+Tata AFTU,Ligne 85,0,Banoba,,,arrets_geo,sans position,,introuvable
+Tata AFTU,Ligne 86,0,Tournal Boune,14.770787,-17.361233,arrets_geo,non mesurée,29389,estimee
+Tata AFTU,Ligne 87,1,Mosquée Massalikoul Djinane,,,arrets_geo,sans position,,introuvable
+Tata AFTU,Ligne 89,1,Croisement Niague (Cité Sicap),,,arrets_geo,sans position,,introuvable

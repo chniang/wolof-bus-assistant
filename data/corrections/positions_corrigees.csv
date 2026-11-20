@@ -1,0 +1,15 @@
+arret,lat,lon,source,date
+AIBD,14.67,-17.0733,"repere_connu : Aéroport International Blaise Diagne (Diass), repère du TAF TAF",2026-11-20
+Croisement 22,14.753688,-17.433658,osm_arret_nomme : arrets_osm.csv (même nom),2026-11-20
+Croisement Gadaye,14.786474,-17.368853,arret_identique_bonne : arrets_geo.csv « Croisement Gadaye »,2026-11-20
+Croisement Grand Mbao,14.731241,-17.316679,arret_identique_bonne : arrets_geo.csv « Croisement Grand Mbao »,2026-11-20
+Croisement Tivaouane Peulh,14.786355,-17.294528,osm_arret_nomme : arrets_osm.csv « Croisement tivavouane Peulh » (lien revu),2026-11-20
+Croissement Tivaoune Peulh,14.786355,-17.294528,osm_arret_nomme : arrets_osm.csv « Croisement tivavouane Peulh » (lien revu),2026-11-20
+Gare de Dakar,14.676464,-17.433683,arret_identique_bonne : arrets_geo.csv « Gare de Dakar »,2026-11-20
+Giratoire Liberté VI,14.729218,-17.459404,arret_identique_bonne : arrets_geo.csv « Giratoire Liberté VI »,2026-11-20
+Rond Point Colobane,14.697751,-17.443939,arret_identique_bonne : arrets_geo.csv « Rond-Point Colobane »,2026-11-20
+Rond Point Liberté 6,14.728629,-17.457233,arret_identique_bonne : arrets_geo.csv « Rond-Point Liberté 6 »,2026-11-20
+Rond Point liberté 6,14.728629,-17.457233,arret_identique_bonne : arrets_geo.csv « Rond-Point Liberté 6 »,2026-11-20
+Rond point JVC,14.722283,-17.463934,osm_arret_nomme : arrets_osm.csv « Arret JVC » (lien revu),2026-11-20
+Rond point Liberté 6,14.728629,-17.457233,arret_identique_bonne : arrets_geo.csv « Rond-Point Liberté 6 »,2026-11-20
+Sortie Pikine,14.766579,-17.397455,arret_identique_bonne : arrets_geo.csv « Sortie Pikine »,2026-11-20

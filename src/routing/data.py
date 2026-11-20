@@ -37,6 +37,16 @@ SOURCES_SURES = {
     "arrets_geo_bonne",
 }
 
+# Positions posées le long d'une trace (AFTU ou OSM) : pas mesurées arrêt par
+# arrêt, mais sur la route réelle. Une durée qui en part reste juste à peu près
+# (Dem Dikk 8 : « Yoff Village », interpolé sur la trace OSM, 1,7 km après
+# l'Aéroport LSS mesuré).
+SOURCES_SUR_TRACE = {
+    "interpolation_sur_trace",
+    "interpolation_sur_trace_osm",
+    "projection_sur_trace",
+}
+
 FICHIERS = {
     "lignes": "lignes_dakar.csv",
     "itineraires": "itineraires_dakar.csv",
@@ -59,6 +69,9 @@ class NetworkData:
     positions_ligne: dict = field(default_factory=dict)
     # (compagnie, ligne) -> ordre -> vrai si la source permet de situer l'arrêt.
     positions_sures: dict = field(default_factory=dict)
+    # (compagnie, ligne) -> ordre -> vrai si la position est posée le long d'une
+    # trace (AFTU ou OSM) : approximative, mais sur la route réelle du bus.
+    positions_sur_trace: dict = field(default_factory=dict)
     # « Ligne N » (Tata) -> points de la trace officielle AFTU.
     traces: dict = field(default_factory=dict)
 
@@ -71,11 +84,15 @@ def _lire(nom: str) -> pd.DataFrame:
 # lieux et geo.py la partagent, pour voir les mêmes arrêts Dem Dikk que l'app.
 try:  # import à plat (app.py) ou en paquet
     from matching.itineraires_app import nom_ligne_ddd as _nom_ligne_ddd
+    from matching.itineraires_app import cle_lieu as _cle_lieu
     from matching.itineraires_app import lignes_ddd_ajoutees, rangees_ddd_officielles
+    from matching.itineraires_app import positions_corrigees, positions_estimees
     from matching.itineraires_app import sans_terminus as _sans_terminus
 except ImportError:  # pragma: no cover
     from ..matching.itineraires_app import nom_ligne_ddd as _nom_ligne_ddd
+    from ..matching.itineraires_app import cle_lieu as _cle_lieu
     from ..matching.itineraires_app import lignes_ddd_ajoutees, rangees_ddd_officielles
+    from ..matching.itineraires_app import positions_corrigees, positions_estimees
     from ..matching.itineraires_app import sans_terminus as _sans_terminus
 
 
@@ -91,6 +108,9 @@ def _charger_positions(data: NetworkData, frame: pd.DataFrame) -> None:
         )
         data.positions_sures.setdefault(cle, {})[ordre] = (
             connue and str(rangee.source) in SOURCES_SURES
+        )
+        data.positions_sur_trace.setdefault(cle, {})[ordre] = (
+            connue and str(rangee.source) in SOURCES_SUR_TRACE
         )
 
 
@@ -238,8 +258,57 @@ def load_data() -> NetworkData:
     from .corrections import canonicalize_data_stop_names
 
     canonicalize_data_stop_names(data)
+    _appliquer_positions_revues(data)
     _validate(data)
     return data
+
+
+def _appliquer_positions_revues(data: NetworkData) -> None:
+    """positions_corrigees.csv et positions_estimees.csv, en mémoire seulement.
+
+    Appliquées après les corrections de noms : un nom est reconnu sous toutes
+    ses graphies (« Rond Point liberté 6 », « Rond point Liberté 6 »).
+    - corrigée : la position vaut pour chaque ligne qui porte ce nom, et elle
+      devient sûre (« bonne ») ; AIBD quitte ainsi Grand Yoff pour Diass ;
+    - estimée : la position reste, mais n'est plus sûre nulle part (Avenue
+      Cheikh Anta Diop, voie de 5 km ; Apix, homonyme du Plateau).
+    """
+
+    corrigees, estimees = positions_corrigees(), positions_estimees()
+    if not corrigees and not estimees:
+        return
+
+    arrets = data.arrets.copy().reset_index(drop=True)
+    cles_arrets = [_cle_lieu(nom) for nom in arrets["arret"]]
+    for cle, (lat, lon, _source) in corrigees.items():
+        lignes = [i for i, autre in enumerate(cles_arrets) if autre == cle]
+        if lignes:
+            for i in lignes:
+                arrets.at[i, "lat"], arrets.at[i, "lon"], arrets.at[i, "confiance"] = lat, lon, "bonne"
+        else:
+            nom = next(
+                (str(a) for a in data.itineraires["arret"] if _cle_lieu(a) == cle), None
+            )
+            if nom is not None:
+                arrets = pd.concat(
+                    [arrets, pd.DataFrame([{"arret": nom, "lat": lat, "lon": lon, "confiance": "bonne"}])],
+                    ignore_index=True,
+                )
+    for i, cle in enumerate(cles_arrets):
+        if cle in estimees and cle not in corrigees:
+            arrets.at[i, "confiance"] = "estimee"
+    data.arrets = arrets
+
+    for rangee in data.itineraires.itertuples(index=False):
+        cle = _cle_lieu(rangee.arret)
+        ligne = (str(rangee.compagnie), str(rangee.ligne))
+        ordre = int(rangee.ordre)
+        if cle in corrigees:
+            lat, lon, _source = corrigees[cle]
+            data.positions_ligne.setdefault(ligne, {})[ordre] = (lat, lon)
+            data.positions_sures.setdefault(ligne, {})[ordre] = True
+        elif cle in estimees and ligne in data.positions_sures:
+            data.positions_sures[ligne][ordre] = False
 
 
 def _validate(data: NetworkData) -> None:

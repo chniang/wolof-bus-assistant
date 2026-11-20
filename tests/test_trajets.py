@@ -7978,6 +7978,190 @@ def test_lot_b5() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_f4() -> tuple[int, int]:
+    """Lot F4 : positions devinées. Aucun réseau (moteur hors ligne, CSV seulement).
+
+    - data/corrections/positions_corrigees.csv : position retrouvée dans le dépôt
+      (arrêt OSM nommé, arrêt identique « bonne », repère de Diass pour l'AIBD),
+      appliquée à chaque ligne qui porte le nom ;
+    - data/corrections/positions_estimees.csv : « bonne » mais non crue (Avenue
+      Cheikh Anta Diop, voie de 5 km ; Apix, agence du Plateau) ;
+    - une position estimée n'affirme jamais un « arrêt conseillé » ni une durée ;
+      un arrêt demandé par son nom est toujours nommé (« Maristes »).
+    """
+    import csv
+    import os
+
+    from matching.geo import LieuxGeo
+    from matching.itineraires_app import cle_lieu
+    from routing import adapter
+    from routing.network import haversine_m
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot F4 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    reseau = adapter._NETWORK
+    dossier = RACINE / "data" / "corrections"
+    with open(dossier / "positions_corrigees.csv", newline="", encoding="utf-8") as f:
+        corrigees = list(csv.DictReader(f))
+    with open(dossier / "positions_estimees.csv", newline="", encoding="utf-8") as f:
+        estimees = list(csv.DictReader(f))
+
+    def places_du_nom(nom: str) -> list:
+        cle = cle_lieu(nom)
+        return [
+            (ligne, i)
+            for ligne in reseau.lines.values()
+            for i, arret in enumerate(ligne.stops)
+            if cle_lieu(arret) == cle
+        ]
+
+    # 1. Chaque position corrigée : sur toutes les lignes qui portent ce nom, sûre.
+    for rangee in corrigees:
+        point = (float(rangee["lat"]), float(rangee["lon"]))
+        places = places_du_nom(rangee["arret"])
+        bonnes = all(
+            reseau.position_sure(ligne, i)
+            and haversine_m(reseau.position_on_line(ligne, i), point) < 1
+            for ligne, i in places
+        )
+        verifie(
+            f"position corrigée « {rangee['arret']} » sur ses {len(places)} ligne(s), sûre",
+            bool(places) and bonnes,
+            [(l.name, reseau.position_on_line(l, i), reseau.position_sure(l, i)) for l, i in places],
+        )
+
+    # 2. AIBD : à Diass, plus jamais à Grand Yoff (arrets_geo.csv et lieux_geo.csv).
+    diass, grand_yoff = (14.67, -17.0733), (14.745133, -17.468034)
+    verifie(
+        "AIBD : position du réseau à Diass, « bonne »",
+        reseau.coords("AIBD") == diass and reseau.stop_confidence.get("AIBD") == "bonne",
+        (reseau.coords("AIBD"), reseau.stop_confidence.get("AIBD")),
+    )
+    geo = LieuxGeo()
+    point_aibd = geo.point_connu("AIBD")
+    verifie(
+        "AIBD : point du lieu (geo.py) à Diass, loin de Grand Yoff",
+        point_aibd is not None
+        and haversine_m(point_aibd, diass) < 1
+        and haversine_m(point_aibd, grand_yoff) > 30_000,
+        point_aibd,
+    )
+
+    # 3. Positions estimées : jamais sûres, jamais « bonne », jamais un arrêt conseillé.
+    for rangee in estimees:
+        places = places_du_nom(rangee["arret"])
+        noms = {ligne.stops[i] for ligne, i in places}
+        verifie(
+            f"« {rangee['arret']} » estimée : ni sûre sur une ligne, ni « bonne »",
+            bool(places)
+            and not any(reseau.position_sure(ligne, i) for ligne, i in places)
+            and all(reseau.stop_confidence.get(nom) != "bonne" for nom in noms),
+            [(l.name, reseau.position_sure(l, i)) for l, i in places],
+        )
+        nom = sorted(noms)[0] if noms else rangee["arret"]
+        coords = reseau.coords(nom)
+        lieu = {"nom_exact": set(), "nom_demande": set(), "point_sur": coords}
+        verifie(
+            f"« {nom} » estimée : jamais « arrêt conseillé » (cherche l'arrêt le plus proche)",
+            coords is not None and adapter._vague(lieu, nom),
+            coords,
+        )
+    verifie(
+        "geo.py : Avenue Cheikh Anta Diop n'est plus « bonne » (pas de proximité)",
+        not geo.position_sure("Avenue Cheikh Anta Diop"),
+    )
+
+    # 4. Dem Dikk 327 : APIX et le croisement de Tivaouane Peulh ne sont plus au même point.
+    ligne_327 = reseau.lines[("Dakar Dem Dikk", "Ligne 327")]
+    i_apix = ligne_327.stops.index("Apix")
+    apix = reseau.position_on_line(ligne_327, i_apix)
+    croisement = reseau.position_on_line(
+        ligne_327, ligne_327.stops.index("Croissement Tivaoune Peulh")
+    )
+    verifie(
+        "327 : croisement de Tivaouane Peulh à l'arrêt OSM, APIX ailleurs et estimée",
+        croisement == (14.786355, -17.294528)
+        and apix != croisement
+        and not reseau.position_sure(ligne_327, i_apix),
+        (apix, croisement),
+    )
+
+    if os.getenv("GUINDIMA_MOTEUR", "v2").strip().lower() == "v1":
+        return echecs, total
+    matcher = _matcher_hors_ligne()
+
+    def directs(depart: str, arrivee: str) -> dict:
+        return {l["ligne"]: l for l in matcher.find_line(depart, arrivee).get("lignes") or []}
+
+    # 5. Arrêt demandé par son nom : nommé, jamais « cherche l'arrêt le plus proche ».
+    maristes = directs("Guédiawaye", "Maristes").get("Ligne 37")
+    verifie(
+        "Guédiawaye -> Maristes : Tata 37 nomme « Maristes (Par Station Titan) »",
+        maristes is not None
+        and maristes["descend_a_reseau"] == "Maristes (Par Station Titan)"
+        and not maristes.get("descend_a_vague"),
+        maristes,
+    )
+    # Un lien de lieu ne vaut pas un nom demandé : « UCAD » ne fait pas conseiller
+    # l'Avenue Cheikh Anta Diop (voie de 5 km, position estimée).
+    ucad = directs("Parcelles Assainies", "UCAD").get("Ligne 25")
+    verifie(
+        "Parcelles Assainies -> UCAD : Avenue Cheikh Anta Diop jamais conseillée",
+        ucad is None
+        or ucad["descend_a_reseau"] != "Avenue Cheikh Anta Diop"
+        or ucad.get("descend_a_vague"),
+        ucad,
+    )
+    verifie(
+        "nom demandé : « Pikine Texaco » ne vaut pas « Pikine », les parenthèses et orthographes oui",
+        not adapter._nom_demande("Pikine", "Pikine Texaco")
+        and adapter._nom_demande("Maristes", "Maristes (Par Station Titan)")
+        and adapter._nom_demande("Sapeurs Pompiers", "Dieuppeul (Sapeurs Pompiers)")
+        and adapter._nom_demande("Fass Mbao", "Fassmbao"),
+    )
+
+    # 6. Durée : un arrêt deviné loin de tout voisin mesuré ne donne pas de chiffre.
+    sips = directs("Malika", "Pikine").get("Ligne 16B")
+    verifie(
+        "Malika -> Pikine : Dem Dikk 16B jusqu'à SIPS (position devinée) sans durée",
+        sips is not None and sips.get("minutes") is None and sips.get("duree_inconnue") is True,
+        sips,
+    )
+
+    # 7. Trajets démo : mêmes lignes qu'avant le lot F4.
+    for depart, arrivee, attendue in (
+        ("Ouakam", "Petersen", "Ligne 3"),
+        ("Médina", "Guédiawaye", "Ligne 12"),
+        ("Guédiawaye", "Maristes", "Ligne 37"),
+        ("Malika", "Pikine", "Ligne 80"),
+        ("Sapeur Pompiers", "Sandaga", "Ligne 1"),
+    ):
+        trouvees = directs(depart, arrivee)
+        verifie(
+            f"démo {depart} -> {arrivee} : {attendue} toujours proposée",
+            attendue in trouvees,
+            sorted(trouvees),
+        )
+    sandaga = directs("Sapeur Pompiers", "Sandaga").get("Ligne 1") or {}
+    verifie(
+        "démo Sapeur Pompiers -> Sandaga : montée et descente nommées, durée donnée",
+        not sandaga.get("monte_a_vague")
+        and not sandaga.get("descend_a_vague")
+        and sandaga.get("minutes"),
+        sandaga,
+    )
+    return echecs, total
+
+
 def test_plafonds_par_client() -> tuple[int, int]:
     """Plafonds par client (trajets, LLM, collecte), sans réseau ni modèle."""
     import contextlib
@@ -8368,6 +8552,7 @@ if __name__ == "__main__":
         echecs_revue, total_revue = test_revue_securite()
         echecs_plafonds, total_plafonds = test_plafonds_par_client()
         echecs_b5, total_b5 = test_lot_b5()
+        echecs_f4, total_f4 = test_lot_f4()
         echecs = (
             test_local()
             + echecs_partage
@@ -8417,6 +8602,7 @@ if __name__ == "__main__":
             + echecs_revue
             + echecs_plafonds
             + echecs_b5
+            + echecs_f4
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -8467,6 +8653,7 @@ if __name__ == "__main__":
             + total_revue
             + total_plafonds
             + total_b5
+            + total_f4
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

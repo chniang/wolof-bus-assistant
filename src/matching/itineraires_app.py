@@ -52,6 +52,15 @@ POSITIONS_RETIREES = DATA / "corrections" / "positions_ddd_retirees.csv"
 # HLM Grand Yoff -> AIBD par l'autoroute, sans arrêt intermédiaire.
 LIGNES_AJOUTEES = DATA / "corrections" / "lignes_ddd_ajoutees.csv"
 ARRETS_GEO = DATA / "arrets_geo.csv"
+# Positions d'arrêts retrouvées dans le dépôt (arrêt OSM nommé, arrêt identique
+# « bonne », repère de Diass pour l'AIBD), écrites par
+# scripts/inventaire_positions_devinees.py --ecrire. Elles valent pour toutes
+# les lignes qui portent ce nom, et rendent la position « bonne ».
+POSITIONS_CORRIGEES = DATA / "corrections" / "positions_corrigees.csv"
+# Positions « bonne » qu'on garde mais qu'on ne croit pas : voie de 5 km
+# (Avenue Cheikh Anta Diop), homonyme (Apix du Plateau). Elles deviennent
+# « estimée » : jamais un arrêt conseillé précis, jamais une proximité.
+POSITIONS_ESTIMEES = DATA / "corrections" / "positions_estimees.csv"
 CATEGORIE_SANS_ARRET = "Navette express, sans arrêt"
 STATUT_A_CONFIRMER = "à confirmer"
 DEM_DIKK = "Dakar Dem Dikk"
@@ -152,6 +161,26 @@ def rangees_ddd_officielles(
     )
     gardees = [rangee for rangee in rangees if rangee["ligne"] not in ecartees]
     return _retirer_positions(_ajouter_terminus(gardees, terminus, arrets_geo))
+
+
+def positions_corrigees(chemin: Path = POSITIONS_CORRIGEES) -> dict[str, tuple[float, float, str]]:
+    """Clé du nom (cle_lieu) -> (lat, lon, source) ; vide sans fichier."""
+    if not Path(chemin).exists():
+        return {}
+    corrigees = {}
+    for r in _lire(chemin):
+        try:
+            corrigees[cle_lieu(r["arret"])] = (float(r["lat"]), float(r["lon"]), r.get("source", ""))
+        except (KeyError, ValueError):
+            continue
+    return corrigees
+
+
+def positions_estimees(chemin: Path = POSITIONS_ESTIMEES) -> dict[str, str]:
+    """Clé du nom (cle_lieu) -> raison ; vide sans fichier."""
+    if not Path(chemin).exists():
+        return {}
+    return {cle_lieu(r["arret"]): r.get("raison", "") for r in _lire(chemin) if (r.get("arret") or "").strip()}
 
 
 def _retirer_positions(rangees: list[dict], chemin: Path = POSITIONS_RETIREES) -> list[dict]:

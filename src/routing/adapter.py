@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from .data import load_data
 from .network import Network, haversine_m
+import re
 from functools import lru_cache
 
 from .corrections import STOP_NAME_ALIASES
@@ -72,6 +73,16 @@ _CATEGORIES = {
     for rangee in _DATA.lignes.itertuples(index=False)
 }
 
+# (compagnie, ligne) -> pour chaque arrêt, dans l'ordre de la ligne : position
+# posée le long d'une trace (voir routing/data.SOURCES_SUR_TRACE).
+_SUR_TRACE = {
+    (str(compagnie), str(ligne)): tuple(
+        bool(_DATA.positions_sur_trace.get((str(compagnie), str(ligne)), {}).get(int(ordre), False))
+        for ordre in rangees.sort_values("ordre")["ordre"]
+    )
+    for (compagnie, ligne), rangees in _DATA.itineraires.groupby(["compagnie", "ligne"])
+}
+
 # Ligne ajoutée dont un terminus n'a pas de position sûre
 # (data/corrections/lignes_ddd_ajoutees.csv) : la carte le dit.
 _A_CONFIRMER_AJOUTEES = frozenset(
@@ -115,6 +126,40 @@ def _trace_etiree(
     )
 
 
+# Un arrêt de montée ou de descente dont la position n'est pas mesurée ne
+# donne une durée que s'il est à 1 km au plus d'un voisin mesuré sur sa ligne :
+# l'erreur reste alors sous ~3 min (un bus de ville fait ~330 m par minute).
+# Au-delà, « durée inconnue » plutôt qu'un chiffre inventé.
+VOISIN_MESURE_MAX_M = 1_000.0
+
+
+def _sur_trace(ligne, index: int) -> bool:
+    """Vrai si la position de cet arrêt est posée le long d'une trace (route réelle)."""
+
+    drapeaux = _SUR_TRACE.get(ligne.key)
+    return bool(drapeaux and len(drapeaux) == len(ligne.stops) and drapeaux[index])
+
+
+def _bout_devine(ligne, index: int) -> bool:
+    """Vrai si cet arrêt n'a ni position mesurée, ni position sur une trace, ni voisin mesuré à 1 km."""
+
+    if _NETWORK.position_sure(ligne, index) or _sur_trace(ligne, index):
+        return False
+    position = _NETWORK.position_on_line(ligne, index)
+    if position is None:
+        return True
+    for pas in (-1, 1):
+        voisin = index + pas
+        while 0 <= voisin < len(ligne.stops):
+            if _NETWORK.position_sure(ligne, voisin):
+                repere = _NETWORK.position_on_line(ligne, voisin)
+                if repere is not None and haversine_m(position, repere) <= VOISIN_MESURE_MAX_M:
+                    return False
+                break
+            voisin += pas
+    return True
+
+
 def duree_devinee(leg: Leg) -> bool:
     """Vrai si la durée de ce bus repose sur une longue portion sans position mesurée."""
 
@@ -130,9 +175,18 @@ def duree_devinee(leg: Leg) -> bool:
     trace = _NETWORK.line_distances.get(ligne.key)
     if trace is not None:
         return _trace_etiree(trace, segments, min(i, j), max(i, j))
+    # Sans trace, la montée et la descente doivent être situées : une position
+    # devinée loin de tout voisin mesuré ferait une durée inventée.
+    if _bout_devine(ligne, i) or _bout_devine(ligne, j):
+        return True
     portion = plus_longue = 0.0
     for index in range(min(i, j), max(i, j)):
         if _NETWORK.position_sure(ligne, index) and _NETWORK.position_sure(ligne, index + 1):
+            # Deux arrêts mesurés mais 15 km de ligne droite sans arrêt entre
+            # eux : la route n'est pas connue (Express AIBD, HLM Grand Yoff ->
+            # Diass par l'autoroute à péage).
+            if (segments[index] or 0.0) >= DISTANCE_DEVINEE_MAX_M:
+                return True
             portion = 0.0
             continue
         portion += segments[index] or 0.0
@@ -336,6 +390,23 @@ def _note_du_nom(lieu: str, arret: str, liens: bool = True) -> float:
     )
 
 
+# Note de nom (sans lien de lieu) à partir de laquelle un arrêt est celui que
+# l'usager a demandé : 1,0 pour le même nom, 0,9 pour une autre orthographe
+# (« Tallyboumack ») ; 0,75 seulement quand le nom contient le lieu (« Pikine
+# Texaco »), ce qui ne suffit pas.
+NOM_DEMANDE_MIN = 0.9
+
+
+def _nom_demande(lieu: str, arret: str) -> bool:
+    """Vrai si cet arrêt porte le nom demandé : son nom, sans parenthèse, ou son repère entre parenthèses."""
+
+    formes = [arret, *terminus_forms(arret)]
+    trouve = re.fullmatch(r"\s*([^()]+?)\s*\(([^()]+)\)\s*", arret)
+    if trouve:
+        formes += [trouve.group(1), trouve.group(2)]
+    return max(score(lieu, forme, False) for forme in formes) >= NOM_DEMANDE_MIN
+
+
 def _resoudre(matcher, lieu: str) -> dict:
     """Résout un lieu exactement comme ``StopsMatcher.find_line``.
 
@@ -478,6 +549,17 @@ def _resoudre(matcher, lieu: str) -> dict:
         "notes": notes,
         "par_son_nom": par_son_nom,
         "point_sur": point_sur,
+        # Arrêts que l'usager a demandés par leur nom, à l'orthographe près :
+        # « Maristes » -> « Maristes (Par Station Titan) », « Sapeurs Pompiers »
+        # -> « Dieuppeul (Sapeurs Pompiers) », « Fass Mbao » -> « Fassmbao ».
+        # Jamais par un lien de lieu (« UCAD » -> « Avenue Cheikh Anta Diop ») ni
+        # parce que le nom contient le lieu (« Liberté » -> « Collège la Liberté »).
+        "nom_demande": {
+            nom
+            for arret in tries
+            if _nom_demande(lieu, arret)
+            for nom in _arrets_du_reseau(arret)
+        },
         # Arrêts qui portent le nom exact du lieu : « Terminus Liberté 5
         # (Dieuppeul) » est Liberté 5, même à 1,3 km de l'autre arrêt Liberté 5.
         "nom_exact": {
@@ -620,21 +702,51 @@ def _sans_les_trop_lents(
     )
 
 
-def _vague(lieu: dict, arret: str) -> bool:
-    """Arrêt non garanti près du lieu dit : la carte doit le dire.
+def _position_fiable(arret: str, etape: dict | None = None) -> tuple[float, float] | None:
+    """La position MESURÉE de cet arrêt : sur la ligne de l'étape, sinon « bonne » générale.
 
-    Un arrêt qui porte le nom exact du lieu n'est jamais vague. Sinon, sans
-    point fiable pour le lieu (« Keur Massar » absent des CSV), ou avec un
-    arrêt à plus de 600 m (arrêt sans position, arrêt voisin trop loin), on ne
-    prétend pas connaître l'arrêt exact.
+    Une position interpolée à vue, géocodée ou rétrogradée « estimée »
+    (data/corrections/positions_estimees.csv) ne compte pas : elle ne peut pas
+    affirmer qu'un arrêt est à deux pas du lieu dit.
     """
 
-    if arret in lieu.get("nom_exact", ()):
+    if etape is not None:
+        ligne = _NETWORK.lines.get((etape.get("compagnie"), etape.get("ligne")))
+        if ligne is not None and arret in ligne.stops:
+            index = ligne.stops.index(arret)
+            if _NETWORK.position_sure(ligne, index):
+                return _NETWORK.position_on_line(ligne, index)
+    if _NETWORK.stop_confidence.get(arret) == "bonne":
+        return _NETWORK.coords(arret)
+    return None
+
+
+def _nomme(lieu: dict, arret: str) -> bool:
+    """Vrai si l'usager a demandé cet arrêt par son nom (il est dans la liste de la ligne).
+
+    « Maristes » et l'arrêt « Maristes (Par Station Titan) » de la Tata 37, ou
+    « Pikine » et « Pikine Texaco » : l'arrêt porte le nom demandé, la carte le
+    nomme au lieu de dire « cherche l'arrêt le plus proche ».
+    """
+
+    return arret in lieu.get("nom_exact", ()) or arret in lieu.get("nom_demande", ())
+
+
+def _vague(lieu: dict, arret: str, etape: dict | None = None) -> bool:
+    """Arrêt non garanti près du lieu dit : la carte doit le dire.
+
+    Un arrêt demandé par son nom n'est jamais vague. Sinon il faut un point
+    fiable pour le lieu ET une position mesurée de l'arrêt (sur sa ligne, ou
+    « bonne »), à 600 m au plus : une position devinée n'affirme jamais un
+    « arrêt conseillé » précis (Avenue Cheikh Anta Diop, voie de 5 km).
+    """
+
+    if _nomme(lieu, arret):
         return False
     point = lieu.get("point_sur")
     if point is None:
         return True
-    coords = _NETWORK.coords(arret)
+    coords = _position_fiable(arret, etape)
     if coords is None:
         return True
     return haversine_m(point, coords) > PLACE_STOP_RADIUS_M
@@ -874,22 +986,22 @@ def chercher_v2(
     # les deux bouts du trajet portent un lieu dit ; le changement de bus, lui,
     # est l'arrêt réel du réseau.
     for ligne in lignes:
-        ligne["monte_a_vague"] = _vague(dep, ligne["monte_a_reseau"])
-        ligne["descend_a_vague"] = _vague(arr, ligne["descend_a_reseau"])
+        ligne["monte_a_vague"] = _vague(dep, ligne["monte_a_reseau"], ligne)
+        ligne["descend_a_vague"] = _vague(arr, ligne["descend_a_reseau"], ligne)
     for corr in correspondances:
         corr["etape_1"]["monte_a_vague"] = _vague(
-            dep, corr["etape_1"]["monte_a_reseau"]
+            dep, corr["etape_1"]["monte_a_reseau"], corr["etape_1"]
         )
         corr["etape_2"]["descend_a_vague"] = _vague(
-            arr, corr["etape_2"]["descend_a_reseau"]
+            arr, corr["etape_2"]["descend_a_reseau"], corr["etape_2"]
         )
     for trajet in trajets_2:
         if trajet["etapes"]:
             trajet["etapes"][0]["monte_a_vague"] = _vague(
-                dep, trajet["etapes"][0]["monte_a_reseau"]
+                dep, trajet["etapes"][0]["monte_a_reseau"], trajet["etapes"][0]
             )
             trajet["etapes"][-1]["descend_a_vague"] = _vague(
-                arr, trajet["etapes"][-1]["descend_a_reseau"]
+                arr, trajet["etapes"][-1]["descend_a_reseau"], trajet["etapes"][-1]
             )
     # La voix lit le lieu de descente : pour un arrêt vague, elle dira le lieu
     # que l'usager a nommé, jamais l'arrêt lointain.

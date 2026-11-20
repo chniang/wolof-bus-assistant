@@ -27,9 +27,11 @@ from pathlib import Path
 
 try:  # import à plat (app.py) ou en paquet
     from matching.itineraires_app import cle_lieu, noms_seulement_officiels, rangees_itineraires
+    from matching.itineraires_app import positions_corrigees, positions_estimees
     from matching.lieux import FAUX_AMIS, relie, sans_accents
 except ImportError:  # pragma: no cover
     from .itineraires_app import cle_lieu, noms_seulement_officiels, rangees_itineraires
+    from .itineraires_app import positions_corrigees, positions_estimees
     from .lieux import FAUX_AMIS, relie, sans_accents
 
 DATA = Path(__file__).resolve().parents[2] / "data"
@@ -327,6 +329,10 @@ class LieuxGeo:
         self._lieux: dict[str, tuple[float, float]] = {}
         self._absents: set[str] = set()
         self._lire_lieux(lieux_geo)
+        # Positions revues (data/corrections/positions_corrigees.csv et
+        # positions_estimees.csv) : les mêmes que le moteur v2. AIBD était à
+        # Grand Yoff dans arrets_geo.csv ET dans lieux_geo.csv.
+        self._appliquer_positions_revues()
         # Arrêts Dem Dikk connus seulement par les listes officielles : jamais
         # géocodés (voir itineraires_app.noms_seulement_officiels).
         self._sans_geocodage = noms_seulement_officiels()
@@ -366,6 +372,21 @@ class LieuxGeo:
             if arret in self._arrets:
                 self._arrets[arret]["confiance"] = "douteuse"
                 self._cible_mots[arret] = set()
+
+    def _appliquer_positions_revues(self) -> None:
+        """Corrige ou rétrograde en mémoire les positions revues, sans toucher aux CSV."""
+        corrigees, estimees = positions_corrigees(), positions_estimees()
+        for arret, info in self._arrets.items():
+            cle = cle_lieu(arret)
+            if cle in corrigees:
+                info["point"] = corrigees[cle][:2]
+                info["confiance"] = "bonne"
+            elif cle in estimees and info.get("confiance") == "bonne":
+                info["confiance"] = "estimee"
+        for nom in list(self._lieux):
+            cle = cle_lieu(nom)
+            if cle in corrigees:
+                self._lieux[nom] = corrigees[cle][:2]
 
     def _lire_lieux(self, chemin: Path) -> None:
         if not chemin.exists():
