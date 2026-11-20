@@ -7372,7 +7372,7 @@ def test_lot_10() -> tuple[int, int]:
         sortie = silencieux(app.traiter_demande_collecte, None, PHRASE, "", None, True, None)
         suivi = sortie[7]
         verifie("Écrire : rien n'est envoyé, aucun code affiché",
-                not faux.lots and sortie[9] == "" and suivi["voix"] is False and len(sortie) == 12,
+                not faux.lots and sortie[9] == "" and suivi["voix"] is False and len(sortie) == 20,
                 (faux.lots, sortie[9]))
         verifie("Écrire : le panneau d'avis apparaît", sortie[8].get("visible") is True, sortie[8])
         verifie("le suivi ne contient jamais l'audio", "son" not in suivi)
@@ -9205,7 +9205,7 @@ def test_lot_c_design() -> tuple[int, int]:
         collecte.COLLECTEUR, collecte.LIMITE_AVIS_CLIENT = collecteur_origine, limite_origine
     sorties = app._sorties_collecte({"traitee": True, "repondu": False}, None, True)
     verifie("nouvelle demande : les étoiles reviennent à vide",
-            len(sorties) == 5 and sorties[4] == gr.update(value=None), sorties)
+            len(sorties) == 13 and sorties[4] == gr.update(value=None), sorties)
 
     # 4. Description du Space en français, <= 60 caractères (limite Hugging Face).
     entete = (RACINE / "README.md").read_text(encoding="utf-8").split("---", 2)[1]
@@ -9310,6 +9310,148 @@ def test_lot_c2_logo() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_c3_retours() -> tuple[int, int]:
+    """Lot C3 : chaque confirmation d'avis visible dans le panneau, sous le contrôle cliqué.
+
+    Sur téléphone, « Merci, c'est noté. » s'affichait tout en haut, hors de la
+    vue. Aucun réseau : le collecteur est un faux.
+    """
+    import contextlib
+    import io
+    import json
+    import os
+    import types
+
+    import gradio as gr
+
+    from app import apparence, collecte
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot C3 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    def silencieux(fonction, *args):
+        with contextlib.redirect_stdout(io.StringIO()):
+            return fonction(*args)
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_c3")
+
+    class FauxCollecteur:
+        def __init__(self, accepte: bool = True):
+            self.lots: list[dict] = []
+            self.accepte = accepte
+
+        def soumettre(self, fichiers: dict) -> bool:
+            self.lots.append(fichiers)
+            return self.accepte
+
+    def requete(ip: str):
+        return types.SimpleNamespace(headers={"x-forwarded-for": ip},
+                                     client=types.SimpleNamespace(host="10.0.0.1"))
+
+    def suivi() -> dict:
+        return {"code": "GM-CCCCCC", "depart": "Ouakam", "arrivee": "Palais", "lignes": ["L"],
+                "voix": False, "reponse": None, "minutes": None}
+
+    collecteur_origine = collecte.COLLECTEUR
+    try:
+        collecte.COLLECTEUR = FauxCollecteur()
+
+        # 1 et 4. Oui / Non / Je ne sais pas : confirmation sous les boutons, bouton choisi plein.
+        sortie = silencieux(app.clic_avis_non, None, suivi(), requete("203.0.113.60"))
+        verifie("avis : 7 sorties (suivi, code, retour, retour du bas, 3 boutons)", len(sortie) == 7, sortie)
+        nouveau, code, retour, bas, oui, non, nsp = sortie
+        verifie("avis : « Merci, c'est noté ✓ » en vert, sous les boutons",
+                "retour-ok" in retour and "Merci, c" in retour and "noté ✓" in retour,
+                retour)
+        verifie("avis : la confirmation se répète en bas du panneau", bas == retour)
+        verifie("avis : le bouton choisi (Non) reste plein, les autres non",
+                non == gr.update(variant="primary") and oui == gr.update(variant="secondary")
+                and nsp == gr.update(variant="secondary"), (oui, non, nsp))
+        verifie("avis : le code GM- reste affiché, sans le « Merci » en haut",
+                "GM-CCCCCC" in code and not code.startswith("Merci"), code)
+        verifie("avis : l'avis est bien enregistré", nouveau["reponse"] == "non")
+
+        # 2. Étoiles : « Merci pour ta note ⭐ (X/5) » sous les étoiles.
+        sortie = silencieux(app.clic_etoiles, 4, suivi(), requete("203.0.113.61"))
+        verifie("étoiles : « Merci pour ta note ⭐ (4/5) » sous les étoiles, répété en bas",
+                len(sortie) == 4 and "Merci pour ta note ⭐ (4/5)" in sortie[2] and sortie[3] == sortie[2]
+                and "retour-ok" in sortie[2], sortie)
+
+        # 3. Temps : « Temps enregistré : X min ✓ », bouton « envoyé ».
+        sortie = silencieux(app.clic_temps, 35, suivi(), requete("203.0.113.62"))
+        verifie("temps : « Temps enregistré : 35 min ✓ » et bouton « Temps envoyé ✓ »",
+                len(sortie) == 5 and "Temps enregistré : 35 min ✓" in sortie[2]
+                and sortie[4] == gr.update(value=app.TEXTE_TEMPS_ENVOYE, variant="primary"), sortie)
+        sortie = silencieux(app.clic_temps, 0, suivi(), requete("203.0.113.63"))
+        verifie("temps invalide : erreur en orange, sous le bouton et en bas",
+                "retour-erreur" in sortie[2] and "entre 1 et 300 minutes" in sortie[2]
+                and sortie[3] == sortie[2] and sortie[0] == gr.skip() and sortie[4] == gr.skip(), sortie)
+
+        # File d'envoi pleine : on le dit (orange) au lieu de rien.
+        collecte.COLLECTEUR = FauxCollecteur(accepte=False)
+        sortie = silencieux(app.clic_avis_oui, None, suivi(), requete("203.0.113.64"))
+        verifie("avis non gardé : message orange", "retour-erreur" in sortie[2], sortie[2])
+
+        # Sans demande en cours : rien ne bouge.
+        verifie("sans demande : aucun changement",
+                silencieux(app.clic_avis_oui, None, None, requete("203.0.113.65"))
+                == tuple(gr.skip() for _ in range(7))
+                and silencieux(app.clic_etoiles, 3, None, requete("203.0.113.65"))
+                == tuple(gr.skip() for _ in range(4)))
+    finally:
+        collecte.COLLECTEUR = collecteur_origine
+
+    # Nouvelle demande : tout revient à zéro (retours vides, boutons d'origine).
+    collecte.COLLECTEUR = FauxCollecteur()
+    try:
+        trace = {"traitee": True, "repondu": True, "depart": "Ouakam", "arrivee": "Palais",
+                 "lignes": ["L"], "son": None, "phrase": None}
+        sorties = silencieux(app._sorties_collecte, trace, suivi(), True)
+    finally:
+        collecte.COLLECTEUR = collecteur_origine
+    verifie("nouvelle demande : retours vides, Oui/Non et temps remis à l'état initial",
+            len(sorties) == 13 and sorties[3] == gr.update(value=None) and sorties[4] == gr.update(value=None)
+            and sorties[5:9] == ("", "", "", "")
+            and sorties[9:12] == tuple(gr.update(variant="secondary") for _ in range(3))
+            and sorties[12] == gr.update(value=app.TEXTE_TEMPS, variant="secondary"), sorties[3:])
+    changement = silencieux(app._sorties_collecte, trace, suivi(), False)
+    verifie("changement de compagnie : l'avis en cours reste affiché",
+            all(valeur == gr.skip() for valeur in changement[5:]), changement[5:])
+
+    # Dans l'interface : les retours sont DANS le panneau, sous chaque contrôle.
+    ancien = os.environ.get("COLLECTE_ACTIVE")
+    os.environ["COLLECTE_ACTIVE"] = "1"
+    try:
+        config = silencieux(app._construire).get_config_file()
+    finally:
+        if ancien is None:
+            os.environ.pop("COLLECTE_ACTIVE", None)
+        else:
+            os.environ["COLLECTE_ACTIVE"] = ancien
+    ids = [c.get("props", {}).get("elem_id") for c in config["components"]]
+    rangs = {nom: ids.index(nom) for nom in ("etoiles_guindima", "retour_avis", "retour_etoiles",
+                                             "retour_temps", "retour_bas") if nom in ids}
+    verifie("retours présents dans le panneau, dans l'ordre des contrôles",
+            len(rangs) == 5 and rangs["retour_avis"] < rangs["etoiles_guindima"] < rangs["retour_etoiles"]
+            < rangs["retour_temps"] < rangs["retour_bas"], rangs)
+    css = apparence.CSS_GUINDIMA
+    verifie("style : confirmation verte, erreur orange",
+            ".retour-ok { background: #E8F5EE" in css and ".retour-erreur { background: #FFF4E5" in css)
+    texte = json.dumps(config, ensure_ascii=False, default=str)
+    verifie("le panneau garde ses textes", "La ligne est juste ?" in texte and "Note l'application" in texte)
+
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -9376,6 +9518,7 @@ if __name__ == "__main__":
         echecs_bsrc, total_bsrc = test_lot_b_sources()
         echecs_c, total_c = test_lot_c_design()
         echecs_c2, total_c2 = test_lot_c2_logo()
+        echecs_c3, total_c3 = test_lot_c3_retours()
         echecs = (
             test_local()
             + echecs_partage
@@ -9432,6 +9575,7 @@ if __name__ == "__main__":
             + echecs_bsrc
             + echecs_c
             + echecs_c2
+            + echecs_c3
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -9489,6 +9633,7 @@ if __name__ == "__main__":
             + total_bsrc
             + total_c
             + total_c2
+            + total_c3
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

@@ -342,6 +342,20 @@ html, body, .dark body, body.dark { background: #FFFFFF !important; color: #1125
 }
 #panneau_avis > *, #panneau_avis .styler, #panneau_avis .form { background: transparent !important; border: 0 !important; }
 #panneau_avis .prose { font-size: 17px; }
+/* Lot C3 : confirmation sous le contrôle cliqué (vert, ✓), erreur en orange. */
+#panneau_avis .retour-ok,
+#panneau_avis .retour-erreur {
+    margin: 2px 0 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 750;
+    line-height: 1.35;
+}
+#panneau_avis .retour-ok { background: #E8F5EE; border: 1.5px solid #9BD4B5; color: #064E2B; }
+#panneau_avis .retour-erreur { background: #FFF4E5; border: 1.5px solid #E8A84A; color: #7A3E00; }
+#retour_bas .retour-ok, #retour_bas .retour-erreur { margin-top: 6px; }
+#retour_avis, #retour_etoiles, #retour_temps, #retour_bas { padding: 0 !important; min-height: 0 !important; }
 
 /* Les blocs (accordéon, groupe d'avis) : bordure neutre tout autour. */
 .gradio-container .block,
