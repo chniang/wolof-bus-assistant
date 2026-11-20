@@ -5829,7 +5829,8 @@ def test_micro_vidage() -> tuple[int, int]:
         verifie(
             "aucun trajet : micro vidé, explication affichée",
             sortie[5] is None
-            and sortie[1] == ""
+            # Lot F5 : l'arrivée comprise s'affiche, le départ manquant aussi.
+            and sortie[1] == "? → Palais"
             and "Lieu non détecté" in sortie[2]
             # Arrivée sans départ : la voix redemande (phrase capacités, 20/11).
             and "d'où pars-tu" in sortie[2]
@@ -8775,6 +8776,112 @@ def test_zerogpu_cuda() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_f5() -> tuple[int, int]:
+    """Lot F5 : durées en fourchettes ; « dama bëgg dem Maristes » demande le départ.
+
+    Aucun réseau : le LLM est toujours un faux client.
+    """
+    import contextlib
+    import io
+    import os
+
+    from intent.extract_intent import extract_intent
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot F5 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_f5")
+
+    # 1. Fourchettes : durée calculée -> durée × 1,8, arrondies à 5 min.
+    attendus = {
+        30: "30–55 min",    # 54 -> 55
+        12: "10–20 min",    # 12 -> 10 ; 21,6 -> 20
+        27.5: "30–50 min",  # 27,5 -> 30 ; 49,5 -> 50
+        45: "45–80 min",    # 81 -> 80
+        3: "5–10 min",      # jamais « 5–5 min »
+        0: "5–10 min",      # jamais « 0 min »
+    }
+    obtenus = {m: app.fourchette_minutes(m) for m in attendus}
+    verifie("fourchettes et arrondis à 5 min", obtenus == attendus, obtenus)
+
+    # Sur une vraie carte : la fourchette remplace « ~N min ».
+    match = dict(app.MATCHER.find_line("Ouakam", "Palais")["lignes"][0])
+    carte = app._une_carte(match, depart="Ouakam", arrivee="Palais")
+    verifie("carte : fourchette affichée, plus de « ~N min »",
+            app.fourchette_minutes(match["minutes"]) in carte
+            and re.search(r"~\d+ min", carte) is None,
+            (match.get("minutes"), carte[-600:]))
+    # Durée inconnue : rien d'inventé, ni chiffre ni fourchette.
+    inconnue = {**match, "minutes": None, "duree_inconnue": True}
+    carte = app._une_carte(inconnue, depart="Ouakam", arrivee="Palais")
+    verifie("carte : durée inconnue, aucune fourchette inventée",
+            "durée inconnue" in carte and re.search(r"\d+–\d+ min", carte) is None,
+            carte[-600:])
+    # La voix ne dit aucune durée : la phrase parlée ne change pas.
+    source_app = (RACINE / "app.py").read_text(encoding="utf-8")
+    corps_voix = source_app.split("def _voix_wolof", 1)[1].split("\ndef ", 1)[0]
+    verifie("voix : aucune durée parlée",
+            "minutes" not in corps_voix and "fourchette" not in corps_voix)
+
+    # 2. « dama bëgg dem Maristes » : le LLM mettait Maristes en départ, le
+    #    local complétait l'arrivée avec Maristes -> « même lieu ».
+    for reponse_llm in (
+        '{"depart": "Maristes", "arrivee": ""}',
+        '{"depart": "Maristes", "arrivee": "Maristes"}',
+        '{"depart": "", "arrivee": ""}',
+    ):
+        with contextlib.redirect_stdout(io.StringIO()):
+            intent = extract_intent("dama bëgg dem Maristes", client=_FauxClient(reponse_llm))
+        verifie(f"extraction, LLM {reponse_llm} : départ vide, arrivée Maristes",
+                (intent["depart"], intent["arrivee"]) == ("", "Maristes"), intent)
+
+    client_origine = app._client_llm
+
+    def pipeline(phrase: str, client) -> tuple[tuple, bool, str]:
+        app._client_llm = lambda: client
+        tampon = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(tampon):
+                quint, trouve = app._pipeline(phrase, "", 0.0)
+        finally:
+            app._client_llm = client_origine
+        return quint, trouve, tampon.getvalue()
+
+    for phrase in ("dama bëgg dem Maristes", "dama bëgg dem Marist"):
+        for reponse_llm in ('{"depart": "Maristes", "arrivee": ""}',
+                            '{"depart": "Maristes", "arrivee": "Maristes"}'):
+            quint, trouve, journal = pipeline(phrase, _FauxClient(reponse_llm))
+            verifie(f"« {phrase} » (LLM {reponse_llm}) : départ demandé, Maristes nommé",
+                    not trouve
+                    and "erreur=lieu_manquant" in journal
+                    and "conversation_meme_lieu" not in journal
+                    and "d'où pars-tu" in quint[2]
+                    and "Maristes" in quint[2]
+                    and quint[1] == "? → Maristes"
+                    and quint[3] is not None,
+                    (quint[1], quint[2][:200], journal))
+    # Pikine passait déjà : même réponse, même champ.
+    quint, _, _ = pipeline("dama bëgg dem pikin", _FauxClient('{"depart": "", "arrivee": ""}'))
+    verifie("« dama bëgg dem pikin » : « ? → Pikine »",
+            quint[1] == "? → Pikine" and "d'où pars-tu" in quint[2], quint[1:3])
+    # Un vrai trajet garde « départ → arrivée » sans point d'interrogation.
+    quint, trouve, _ = pipeline("Maa ngi Ouakam, bëgg naa dem Palais",
+                                _ClientQuiLeve(lambda: TimeoutError("non")))
+    verifie("trajet complet : « Ouakam → Palais »",
+            trouve and quint[1] == "Ouakam → Palais", quint[1])
+
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -8837,6 +8944,7 @@ if __name__ == "__main__":
         echecs_f4, total_f4 = test_lot_f4()
         echecs_2011, total_2011 = test_lot_20_11()
         echecs_zerogpu, total_zerogpu = test_zerogpu_cuda()
+        echecs_f5, total_f5 = test_lot_f5()
         echecs = (
             test_local()
             + echecs_partage
@@ -8889,6 +8997,7 @@ if __name__ == "__main__":
             + echecs_f4
             + echecs_2011
             + echecs_zerogpu
+            + echecs_f5
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -8942,6 +9051,7 @@ if __name__ == "__main__":
             + total_f4
             + total_2011
             + total_zerogpu
+            + total_f5
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

@@ -1224,6 +1224,33 @@ def _repli_local(transcription: str, raison: str) -> dict:
     return {**resultat, "erreur": raison}
 
 
+def _un_seul_lieu_dit(resultat: dict, transcription: str) -> dict:
+    """Un lieu dit une seule fois ne peut pas être à la fois départ et arrivée.
+
+    Deux chemins menaient à « même lieu » au lieu de demander le départ
+    (retours testeurs du 20/11) :
+    - le LLM recopie le lieu des deux côtés : « man dgt waay dama bëgg dem
+      mariste » -> Maristes -> Maristes ;
+    - le LLM le met en départ seulement, et l'extraction locale complète
+      l'arrivée avec ce même lieu : « dama bëgg dem Maristes » -> Maristes
+      (LLM, départ) + Maristes (local, arrivée).
+    L'extraction locale tranche : si elle ne voit pas ce lieu en départ, le
+    départ est le sien (souvent vide). « maa ngi Petersen, bëgg naa dem
+    Petersen », dit vraiment deux fois, reste Petersen des deux côtés.
+    """
+    depart, arrivee = resultat.get("depart") or "", resultat.get("arrivee") or ""
+    if not (depart and arrivee and _cible(depart) == _cible(arrivee)):
+        return resultat
+    local = extract_local(transcription)
+    if _cible(local.get("depart") or "") == _cible(depart):
+        return resultat
+    return {
+        **resultat,
+        "depart": local.get("depart") or "",
+        "arrivee": local.get("arrivee") or arrivee,
+    }
+
+
 def extract_intent(transcription: str, client=None) -> dict:
     """Extrait depart / arrivee d'une transcription wolof bruitée.
 
@@ -1273,18 +1300,6 @@ def extract_intent(transcription: str, client=None) -> dict:
         depart = ""
     if _bopp_non_nomme(arrivee, transcription):
         arrivee = ""
-    # Le LLM recopie le seul lieu entendu des deux côtés : « man dgt waay dama
-    # bëgg dem mariste » devenait Maristes -> Maristes, et l'app répondait
-    # « même lieu » au lieu de demander le départ (retours testeurs du 20/11).
-    # L'extraction locale tranche : si elle ne voit pas ce lieu en départ, le
-    # départ est le sien (souvent vide). « maa ngi Petersen, bëgg naa dem
-    # Petersen », dit vraiment deux fois, reste Petersen des deux côtés.
-    if depart and arrivee and _cible(depart) == _cible(arrivee):
-        local = extract_local(transcription)
-        if _cible(local.get("depart") or "") != _cible(depart):
-            depart = local.get("depart") or ""
-            arrivee = local.get("arrivee") or arrivee
-
     resultat = {
         "depart": depart,
         "arrivee": arrivee,
@@ -1293,7 +1308,7 @@ def extract_intent(transcription: str, client=None) -> dict:
         "source": "llm",
     }
     if resultat["depart"] and resultat["arrivee"]:
-        return resultat
+        return _un_seul_lieu_dit(resultat, transcription)
 
     # Le LLM a répondu mais sans les deux lieux (vu avec « marché liberté cinq
     # dama bëgg dem palais » : réponse vide). L'extraction locale complète ce
@@ -1303,7 +1318,7 @@ def extract_intent(transcription: str, client=None) -> dict:
         if not resultat[champ] and local.get(champ):
             resultat[champ] = local[champ]
             resultat["source"] = "llm+local"
-    return resultat
+    return _un_seul_lieu_dit(resultat, transcription)
 
 
 if __name__ == "__main__":

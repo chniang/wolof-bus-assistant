@@ -1007,6 +1007,29 @@ def _bloc_arrets(match: dict) -> str:
     )
 
 
+# Lot F5 : la durée calculée sur la distance suppose une route dégagée. Aux
+# heures de pointe, les embouteillages de Dakar la font presque doubler : on
+# affiche une fourchette honnête plutôt qu'un chiffre unique trop optimiste.
+FACTEUR_EMBOUTEILLAGES = 1.8
+ARRONDI_DUREE_MIN = 5
+
+
+def _arrondi_5(minutes: float) -> int:
+    """Arrondi aux 5 min les plus proches (au moins 5), 27,5 -> 30 et non 25."""
+    return max(ARRONDI_DUREE_MIN, int(minutes / ARRONDI_DUREE_MIN + 0.5) * ARRONDI_DUREE_MIN)
+
+
+def fourchette_minutes(minutes: float) -> str:
+    """« 30–55 min » : la durée calculée, puis la même × 1,8, arrondies à 5 min.
+
+    Le haut de la fourchette dépasse toujours le bas : 3 min donnerait sinon
+    « 5–5 min ».
+    """
+    bas = _arrondi_5(float(minutes))
+    haut = max(_arrondi_5(float(minutes) * FACTEUR_EMBOUTEILLAGES), bas + ARRONDI_DUREE_MIN)
+    return f"{bas}–{haut} min"
+
+
 def _une_carte(
     match: dict,
     etape: str = "",
@@ -1075,7 +1098,7 @@ def _une_carte(
     )
     duree = (
         f"<span style='color:#0B6B37;font-weight:700;'>"
-        f"~{int(round(float(match['minutes'])))} min"
+        f"{fourchette_minutes(match['minutes'])}"
         # Dem Dikk 11 : un terminus sans position, la durée est un forfait.
         f"{' (durée estimée)' if match.get('estimee') else ''}</span>"
         if match.get("minutes") is not None
@@ -1519,7 +1542,10 @@ def _pipeline(
             if arrivee and not depart
             else None
         )
-        return (phrase, "", _carte({}, depart, arrivee), voix, _mention(intent, modele_asr)), False
+        # « ? → Maristes » : l'usager voit que l'arrivée est comprise et que
+        # seul le départ manque.
+        trajet = f"? → {arrivee}" if arrivee and not depart else ""
+        return (phrase, trajet, _carte({}, depart, arrivee), voix, _mention(intent, modele_asr)), False
 
     resultat = MATCHER.find_line(depart, arrivee)
 
