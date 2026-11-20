@@ -452,6 +452,8 @@ DUREE_GPU_BASE_S = 15
 DUREE_GPU_MAX_S = 30
 
 
+# Désactivée le 20/11 : test de la panne No CUDA GPUs. transcrire_wolof réserve
+# 20 s fixes ; la fonction reste pour revenir en arrière.
 def _duree_gpu(audio: np.ndarray) -> int:
     """Durée ZeroGPU à réserver pour cet audio (mêmes arguments que transcrire_wolof)."""
     try:
@@ -462,12 +464,14 @@ def _duree_gpu(audio: np.ndarray) -> int:
     return int(min(DUREE_GPU_MAX_S, DUREE_GPU_BASE_S + -(-secondes // 2)))
 
 
-@spaces.GPU(duration=_duree_gpu)
+# Durée fixe : on écarte la durée calculée (callable) comme cause possible de
+# « No CUDA GPUs are available » après 1 ou 2 appels (20/11).
+@spaces.GPU(duration=20)
 def transcrire_wolof(audio: np.ndarray) -> str:
     """Transcrit avec Kiriku sur GPU — le seul endroit qui réserve le GPU.
 
     Le modèle est déjà chargé au démarrage du module (recommandation ZeroGPU) :
-    la réservation ne couvre que le calcul, d'où _duree_gpu. Kiriku ne se charge
+    la réservation ne couvre que le calcul (20 s fixes). Kiriku ne se charge
     jamais ici. S'il est absent (pas de GPU au démarrage), on renvoie une phrase
     préfixée par ERREUR_ASR : l'appelant bascule sur le whisper CPU préchargé.
     """

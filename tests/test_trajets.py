@@ -6482,8 +6482,12 @@ def test_lot_4() -> tuple[int, int]:
     # modèle dans transcrire_wolof (règle ZeroGPU), durée explicite.
     source_app = (RACINE / "app.py").read_text(encoding="utf-8")
     corps = source_app.split("def transcrire_wolof", 1)[1].split("\ndef ", 1)[0]
-    verifie("ZeroGPU : durée dynamique sur transcrire_wolof",
-            "@spaces.GPU(duration=_duree_gpu)\ndef transcrire_wolof" in source_app)
+    # Depuis le 20/11 : durée fixe de 20 s (test de la panne No CUDA GPUs) ;
+    # _duree_gpu reste dans le code, testée ci-dessous, mais n'est plus branchée.
+    verifie("ZeroGPU : durée fixe de 20 s sur transcrire_wolof",
+            "# « No CUDA GPUs are available » après 1 ou 2 appels (20/11).\n"
+            "@spaces.GPU(duration=20)\ndef transcrire_wolof" in source_app
+            and "duration=_duree_gpu" not in source_app)
     import contextlib
     import io
 
@@ -8500,7 +8504,9 @@ def silencieux_cle(fonction, requete):
 def test_lot_20_11() -> tuple[int, int]:
     """Retours des testeurs du 20/11, sans réseau ni modèle.
 
-    - spaces fixé à 0.51.3 : 0.52.1 perdait le GPU après 1 ou 2 appels ;
+    - spaces jamais épinglé : ZeroGPU impose sa version (0.52.1 au 20/11), un
+      pin 0.51.3 faisait échouer le build ; la panne « No CUDA GPUs » se teste
+      donc par une durée GPU fixe de 20 s ;
     - « maa ngi yambël / yambal / yambal yambal » = Yeumbeul ;
     - un seul lieu après « dem » : arrivée seulement, l'app demande le départ,
       même quand le LLM recopie ce lieu des deux côtés ; jamais « même lieu ».
@@ -8522,18 +8528,21 @@ def test_lot_20_11() -> tuple[int, int]:
         if not condition and detail:
             print(f"      {detail!r}")
 
-    # 1. ZeroGPU : version de spaces fixée, la durée dynamique ne bouge pas.
+    # 1. ZeroGPU : aucune version de spaces imposée, durée GPU fixe.
     requirements = (RACINE / "requirements.txt").read_text(encoding="utf-8-sig")
     paquets = [
         ligne.split("#", 1)[0].strip()
         for ligne in requirements.splitlines()
         if ligne.split("#", 1)[0].strip()
     ]
-    verifie("spaces==0.51.3, seule ligne spaces",
-            [p for p in paquets if p.lower().startswith("spaces")] == ["spaces==0.51.3"], paquets)
+    verifie("spaces jamais épinglé (ZeroGPU impose sa version)",
+            not any(re.match(r"(?i)^spaces\s*[<>=!~]", p) for p in paquets), paquets)
     source_app = (RACINE / "app.py").read_text(encoding="utf-8")
-    verifie("durée GPU dynamique conservée",
-            "@spaces.GPU(duration=_duree_gpu)" in source_app)
+    verifie("durée GPU fixe de 20 s, _duree_gpu gardée mais débranchée",
+            "@spaces.GPU(duration=20)\ndef transcrire_wolof" in source_app
+            and "def _duree_gpu" in source_app
+            and "Désactivée le 20/11 : test de la panne No CUDA GPUs" in source_app
+            and "duration=_duree_gpu" not in source_app)
 
     # 2. Yeumbeul sous ses formes parlées, phrases réelles des testeurs.
     reelles = (
