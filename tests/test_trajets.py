@@ -7880,6 +7880,7 @@ def test_plafonds_par_client() -> tuple[int, int]:
 
         app._decoder_audio = lambda chemin: son[0]
         app._effacer_audio_recu = lambda chemin: effaces.append(chemin) or True
+        seconde_chance_reelle = app.transcrir_avec_seconde_chance
         app.transcrir_avec_seconde_chance = transcrit
         app._voix_wolof = lambda *a, **k: None
         app._client_llm = lambda: None
@@ -7953,7 +7954,7 @@ def test_plafonds_par_client() -> tuple[int, int]:
         silencieux(app.traiter_demande, None, INCONNUE, "", None, True, autre)
         verifie("plafond global du LLM conservé", len(appels) == 1, len(appels))
 
-        # 6. Collecte : 5 voix par heure et par client, 200 par jour, 20 s.
+        # 6. Collecte : 15 voix par heure et par client, 200 par jour, 20 s.
         os.environ["HF_TOKEN_COLLECTE"] = "jeton-de-test"
         faux = collecte.COLLECTEUR = FauxCollecteur()
         collecte.LIMITE_VOIX_CLIENT = LimiteParClient(((HEURE, 2),))
@@ -7992,6 +7993,69 @@ def test_plafonds_par_client() -> tuple[int, int]:
         voix(client)
         verifie("voix de 20 s : gardée", len(faux.lots) == 1, len(faux.lots))
 
+        # Test public : 6 vocaux en moins d'une heure depuis un même wifi (PC +
+        # téléphone), plus aucun code, et rien dans le journal pour le dire.
+        # Désormais 15 par heure, et le refus s'écrit au journal.
+        faux = collecte.COLLECTEUR = FauxCollecteur()
+        collecte.LIMITE_VOIX_CLIENT = LimiteParClient(((HEURE, 15),))
+        son[0] = np.full(3 * 16_000, 0.1, dtype=np.float32)
+        maison = requete("198.51.100.7")
+        journal = io.StringIO()
+        with contextlib.redirect_stdout(journal):
+            serie = [app.traiter_demande_collecte("x.webm", "", "", None, True, None, maison)
+                     for _ in range(16)]
+        codes = [s[9] for s in serie]
+        verifie("6e voix dans l'heure : code affiché", "GM-" in codes[5], codes[5])
+        verifie("voix 1 à 15 : un code chacune", all("GM-" in c for c in codes[:15]),
+                [i for i, c in enumerate(codes) if "GM-" not in c])
+        verifie("16e voix : réponse normale, pas de code",
+                codes[15] == "" and serie[15][0] == PHRASE and serie[15][7]["voix"] is False, codes[15])
+        texte_journal = journal.getvalue()
+        verifie("journal : 15 voix en file, avec leur code",
+                texte_journal.count("[collecte] en file GM-") == 15
+                and all(s[7]["code"] in texte_journal for s in serie[:15]), texte_journal[-300:])
+        verifie("journal : la limite atteinte est nommée",
+                texte_journal.count("[collecte] ignorée : limite par client et par heure atteinte") == 1,
+                texte_journal[-300:])
+        verifie("journal : ni adresse ni phrase",
+                "198.51.100.7" not in texte_journal and silencieux_cle(cle_client, maison) not in texte_journal
+                and not any(PHRASE in l for l in texte_journal.splitlines() if l.startswith("[collecte]")),
+                texte_journal[-300:])
+
+        # Le chemin CPU n'empêche pas la collecte : GPU refusé, whisper répond,
+        # la voix est gardée avec le nom du modèle CPU.
+        faux = collecte.COLLECTEUR = FauxCollecteur()
+        gpu, cpu = app.transcrire_wolof, app._transcrire_cpu
+
+        def gpu_refuse(_audio):
+            raise RuntimeError("You have exceeded your GPU quota")
+
+        app.transcrir_avec_seconde_chance = seconde_chance_reelle
+        app.transcrire_wolof, app._transcrire_cpu = gpu_refuse, lambda audio: PHRASE
+        try:
+            secours = voix(requete("198.51.100.8"))
+        finally:
+            app.transcrir_avec_seconde_chance = transcrit
+            app.transcrire_wolof, app._transcrire_cpu = gpu, cpu
+        fiche_cpu = json.loads(next(o for c, o in faux.lots[0].items() if c.endswith("demande.json")))
+        verifie("GPU refusé : whisper CPU, code affiché, voix gardée",
+                secours[0] == PHRASE and "GM-" in secours[9] and len(faux.lots) == 1
+                and "Kiriku" not in fiche_cpu["modele_asr"] and fiche_cpu["modele_asr"], fiche_cpu)
+
+        # Envoi : le nombre de dossiers (contributions), pas les codes.
+        os.environ["HF_TOKEN_COLLECTE"] = "jeton-de-test"
+        envoyes: list = []
+        reel = collecte.Collecteur(televerser=envoyes.append, intervalle=3600)
+        journal = io.StringIO()
+        with contextlib.redirect_stdout(journal):
+            reel.soumettre({"donnees/GM-AAAAAA/audio.wav": b"1", "donnees/GM-AAAAAA/demande.json": b"{}"})
+            reel.soumettre({"donnees/GM-BBBBBB/avis.json": b"{}"})
+            reel.vider()
+        reel.arreter()
+        verifie("journal : envoi de 2 dossier(s), sans code",
+                "[collecte] envoi : 2 dossier(s)" in journal.getvalue() and "GM-" not in journal.getvalue(),
+                journal.getvalue())
+
         collecte.LIMITE_AVIS_CLIENT = LimiteParClient(((HEURE, 1),))
         faux = collecte.COLLECTEUR = FauxCollecteur()
         suivi = {"code": "GM-AAAAAA", "depart": "A", "arrivee": "B", "lignes": ["L"],
@@ -8021,7 +8085,7 @@ def test_plafonds_par_client() -> tuple[int, int]:
                 regle.LIMITE_TRAJETS_CLIENT.fenetres == ((MINUTE, 3), (JOUR, 6))
                 and regle.LIMITE_LLM_CLIENT.fenetres == ((MINUTE, 2), (JOUR, 8)))
         verifie("collecte : valeurs par défaut demandées",
-                sauve[1].fenetres == ((HEURE, 5),) and sauve[2].fenetres == ((JOUR, 200),)
+                sauve[1].fenetres == ((HEURE, 15),) and sauve[2].fenetres == ((JOUR, 200),)
                 and collecte.DUREE_MAX_VOIX_S == 20)
     finally:
         collecte.COLLECTEUR, collecte.LIMITE_VOIX_CLIENT, collecte.LIMITE_VOIX_JOUR, collecte.LIMITE_AVIS_CLIENT = sauve

@@ -54,7 +54,10 @@ CAPACITE_FILE = 100
 # Contre le remplissage du dépôt par un script. Au-delà, la réponse reste normale
 # et rien n'est gardé : l'usager n'a pas à connaître ces seuils.
 DUREE_MAX_VOIX_S = entier_env("COLLECTE_DUREE_MAX_S", 20)
-LIMITE_VOIX_CLIENT = LimiteParClient(((HEURE, entier_env("COLLECTE_MAX_PAR_CLIENT_HEURE", 5)),))
+# 15 et non 5 : un testeur se reprend souvent, et un PC et un téléphone sur le
+# même wifi comptent pour un seul client. Au premier test public, 6 vocaux en
+# moins d'une heure depuis une même maison ont suffi à ne plus rien garder.
+LIMITE_VOIX_CLIENT = LimiteParClient(((HEURE, entier_env("COLLECTE_MAX_PAR_CLIENT_HEURE", 15)),))
 LIMITE_VOIX_JOUR = LimiteFenetres(((JOUR, entier_env("COLLECTE_MAX_PAR_JOUR", 200)),))
 # Chaque clic sur un avis occupe une place dans la file d'envoi.
 LIMITE_AVIS_CLIENT = LimiteParClient(((HEURE, entier_env("COLLECTE_AVIS_MAX_PAR_CLIENT_HEURE", 30)),))
@@ -282,6 +285,9 @@ class Collecteur:
         lot.update(nouveaux)
         if not lot:
             return 0
+        # Un dossier par code (voix, avis) : le nombre de contributions, pas de fichiers.
+        dossiers = len({chemin.rsplit("/", 1)[0] for chemin in lot})
+        print(f"[collecte] envoi : {dossiers} dossier(s)", flush=True)
         try:
             self.televerser(lot)
         except Exception as exc:
@@ -295,13 +301,24 @@ class Collecteur:
 COLLECTEUR = Collecteur()
 
 
+def limite_voix_atteinte(son, cle: str | None) -> str | None:
+    """Le nom de la limite qui écarte cette voix, ou None si elle est gardée.
+
+    Durée, puis plafond du client, puis plafond du jour, dans cet ordre : une
+    voix trop longue n'entame pas le quota du client, une voix refusée au client
+    n'entame pas celui du jour.
+    """
+    if len(son) > DUREE_MAX_VOIX_S * FREQUENCE:
+        return "durée"
+    if not LIMITE_VOIX_CLIENT.autoriser(cle):
+        return "par client et par heure"
+    if not LIMITE_VOIX_JOUR.autoriser():
+        return "par jour"
+    return None
+
+
 def voix_acceptable(son, cle: str | None) -> bool:
-    """Durée, puis plafond du client, puis plafond du jour."""
-    return (
-        len(son) <= DUREE_MAX_VOIX_S * FREQUENCE
-        and LIMITE_VOIX_CLIENT.autoriser(cle)
-        and LIMITE_VOIX_JOUR.autoriser()
-    )
+    return limite_voix_atteinte(son, cle) is None
 
 
 def avis_autorise(cle: str | None) -> bool:
@@ -328,7 +345,11 @@ def nouveau_suivi(trace: dict) -> tuple[dict, str]:
     son, phrase = trace.get("son"), trace.get("phrase")
     if son is None or not phrase:
         return suivi, ""
-    if not voix_acceptable(son, trace.get("client")):
+    limite = limite_voix_atteinte(son, trace.get("client"))
+    if limite:
+        # Au test public, ce refus était muet : on croyait le chemin CPU en cause.
+        # Le nom de la limite seulement, jamais le client ni la phrase.
+        print(f"[collecte] ignorée : limite {limite} atteinte", flush=True)
         return suivi, ""
     fiche = {
         "code": code,
@@ -344,6 +365,9 @@ def nouveau_suivi(trace: dict) -> tuple[dict, str]:
     suivi["voix"] = COLLECTEUR.soumettre(
         {f"{dossier}/audio.wav": wav_16k(son), f"{dossier}/demande.json": _json(fiche)}
     )
+    if suivi["voix"]:
+        # Le code seul : c'est lui que l'usager montrera pour faire supprimer sa voix.
+        print(f"[collecte] en file {code}", flush=True)
     return suivi, message_code(code) if suivi["voix"] else ""
 
 
