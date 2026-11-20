@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Favicon : le logo sans les petits détails, pour rester net à 16-32 px. -->
+  <rect x="10" y="48" width="11" height="12" rx="3.5" fill="#11251A"/>
+  <rect x="31" y="48" width="11" height="12" rx="3.5" fill="#11251A"/>
+  <rect x="4" y="10" width="44" height="44" rx="12" fill="#00853F"/>
+  <rect x="9" y="17" width="34" height="18" rx="5" fill="#FDEF42"/>
+  <circle cx="14.5" cy="44" r="4" fill="#FFFFFF"/>
+  <circle cx="37.5" cy="44" r="4" fill="#FFFFFF"/>
+  <path d="M51 2a11.5 11.5 0 1 1-6.6 20.9l-5.4 2.3 1.8-5.3A11.5 11.5 0 0 1 51 2z" fill="#FFFFFF" stroke="#00853F" stroke-width="3.4" stroke-linejoin="round"/>
+  <g stroke="#00853F" stroke-width="3.2" stroke-linecap="round">
+    <line x1="47" y1="10.5" x2="47" y2="16"/>
+    <line x1="51.5" y1="8" x2="51.5" y2="18.5"/>
+    <line x1="56" y1="10.5" x2="56" y2="16"/>
+  </g>
+</svg>

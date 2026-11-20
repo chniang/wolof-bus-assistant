@@ -9222,6 +9222,94 @@ def test_lot_c_design() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_c2_logo() -> tuple[int, int]:
+    """Lot C2 : logo et favicon, pastille GuindiMa, cadre natif du micro caché, texte non rogné."""
+    import contextlib
+    import io
+    import os
+    import re
+    import xml.etree.ElementTree as ET
+
+    from app import apparence
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot C2 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    # 1. Logo et favicon : SVG valides, carrés, aux couleurs GuindiMa.
+    for nom in ("logo_guindima.svg", "favicon_guindima.svg"):
+        chemin = RACINE / "assets" / nom
+        texte = chemin.read_text(encoding="utf-8") if chemin.exists() else ""
+        try:
+            racine_svg = ET.fromstring(texte)
+        except ET.ParseError as exc:
+            racine_svg = None
+            texte = f"{texte[:80]} ({exc})"
+        verifie(f"{nom} : SVG valide, carré, vert #00853F et pare-brise jaune #FDEF42",
+                racine_svg is not None and racine_svg.get("viewBox") == "0 0 64 64"
+                and "#00853F" in texte and "#FDEF42" in texte and "http" not in texte.replace(
+                    'xmlns="http://www.w3.org/2000/svg"', ""), texte[:120])
+
+    # 2. En-tête : logo dans un rond blanc, nom dans une pastille verte.
+    accueil = apparence.ACCUEIL_HTML
+    verifie("en-tête : balise du logo dans un rond, à gauche de la pastille",
+            '<svg class="logo-guindima" aria-hidden="true"' in accueil
+            and accueil.index("logo-rond") < accueil.index("class='marque'")
+            and "Wax ma fi nga jëm" in accueil and "Dis ton trajet en wolof" in accueil)
+    css = apparence.CSS_GUINDIMA
+    marque = re.search(r"#accueil_guindima \.marque \{(.*?)\}", css, re.S)
+    regles = marque.group(1) if marque else ""
+    verifie("pastille : fond vert plein, texte blanc gras, coins très arrondis, ombre",
+            all(x in regles for x in ("background: #00853F", "color: #FFFFFF", "font-weight: 850",
+                                      "border-radius: 999px", "box-shadow", "white-space: nowrap")),
+            regles)
+    rond = re.search(r"#accueil_guindima \.logo-rond \{(.*?)\}", css, re.S)
+    verifie("logo : rond blanc", rond is not None and "background: #FFFFFF" in rond.group(1)
+            and "border-radius: 50%" in rond.group(1))
+    source_app = (RACINE / "app.py").read_text(encoding="utf-8")
+    verifie("favicon : passé au lancement", "favicon_path=str(FAVICON)" in source_app
+            and apparence.FAVICON.name == "favicon_guindima.svg")
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_c2")
+    with contextlib.redirect_stdout(io.StringIO()):
+        config = app._construire().get_config_file()
+    entete = next((c for c in config["components"]
+                   if c.get("props", {}).get("elem_id") == "accueil_guindima"), {})
+    verifie("en-tête rendu dans l'app avec le logo",
+            "logo-guindima" in str(entete.get("props", {}).get("value")), entete.get("type"))
+
+    # 3. Cadre natif du micro : caché seulement si le globe tourne, secours sinon.
+    css_sans_commentaires = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    regles_micro = re.findall(r"([^{}]*#micro_guindima\s*)\{([^}]*)\}", css_sans_commentaires)
+    cachees = [(sel.strip(), corps) for sel, corps in regles_micro if "clip-path" in corps]
+    verifie("cadre natif caché seulement sous body.globe-guindima-actif",
+            cachees and all(sel.startswith("body.globe-guindima-actif") for sel, _ in cachees),
+            [sel for sel, _ in cachees])
+    verifie("cadre natif : reste dans la page (pas de display:none)",
+            all("display: none" not in corps for _, corps in cachees))
+    js = apparence.globe_js()
+    verifie("secours : bouton « Micro classique » qui rend le cadre natif",
+            "globe-secours" in apparence.GLOBE_HTML and "Micro classique" in apparence.GLOBE_HTML
+            and "classList.remove('globe-guindima-actif')" in js)
+    verifie("secours automatique si le micro Gradio est introuvable",
+            "micro_classique();" in js and "6000" in js and "clearInterval(suivi)" in js)
+
+    # 4. Texte non rogné à gauche : blocs Markdown sans cadre, débordement visible.
+    verifie("texte à 360 px : plus de première lettre rognée",
+            ".block.hide-container { overflow: visible !important; }" in css
+            and ".gradio-container .prose { padding-left: 3px !important;" in css)
+
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -9287,6 +9375,7 @@ if __name__ == "__main__":
         echecs_f5, total_f5 = test_lot_f5()
         echecs_bsrc, total_bsrc = test_lot_b_sources()
         echecs_c, total_c = test_lot_c_design()
+        echecs_c2, total_c2 = test_lot_c2_logo()
         echecs = (
             test_local()
             + echecs_partage
@@ -9342,6 +9431,7 @@ if __name__ == "__main__":
             + echecs_f5
             + echecs_bsrc
             + echecs_c
+            + echecs_c2
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -9398,6 +9488,7 @@ if __name__ == "__main__":
             + total_f5
             + total_bsrc
             + total_c
+            + total_c2
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

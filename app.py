@@ -51,6 +51,7 @@ from app.apparence import (  # noqa: E402
     ACCUEIL_HTML,
     CHOIX_ETOILES,
     CSS_GUINDIMA,
+    FAVICON,
     GLOBE_CSS,
     GLOBE_HTML,
     HEAD_CLAIR,
@@ -2390,6 +2391,8 @@ if __name__ == "__main__":
         theme=_theme(),
         css=CSS_GUINDIMA,
         head=HEAD_CLAIR,
+        # Lot C2 : le bus GuindiMa dans l'onglet du navigateur.
+        favicon_path=str(FAVICON) if FAVICON.exists() else None,
         i18n=I18N_GUINDIMA,
         max_file_size=2 * TAILLE_MAX_AUDIO,
     )

@@ -14,6 +14,9 @@ change pas.
 
 from __future__ import annotations
 
+import re
+from pathlib import Path
+
 # --------------------------------------------------------------------------- #
 # Couleurs (contrastes calculés sur fond blanc, WCAG 2.1)
 # --------------------------------------------------------------------------- #
@@ -168,16 +171,51 @@ html, body, .dark body, body.dark { background: #FFFFFF !important; color: #1125
     color: #11251A !important;
 }
 .gradio-container .prose, .gradio-container .prose * { color: inherit; }
+/* Lot C2 : à 360 px, la première lettre de « Ton code », « l'application » ou
+   « OpenStreetMap » était rognée. Les blocs Markdown sans cadre gardent
+   overflow:auto et collent au bord : la jambe gauche d'un glyphe dépassait et
+   était coupée. On les laisse déborder et on leur donne un peu d'air. */
+.gradio-container .block.hide-container { overflow: visible !important; }
+.gradio-container .prose { padding-left: 3px !important; padding-right: 3px !important; }
+.gradio-container .block.hide-container > .prose,
+.gradio-container .block.hide-container [data-testid="markdown"] { overflow-wrap: anywhere; }
 
-/* Accueil */
+/* Accueil : le logo dans un rond blanc, le nom dans une pastille verte. */
 #accueil_guindima { padding: 4px 2px 6px; }
+#accueil_guindima .entete {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+#accueil_guindima .logo-rond {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 1.5px solid #D3DED7;
+    box-shadow: 0 4px 12px rgba(17, 37, 26, 0.10);
+}
+#accueil_guindima .logo-rond svg { width: 44px; height: 44px; display: block; }
 #accueil_guindima .marque {
-    color: #00853F;
-    font-size: 34px;
-    font-weight: 850;
-    letter-spacing: -0.8px;
-    line-height: 1.05;
+    display: inline-block;
+    min-width: 0;
     margin: 0;
+    padding: 7px 20px 8px;
+    border-radius: 999px;
+    background: #00853F;
+    color: #FFFFFF;
+    font-size: 30px;
+    font-weight: 850;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 133, 63, 0.28);
 }
 #accueil_guindima .salut {
     color: #11251A;
@@ -333,10 +371,23 @@ body.globe-guindima-actif #micro_guindima .resume-button {
     border-radius: 16px !important;
     background: #FFFFFF !important;
 }
-/* Sous le globe, le composant natif ne sert plus qu'à montrer l'onde pendant
-   l'écoute et à déposer un fichier audio : on le garde bas et discret. */
-body.globe-guindima-actif #micro_guindima .audio-container { min-height: 0 !important; }
-body.globe-guindima-actif #micro_guindima .component-wrapper { padding: 4px 8px !important; }
+/* Lot C2 : quand le globe tourne, tout le cadre natif disparaît à l'œil. Il
+   reste monté dans la page (le globe clique ses boutons, l'enregistrement et
+   la chaîne audio passent toujours par lui). Sans globe (script bloqué), ou
+   après « Micro classique », la classe est absente et le cadre revient. */
+body.globe-guindima-actif #micro_guindima {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: hidden !important;
+    clip-path: inset(50%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
 #micro_guindima .mic-select { display: none !important; }
 /* La croix du composant Audio efface l'enregistrement avant qu'il soit traité.
    Le DOM Gradio 6.30.0 la rend en <button class="icon-button" aria-label="Effacer">. */
@@ -414,7 +465,8 @@ body.globe-guindima-actif #micro_guindima .component-wrapper { padding: 4px 8px 
 
 @media (max-width: 380px) {
     .gradio-container { padding: 10px 10px 24px !important; }
-    #accueil_guindima .marque { font-size: 30px; }
+    #accueil_guindima .marque { font-size: 26px; padding: 6px 16px 7px; }
+    #accueil_guindima .logo-rond { width: 52px; height: 52px; }
     #accueil_guindima .salut { font-size: 18px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -441,8 +493,31 @@ def _css_etoiles() -> str:
 
 CSS_GUINDIMA = CSS_GUINDIMA.replace("@@ETOILES@@", _css_etoiles())
 
+# Lot C2 : logo (assets/logo_guindima.svg), dessiné pour l'app : un bus vu de
+# face, vert GuindiMa, pare-brise jaune, et une bulle de voix. Il est inséré en
+# ligne (pas d'URL à servir) ; s'il manque, l'en-tête garde la pastille seule.
+DOSSIER_ASSETS = Path(__file__).resolve().parents[2] / "assets"
+LOGO_SVG = DOSSIER_ASSETS / "logo_guindima.svg"
+FAVICON = DOSSIER_ASSETS / "favicon_guindima.svg"
+
+
+def logo_en_ligne() -> str:
+    """Le SVG du logo prêt à insérer dans l'en-tête (décoratif : le nom est écrit à côté)."""
+    try:
+        svg = LOGO_SVG.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    svg = re.sub(r"<!--.*?-->", "", svg, flags=re.S)
+    svg = re.sub(r"<title[^>]*>.*?</title>", "", svg, flags=re.S)
+    svg = re.sub(r'\s(?:role|aria-labelledby)="[^"]*"', "", svg)
+    return svg.replace("<svg ", '<svg class="logo-guindima" aria-hidden="true" focusable="false" ', 1).strip()
+
+
 ACCUEIL_HTML = (
+    "<div class='entete'>"
+    f"<span class='logo-rond'>{logo_en_ligne()}</span>"
     "<p class='marque'>GuindiMa</p>"
+    "</div>"
     "<p class='salut'>Wax ma fi nga jëm, ma won la bus bi.</p>"
     "<p class='sous-titre'>Dis ton trajet en wolof : je te montre le bus à prendre à Dakar.</p>"
 )
@@ -483,6 +558,7 @@ GLOBE_HTML = f"""
     </span>
   </button>
   <p class="globe-etat" aria-live="polite">{TEXTES_GLOBE['repos']}</p>
+  <button type="button" class="globe-secours">Problème de micro ? Micro classique</button>
 </div>
 """
 
@@ -533,6 +609,25 @@ GLOBE_CSS = """
   font-weight: 750;
   text-align: center;
 }
+/* Secours discret : révèle le micro Gradio classique (et le dépôt d'un fichier). */
+.globe-secours {
+  min-height: 48px;
+  margin-top: 2px;
+  padding: 0 12px;
+  border: 0 !important;
+  border-radius: 8px;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #006B33;
+  font-size: 14px;
+  white-space: nowrap;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.globe-secours:focus-visible { outline: 3px solid #00853F; outline-offset: 2px; border-radius: 8px; }
+.globe-zone[data-secours="oui"] .globe-secours { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .globe-coeur { transition: none; }
   .globe:active .globe-coeur { transform: none; }
@@ -553,6 +648,20 @@ let depuis = 0;
 let empreinte = '';
 
 document.body.classList.add('globe-guindima-actif');
+const secours = element.querySelector('.globe-secours');
+const lancement = performance.now();
+
+// Secours : le cadre natif du micro revient (enregistrement classique, dépôt
+// d'un fichier). Sur demande, ou tout seul si le micro Gradio est introuvable.
+function micro_classique() {
+  document.body.classList.remove('globe-guindima-actif');
+  zone.dataset.secours = 'oui';
+}
+secours.addEventListener('click', function () {
+  micro_classique();
+  const m = micro();
+  if (m) { m.scrollIntoView({ block: 'center' }); }
+});
 
 function micro() { return document.getElementById('micro_guindima'); }
 // Gradio garde les deux boutons natifs dans le DOM et bascule leur
@@ -608,9 +717,16 @@ bouton.addEventListener('click', function () {
   }
 });
 
-// Suivi de l'état réel du micro, quatre fois par seconde.
-setInterval(function () {
+// Suivi de l'état réel du micro, quatre fois par seconde. Un globe retiré de
+// la page (onglet reconstruit) arrête son suivi : il ne doit plus rien décider.
+const suivi = setInterval(function () {
+  if (!document.body.contains(element)) { clearInterval(suivi); return; }
   cacherNatifs();
+  const m = micro();
+  if (zone.dataset.secours !== 'oui' && performance.now() - lancement > 6000
+      && !(m && m.querySelector('.record-button'))) {
+    micro_classique();
+  }
   const enregistre = !!boutonNatif('.stop-button');
   const pret = !!boutonNatif('.record-button');
   const ecoule = performance.now() - depuis;

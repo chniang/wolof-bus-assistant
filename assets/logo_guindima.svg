@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="titre-logo-guindima">
+  <title id="titre-logo-guindima">GuindiMa : bus de Dakar et assistant vocal</title>
+  <!-- Rétroviseurs -->
+  <rect x="2.5" y="21" width="5" height="10" rx="2.5" fill="#006B33"/>
+  <rect x="44.5" y="21" width="5" height="10" rx="2.5" fill="#006B33"/>
+  <!-- Roues -->
+  <rect x="11" y="48" width="9" height="10" rx="3" fill="#11251A"/>
+  <rect x="32" y="48" width="9" height="10" rx="3" fill="#11251A"/>
+  <!-- Caisse du bus, vue de face -->
+  <rect x="6" y="11" width="40" height="42" rx="11" fill="#00853F"/>
+  <!-- Girouette (destination) -->
+  <rect x="16" y="14" width="20" height="3.2" rx="1.6" fill="#FFFFFF" fill-opacity="0.9"/>
+  <!-- Pare-brise jaune -->
+  <rect x="11" y="20" width="30" height="15" rx="4.5" fill="#FDEF42"/>
+  <!-- Phares et calandre -->
+  <circle cx="15.5" cy="43" r="3.2" fill="#FFFFFF"/>
+  <circle cx="36.5" cy="43" r="3.2" fill="#FFFFFF"/>
+  <rect x="21.5" y="41.5" width="9" height="3" rx="1.5" fill="#006B33"/>
+  <!-- Bulle de voix : l'assistant parle -->
+  <path d="M50 3.5a11 11 0 1 1-6.3 20.1l-4.9 2.1 1.6-4.9A11 11 0 0 1 50 3.5z" fill="#FFFFFF" stroke="#00853F" stroke-width="3" stroke-linejoin="round"/>
+  <g stroke="#00853F" stroke-width="2.6" stroke-linecap="round">
+    <line x1="45.6" y1="12" x2="45.6" y2="17"/>
+    <line x1="50" y1="9.2" x2="50" y2="19.8"/>
+    <line x1="54.4" y1="12" x2="54.4" y2="17"/>
+  </g>
+</svg>
