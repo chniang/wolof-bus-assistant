@@ -83,6 +83,12 @@ ALIAS = {
     # « Yarakh » n'a pas d'arrêt à son nom : on le rabat sur « Route de Yarakh »
     # (lignes 40/41), l'arrêt du secteur (le géocodage le place à 1079 m).
     "yarakh": "route de yarakh",
+    # Yeumbeul tel que l'ASR ou le LLM l'écrivent (retours testeurs du 20/11).
+    "yambal": "yeumbeul",
+    "yambel": "yeumbeul",
+    "yembal": "yeumbeul",
+    "yembeul": "yeumbeul",
+    "yeumbel": "yeumbeul",
     # Wakhinane Nimzatt est un arrondissement de Guédiawaye.
     "wakhinane nimzatt": "guediawaye",
     "wakhinane nimzat": "guediawaye",

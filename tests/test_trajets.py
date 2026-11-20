@@ -5831,7 +5831,9 @@ def test_micro_vidage() -> tuple[int, int]:
             sortie[5] is None
             and sortie[1] == ""
             and "Lieu non détecté" in sortie[2]
-            and sortie[3] is None,
+            # Arrivée sans départ : la voix redemande (phrase capacités, 20/11).
+            and "d'où pars-tu" in sortie[2]
+            and sortie[3] is not None,
             sortie,
         )
 
@@ -6755,14 +6757,16 @@ def test_lot_6() -> tuple[int, int]:
             trouve and "conversation_" not in journal and "À pied environ 0" not in carte,
             (trouve, journal))
 
-    # Le LLM rend le même lieu des deux côtés : on redemande, sans bus.
+    # Le LLM recopie le seul lieu entendu (Petersen, après « dem ») des deux
+    # côtés : depuis le 20/11, c'est une arrivée sans départ. On demande le
+    # départ (phrase capacités à l'oral), jamais « même lieu », aucun bus.
     carte, trouve, journal, voix = pipeline(
         "salaamaalekum damay dem petersen te maa ngi xyzzq",
         _FauxClient('{"depart": "Petersen", "arrivee": "Petersen"}'),
     )
-    verifie("LLM Petersen -> Petersen : on redemande (phrase capacités), aucun bus",
-            "erreur=conversation_meme_lieu" in journal and not trouve
-            and app.DEMANDE_MEME_LIEU.reponse in carte and "Ligne" not in carte
+    verifie("LLM Petersen -> Petersen, un seul lieu dit : départ demandé, aucun bus",
+            "erreur=lieu_manquant" in journal and "conversation_meme_lieu" not in journal
+            and not trouve and "d'où pars-tu" in carte and "Ligne" not in carte
             and "À pied" not in carte, (trouve, journal, carte[:200]))
     verifie("redemande : voix déjà enregistrée (conversation_capacites.wav), rien de nouveau",
             app.DEMANDE_MEME_LIEU.fichier == "conversation_capacites.wav"
@@ -8493,6 +8497,118 @@ def silencieux_cle(fonction, requete):
         return fonction(requete)
 
 
+def test_lot_20_11() -> tuple[int, int]:
+    """Retours des testeurs du 20/11, sans réseau ni modèle.
+
+    - spaces fixé à 0.51.3 : 0.52.1 perdait le GPU après 1 ou 2 appels ;
+    - « maa ngi yambël / yambal / yambal yambal » = Yeumbeul ;
+    - un seul lieu après « dem » : arrivée seulement, l'app demande le départ,
+      même quand le LLM recopie ce lieu des deux côtés ; jamais « même lieu ».
+    """
+    import contextlib
+    import io
+    import os
+
+    from intent.extract_intent import extract_intent, extract_local
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot 20/11 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    # 1. ZeroGPU : version de spaces fixée, la durée dynamique ne bouge pas.
+    requirements = (RACINE / "requirements.txt").read_text(encoding="utf-8-sig")
+    paquets = [
+        ligne.split("#", 1)[0].strip()
+        for ligne in requirements.splitlines()
+        if ligne.split("#", 1)[0].strip()
+    ]
+    verifie("spaces==0.51.3, seule ligne spaces",
+            [p for p in paquets if p.lower().startswith("spaces")] == ["spaces==0.51.3"], paquets)
+    source_app = (RACINE / "app.py").read_text(encoding="utf-8")
+    verifie("durée GPU dynamique conservée",
+            "@spaces.GPU(duration=_duree_gpu)" in source_app)
+
+    # 2. Yeumbeul sous ses formes parlées, phrases réelles des testeurs.
+    reelles = (
+        "maa ngi yambël, dama bëgg dem Grand Yoff",
+        "maa ngi yambal, dama bëgg dem Grand Yoff",
+        "maa ngi yambal yambal, dama bëgg dem Grand Yoff",
+    )
+    for phrase in reelles:
+        local = extract_local(phrase)
+        verifie(f"« {phrase} » : Yeumbeul -> Grand-Yoff",
+                (local["depart"], local["arrivee"]) == ("Yeumbeul", "Grand-Yoff"), local)
+    for forme in ("yembeul", "yeumbeul", "yeumbël", "yembal"):
+        local = extract_local(f"maa ngi {forme}, dama bëgg dem Grand Yoff")
+        verifie(f"« {forme} » = Yeumbeul", local["depart"] == "Yeumbeul", local)
+    from matching.lieux import ALIAS
+    verifie("alias LLM yambal / yambel -> yeumbeul",
+            ALIAS.get("yambal") == "yeumbeul" and ALIAS.get("yambel") == "yeumbeul")
+
+    # 3. Un seul lieu après « dem » : départ vide, même si le LLM le recopie.
+    seuls = (
+        ("man dgt waay dama bëgg dem mariste", "Maristes"),
+        ("dama bëgg dem Grand Yoff", "Grand-Yoff"),
+    )
+    for phrase, arrivee in seuls:
+        local = extract_local(phrase)
+        verifie(f"« {phrase} » (local) : départ vide, arrivée {arrivee}",
+                (local["depart"], local["arrivee"]) == ("", arrivee), local)
+        client = _FauxClient(f'{{"depart": "{arrivee}", "arrivee": "{arrivee}"}}')
+        with contextlib.redirect_stdout(io.StringIO()):
+            intent = extract_intent(phrase, client=client)
+        verifie(f"« {phrase} » (LLM doublon) : départ vide, arrivée {arrivee}",
+                (intent["depart"], intent["arrivee"]) == ("", arrivee), intent)
+    # Le même lieu vraiment dit deux fois reste tel quel (l'app redemande).
+    client = _FauxClient('{"depart": "Petersen", "arrivee": "Petersen"}')
+    with contextlib.redirect_stdout(io.StringIO()):
+        intent = extract_intent("maa ngi Petersen, bëgg naa dem Petersen", client=client)
+    verifie("Petersen dit deux fois : inchangé",
+            (intent["depart"], intent["arrivee"]) == ("Petersen", "Petersen"), intent)
+
+    # 4. Dans l'app : « lieu_manquant » avec la question sur le départ, jamais
+    #    « même lieu » ; Yeumbeul -> Grand-Yoff donne un trajet.
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_20_11")
+    client_origine = app._client_llm
+
+    def pipeline(phrase: str, client) -> tuple[str, bool, str]:
+        app._client_llm = lambda: client
+        tampon = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(tampon):
+                quint, trouve = app._pipeline(phrase, "Kiriku-Wolof-ASR (GPU)", 1.0)
+        finally:
+            app._client_llm = client_origine
+        return quint[2], trouve, tampon.getvalue(), quint[3]
+
+    for phrase, arrivee in seuls:
+        client = _FauxClient(f'{{"depart": "{arrivee}", "arrivee": "{arrivee}"}}')
+        carte, trouve, journal, voix = pipeline(phrase, client)
+        verifie(f"« {phrase} » (app) : départ demandé, pas « même lieu »",
+                not trouve
+                and "erreur=lieu_manquant" in journal
+                and "erreur=conversation_meme_lieu" not in journal
+                and "d'où pars-tu" in carte
+                and app._echapper_markdown(arrivee) in carte
+                and voix is not None,
+                (carte[:300], journal, voix))
+    for phrase in reelles:
+        carte, trouve, journal, _ = pipeline(
+            phrase, _ClientQuiLeve(lambda: TimeoutError("ne doit pas être appelé")))
+        verifie(f"« {phrase} » (app) : trajet trouvé sans LLM",
+                trouve and "erreur=lieu_manquant" not in journal, (carte[:300], journal))
+
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -8553,6 +8669,7 @@ if __name__ == "__main__":
         echecs_plafonds, total_plafonds = test_plafonds_par_client()
         echecs_b5, total_b5 = test_lot_b5()
         echecs_f4, total_f4 = test_lot_f4()
+        echecs_2011, total_2011 = test_lot_20_11()
         echecs = (
             test_local()
             + echecs_partage
@@ -8603,6 +8720,7 @@ if __name__ == "__main__":
             + echecs_plafonds
             + echecs_b5
             + echecs_f4
+            + echecs_2011
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -8654,6 +8772,7 @@ if __name__ == "__main__":
             + total_plafonds
             + total_b5
             + total_f4
+            + total_2011
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

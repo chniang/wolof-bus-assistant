@@ -1216,6 +1216,15 @@ def _carte(
     et jamais dans chaque carte. `bandeau_compagnie` rappelle d'où vient la
     compagnie (voix ou bouton) ; il précède, lui aussi, les cartes.
     """
+    if arrivee and not depart:
+        # « man dgt waay dama bëgg dem mariste » : l'arrivée est sûre, seul le
+        # départ manque. On le demande au lieu d'un « reformule » générique.
+        return (
+            "### 🤷 Lieu non détecté\n\n"
+            f"Tu vas à **{_echapper_markdown(arrivee)}**, mais d'où pars-tu ? "
+            "Dis-le dans la même phrase, par exemple : "
+            f"« Maa ngi Ouakam, dama bëgg dem {_echapper_markdown(arrivee)} »."
+        )
     if not depart or not arrivee:
         return (
             "### 🤷 Lieu non détecté\n\n"
@@ -1489,7 +1498,15 @@ def _pipeline(
         return quint[:4] + (_mention(intent, modele_asr),), False
     if not depart or not arrivee:
         _journal(modele_asr, duree_asr, 0, "lieu_manquant")
-        return (phrase, "", _carte({}, depart, arrivee), None, _mention(intent, modele_asr)), False
+        # Arrivée sûre, départ manquant : la carte demande le départ, et la voix
+        # dit la phrase déjà enregistrée « Wax ma fan nga nekk ak fan nga bëgga
+        # dem » (conversation_capacites.wav), jamais une phrase nouvelle.
+        voix = (
+            _ecrire_voix(voix_conversation(_CAPACITES.fichier))
+            if arrivee and not depart
+            else None
+        )
+        return (phrase, "", _carte({}, depart, arrivee), voix, _mention(intent, modele_asr)), False
 
     resultat = MATCHER.find_line(depart, arrivee)
 

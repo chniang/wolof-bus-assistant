@@ -12,7 +12,10 @@ python-dotenv
 # Interface Gradio de app.py, celle qui tourne sur un Hugging Face Space. torch
 # n'est volontairement pas Ã©pinglÃ© : sur Space, c'est l'image du Space qui fournit
 # la version CUDA, et un torch CPU ici casserait le ZeroGPU.
-spaces
+# spaces 0.52.1 (redéploiement du 20/11) : après 1 ou 2 appels GPU réussis,
+# chaque appel échouait sur « No CUDA GPUs are available » (worker_init de
+# spaces/zero/wrappers.py). 0.51.3 marchait : on la fixe.
+spaces==0.51.3
 
 # Gradio 6.30 exige pillow<13.0 : Pillow 13.0.0, qui corrige 37 CVE, est donc
 # incompatible avec le runtime actuel. On Ã©pingle la derniÃ¨re version acceptÃ©e
