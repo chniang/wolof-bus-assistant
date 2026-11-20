@@ -6386,8 +6386,55 @@ def test_lot_4() -> tuple[int, int]:
     # modèle dans transcrire_wolof (règle ZeroGPU), durée explicite.
     source_app = (RACINE / "app.py").read_text(encoding="utf-8")
     corps = source_app.split("def transcrire_wolof", 1)[1].split("\ndef ", 1)[0]
-    verifie("ZeroGPU : @spaces.GPU(duration=30) sur transcrire_wolof",
-            "@spaces.GPU(duration=30)\ndef transcrire_wolof" in source_app)
+    verifie("ZeroGPU : durée dynamique sur transcrire_wolof",
+            "@spaces.GPU(duration=_duree_gpu)\ndef transcrire_wolof" in source_app)
+    import contextlib
+    import io
+
+    import numpy as np
+
+    # Une phrase courte réserve 15 à 20 s ; un vocal de collecte (20 s) 25 s ;
+    # jamais plus de 30 s, même au-delà de la durée maximale acceptée.
+    durees = {s: app._duree_gpu(np.zeros(int(s * 16_000), dtype=np.float32))
+              for s in (0.5, 4, 10, 20, 30, 60)}
+    verifie("ZeroGPU : durée réservée selon l'audio",
+            durees == {0.5: 16, 4: 17, 10: 20, 20: 25, 30: 30, 60: 30}, durees)
+    verifie("ZeroGPU : audio inattendu, durée maximale", app._duree_gpu(None) == 30)
+
+    # Quota ZeroGPU dépassé : le décorateur lève avant même d'appeler la
+    # fonction (spaces lève une gr.Error). L'app doit passer au whisper CPU et
+    # répondre au trajet, sans montrer l'erreur.
+    class ErreurQuota(Exception):
+        pass
+
+    def quota_depasse(_audio):
+        raise ErreurQuota("You have exceeded your GPU quota (20s requested vs. 3s left).")
+
+    originaux = (app.transcrire_wolof, app._transcrire_cpu, app._decoder_audio,
+                 app._effacer_audio_recu)
+    appels_gpu = []
+    journal = io.StringIO()
+    try:
+        app.transcrire_wolof = lambda a: (appels_gpu.append(1), quota_depasse(a))[1]
+        app._transcrire_cpu = lambda a: "Maa ngi Sandaga, dama bëgg dem Pikine"
+        app._decoder_audio = lambda chemin: np.zeros(16_000 * 3, dtype=np.float32)
+        app._effacer_audio_recu = lambda chemin: False
+        with contextlib.redirect_stdout(journal):
+            sortie = app.trouver_le_bus("x.webm", "", "")
+    finally:
+        (app.transcrire_wolof, app._transcrire_cpu, app._decoder_audio,
+         app._effacer_audio_recu) = originaux
+    visible = " ".join(str(x) for x in sortie)
+    verifie("quota dépassé : la phrase vient du whisper CPU",
+            sortie[0] == "Maa ngi Sandaga, dama bëgg dem Pikine", sortie[0])
+    verifie("quota dépassé : un trajet est proposé",
+            "Pikine" in visible and app.CARTE_TRANSCRIPTION_IMPOSSIBLE not in visible, sortie[2][:200])
+    verifie("quota dépassé : aucune erreur technique à l'écran",
+            not any(m in visible for m in ("quota", "ErreurQuota", "GPU", "requested")), visible[:300])
+    verifie("quota dépassé : le journal le dit, secours CPU",
+            "ZeroGPU en échec (ErreurQuota" in journal.getvalue()
+            and "secours CPU" in journal.getvalue(), journal.getvalue()[:300])
+    verifie("quota dépassé : le GPU est demandé au premier essai", len(appels_gpu) >= 1, appels_gpu)
     verifie("ZeroGPU : aucun chargement de modèle ni appel CUDA dans la fonction décorée",
             not any(m in corps for m in ("pipeline(", "load_model", "_charger_kiriku", ".to(", ".cuda")))
 

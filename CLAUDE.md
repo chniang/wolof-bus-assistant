@@ -37,7 +37,7 @@ Astuce PowerShell : un script Python passé en « here-string » perd les accent
 
 1. **Transcription** (`src/asr/transcribe.py`, `app.py`)
    - Kiriku-Wolof-ASR sur GPU, **chargé au niveau module** au démarrage (règle ZeroGPU) ;
-     `@spaces.GPU(duration=30)` ne fait que le calcul, **ne jamais y charger un modèle**.
+     `@spaces.GPU(duration=_duree_gpu)` (15 s + ½ s par seconde d'audio, max 30 s) ne fait que le calcul, **ne jamais y charger un modèle**.
    - Secours / local : notre Whisper fine-tuné sur la collecte,
      `PythonMindset/whisper-small-wolof-dakar-essai3` (CPU, int8, préchargé au démarrage).
      Dépôt **privé** : lit le secret `HF_TOKEN` ; sans token, repli automatique sur

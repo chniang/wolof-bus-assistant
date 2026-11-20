@@ -441,12 +441,33 @@ def _decoder_audio(chemin_audio: str) -> np.ndarray:
     return son
 
 
-@spaces.GPU(duration=30)
+# Réservation ZeroGPU de la transcription. ZeroGPU refuse la carte quand le
+# quota restant du visiteur est inférieur à la durée DEMANDÉE, pas à celle
+# réellement consommée : demander 30 s pour une phrase de 4 s fait refuser des
+# visiteurs à qui il restait 20 s. On demande donc une base de 15 s plus une
+# demi-seconde par seconde d'audio, plafonnée à 30 s : une phrase courte (≤ 10 s)
+# réserve 15 à 20 s, un vocal de collecte de 20 s (COLLECTE_DUREE_MAX_S) en
+# réserve 25, et le plus long audio accepté (DUREE_MAX_AUDIO, 30 s) en réserve 30.
+DUREE_GPU_BASE_S = 15
+DUREE_GPU_MAX_S = 30
+
+
+def _duree_gpu(audio: np.ndarray) -> int:
+    """Durée ZeroGPU à réserver pour cet audio (mêmes arguments que transcrire_wolof)."""
+    try:
+        secondes = len(audio) / SAMPLE_RATE
+    except Exception:
+        # Audio inattendu : on réserve le maximum plutôt que de couper le calcul.
+        return DUREE_GPU_MAX_S
+    return int(min(DUREE_GPU_MAX_S, DUREE_GPU_BASE_S + -(-secondes // 2)))
+
+
+@spaces.GPU(duration=_duree_gpu)
 def transcrire_wolof(audio: np.ndarray) -> str:
     """Transcrit avec Kiriku sur GPU — le seul endroit qui réserve le GPU.
 
     Le modèle est déjà chargé au démarrage du module (recommandation ZeroGPU) :
-    la réservation ne couvre que le calcul, d'où les 30 s. Kiriku ne se charge
+    la réservation ne couvre que le calcul, d'où _duree_gpu. Kiriku ne se charge
     jamais ici. S'il est absent (pas de GPU au démarrage), on renvoie une phrase
     préfixée par ERREUR_ASR : l'appelant bascule sur le whisper CPU préchargé.
     """
