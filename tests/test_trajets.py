@@ -9735,7 +9735,8 @@ def test_lot_c6_mobile_lieux() -> tuple[int, int]:
             ":hover" not in sans_blocs_souris(apparence.CSS_GUINDIMA), re.findall(r"[^\n]*:hover[^\n]*",
                                                                                   sans_blocs_souris(apparence.CSS_GUINDIMA))[:3])
     verifie("globe : zone de taille fixe, isolée (contain)",
-            apparence.GLOBE_CSS.count("contain: layout paint;") >= 2 and "height: 300px;" in apparence.GLOBE_CSS)
+            apparence.GLOBE_CSS.count("contain: layout paint;") >= 2
+            and re.search(r"\.globe-zone \{[^}]*height: \d+px;", apparence.GLOBE_CSS) is not None)
     verifie("globe : n'anime que transform et opacity",
             "transition: transform 160ms ease, opacity 160ms ease;" in apparence.GLOBE_CSS
             and "background-color 160ms" not in apparence.GLOBE_CSS)
@@ -9797,6 +9798,116 @@ def test_lot_c6_mobile_lieux() -> tuple[int, int]:
     alias = (RACINE / "data" / "corrections" / "alias_lieux_parles.csv").read_text(encoding="utf-8")
     verifie("alias parlés dans un NOUVEAU fichier de corrections",
             "same,sahm" in alias and "naari tali,niary tally" in alias)
+    return echecs, total
+
+
+def test_lot_c7_accueil() -> tuple[int, int]:
+    """Lot C7 : sous l'outil, comment ça marche, questions fréquentes, partage, confidentialité.
+
+    Aucun réseau. Ni numéro de téléphone ni e-mail dans le code, rien de flottant.
+    """
+    import contextlib
+    import io
+    import json
+    import os
+    import re
+
+    from app import accueil, apparence
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot C7 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    # 1. Sous « Bës te wax ».
+    verifie("sous le globe : « Gratuit · sans inscription · en wolof »",
+            "Gratuit · sans inscription · en wolof" in apparence.GLOBE_HTML
+            and apparence.GLOBE_HTML.index("globe-etat") < apparence.GLOBE_HTML.index("globe-promesse"))
+
+    # 2. Comment ça marche : trois étapes numérotées, une icône chacune.
+    for actif in (False, True):
+        html = accueil.sections_accueil(actif)
+        etapes = re.findall(r"<li class='etape'>.*?</li>", html, re.S)
+        verifie(f"3 étapes 01, 02, 03 avec icône (collecte {'allumée' if actif else 'éteinte'})",
+                len(etapes) == 3 and [re.search(r"etape-numero'>(\d\d)<", e).group(1) for e in etapes]
+                == ["01", "02", "03"] and all("<svg" in e for e in etapes)
+                and all(t in html for t in ("Dis ton trajet", "Vois ton bus", "Écoute la réponse")))
+        questions = re.findall(r"<details class='question'>", html)
+        verifie(f"6 questions fréquentes, fermées par défaut (collecte {'allumée' if actif else 'éteinte'})",
+                len(questions) == 6 and " open" not in html, len(questions))
+        verifie("QR inséré, 180 px au plus, centré",
+                "qr-guindima" in html and 'viewBox="0 0 296 296"' in html
+                and "max-width: 180px" in apparence.CSS_GUINDIMA and "Scanne ou partage le lien à tes proches" in html)
+        verifie("partage : lien wa.me sans numéro, vers l'app",
+                "https://wa.me/?text=" in html and "huggingface.co%2Fspaces%2FPythonMindset%2Fguindima-ai" in html)
+    verifie("questions : textes demandés",
+            all(q in [x for x, _ in accueil.questions(True)] for q in (
+                "Quelles lignes sont couvertes ?", "Est-ce que c'est fiable ?", "Ma voix est-elle gardée ?",
+                "C'est gratuit ?", "Mon quartier n'est pas reconnu, je fais quoi ?", "Qui a créé GuindiMa ?"))
+            and dict(accueil.questions(True))["Qui a créé GuindiMa ?"]
+            == "TECH INNOV, une entreprise de Dakar fondée par Cheikh Niang.")
+    verifie("« Ma voix est-elle gardée ? » suit la note grise (collecte allumée ou non)",
+            "Écrire" in accueil.reponse_voix(True) and "GM-" in accueil.reponse_voix(True)
+            and "n'est pas enregistrée" in accueil.reponse_voix(False))
+
+    # Dans l'app : sous l'outil, avant le pied de page, avec la Confidentialité.
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_c7")
+    ancien = os.environ.get("COLLECTE_ACTIVE")
+    os.environ["COLLECTE_ACTIVE"] = "1"
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            config = app._construire().get_config_file()
+    finally:
+        if ancien is None:
+            os.environ.pop("COLLECTE_ACTIVE", None)
+        else:
+            os.environ["COLLECTE_ACTIVE"] = ancien
+    ids = [c.get("props", {}).get("elem_id") for c in config["components"]]
+    verifie("sections après l'outil et le panneau d'avis, avant le pied de page",
+            all(n in ids for n in ("micro_guindima", "panneau_avis", "accueil_sections", "pied_guindima"))
+            and ids.index("micro_guindima") < ids.index("panneau_avis") < ids.index("accueil_sections")
+            < ids.index("pied_guindima"), [i for i in ids if i])
+    pied = next(c for c in config["components"] if c.get("props", {}).get("elem_id") == "pied_guindima")
+    texte_pied = json.dumps(pied["props"].get("value"), ensure_ascii=False)
+    verifie("pied de page : TECH INNOV, crédits, Confidentialité dépliable fermée, « Un problème ? »",
+            "Une application TECH INNOV · Dakar" in texte_pied and "Données : Dakar Dem Dikk" in texte_pied
+            and "<summary>Confidentialité</summary>" in texte_pied and "<details class=" in texte_pied
+            and " open" not in texte_pied and "Un problème ? Réponds « Non » sous ton résultat" in texte_pied)
+    bloc = accueil.confidentialite(app.NOTE_VIE_PRIVEE_COLLECTE, True)
+    verifie("Confidentialité : voix, avis, NVIDIA, OpenStreetMap, responsable, code GM-",
+            all(x in bloc for x in ("Voix gardée", "avis", "NVIDIA", "OpenStreetMap",
+                                    "Responsable : TECH INNOV (Cheikh Niang), Dakar.", "code GM-")))
+
+    # 6. Interdits : ni numéro, ni e-mail, ni élément flottant, ni vh.
+    sources = [RACINE / "app.py", *sorted((RACINE / "src").rglob("*.py"))]
+    texte = "\n".join(s.read_text(encoding="utf-8") for s in sources)
+    courriels = re.findall(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.[A-Za-z]{2,}", texte)
+    telephones = re.findall(r"(?:\+221[ .-]?)?\b(?:7[05678]|33)[ .-]?\d{3}[ .-]?\d{2}[ .-]?\d{2}\b", texte)
+    verifie("aucun e-mail ni numéro de téléphone dans le code", not courriels and not telephones,
+            (courriels[:3], telephones[:3]))
+    css = re.sub(r"/\*.*?\*/", "", apparence.CSS_GUINDIMA + apparence.GLOBE_CSS, flags=re.S)
+    html = accueil.sections_accueil(True) + accueil.confidentialite(app.NOTE_VIE_PRIVEE, False)
+    verifie("rien de flottant : aucune position fixed ni sticky",
+            re.search(r"position\s*:\s*(?:fixed|sticky)", css + html) is None)
+    css_accueil = re.sub(r"/\*.*?\*/", "", apparence.CSS_ACCUEIL, flags=re.S)
+    verifie("pas d'animation ni de vh dans les nouvelles sections",
+            "@keyframes" not in css_accueil and "animation" not in css_accueil
+            and "transition" not in css_accueil and re.search(r"\d(?:d|s|l)?vh\b", css_accueil) is None)
+    verifie("sections dans la largeur (min-width:0, mots longs coupés)",
+            "#accueil_sections, #accueil_sections * { min-width: 0; box-sizing: border-box; overflow-wrap: anywhere; }"
+            in apparence.CSS_ACCUEIL)
+    verifie("étoiles : elles se partagent la largeur (la 5e n'est plus rognée à 360 px)",
+            "flex: 1 1 0;\n    min-width: 0 !important;\n    max-width: 56px;" in apparence.CSS_GUINDIMA)
+    verifie("QR fournis présents, non régénérés",
+            (RACINE / "assets" / "qr_guindima.svg").exists() and (RACINE / "assets" / "qr_guindima.png").exists())
+
     return echecs, total
 
 
@@ -9870,6 +9981,7 @@ if __name__ == "__main__":
         echecs_c4, total_c4 = test_lot_c4_tech_innov()
         echecs_c5, total_c5 = test_lot_c5_retours_chrome()
         echecs_c6, total_c6 = test_lot_c6_mobile_lieux()
+        echecs_c7, total_c7 = test_lot_c7_accueil()
         echecs = (
             test_local()
             + echecs_partage
@@ -9930,6 +10042,7 @@ if __name__ == "__main__":
             + echecs_c4
             + echecs_c5
             + echecs_c6
+            + echecs_c7
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -9991,6 +10104,7 @@ if __name__ == "__main__":
             + total_c4
             + total_c5
             + total_c6
+            + total_c7
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

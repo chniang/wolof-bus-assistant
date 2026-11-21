@@ -453,13 +453,17 @@ body.globe-guindima-actif #micro_guindima {
 
 /* 3. Étoiles : cinq boutons radio habillés en étoiles, 48 px chacun. */
 #etoiles_guindima { border: 0 !important; background: transparent !important; padding: 0 !important; }
-#etoiles_guindima .wrap { display: flex !important; flex-wrap: nowrap !important; gap: 2px !important; }
+/* Lot C7 : à 360 px, cinq étoiles de 48 px plus leurs espaces dépassaient le
+   panneau (la 5e était rognée) : elles se partagent la largeur, 56 px au plus. */
+#etoiles_guindima .wrap { display: flex !important; flex-wrap: nowrap !important; gap: 0 !important; }
 #etoiles_guindima label {
     position: relative;
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
-    min-width: 48px;
+    flex: 1 1 0;
+    min-width: 0 !important;
+    max-width: 56px;
     min-height: 48px;
     margin: 0 !important;
     padding: 0 !important;
@@ -579,6 +583,80 @@ def _css_etoiles() -> str:
 
 
 CSS_GUINDIMA = CSS_GUINDIMA.replace("@@ETOILES@@", _css_etoiles())
+CSS_ACCUEIL = r"""
+/* Lot C7 : sections sous l'outil. Une colonne, bordures neutres tout autour,
+   aucune animation, rien de flottant, rien qui dépasse la largeur. */
+#accueil_sections, #accueil_sections * { min-width: 0; box-sizing: border-box; overflow-wrap: anywhere; }
+#accueil_sections { margin-top: 18px; }
+#accueil_sections .section-accueil {
+    margin: 0 0 14px;
+    padding: 14px 16px;
+    border: 1.5px solid #D3DED7;
+    border-radius: 16px;
+    background: #FFFFFF;
+}
+#accueil_sections .titre-section-accueil {
+    margin: 0 0 10px;
+    color: #11251A;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.25;
+}
+#accueil_sections .etapes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+#accueil_sections .etape { display: flex; align-items: flex-start; gap: 10px; }
+#accueil_sections .etape-numero {
+    flex: 0 0 auto;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: #00853F;
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.6;
+}
+#accueil_sections .etape-texte { flex: 1 1 auto; color: #46594D; font-size: 15px; line-height: 1.4; }
+#accueil_sections .etape-titre { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+#accueil_sections .etape-titre svg { flex: 0 0 26px; width: 26px; height: 26px; }
+#accueil_sections .etape-titre b { color: #11251A; font-size: 16px; }
+#accueil_sections details.question { border-top: 1px solid #E3EAE6; }
+#accueil_sections details.question:first-of-type { border-top: 0; }
+#accueil_sections details summary,
+#pied_guindima details summary {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: #11251A;
+    font-size: 16px;
+    font-weight: 750;
+}
+#accueil_sections details p,
+#pied_guindima details p { margin: 0 0 12px; color: #46594D; font-size: 15px; line-height: 1.45; }
+#accueil_sections .partage-qr { text-align: center; }
+#accueil_sections .qr-guindima { display: block; width: 100%; max-width: 180px; height: auto; margin: 4px auto; }
+#accueil_sections .partage-texte { margin: 6px 0; text-align: center; color: #46594D; font-size: 15px; }
+#accueil_sections .partage-bouton { margin: 8px 0 2px; text-align: center; }
+#accueil_sections .partage-bouton a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 0 18px;
+    border: 2px solid #006B33;
+    border-radius: 999px;
+    background: #00853F;
+    color: #FFFFFF !important;
+    font-size: 16px;
+    font-weight: 800;
+    text-decoration: none;
+}
+#accueil_sections .partage-bouton a:focus-visible,
+#accueil_sections details summary:focus-visible,
+#pied_guindima details summary:focus-visible { outline: 3px solid #00853F; outline-offset: 2px; }
+#pied_guindima details.confidentialite { margin: 8px auto 2px; text-align: left; }
+#pied_guindima details.confidentialite summary { justify-content: center; font-size: 14px; color: #46594D; }
+#pied_guindima .un-probleme { margin: 4px 0 0; color: #46594D; font-size: 13px; }
+"""
+CSS_GUINDIMA = CSS_GUINDIMA + CSS_ACCUEIL
 
 # Lot C2 : logo (assets/logo_guindima.svg), dessiné pour l'app : un bus vu de
 # face, vert GuindiMa, pare-brise jaune, et une bulle de voix. Il est inséré en
@@ -612,6 +690,8 @@ ACCUEIL_HTML = (
 # --------------------------------------------------------------------------- #
 # 2. Le globe micro
 # --------------------------------------------------------------------------- #
+# Lot C7 : sous « Bës te wax », ce que l'usager doit savoir avant de parler.
+PROMESSE = "Gratuit · sans inscription · en wolof"
 TEXTES_GLOBE = {
     "repos": "Bës te wax",
     "ecoute": "Maa ngi lay déglu…",
@@ -645,6 +725,7 @@ GLOBE_HTML = f"""
     </span>
   </button>
   <p class="globe-etat" aria-live="polite">{TEXTES_GLOBE['repos']}</p>
+  <p class="globe-promesse">{PROMESSE}</p>
   <button type="button" class="globe-secours">Problème de micro ? Micro classique</button>
 </div>
 """
@@ -656,12 +737,12 @@ GLOBE_CSS = """
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 300px;
+  height: 326px;
   padding: 6px 0 2px;
   contain: layout paint;
   overflow: hidden;
 }
-.globe-zone[data-secours="oui"] { height: 252px; }
+.globe-zone[data-secours="oui"] { height: 278px; }
 .globe {
   position: relative;
   flex: 0 0 212px;
@@ -710,6 +791,15 @@ GLOBE_CSS = """
   font-size: 19px;
   font-weight: 750;
   text-align: center;
+}
+.globe-promesse {
+  margin: 2px 0 0;
+  height: 1.4em;
+  line-height: 1.4em;
+  color: #46594D;
+  font-size: 14px;
+  text-align: center;
+  white-space: nowrap;
 }
 /* Secours discret : révèle le micro Gradio classique (et le dépôt d'un fichier). */
 .globe-secours {

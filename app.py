@@ -61,6 +61,7 @@ from app.apparence import (  # noqa: E402
     ouvrir_carte,
     pastille_compagnie,
 )
+from app.accueil import confidentialite, sections_accueil  # noqa: E402
 from app.cartes import titre_autre_possibilite, titre_autre_possibilite_texte, titre_section  # noqa: E402
 from app.limites import JOUR, MINUTE, LimiteDebit, LimiteParClient, cle_client, entier_env  # noqa: E402
 from app.partage import bouton_partage  # noqa: E402
@@ -2437,6 +2438,10 @@ def _construire():
         gerer_micro = rechercher_une_fois_collecte if actif else rechercher_une_fois
         gerer_frequent = choisir_trajet_frequent_collecte if actif else choisir_trajet_frequent
 
+        # Lot C7 : sous l'outil, avant le pied de page : comment ça marche,
+        # questions fréquentes, partage (QR fourni par Cheikh, lien wa.me).
+        gr.HTML(sections_accueil(actif), elem_id="accueil_sections")
+
         gr.Markdown(
             "<div style='text-align:center;color:#8A968F;font-size:12px;"
             "border-top:1px solid #E3EAE6;padding-top:10px;margin-top:18px'>"
@@ -2444,7 +2449,10 @@ def _construire():
             f"<div id='editeur_guindima' style='color:#46594D;font-size:13px;font-weight:700;"
             f"margin-bottom:4px'>Une application {EDITEUR} · Dakar</div>"
             f"Données : Dakar Dem Dikk, Tata AFTU · IA : {LIBELLE_ASR}, NVIDIA Build · Voix : {LIBELLE_VOIX}"
-            "</div>"
+            # Lot C7 : la confidentialité en entier (dépliable) et à qui s'adresser.
+            f"{confidentialite(NOTE_VIE_PRIVEE_COLLECTE if actif else NOTE_VIE_PRIVEE, actif)}"
+            "</div>",
+            elem_id="pied_guindima",
         )
 
         sorties_avec_micro = [*sorties, audio_in]
