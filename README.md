@@ -1,8 +1,13 @@
 ---
 title: GuindiMa AI
+emoji: 🚌
+colorFrom: green
+colorTo: yellow
 sdk: gradio
-sdk_version: 6.30.0
+sdk_version: 6.28.0
+python_version: '3.12'
 app_file: app.py
+pinned: false
 short_description: "Dis ton trajet en wolof : GuindiMa trouve ton bus à Dakar"
 ---
 
@@ -13,7 +18,7 @@ short_description: "Dis ton trajet en wolof : GuindiMa trouve ton bus à Dakar"
 Développé par Cheikh Niang — TECH INNOV (Dakar)
 
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Gradio 6.30](https://img.shields.io/badge/Gradio-6.30-F97316?logo=gradio&logoColor=white)](https://www.gradio.app/)
+[![Gradio 6.28](https://img.shields.io/badge/Gradio-6.28-F97316?logo=gradio&logoColor=white)](https://www.gradio.app/)
 [![Hugging Face - Live demo](https://img.shields.io/badge/Hugging%20Face-Live%20demo-FFD21E?logo=huggingface&logoColor=white)](https://huggingface.co/spaces/PythonMindset/guindima-ai)
 [![ASR Kiriku-Wolof-ASR](https://img.shields.io/badge/ASR-Kiriku--Wolof--ASR-8CAAE6)](#-comment-lapp-utilise-les-modèles)
 [![Voice Oolel-Voices](https://img.shields.io/badge/Voice-Oolel--Voices-FF7F7F)](#-comment-lapp-utilise-les-modèles)
@@ -93,7 +98,7 @@ Les autres parties ne font pas d'ASR :
 | --- | --- | --- |
 | Moteur d'itinéraires | Notre code Python : graphe de (ligne, sens, arrêt), Dijkstra/A\*, deux changements au plus, changements à pied | Trouve les bus, les changements et la marche à partir des données publiques des lignes. |
 | Réponse parlée | Oolel-Voices de `soynade-research` (AGPL-3.0), voix native `8_1_c` | Fichiers WAV pré-générés ; aucun modèle TTS ne tourne dans l'app. |
-| Extraction des lieux, dernier recours | `nvidia/llama-3.1-nemotron-51b-instruct` sur NVIDIA Build (réglable par la variable `LLM_MODEL`) | Appelé seulement quand l'extraction locale, par dictionnaire, ne trouve aucun trajet complet. |
+| Extraction des lieux, dernier recours | `nvidia/nemotron-3.5-lightning-30b-a3b` sur NVIDIA Build (réglable par la variable `LLM_MODEL`) | Appelé seulement quand l'extraction locale, par dictionnaire, ne trouve aucun trajet complet. |
 | Petite conversation | Règles simples, en wolof | Salutations, remerciements, « qui es-tu », « quel est ton métier », « comprends-tu le wolof ». |
 
 ---
@@ -113,7 +118,7 @@ flowchart TD
   et sert aussi la seconde chance de transcription ; `M9and2M/whisper-small-wolof`
   en secours.
 - **Compréhension :** alias de lieux et nombres wolof d'abord, en local ;
-  Llama 3.2 sur NVIDIA Build seulement si l'extraction ne trouve aucun trajet
+  Nemotron sur NVIDIA Build seulement si l'extraction ne trouve aucun trajet
   complet.
 - **Moteur d'itinéraires v2 (par défaut) :** le graphe de (ligne, sens, arrêt)
   est construit une fois au démarrage ; recherche Dijkstra/A\* ; changements à
@@ -159,8 +164,10 @@ Par suite : `test_trajets.py` 754 · `test_collecte.py` 99 ·
 `test_finetune_whisper.py` 14 · `test_seconde_chance.py` 7 ·
 `test_asr_secours.py` 7.
 
-**Vie privée :** la voix n'est pas conservée, l'audio reçu est effacé après
-décodage. Le texte peut être envoyé à un service d'IA (NVIDIA) seulement quand
+**Vie privée :** pendant la phase de test, la voix dite dans l'onglet
+« Parler » est gardée, sans nom ni numéro, pour améliorer la reconnaissance du
+wolof (onglet « Écrire » pour ne pas la donner) ; un code GM- permet d'en
+demander la suppression. Le texte peut être envoyé à un service d'IA (NVIDIA) seulement quand
 l'extraction locale ne trouve pas le trajet. Les noms de lieux peuvent être
 envoyés à OpenStreetMap. La note sous la saisie le dit à l'usager.
 
@@ -208,8 +215,8 @@ durées. On ne corrige les données qu'avec une source « confirmé ».
   imparfaite, d'où la comparaison floue des noms de lieux.
 - Wolof uniquement : l'affichage est en français, mais l'entrée en français ou
   en plusieurs langues n'est pas prise.
-- **Pillow 12.3.0** : Gradio 6.30 (fixé par `sdk_version` dans le README du
-  Space) exige `pillow<13.0`, donc la version qui corrige les 37 CVE connues ne
+- **Pillow 12.3.0** : la version de Gradio du Space (fixée par `sdk_version`
+  dans l'en-tête de ce README) exige `pillow<13.0`, donc la version qui corrige les 37 CVE connues ne
   peut pas être installée. L'app n'utilise aucun composant image ; la montée de
   version suivra Gradio.
 
@@ -346,8 +353,9 @@ GuindiMa is a Wolof voice assistant for Dakar buses. Say or type where you are
 and where you go. The app answers by voice and on screen with the company (Dem
 Dikk or Tata AFTU), the line, where to board and get off, transfers and walking.
 Engine v2 and the native Oolel voice (873 pre-generated WAVs) are live. The app
-handles greetings, who you are, your job and whether you understand Wolof. Voice
-is not stored; text may be sent to NVIDIA Build; place names may go to
+handles greetings, who you are, your job and whether you understand Wolof. During the test phase, voice
+from the "Parler" tab is kept without name or number to improve Wolof
+recognition; text may be sent to NVIDIA Build; place names may go to
 OpenStreetMap. The first ground-truth audit scores 36/67 OK under "Tous" and
 42/67 with the operator filter; reliability work is in progress
 (`data/audit/fiabilite_rapport.md`). The test suite has 896 checks in 7 suites,
