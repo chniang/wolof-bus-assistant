@@ -2173,7 +2173,10 @@ def clic_etoiles(etoiles, suivi: dict | None, request: gr.Request | None = None)
         _retour(f"Merci pour ta note ⭐ ({note}/5)") if message
         else _retour(MESSAGE_NON_GARDE, ok=False)
     )
-    return (nouveau, _code_seul(message) or gr.skip(), retour, retour)
+    # Lot C8 : depuis le retrait du temps réel (C6), les étoiles sont le dernier
+    # contrôle du panneau, juste au-dessus du retour du bas : y répéter le
+    # message l'affichait deux fois. Un seul message, sous les étoiles.
+    return (nouveau, _code_seul(message) or gr.skip(), retour, "")
 
 
 NB_RETOURS = 6  # 3 messages (avis, étoiles, bas) et les 3 boutons d'avis

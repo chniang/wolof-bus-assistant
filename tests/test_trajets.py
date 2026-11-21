@@ -9387,8 +9387,9 @@ def test_lot_c3_retours() -> tuple[int, int]:
 
         # 2. Étoiles : « Merci pour ta note ⭐ (X/5) » sous les étoiles.
         sortie = silencieux(app.clic_etoiles, 4, suivi(), requete("203.0.113.61"))
-        verifie("étoiles : « Merci pour ta note ⭐ (4/5) » sous les étoiles, répété en bas",
-                len(sortie) == 4 and "Merci pour ta note ⭐ (4/5)" in sortie[2] and sortie[3] == sortie[2]
+        # Lot C8 : plus de répétition en bas (elle s'affichait juste dessous).
+        verifie("étoiles : « Merci pour ta note ⭐ (4/5) » sous les étoiles, une seule fois",
+                len(sortie) == 4 and "Merci pour ta note ⭐ (4/5)" in sortie[2] and sortie[3] == ""
                 and "retour-ok" in sortie[2], sortie)
 
         # 3. Lot C6 : plus de question « Temps réel » ni de bouton « Envoyer le temps ».
@@ -9585,6 +9586,17 @@ def test_lot_c5_retours_chrome() -> tuple[int, int]:
         verifie("clic 1 puis clic 5 : etoiles = 5 dans avis.json et dans le suivi",
                 faux.dernier_avis("GM-DDDDDD").get("etoiles") == 5 and etat["etoiles"] == 5,
                 faux.dernier_avis("GM-DDDDDD"))
+        # Lot C8 : « Merci pour ta note ⭐ (5/5) » s'affichait deux fois, l'un
+        # sous l'autre. Un choix = un seul message à l'écran, une seule écriture.
+        faux = collecte.COLLECTEUR = FauxCollecteur()
+        sortie = silencieux(app.clic_etoiles, 5, suivi(), requete("203.0.113.74"))
+        messages = [s for s in sortie if isinstance(s, str) and "Merci pour ta note" in s]
+        verifie("un choix d'étoiles : un seul message « Merci pour ta note ⭐ (5/5) »",
+                len(messages) == 1 and "(5/5)" in messages[0] and sortie[3] == "", sortie)
+        ecritures = [lot for lot in faux.lots if "donnees/GM-DDDDDD/avis.json" in lot]
+        verifie("un choix d'étoiles : une seule écriture d'avis.json, avec la note affichée",
+                len(ecritures) == 1 and faux.dernier_avis("GM-DDDDDD").get("etoiles") == 5, len(ecritures))
+        faux = collecte.COLLECTEUR = FauxCollecteur()
         # Le cas du dataset : un envoi « Oui » parti d'un suivi resté à 1 étoile
         # alors que l'écran en montre 5. La note affichée fait foi.
         perime = suivi(etoiles=1)
@@ -9627,6 +9639,10 @@ def test_lot_c5_retours_chrome() -> tuple[int, int]:
             len(envois) == 3 and all(id_etoiles in d.get("inputs", []) for d in envois), len(envois))
     clics_etoiles = [d for d in config["dependencies"]
                      if any(cible[0] == id_etoiles for cible in d.get("targets", []))]
+    verifie("étoiles : un seul événement branché (.input), ni change ni select",
+            len(clics_etoiles) == 1
+            and [cible[1] for cible in clics_etoiles[0].get("targets", [])] == ["input"],
+            [d.get("targets") for d in clics_etoiles])
     noms_avis = ("clic_etoiles", "clic_avis_oui", "clic_avis_non", "clic_avis_ne_sait_pas")
     verifie("étoiles : dernier clic gagnant, une seule file pour tous les avis",
             clics_etoiles and clics_etoiles[0].get("trigger_mode") == "always_last"
