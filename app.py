@@ -1998,36 +1998,32 @@ def _suivre(fonction, *args) -> tuple:
 
 
 def _sorties_collecte(trace: dict, suivi: dict | None, nouvelle: bool) -> tuple:
-    """Suivi, panneau d'avis, message du code, temps saisi, étoiles, puis les retours.
+    """Suivi, panneau d'avis, message du code, étoiles, puis les retours.
 
     Une nouvelle demande remet tout à zéro (lots C3 et C5) : étoiles, bouton
-    Oui/Non choisi, temps réel, bouton « Envoyer le temps » et messages de
-    confirmation. Un simple changement de compagnie garde l'avis en cours.
+    Oui/Non choisi et messages de confirmation. Un simple changement de compagnie garde l'avis en cours.
     Toute erreur s'arrête ici : la réponse de bus est déjà calculée et doit
     partir. Le journal ne dit que le type d'erreur, sans donnée de l'usager.
     """
     if not trace.get("traitee"):
         # Doublon d'un même geste : l'écran garde ce qu'il affiche.
-        return tuple(gr.skip() for _ in range(5 + NB_RETOURS))
-    masque = (
-        None, gr.update(visible=False), "", gr.update(value=None), gr.update(value=None),
-        *_remise_retours(),
-    )
+        return tuple(gr.skip() for _ in range(4 + NB_RETOURS))
+    masque = (None, gr.update(visible=False), "", gr.update(value=None), *_remise_retours())
     if not trace.get("repondu"):
         return masque
     try:
         if nouvelle or not suivi:
             suivi, message = collecte.nouveau_suivi(trace)
-            temps = etoiles = gr.update(value=None)
+            etoiles = gr.update(value=None)
             retours = _remise_retours()
         else:
             suivi, message = collecte.suivi_mis_a_jour(suivi, trace), gr.skip()
-            temps = etoiles = gr.skip()
+            etoiles = gr.skip()
             retours = tuple(gr.skip() for _ in range(NB_RETOURS))
     except Exception as exc:
         print(f"[collecte] contribution ignorée ({type(exc).__name__})", flush=True)
         return masque
-    return (suivi, gr.update(visible=bool(suivi["lignes"])), message, temps, etoiles, *retours)
+    return (suivi, gr.update(visible=bool(suivi["lignes"])), message, etoiles, *retours)
 
 
 def traiter_demande_collecte(
@@ -2055,28 +2051,28 @@ def choisir_trajet_frequent_collecte(
     return (*sortie, *_sorties_collecte(trace, suivi, True))
 
 
-def donner_avis(reponse: str, minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
-    """Oui / Non / Je ne sais pas, avec le temps réel s'il est déjà saisi."""
+def donner_avis(reponse: str, suivi: dict | None, request: gr.Request | None = None) -> tuple:
+    """Oui / Non / Je ne sais pas."""
     if not suivi or not collecte.avis_autorise(cle_client(request)):
         return gr.skip(), gr.skip()
     try:
-        return collecte.noter_avis(suivi, reponse, collecte.minutes_valides(minutes))
+        return collecte.noter_avis(suivi, reponse)
     except Exception as exc:
         print(f"[collecte] avis ignoré ({type(exc).__name__})", flush=True)
         return gr.skip(), gr.skip()
 
 
 # Gradio ne fournit `request` qu'aux fonctions annotées : pas de functools.partial ici.
-def avis_oui(minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
-    return donner_avis("oui", minutes, suivi, request)
+def avis_oui(suivi: dict | None, request: gr.Request | None = None) -> tuple:
+    return donner_avis("oui", suivi, request)
 
 
-def avis_non(minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
-    return donner_avis("non", minutes, suivi, request)
+def avis_non(suivi: dict | None, request: gr.Request | None = None) -> tuple:
+    return donner_avis("non", suivi, request)
 
 
-def avis_ne_sait_pas(minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
-    return donner_avis("ne_sait_pas", minutes, suivi, request)
+def avis_ne_sait_pas(suivi: dict | None, request: gr.Request | None = None) -> tuple:
+    return donner_avis("ne_sait_pas", suivi, request)
 
 
 def donner_etoiles(etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
@@ -2091,7 +2087,7 @@ def donner_etoiles(etoiles, suivi: dict | None, request: gr.Request | None = Non
     if note is None or not collecte.avis_autorise(cle_client(request)):
         return gr.skip(), gr.skip()
     try:
-        return collecte.noter_avis(suivi, None, None, note)
+        return collecte.noter_avis(suivi, None, note)
     except Exception as exc:
         print(f"[collecte] avis ignoré ({type(exc).__name__})", flush=True)
         return gr.skip(), gr.skip()
@@ -2106,8 +2102,6 @@ def donner_etoiles(etoiles, suivi: dict | None, request: gr.Request | None = Non
 # en orange) et se répète en bas du panneau. Les fonctions donner_* gardent
 # leur contrat (suivi, message) : ces gestionnaires ne font que l'affichage.
 REPONSES_AVIS_ORDRE = ("oui", "non", "ne_sait_pas")
-TEXTE_TEMPS = "Envoyer le temps"
-TEXTE_TEMPS_ENVOYE = "Temps envoyé ✓"
 PREFIXE_MERCI = "Merci, c'est noté.\n\n"
 MESSAGE_NON_GARDE = "Ton avis n'a pas pu être gardé. Réessaie dans un moment."
 
@@ -2131,7 +2125,7 @@ def _avec_etoiles_affichees(suivi: dict | None, etoiles) -> dict | None:
     """Le suivi avec la note que l'usager voit à l'écran (lot C5).
 
     Bug vu dans le dataset : 5 étoiles affichées, « etoiles »: 1 dans avis.json.
-    Chaque envoi (Oui/Non, temps) réécrit tout avis.json : s'il partait d'un
+    Chaque envoi (Oui/Non) réécrit tout avis.json : s'il partait d'un
     suivi où la note n'était pas encore à jour, il remettait l'ancienne. La
     valeur du composant étoiles fait donc foi à chaque envoi.
     """
@@ -2141,9 +2135,9 @@ def _avec_etoiles_affichees(suivi: dict | None, etoiles) -> dict | None:
     return {**suivi, "etoiles": note}
 
 
-def _clic_avis(reponse: str, minutes, etoiles, suivi, request) -> tuple:
+def _clic_avis(reponse: str, etoiles, suivi, request) -> tuple:
     """Oui / Non / Je ne sais pas : suivi, code, retour, retour du bas, trois boutons."""
-    resultat = donner_avis(reponse, minutes, _avec_etoiles_affichees(suivi, etoiles), request)
+    resultat = donner_avis(reponse, _avec_etoiles_affichees(suivi, etoiles), request)
     if _ignore(resultat):
         return tuple(gr.skip() for _ in range(7))
     nouveau, message = resultat
@@ -2155,16 +2149,16 @@ def _clic_avis(reponse: str, minutes, etoiles, suivi, request) -> tuple:
     return (nouveau, _code_seul(message) or gr.skip(), retour, retour, *boutons)
 
 
-def clic_avis_oui(minutes, etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
-    return _clic_avis("oui", minutes, etoiles, suivi, request)
+def clic_avis_oui(etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
+    return _clic_avis("oui", etoiles, suivi, request)
 
 
-def clic_avis_non(minutes, etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
-    return _clic_avis("non", minutes, etoiles, suivi, request)
+def clic_avis_non(etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
+    return _clic_avis("non", etoiles, suivi, request)
 
 
-def clic_avis_ne_sait_pas(minutes, etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
-    return _clic_avis("ne_sait_pas", minutes, etoiles, suivi, request)
+def clic_avis_ne_sait_pas(etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
+    return _clic_avis("ne_sait_pas", etoiles, suivi, request)
 
 
 def clic_etoiles(etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
@@ -2181,49 +2175,13 @@ def clic_etoiles(etoiles, suivi: dict | None, request: gr.Request | None = None)
     return (nouveau, _code_seul(message) or gr.skip(), retour, retour)
 
 
-def clic_temps(minutes, etoiles, suivi: dict | None, request: gr.Request | None = None) -> tuple:
-    """Temps réel : suivi, code, « Temps enregistré : X min ✓ », retour du bas, bouton."""
-    resultat = donner_temps(minutes, _avec_etoiles_affichees(suivi, etoiles), request)
-    if _ignore(resultat):
-        return tuple(gr.skip() for _ in range(5))
-    nouveau, message = resultat
-    if message == collecte.MESSAGE_MINUTES:
-        erreur = _retour(f"⚠️ {message}", ok=False)
-        return (gr.skip(), gr.skip(), erreur, erreur, gr.skip())
-    if not message:
-        erreur = _retour(MESSAGE_NON_GARDE, ok=False)
-        return (nouveau, gr.skip(), erreur, erreur, gr.skip())
-    retour = _retour(f"Temps enregistré : {collecte.minutes_valides(minutes)} min ✓")
-    bouton = gr.update(value=TEXTE_TEMPS_ENVOYE, variant="primary")
-    return (nouveau, _code_seul(message), retour, retour, bouton)
-
-
-NB_RETOURS = 8  # 4 messages, 3 boutons d'avis, le bouton du temps
+NB_RETOURS = 6  # 3 messages (avis, étoiles, bas) et les 3 boutons d'avis
 
 
 def _remise_retours() -> tuple:
-    """Nouvelle demande : retours vides, boutons d'avis et de temps à l'état initial."""
-    return (
-        "", "", "", "",
-        *(gr.update(variant="secondary") for _ in REPONSES_AVIS_ORDRE),
-        gr.update(value=TEXTE_TEMPS, variant="secondary"),
-    )
+    """Nouvelle demande : retours vides, boutons d'avis à l'état initial."""
+    return ("", "", "", *(gr.update(variant="secondary") for _ in REPONSES_AVIS_ORDRE))
 
-
-def donner_temps(minutes, suivi: dict | None, request: gr.Request | None = None) -> tuple:
-    """Le temps réel, souvent connu seulement à la fin du trajet."""
-    if not suivi:
-        return gr.skip(), gr.skip()
-    valeur = collecte.minutes_valides(minutes)
-    if valeur is None:
-        return gr.skip(), collecte.MESSAGE_MINUTES
-    if not collecte.avis_autorise(cle_client(request)):
-        return gr.skip(), gr.skip()
-    try:
-        return collecte.noter_avis(suivi, None, valeur)
-    except Exception as exc:
-        print(f"[collecte] avis ignoré ({type(exc).__name__})", flush=True)
-        return gr.skip(), gr.skip()
 
 
 def _echauffer_llm():
@@ -2441,15 +2399,8 @@ def _construire():
                     elem_id="etoiles_guindima",
                 )
                 retour_etoiles = gr.HTML("", elem_id="retour_etoiles")
-                minutes_in = gr.Number(
-                    value=None,
-                    label="Temps réel du trajet (min)",
-                    minimum=collecte.MINUTES_MIN,
-                    maximum=collecte.MINUTES_MAX,
-                    precision=0,
-                )
-                bouton_temps = gr.Button(TEXTE_TEMPS, size="sm", variant="secondary")
-                retour_temps = gr.HTML("", elem_id="retour_temps")
+                # Lot C6 : plus de question « Temps réel du trajet » (décision de
+                # Cheikh) : au moment de la recherche, l'usager ne le connaît pas.
                 # La dernière confirmation, répétée en bas du panneau : visible
                 # même après avoir fait défiler la page.
                 retour_bas = gr.HTML("", elem_id="retour_bas")
@@ -2461,18 +2412,11 @@ def _construire():
             for bouton_avis, gerer_avis in boutons_avis:
                 bouton_avis.click(
                     gerer_avis,
-                    inputs=[minutes_in, etoiles_in, suivi_state],
+                    inputs=[etoiles_in, suivi_state],
                     outputs=[suivi_state, code_out, retour_avis, retour_bas, *boutons],
                     api_visibility="private",
                     **file_avis,
                 )
-            bouton_temps.click(
-                clic_temps,
-                inputs=[minutes_in, etoiles_in, suivi_state],
-                outputs=[suivi_state, code_out, retour_temps, retour_bas, bouton_temps],
-                api_visibility="private",
-                **file_avis,
-            )
             # .input : seulement un clic de l'usager, jamais la remise à vide.
             # always_last : deux clics rapides (1 puis 5) finissent toujours sur 5.
             etoiles_in.input(
@@ -2485,8 +2429,8 @@ def _construire():
             )
             entrees_collecte = [suivi_state]
             sorties_collecte = [
-                suivi_state, panneau_avis, code_out, minutes_in, etoiles_in,
-                retour_avis, retour_etoiles, retour_temps, retour_bas, *boutons, bouton_temps,
+                suivi_state, panneau_avis, code_out, etoiles_in,
+                retour_avis, retour_etoiles, retour_bas, *boutons,
             ]
 
         gerer_demande = traiter_demande_collecte if actif else traiter_demande

@@ -202,8 +202,9 @@ TRAJETS_MARQUEUR_ETENDU = [
 # un lieu DÉJÀ bien reconnu (un match court mais exact qui l'emporterait sur un
 # match plus long mais approximatif). (phrase réelle, départ attendu, arrivée).
 TRAJETS_GARDES_VARIANTES = [
-    # « gerana yoof » doit rester Grand-Yoff, pas juste Yoff.
-    ("ma ngi naari tali dma begg a dem gerana yoof", "Taliboubess", "Grand-Yoff"),
+    # « gerana yoof » doit rester Grand-Yoff, pas juste Yoff. Lot C6 : « naari
+    # tali » (ñaari tali) est Niary Tally, pas Taliboubess (correction de Cheikh).
+    ("ma ngi naari tali dma begg a dem gerana yoof", "Niary Tally", "Grand-Yoff"),
     # « faas mbaaw » doit rester Fass Mbao, pas juste Mbao.
     ("maa ngi kér mbay fall dama bëgg a dem faas mbaaw", "Keur Mbaye Fall", "Fass Mbao"),
     # « noor foor » doit rester Nord Foire, pas juste Foire.
@@ -7356,8 +7357,10 @@ def test_lot_10() -> tuple[int, int]:
                 not any(c.get("type") == "checkbox" for c in config["components"])
                 and "J'accepte" not in texte_config and "consentement_voix" not in texte_config)
         vus = libelles(config)
-        verifie("boutons d'avis et temps réel",
-                all(x in vus for x in ("Oui", "Non", "Je ne sais pas", "Temps réel du trajet (min)")), vus)
+        # Lot C6 : plus de question « Temps réel du trajet » (décision de Cheikh).
+        verifie("boutons d'avis, sans question sur le temps réel",
+                all(x in vus for x in ("Oui", "Non", "Je ne sais pas"))
+                and "Temps réel du trajet (min)" not in vus and "Envoyer le temps" not in vus, vus)
         verifie("note : nouveau début, suite conservée, même emplacement",
                 app.NOTE_VIE_PRIVEE_COLLECTE == (
                     "🎙️ Voix gardée pour améliorer le wolof, sans ton nom ni ton numéro "
@@ -7373,24 +7376,24 @@ def test_lot_10() -> tuple[int, int]:
         sortie = silencieux(app.traiter_demande_collecte, None, PHRASE, "", None, True, None)
         suivi = sortie[7]
         verifie("Écrire : rien n'est envoyé, aucun code affiché",
-                not faux.lots and sortie[9] == "" and suivi["voix"] is False and len(sortie) == 20,
+                not faux.lots and sortie[9] == "" and suivi["voix"] is False and len(sortie) == 17,
                 (faux.lots, sortie[9]))
         verifie("Écrire : le panneau d'avis apparaît", sortie[8].get("visible") is True, sortie[8])
         verifie("le suivi ne contient jamais l'audio", "son" not in suivi)
-        suivi, message = silencieux(app.donner_avis, "oui", 25, suivi)
+        suivi, message = silencieux(app.donner_avis, "oui", suivi)
         chemins = faux.chemins()
         fiche = json.loads(faux.lots[0][chemins[0]]) if chemins else {}
         verifie("avis après Écrire : un seul fichier, sans audio",
                 chemins == [f"donnees/{suivi['code']}/avis.json"], chemins)
         verifie("avis après Écrire : ni transcription ni modèle",
                 "transcription" not in fiche and "modele_asr" not in fiche and fiche["avec_voix"] is False, fiche)
-        verifie("avis : réponse, temps et lignes gardés",
-                fiche["reponse"] == "oui" and fiche["minutes_reelles"] == 25 and fiche["lignes_proposees"], fiche)
+        verifie("avis : réponse et lignes gardées, plus aucun temps",
+                fiche["reponse"] == "oui" and fiche["lignes_proposees"]
+                and "minutes_reelles" not in fiche, fiche)
         verifie("avis : le code et « ton avis » sont affichés",
                 suivi["code"] in message and "supprimer ton avis" in message, message)
-        _, message = silencieux(app.donner_temps, 400, suivi)
-        verifie("temps invraisemblable : refusé sans envoi",
-                message == collecte.MESSAGE_MINUTES and len(faux.lots) == 1, message)
+        verifie("plus de gestionnaire du temps réel",
+                not hasattr(app, "donner_temps") and not hasattr(collecte, "minutes_valides"))
 
         # 4. Onglet Parler : chaque voix traitée part, sans donnée personnelle.
         faux = collecte.COLLECTEUR = FauxCollecteur()
@@ -7421,16 +7424,12 @@ def test_lot_10() -> tuple[int, int]:
                 code in sortie[9] and sortie[0] == PHRASE
                 and "Pour faire supprimer ton enregistrement, envoie ce code à la personne "
                 "qui t'a partagé l'application." in sortie[9], sortie[9])
-        _, message = silencieux(app.donner_avis, "non", None, suivi)
+        _, message = silencieux(app.donner_avis, "non", suivi)
         avis = faux.lots[-1] if len(faux.lots) == 2 else {}
         fiche_avis = json.loads(avis.get(f"donnees/{code}/avis.json", b"{}"))
         verifie("avis après Parler : même code, rattaché à la voix",
                 set(avis) == {f"donnees/{code}/avis.json"} and fiche_avis.get("avec_voix") is True
                 and fiche_avis.get("code") == code and code in message, (set(avis), fiche_avis))
-        _, message = silencieux(app.donner_temps, 35, suivi)
-        fiche_temps = json.loads(faux.lots[-1].get(f"donnees/{code}/avis.json", b"{}"))
-        verifie("temps après Parler : même code",
-                fiche_temps.get("minutes_reelles") == 35 and len(faux.lots) == 3, fiche_temps)
         del faux.lots[1:]
         verifie("format du code", collecte.MOTIF_CODE.fullmatch(code), code)
         verifie("codes différents d'une demande à l'autre",
@@ -8254,7 +8253,9 @@ def test_plafonds_par_client() -> tuple[int, int]:
             (app.traiter_demande, 5), (app.rechercher_une_fois, 4), (app.choisir_trajet_frequent, 2),
             (app.repondre_et_vider_micro, 3), (app.traiter_demande_collecte, 6),
             (app.rechercher_une_fois_collecte, 5), (app.choisir_trajet_frequent_collecte, 3),
-            (app.avis_oui, 2), (app.avis_non, 2), (app.avis_ne_sait_pas, 2), (app.donner_temps, 2),
+            (app.avis_oui, 1), (app.avis_non, 1), (app.avis_ne_sait_pas, 1),
+            (app.donner_etoiles, 2), (app.clic_etoiles, 2),
+            (app.clic_avis_oui, 2), (app.clic_avis_non, 2), (app.clic_avis_ne_sait_pas, 2),
         ):
             valeurs, *_ = special_args(fonction, [None] * entrees, marque)
             verifie(f"Gradio transmet la requête à {fonction.__name__}",
@@ -8418,9 +8419,9 @@ def test_plafonds_par_client() -> tuple[int, int]:
         collecte.LIMITE_AVIS_CLIENT = LimiteParClient(((HEURE, 1),))
         faux = collecte.COLLECTEUR = FauxCollecteur()
         suivi = {"code": "GM-AAAAAA", "depart": "A", "arrivee": "B", "lignes": ["L"],
-                 "voix": False, "reponse": None, "minutes": None}
-        silencieux(app.avis_oui, None, suivi, client)
-        second = silencieux(app.avis_non, None, suivi, client)
+                 "voix": False, "reponse": None}
+        silencieux(app.avis_oui, suivi, client)
+        second = silencieux(app.avis_non, suivi, client)
         verifie("avis : plafond par client, sans message",
                 len(faux.lots) == 1 and second == (gr.skip(), gr.skip()), second)
 
@@ -9181,16 +9182,16 @@ def test_lot_c_design() -> tuple[int, int]:
     try:
         faux = collecte.COLLECTEUR = FauxCollecteur()
         suivi = {"code": "GM-AAAAAA", "depart": "Ouakam", "arrivee": "Palais", "lignes": ["L"],
-                 "voix": False, "reponse": None, "minutes": None}
+                 "voix": False, "reponse": None}
         nouveau, message = silencieux(app.donner_etoiles, 4, suivi, requete("203.0.113.40"))
         fiche = json.loads(faux.lots[-1]["donnees/GM-AAAAAA/avis.json"]) if faux.lots else {}
         verifie("étoile -> avis.json du même code, champ « etoiles »",
                 fiche.get("etoiles") == 4 and fiche.get("code") == "GM-AAAAAA"
                 and nouveau.get("etoiles") == 4 and "GM-AAAAAA" in message, fiche)
         verifie("avis.json : aucune donnée personnelle",
-                set(fiche) == {"code", "date", "reponse", "minutes_reelles", "etoiles", "depart",
+                set(fiche) == {"code", "date", "reponse", "etoiles", "depart",
                                "arrivee", "lignes_proposees", "avec_voix"}, sorted(fiche))
-        silencieux(app.donner_avis, "oui", None, nouveau, requete("203.0.113.40"))
+        silencieux(app.donner_avis, "oui", nouveau, requete("203.0.113.40"))
         fiche = json.loads(faux.lots[-1]["donnees/GM-AAAAAA/avis.json"])
         verifie("la note reste avec l'avis Oui qui suit",
                 fiche.get("etoiles") == 4 and fiche["reponse"] == "oui", fiche)
@@ -9209,7 +9210,7 @@ def test_lot_c_design() -> tuple[int, int]:
         collecte.COLLECTEUR, collecte.LIMITE_AVIS_CLIENT = collecteur_origine, limite_origine
     sorties = app._sorties_collecte({"traitee": True, "repondu": False}, None, True)
     verifie("nouvelle demande : les étoiles reviennent à vide",
-            len(sorties) == 13 and sorties[4] == gr.update(value=None), sorties)
+            len(sorties) == 10 and sorties[3] == gr.update(value=None), sorties)
 
     # 4. Description du Space en français, <= 60 caractères (limite Hugging Face).
     entete = (RACINE / "README.md").read_text(encoding="utf-8").split("---", 2)[1]
@@ -9363,14 +9364,14 @@ def test_lot_c3_retours() -> tuple[int, int]:
 
     def suivi() -> dict:
         return {"code": "GM-CCCCCC", "depart": "Ouakam", "arrivee": "Palais", "lignes": ["L"],
-                "voix": False, "reponse": None, "minutes": None}
+                "voix": False, "reponse": None}
 
     collecteur_origine = collecte.COLLECTEUR
     try:
         collecte.COLLECTEUR = FauxCollecteur()
 
         # 1 et 4. Oui / Non / Je ne sais pas : confirmation sous les boutons, bouton choisi plein.
-        sortie = silencieux(app.clic_avis_non, None, None, suivi(), requete("203.0.113.60"))
+        sortie = silencieux(app.clic_avis_non, None, suivi(), requete("203.0.113.60"))
         verifie("avis : 7 sorties (suivi, code, retour, retour du bas, 3 boutons)", len(sortie) == 7, sortie)
         nouveau, code, retour, bas, oui, non, nsp = sortie
         verifie("avis : « Merci, c'est noté ✓ » en vert, sous les boutons",
@@ -9390,24 +9391,18 @@ def test_lot_c3_retours() -> tuple[int, int]:
                 len(sortie) == 4 and "Merci pour ta note ⭐ (4/5)" in sortie[2] and sortie[3] == sortie[2]
                 and "retour-ok" in sortie[2], sortie)
 
-        # 3. Temps : « Temps enregistré : X min ✓ », bouton « envoyé ».
-        sortie = silencieux(app.clic_temps, 35, None, suivi(), requete("203.0.113.62"))
-        verifie("temps : « Temps enregistré : 35 min ✓ » et bouton « Temps envoyé ✓ »",
-                len(sortie) == 5 and "Temps enregistré : 35 min ✓" in sortie[2]
-                and sortie[4] == gr.update(value=app.TEXTE_TEMPS_ENVOYE, variant="primary"), sortie)
-        sortie = silencieux(app.clic_temps, 0, None, suivi(), requete("203.0.113.63"))
-        verifie("temps invalide : erreur en orange, sous le bouton et en bas",
-                "retour-erreur" in sortie[2] and "entre 1 et 300 minutes" in sortie[2]
-                and sortie[3] == sortie[2] and sortie[0] == gr.skip() and sortie[4] == gr.skip(), sortie)
+        # 3. Lot C6 : plus de question « Temps réel » ni de bouton « Envoyer le temps ».
+        verifie("temps réel retiré : ni gestionnaire ni texte",
+                not hasattr(app, "clic_temps") and not hasattr(app, "TEXTE_TEMPS"))
 
         # File d'envoi pleine : on le dit (orange) au lieu de rien.
         collecte.COLLECTEUR = FauxCollecteur(accepte=False)
-        sortie = silencieux(app.clic_avis_oui, None, None, suivi(), requete("203.0.113.64"))
+        sortie = silencieux(app.clic_avis_oui, None, suivi(), requete("203.0.113.64"))
         verifie("avis non gardé : message orange", "retour-erreur" in sortie[2], sortie[2])
 
         # Sans demande en cours : rien ne bouge.
         verifie("sans demande : aucun changement",
-                silencieux(app.clic_avis_oui, None, None, None, requete("203.0.113.65"))
+                silencieux(app.clic_avis_oui, None, None, requete("203.0.113.65"))
                 == tuple(gr.skip() for _ in range(7))
                 and silencieux(app.clic_etoiles, 3, None, requete("203.0.113.65"))
                 == tuple(gr.skip() for _ in range(4)))
@@ -9422,14 +9417,13 @@ def test_lot_c3_retours() -> tuple[int, int]:
         sorties = silencieux(app._sorties_collecte, trace, suivi(), True)
     finally:
         collecte.COLLECTEUR = collecteur_origine
-    verifie("nouvelle demande : retours vides, Oui/Non et temps remis à l'état initial",
-            len(sorties) == 13 and sorties[3] == gr.update(value=None) and sorties[4] == gr.update(value=None)
-            and sorties[5:9] == ("", "", "", "")
-            and sorties[9:12] == tuple(gr.update(variant="secondary") for _ in range(3))
-            and sorties[12] == gr.update(value=app.TEXTE_TEMPS, variant="secondary"), sorties[3:])
+    verifie("nouvelle demande : retours vides, Oui/Non remis à l'état initial",
+            len(sorties) == 10 and sorties[3] == gr.update(value=None)
+            and sorties[4:7] == ("", "", "")
+            and sorties[7:10] == tuple(gr.update(variant="secondary") for _ in range(3)), sorties[3:])
     changement = silencieux(app._sorties_collecte, trace, suivi(), False)
     verifie("changement de compagnie : l'avis en cours reste affiché",
-            all(valeur == gr.skip() for valeur in changement[5:]), changement[5:])
+            all(valeur == gr.skip() for valeur in changement[3:]), changement[3:])
 
     # Dans l'interface : les retours sont DANS le panneau, sous chaque contrôle.
     ancien = os.environ.get("COLLECTE_ACTIVE")
@@ -9443,10 +9437,10 @@ def test_lot_c3_retours() -> tuple[int, int]:
             os.environ["COLLECTE_ACTIVE"] = ancien
     ids = [c.get("props", {}).get("elem_id") for c in config["components"]]
     rangs = {nom: ids.index(nom) for nom in ("etoiles_guindima", "retour_avis", "retour_etoiles",
-                                             "retour_temps", "retour_bas") if nom in ids}
+                                             "retour_bas") if nom in ids}
     verifie("retours présents dans le panneau, dans l'ordre des contrôles",
-            len(rangs) == 5 and rangs["retour_avis"] < rangs["etoiles_guindima"] < rangs["retour_etoiles"]
-            < rangs["retour_temps"] < rangs["retour_bas"], rangs)
+            len(rangs) == 4 and rangs["retour_avis"] < rangs["etoiles_guindima"] < rangs["retour_etoiles"]
+            < rangs["retour_bas"] and "retour_temps" not in ids and "temps_guindima" not in ids, rangs)
     css = apparence.CSS_GUINDIMA
     verifie("style : confirmation verte, erreur orange",
             ".retour-ok { background: #E8F5EE" in css and ".retour-erreur { background: #FFF4E5" in css)
@@ -9578,7 +9572,7 @@ def test_lot_c5_retours_chrome() -> tuple[int, int]:
 
     def suivi(**champs) -> dict:
         base = {"code": "GM-DDDDDD", "depart": "Ouakam", "arrivee": "Palais", "lignes": ["L"],
-                "voix": False, "reponse": None, "minutes": None}
+                "voix": False, "reponse": None}
         return {**base, **champs}
 
     # 5. Étoiles : la dernière note choisie est toujours celle d'avis.json.
@@ -9594,15 +9588,11 @@ def test_lot_c5_retours_chrome() -> tuple[int, int]:
         # Le cas du dataset : un envoi « Oui » parti d'un suivi resté à 1 étoile
         # alors que l'écran en montre 5. La note affichée fait foi.
         perime = suivi(etoiles=1)
-        silencieux(app.clic_avis_oui, None, 5, perime, requete("203.0.113.71"))
+        silencieux(app.clic_avis_oui, 5, perime, requete("203.0.113.71"))
         verifie("Oui après une note : avis.json garde la note affichée (5), jamais l'ancienne (1)",
                 faux.dernier_avis("GM-DDDDDD").get("etoiles") == 5
                 and faux.dernier_avis("GM-DDDDDD").get("reponse") == "oui", faux.dernier_avis("GM-DDDDDD"))
-        silencieux(app.clic_temps, 40, 5, perime, requete("203.0.113.72"))
-        verifie("temps après une note : la note affichée (5) est gardée",
-                faux.dernier_avis("GM-DDDDDD").get("etoiles") == 5
-                and faux.dernier_avis("GM-DDDDDD").get("minutes_reelles") == 40, faux.dernier_avis("GM-DDDDDD"))
-        silencieux(app.clic_avis_non, None, None, suivi(etoiles=3), requete("203.0.113.73"))
+        silencieux(app.clic_avis_non, None, suivi(etoiles=3), requete("203.0.113.73"))
         verifie("sans note affichée : la note du suivi reste (pas d'effacement)",
                 faux.dernier_avis("GM-DDDDDD").get("etoiles") == 3, faux.dernier_avis("GM-DDDDDD"))
     finally:
@@ -9631,13 +9621,13 @@ def test_lot_c5_retours_chrome() -> tuple[int, int]:
     noms = {c["id"]: c.get("props", {}).get("value") for c in config["components"]}
     id_etoiles = par_id.get("etoiles_guindima")
     envois = [d for d in config["dependencies"]
-              if any(noms.get(cible[0]) in ("Oui", "Non", "Je ne sais pas", app.TEXTE_TEMPS)
+              if any(noms.get(cible[0]) in ("Oui", "Non", "Je ne sais pas")
                      for cible in d.get("targets", []))]
-    verifie("Oui/Non/Je ne sais pas/temps lisent la note affichée",
-            len(envois) == 4 and all(id_etoiles in d.get("inputs", []) for d in envois), len(envois))
+    verifie("Oui/Non/Je ne sais pas lisent la note affichée",
+            len(envois) == 3 and all(id_etoiles in d.get("inputs", []) for d in envois), len(envois))
     clics_etoiles = [d for d in config["dependencies"]
                      if any(cible[0] == id_etoiles for cible in d.get("targets", []))]
-    noms_avis = ("clic_etoiles", "clic_avis_oui", "clic_avis_non", "clic_avis_ne_sait_pas", "clic_temps")
+    noms_avis = ("clic_etoiles", "clic_avis_oui", "clic_avis_non", "clic_avis_ne_sait_pas")
     verifie("étoiles : dernier clic gagnant, une seule file pour tous les avis",
             clics_etoiles and clics_etoiles[0].get("trigger_mode") == "always_last"
             and {files.get(nom) for nom in noms_avis} == {"avis_guindima"},
@@ -9647,15 +9637,14 @@ def test_lot_c5_retours_chrome() -> tuple[int, int]:
     faux = collecte.COLLECTEUR = FauxCollecteur()
     try:
         sortie = silencieux(app.traiter_demande_collecte, None, "Maa ngi Ouakam, bëgg naa dem Palais",
-                            "", None, True, suivi(etoiles=4, reponse="oui", minutes=30))
+                            "", None, True, suivi(etoiles=4, reponse="oui"))
     finally:
         collecte.COLLECTEUR = collecteur_origine
     remise = sortie[10:]
     verifie("nouvelle recherche : étoiles, temps, messages, Oui/Non et bouton du temps remis à zéro",
-            len(sortie) == 20 and remise[0] == gr.update(value=None) and remise[1] == gr.update(value=None)
-            and remise[2:6] == ("", "", "", "")
-            and remise[6:9] == tuple(gr.update(variant="secondary") for _ in range(3))
-            and remise[9] == gr.update(value=app.TEXTE_TEMPS, variant="secondary"), remise)
+            len(sortie) == 17 and remise[0] == gr.update(value=None)
+            and remise[1:4] == ("", "", "")
+            and remise[4:7] == tuple(gr.update(variant="secondary") for _ in range(3)), remise)
     sources_collecte = (RACINE / "app.py").read_text(encoding="utf-8")
     verifie("même remise à zéro pour la voix et les trajets fréquents",
             all(f"def {f}(" in sources_collecte for f in
@@ -9684,6 +9673,130 @@ def test_lot_c5_retours_chrome() -> tuple[int, int]:
     corps_voix = sources_collecte.split("def _voix_wolof", 1)[1].split("\ndef ", 1)[0]
     verifie("aucune durée parlée", "duree_totale" not in corps_voix and "minutes" not in corps_voix)
 
+    return echecs, total
+
+
+def test_lot_c6_mobile_lieux() -> tuple[int, int]:
+    """Lot C6 : page tenue dans l'écran, pas de tremblement, temps réel retiré, README du Space, lieux.
+
+    Aucun réseau : le LLM est un faux client, upload_space n'est lu qu'en local.
+    """
+    import contextlib
+    import importlib.util
+    import io
+    import os  # noqa: F401
+    import re
+
+    from app import apparence
+    from intent.extract_intent import _meme_mots, _score, extract_intent, extract_local
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot C6 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    css = apparence.CSS_GUINDIMA + apparence.GLOBE_CSS
+
+    # A. Débordement : chaque bloc rentre dans la largeur ; filet en dernier.
+    verifie("aucune hauteur en vh (barre d'adresse mobile)",
+            re.search(r"\d(?:\.\d+)?(?:d|s|l)?vh\b", css) is None, re.findall(r"[\d.]+\w*vh", css))
+    verifie("rangée Compagnie : les pastilles passent à la ligne",
+            "#compagnie_guindima .wrap { gap: 6px !important; flex-wrap: wrap !important; }" in css)
+    verifie("blocs : min-width:0, max-width:100%, mots longs coupés",
+            "min-width: 0 !important;" in css and "overflow-wrap: anywhere;" in css
+            and ".gradio-container .guindima-carte *" in css)
+    verifie("dernier filet : overflow-x:hidden sur html, body et le conteneur",
+            "html, body { overflow-x: hidden !important;" in css
+            and ".gradio-container { overflow-x: hidden !important; }" in css)
+    verifie("carte : largeur bornée dans son propre style",
+            "max-width:100%" in apparence.ouvrir_carte() and "overflow-wrap:anywhere" in apparence.ouvrir_carte())
+
+    # B. Tremblement : survol réservé à la souris, globe isolé, pas d'écriture continue.
+    def sans_blocs_souris(texte: str) -> str:
+        entete = "@media (hover: hover) and (pointer: fine) {"
+        while entete in texte:
+            debut = texte.index(entete)
+            profondeur, i = 0, debut + len(entete) - 1
+            while True:
+                profondeur += {"{": 1, "}": -1}.get(texte[i], 0)
+                if profondeur == 0:
+                    break
+                i += 1
+            texte = texte[:debut] + texte[i + 1:]
+        return texte
+
+    verifie("survols seulement sur les appareils à souris",
+            ":hover" not in sans_blocs_souris(apparence.CSS_GUINDIMA), re.findall(r"[^\n]*:hover[^\n]*",
+                                                                                  sans_blocs_souris(apparence.CSS_GUINDIMA))[:3])
+    verifie("globe : zone de taille fixe, isolée (contain)",
+            apparence.GLOBE_CSS.count("contain: layout paint;") >= 2 and "height: 300px;" in apparence.GLOBE_CSS)
+    verifie("globe : n'anime que transform et opacity",
+            "transition: transform 160ms ease, opacity 160ms ease;" in apparence.GLOBE_CSS
+            and "background-color 160ms" not in apparence.GLOBE_CSS)
+    js = apparence.globe_js()
+    verifie("globe : les attributs ne sont réécrits que s'ils changent",
+            "if (b.getAttribute('tabindex') !== '-1')" in js and "if (b.getAttribute('aria-hidden') !== 'true')" in js)
+    verifie("thème clair : l'observateur ne veille que la classe de html et body",
+            "subtree" not in apparence.HEAD_CLAIR)
+
+    # C et D. Temps réel retiré : plus de champ, de bouton ni de temps dans avis.json.
+    source_app = (RACINE / "app.py").read_text(encoding="utf-8")
+    verifie("temps réel retiré de l'interface",
+            "Temps réel du trajet (min)\"" not in source_app and "Envoyer le temps" not in source_app
+            and "minutes_reelles" not in (RACINE / "src" / "app" / "collecte.py").read_text(encoding="utf-8"))
+
+    # E. README du Space : il part avec le reste, l'en-tête vérifié.
+    spec = importlib.util.spec_from_file_location("upload_space_c6", RACINE / "upload_space.py")
+    envoi = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(envoi)
+    verifie("README.md dans l'envoi d'upload_space.py",
+            "README.md" not in envoi.A_EXCLURE and "README.md" in envoi.chemins_candidats())
+    champs = envoi.verifier_readme_local()
+    verifie("en-tête du README : configuration du Space complète",
+            champs.get("sdk") == "gradio" and champs.get("app_file") == "app.py"
+            and champs.get("sdk_version") and champs.get("title"), champs)
+    verifie("en-tête distant comparé avant l'envoi réel (jamais en dry-run)",
+            "verifier_entete_distant(champs_readme)" in (RACINE / "upload_space.py").read_text(encoding="utf-8"))
+
+    # F. Lieux : un mot pour un seul lieu, pas de préfixe trop court, SAM = Rond-Point Sahm.
+    reelle = extract_local("magui same dama bëgg dem ñaari tali")
+    verifie("« magui same dama bëgg dem ñaari tali » : SAHM -> Niary Tally, jamais Taliboubess",
+            (reelle["depart"], reelle["arrivee"]) == ("SAHM", "Niary Tally"), reelle)
+    yeumbeul = extract_local("maa ngi ñaari tali dama bëgg dem yeumbeul")
+    verifie("« ñaari tali … yeumbeul » : Niary Tally -> Yeumbeul",
+            (yeumbeul["depart"], yeumbeul["arrivee"]) == ("Niary Tally", "Yeumbeul"), yeumbeul)
+    seul = extract_local("dama bëgg dem ñaari tali")
+    verifie("un seul lieu sûr : arrivée Niary Tally, départ demandé",
+            (seul["depart"], seul["arrivee"]) == ("", "Niary Tally"), seul)
+    verifie("« tali » seul ne devient jamais Taliboubess",
+            _score("tali", "taliboubess") == 0.0 and extract_local("dama bëgg dem tali")["arrivee"] != "Taliboubess")
+    verifie("préfixe à fin de mot ou couvrant l'essentiel : toujours accepté",
+            _score("palais", "palais 2") == 0.9 and _score("parcel", "parcelles") == 0.9)
+    sam = extract_local("maa ngi same dama bëgg dem colobane")
+    verifie("« same » = Rond-Point Sahm (SAM), jamais Sam Notaire",
+            sam["depart"] == "SAHM", sam)
+    notaire = extract_local("maa ngi sam notaire dama bëgg dem colobane")
+    verifie("« sam notaire » dit en entier reste Sam Notaire", notaire["depart"] == "Sam Notaire", notaire)
+    verifie("un même mot ne sert qu'à un lieu (règle du complément local)",
+            _meme_mots("Tally Boubess", "Tally Diallo", "dama bëgg dem tally boubess")
+            and not _meme_mots("Tally Boubess", "Colobane", "dama bëgg dem tally boubess"))
+    # Le cas réel : le LLM lit « ñaari tali » = Niary Tally ; le complément local
+    # ne doit jamais reprendre le même « tali » pour un second lieu.
+    with contextlib.redirect_stdout(io.StringIO()):
+        intent = extract_intent("dama bëgg dem ñaari tali",
+                                client=_FauxClient('{"depart": "Niary Tally", "arrivee": ""}'))
+    verifie("LLM + local : jamais « Niary Tally -> Taliboubess »",
+            "Taliboubess" not in (intent["depart"], intent["arrivee"])
+            and intent["depart"] != intent["arrivee"], intent)
+    alias = (RACINE / "data" / "corrections" / "alias_lieux_parles.csv").read_text(encoding="utf-8")
+    verifie("alias parlés dans un NOUVEAU fichier de corrections",
+            "same,sahm" in alias and "naari tali,niary tally" in alias)
     return echecs, total
 
 
@@ -9756,6 +9869,7 @@ if __name__ == "__main__":
         echecs_c3, total_c3 = test_lot_c3_retours()
         echecs_c4, total_c4 = test_lot_c4_tech_innov()
         echecs_c5, total_c5 = test_lot_c5_retours_chrome()
+        echecs_c6, total_c6 = test_lot_c6_mobile_lieux()
         echecs = (
             test_local()
             + echecs_partage
@@ -9815,6 +9929,7 @@ if __name__ == "__main__":
             + echecs_c3
             + echecs_c4
             + echecs_c5
+            + echecs_c6
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -9875,6 +9990,7 @@ if __name__ == "__main__":
             + total_c3
             + total_c4
             + total_c5
+            + total_c6
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

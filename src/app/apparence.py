@@ -89,7 +89,8 @@ def ouvrir_carte() -> str:
     """Le cadre d'une carte : bordure neutre sur les quatre côtés, coins arrondis."""
     return (
         f"<div class='guindima-carte' style='border:1.5px solid {LIGNE};border-radius:16px;"
-        f"margin:10px 0;background:{FOND};overflow:hidden;"
+        f"margin:10px 0;background:{FOND};overflow:hidden;max-width:100%;box-sizing:border-box;"
+        f"overflow-wrap:anywhere;"
         f"box-shadow:0 2px 10px rgba(17,37,26,0.06);'>"
     )
 
@@ -161,9 +162,45 @@ CSS_GUINDIMA = r"""
     --neutral-950: #11251A !important;
 }
 html, body, .dark body, body.dark { background: #FFFFFF !important; color: #11251A !important; }
+/* Lot C6 : sur Chrome Android (~412 px), dès qu'une réponse s'affichait, un
+   élément plus large que l'écran élargissait toute la page (titre, bouton
+   « Dem Dikk », note grise et cartes coupés à droite). Chaque bloc rentre
+   désormais dans la largeur (min-width:0, max-width:100%, mots longs coupés) ;
+   overflow-x:hidden sur html, body et le conteneur n'est que le dernier filet. */
+html, body { overflow-x: hidden !important; max-width: 100%; }
+.gradio-container,
+.gradio-container .main,
+.gradio-container .contain,
+.gradio-container .column,
+.gradio-container .row,
+.gradio-container .block,
+.gradio-container .form,
+.gradio-container .tabitem,
+.gradio-container .tabs,
+.gradio-container .prose,
+.gradio-container .html-container {
+    min-width: 0 !important;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+.gradio-container { overflow-x: hidden !important; }
+.gradio-container .prose,
+.gradio-container .guindima-carte,
+.gradio-container .guindima-carte *,
+#note_vie_privee,
+#accueil_guindima .salut,
+#accueil_guindima .sous-titre {
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+.gradio-container .guindima-carte { max-width: 100%; }
+.gradio-container .prose img,
+.gradio-container .prose audio,
+.gradio-container .prose details { max-width: 100%; }
 
 /* Une colonne de téléphone, même sur ordinateur. */
 .gradio-container {
+    width: 100% !important;
     max-width: 480px !important;
     margin: 0 auto !important;
     padding: 12px 14px 28px !important;
@@ -271,13 +308,17 @@ html, body, .dark body, body.dark { background: #FFFFFF !important; color: #1125
     border: 2px solid #006B33 !important;
     color: #FFFFFF !important;
 }
-.gradio-container button.primary:hover { background: #006B33 !important; }
+@media (hover: hover) and (pointer: fine) {
+    .gradio-container button.primary:hover { background: #006B33 !important; }
+}
 .gradio-container button.secondary {
     background: #FFFFFF !important;
     border: 2px solid #5E7A69 !important;
     color: #11251A !important;
 }
-.gradio-container button.secondary:hover { background: #F6F9F7 !important; border-color: #00853F !important; }
+@media (hover: hover) and (pointer: fine) {
+    .gradio-container button.secondary:hover { background: #F6F9F7 !important; border-color: #00853F !important; }
+}
 .gradio-container button:active { transform: translateY(1px) scale(0.99); }
 .gradio-container button:focus-visible {
     outline: 3px solid #00853F !important;
@@ -296,9 +337,9 @@ html, body, .dark body, body.dark { background: #FFFFFF !important; color: #1125
 .gradio-container [role="tab"][aria-selected="true"] { color: #006B33 !important; }
 
 /* Compagnie : trois pastilles bordées, la choisie pleine. */
-#compagnie_guindima .wrap { gap: 6px !important; flex-wrap: nowrap !important; }
+#compagnie_guindima .wrap { gap: 6px !important; flex-wrap: wrap !important; }
 #compagnie_guindima label {
-    flex: 1 1 0;
+    flex: 1 1 88px;
     justify-content: center;
     min-height: 48px;
     min-width: 0 !important;
@@ -355,7 +396,7 @@ html, body, .dark body, body.dark { background: #FFFFFF !important; color: #1125
 #panneau_avis .retour-ok { background: #E8F5EE; border: 1.5px solid #9BD4B5; color: #064E2B; }
 #panneau_avis .retour-erreur { background: #FFF4E5; border: 1.5px solid #E8A84A; color: #7A3E00; }
 #retour_bas .retour-ok, #retour_bas .retour-erreur { margin-top: 6px; }
-#retour_avis, #retour_etoiles, #retour_temps, #retour_bas { padding: 0 !important; min-height: 0 !important; }
+#retour_avis, #retour_etoiles, #retour_bas { padding: 0 !important; min-height: 0 !important; }
 
 /* Les blocs (accordéon, groupe d'avis) : bordure neutre tout autour. */
 .gradio-container .block,
@@ -468,12 +509,14 @@ body.globe-guindima-actif #micro_guindima {
     padding: 10px 12px;
     width: 100%;
 }
-#trajets_frequents .item:hover,
-.options .item:hover,
 #trajets_frequents .item.selected,
 .options .item.selected {
     background: #E8F5EE;
     color: #064E2B;
+}
+@media (hover: hover) and (pointer: fine) {
+    #trajets_frequents .item:hover,
+    .options .item:hover { background: #E8F5EE; color: #064E2B; }
 }
 .options { background: #FFFFFF !important; border: 2px solid #5E7A69 !important; border-radius: 12px !important; }
 
@@ -607,11 +650,24 @@ GLOBE_HTML = f"""
 """
 
 GLOBE_CSS = """
-.globe-zone { display: flex; flex-direction: column; align-items: center; padding: 6px 0 2px; }
+/* Lot C6 : zone de taille fixe, isolée (contain) : rien de ce qui s'y passe
+   ne change la taille ou la place des autres éléments. */
+.globe-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 300px;
+  padding: 6px 0 2px;
+  contain: layout paint;
+  overflow: hidden;
+}
+.globe-zone[data-secours="oui"] { height: 252px; }
 .globe {
   position: relative;
+  flex: 0 0 212px;
   width: 212px;
   height: 212px;
+  contain: layout paint;
   border: 0;
   border-radius: 50%;
   padding: 0;
@@ -636,7 +692,7 @@ GLOBE_CSS = """
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 160ms ease, background-color 160ms ease;
+  transition: transform 160ms ease, opacity 160ms ease;
 }
 .globe:active .globe-coeur { transform: scale(0.96); }
 .globe-zone[data-etat="ecoute"] .globe-coeur { background: #006B33; }
@@ -647,7 +703,9 @@ GLOBE_CSS = """
 .globe-zone[data-etat="traitement"] .globe { cursor: progress; }
 .globe-etat {
   margin: 4px 0 0;
-  min-height: 1.4em;
+  height: 1.4em;
+  line-height: 1.4em;
+  white-space: nowrap;
   color: #11251A;
   font-size: 19px;
   font-weight: 750;
@@ -741,9 +799,12 @@ function poser(nouvel) {
 function cacherNatifs() {
   const m = micro();
   if (!m) { return; }
+  // Lot C6 : n'écrit qu'une fois. Réécrire ces attributs quatre fois par
+  // seconde faisait muter le DOM sans fin (observateurs, iframe du Space qui
+  // se redimensionne) : une cause du tremblement sur téléphone.
   m.querySelectorAll('.record-button, .stop-button').forEach(function (b) {
-    b.setAttribute('tabindex', '-1');
-    b.setAttribute('aria-hidden', 'true');
+    if (b.getAttribute('tabindex') !== '-1') { b.setAttribute('tabindex', '-1'); }
+    if (b.getAttribute('aria-hidden') !== 'true') { b.setAttribute('aria-hidden', 'true'); }
   });
 }
 

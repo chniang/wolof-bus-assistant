@@ -611,6 +611,9 @@ SEUIL_FUZZY = 0.72
 TAILLE_NGRAMMES = 3
 # En dessous, un mot trop court (« de », « naa ») produirait des scores parasites.
 LONGUEUR_MIN = 4
+# Part minimale d'un nom qu'un mot doit couvrir pour valoir ce nom par préfixe
+# (« parcel » -> « parcelles » : 6/9 ; « tali » -> « taliboubess » : 4/11, refusé).
+PREFIXE_COUVERTURE_MIN = 0.6
 
 # Le CSV distingue « Palais 1 » et « Palais 2 » : quand le numéro n'est pas prononcé,
 # « Palais » seul doit rester acceptable, exactement comme le fait le LLM.
@@ -741,6 +744,31 @@ def _aibd_par_ressemblance(texte: str) -> str:
     return " ".join(sortie)
 
 
+# Lot C6 : formes parlées revues (data/corrections/alias_lieux_parles.csv), par
+# exemple « same » = Rond-Point Sahm (SAM, Gueule Tapée) et « ñaari tali » =
+# Niary Tally. Appliquées avant REPLACEMENTS_PHRASE, la plus longue d'abord.
+ALIAS_PARLES = Path(__file__).resolve().parents[2] / "data" / "corrections" / "alias_lieux_parles.csv"
+
+
+def _charger_alias_parles(chemin: Path = ALIAS_PARLES) -> tuple[tuple[str, str], ...]:
+    if not chemin.exists():
+        return ()
+    with open(chemin, newline="", encoding="utf-8-sig") as fichier:
+        rangees = [
+            (_sans_accents(r["forme"]).strip(), _sans_accents(r["remplacement"]).strip())
+            for r in csv.DictReader(fichier)
+            if (r.get("forme") or "").strip() and (r.get("remplacement") or "").strip()
+        ]
+    rangees.sort(key=lambda r: -len(r[0]))
+    return tuple(
+        (r"\b" + r"\s+".join(re.escape(mot) for mot in forme.split()) + r"\b", f" {remplacement} ")
+        for forme, remplacement in rangees
+    )
+
+
+REMPLACEMENTS_ALIAS_PARLES = _charger_alias_parles()
+
+
 def _normaliser_phrase(phrase: str) -> str:
     """Forme de travail : minuscules, sans accents, graphies phonétiques corrigées.
 
@@ -748,7 +776,7 @@ def _normaliser_phrase(phrase: str) -> str:
     injectent, et la ponctuation en transforme d'autres en espaces.
     """
     texte = _sans_accents(phrase)
-    for motif, remplacement in REPLACEMENTS_PHRASE:
+    for motif, remplacement in REMPLACEMENTS_ALIAS_PARLES + REPLACEMENTS_PHRASE:
         texte = re.sub(motif, remplacement, texte)
     # L'ASR colle la préposition au mot suivant (« dempale ») : on la rouvre pour que
     # la répartition départ / arrivée reste possible grâce à la position de « dem ».
@@ -769,9 +797,16 @@ def _score(gramme: str, lieu: str) -> float:
     if min(len(gramme), len(lieu)) < LONGUEUR_MIN:
         return 0.0
     # Un préfixe commun (« palais » dans « palais 1 ») vaut mieux qu'une simple
-    # proximité de caractères, mais moins bien qu'une égalité.
+    # proximité de caractères, mais moins bien qu'une égalité. Lot C6 : le
+    # préfixe doit finir sur une fin de mot du nom, ou en couvrir l'essentiel.
+    # « tali » (4 lettres, dit dans « ñaari tali » = Niary Tally) n'est que le
+    # début de « taliboubess » (11 lettres) : il donnait Taliboubess.
     if lieu.startswith(gramme) or gramme.startswith(lieu):
-        return 0.9
+        court, long_ = sorted((gramme, lieu), key=len)
+        fin_de_mot = len(court) == len(long_) or long_[len(court)] == " "
+        if fin_de_mot or len(court) >= PREFIXE_COUVERTURE_MIN * len(long_):
+            return 0.9
+        return 0.0
     # Un mot de 4 lettres ou moins (« siis », « benn ») n'a pas de ressemblance
     # approximative : il ne vaut un lieu que s'il est identique (ou préfixe). Sans
     # cela, « siis » se ferait passer pour l'arrêt « SIPS ».
@@ -784,7 +819,7 @@ def _score(gramme: str, lieu: str) -> float:
 # n-gramme qui en contient un est ignoré, ce qui évite que « bëgg naa » ou
 # « maa ngi » tombent par hasard sur un arrêt du réseau.
 MOTS_DE_LA_PHRASE = {
-    "dama", "begg", "begga", "beugg", "beugga", "naa", "maa", "ngi", "mangi", "maangi",
+    "dama", "begg", "begga", "beugg", "beugga", "naa", "maa", "ngi", "mangi", "maangi", "magui",
     "dem", "laa", "la", "nekk", "nek", "ma", "ci", "ba", "fi", "fii", "man", "gui", "bu",
     "fa", "wax", "nga", "ngay", "jem", "dafa", "def", "bus", "bi", "yi", "mu", "ak",
     "de", "deu", "dee", "dawal", "jel", "jeel", "won", "ana", "fan", "fu", "diougue",
@@ -1047,7 +1082,8 @@ def _le_precis_gagne(trouves: list[tuple[int, int, str]]) -> list[tuple[int, int
 # « maa ngi Ouakam » / « man gui Ouakam » (je suis à) et « Ouakam laa nekk » (c'est à
 # Ouakam que je suis) désignent le départ, quelle que soit sa place par rapport à
 # « dem ». Kiriku transcrit souvent « dama bëgg dem Palais, maa ngi Ouakam ».
-MARQUEURS_ICI_AVANT = {"ngi", "gui", "mangi", "maangi", "mangui"}
+# « magui » : « maa ngi » tel que l'ASR l'écrit (« magui same dama bëgg dem ñaari tali »).
+MARQUEURS_ICI_AVANT = {"ngi", "gui", "mangi", "maangi", "mangui", "magui"}
 MARQUEURS_ICI_APRES = {"laa", "la"}
 # « Ban bus moy diougué Keur Mbaye Fall pour dém Rufisque » : le verbe de départ
 # (« diougué », « jóge », « jogé », ramenés à « diougue » par _normaliser_phrase)
@@ -1224,6 +1260,40 @@ def _repli_local(transcription: str, raison: str) -> dict:
     return {**resultat, "erreur": raison}
 
 
+def _mots_du_lieu(lieu: str, mots: list[str]) -> set[int]:
+    """Positions des mots de la phrase qui ressemblent à un mot du nom du lieu."""
+    noms = [m for m in _cible(lieu).split() if len(m) >= 3]
+    return {
+        i for i, mot in enumerate(mots)
+        if len(mot) >= 3 and any(
+            mot == nom or SequenceMatcher(None, mot, nom).ratio() >= 0.75 for nom in noms
+        )
+    }
+
+
+def _meme_mots(lieu_local: str, lieu_llm: str, transcription: str) -> bool:
+    """Vrai si le lieu trouvé en local repose sur les mêmes mots que celui du LLM.
+
+    Lot C6 : un même mot de la phrase ne sert qu'à UN lieu. « magui same dama
+    bëgg dem ñaari tali » : le LLM lisait « ñaari tali » comme Niary Tally,
+    l'extraction locale lisait le même « tali » comme Taliboubess, et l'app
+    affichait Niary Tally -> Taliboubess. Le lieu local n'est pas ajouté s'il
+    tient sur des mots déjà pris par le lieu du LLM.
+    """
+    if not lieu_local or not lieu_llm:
+        return False
+    # Le même lieu des deux côtés est l'affaire de _un_seul_lieu_dit, qui en
+    # fait une arrivée seule (« dama bëgg dem Maristes ») : pas un conflit ici.
+    if _cible(lieu_local) == _cible(lieu_llm):
+        return False
+    mots = _sans_compagnie(transcription).split()
+    pris = _mots_du_lieu(lieu_llm, mots)
+    for debut, fin, lieu in _chercher_lieux(mots):
+        if lieu == lieu_local and pris & set(range(debut, fin)):
+            return True
+    return False
+
+
 def _un_seul_lieu_dit(resultat: dict, transcription: str) -> dict:
     """Un lieu dit une seule fois ne peut pas être à la fois départ et arrivée.
 
@@ -1315,7 +1385,12 @@ def extract_intent(transcription: str, client=None) -> dict:
     # qui manque au lieu de laisser l'utilisateur sans réponse.
     local = extract_local(transcription)
     for champ in ("depart", "arrivee"):
-        if not resultat[champ] and local.get(champ):
+        autre = resultat["arrivee" if champ == "depart" else "depart"]
+        if (
+            not resultat[champ]
+            and local.get(champ)
+            and not _meme_mots(local[champ], autre, transcription)
+        ):
             resultat[champ] = local[champ]
             resultat["source"] = "llm+local"
     return _un_seul_lieu_dit(resultat, transcription)

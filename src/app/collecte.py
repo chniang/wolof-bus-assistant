@@ -22,7 +22,6 @@ from __future__ import annotations
 import html
 import io
 import json
-import math
 import os
 import queue
 import re
@@ -72,10 +71,12 @@ QUOI_VOIX = "ton enregistrement"
 QUOI_AVIS = "ton avis"
 
 REPONSES_AVIS = {"oui", "non", "ne_sait_pas"}
-MINUTES_MIN, MINUTES_MAX = 1, 300
+# Lot C6 : la question « Temps réel du trajet » est retirée (décision de
+# Cheikh) : au moment de la recherche, l'usager ne connaît pas ce temps, ses
+# réponses auraient été devinées. avis.json n'écrit plus de temps ; les fiches
+# déjà envoyées restent telles quelles.
 # Lot C : « Note l'application », de 1 à 5 étoiles, dans le même avis.json.
 ETOILES_MIN, ETOILES_MAX = 1, 5
-MESSAGE_MINUTES = f"Indique un temps entre {MINUTES_MIN} et {MINUTES_MAX} minutes."
 
 # Ni 0/O, ni 1/I/L : le code se recopie à la main dans WhatsApp. Six signes et non
 # quatre chiffres : avec 10 000 codes, deux testeurs finiraient par partager le
@@ -177,15 +178,6 @@ def lignes_proposees(resultat: dict, limite: int = 3) -> list[str]:
         for trajet in (resultat.get("trajets_2") or [])[:limite]
     ]
     return noms
-
-
-def minutes_valides(valeur: object) -> int | None:
-    """Le temps saisi, en minutes entières, ou None s'il n'est pas plausible."""
-    if isinstance(valeur, bool) or not isinstance(valeur, (int, float)):
-        return None
-    if not math.isfinite(valeur) or not MINUTES_MIN <= valeur <= MINUTES_MAX:
-        return None
-    return int(round(valeur))
 
 
 def televerser_hf(fichiers: dict[str, bytes], api=None) -> None:
@@ -342,7 +334,6 @@ def nouveau_suivi(trace: dict) -> tuple[dict, str]:
         "lignes": list(trace.get("lignes") or []),
         "voix": False,
         "reponse": None,
-        "minutes": None,
         "etoiles": None,
     }
     son, phrase = trace.get("son"), trace.get("phrase")
@@ -397,10 +388,8 @@ def etoiles_valides(valeur: object) -> int | None:
     return int(note)
 
 
-def noter_avis(
-    suivi: dict, reponse: str | None = None, minutes: int | None = None, etoiles: int | None = None
-) -> tuple[dict, str]:
-    """Enregistre l'avis ; le temps réel peut arriver bien après, une fois le trajet fait.
+def noter_avis(suivi: dict, reponse: str | None = None, etoiles: int | None = None) -> tuple[dict, str]:
+    """Enregistre l'avis (Oui / Non / Je ne sais pas) et la note de l'application.
 
     La note en étoiles (lot C) va dans le même avis.json, sous le même code GM- :
     un chiffre de 1 à 5, rien d'autre sur l'usager.
@@ -408,15 +397,12 @@ def noter_avis(
     suivi = dict(suivi)
     if reponse in REPONSES_AVIS:
         suivi["reponse"] = reponse
-    if minutes is not None:
-        suivi["minutes"] = minutes
     if etoiles_valides(etoiles) is not None:
         suivi["etoiles"] = etoiles_valides(etoiles)
     fiche = {
         "code": suivi["code"],
         "date": jour_courant(),
         "reponse": suivi.get("reponse"),
-        "minutes_reelles": suivi.get("minutes"),
         "etoiles": suivi.get("etoiles"),
         "depart": suivi["depart"],
         "arrivee": suivi["arrivee"],
