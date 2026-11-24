@@ -9927,6 +9927,148 @@ def test_lot_c7_accueil() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_g0_garde_fou() -> tuple[int, int]:
+    """Lot G0 : garde-fou contre les transcriptions absurdes (phrases réelles du test public).
+
+    Du 20 au 23/11, 14 transcriptions sur 52 étaient inventées par le Whisper
+    CPU de secours, et l'app répondait quand même. Aucun réseau.
+    """
+    import contextlib
+    import io
+    import json
+    import os
+
+    import numpy as np
+
+    from app import apparence, collecte
+    from asr.garde_fou import MESSAGE, examiner
+    from asr.transcribe import transcrir_avec_seconde_chance
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot G0 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    absurdes = (
+        "dina dina dina dina dina dina dina dina dina dina dina dina",
+        "aliasin di sini akan diperluuruskan di sini akan diperluuskan di sini akan",
+        "di sini di sini di sini di sini di sini di sini di sini di sini",
+        "the day of the day of the day of the day of the day of the day of",
+        "dama nekk koo ak ab dama sësësësësësësësësësësësësësësësë",
+        "dama nék koo ak ame dama nék koo ak ame dama nékoo ak ame dama nékoo ak ame",
+        "Saya sér",
+        "Maka beri",
+        "",
+    )
+    reelles = (
+        "maa ngi Pikine bis bu jem kolobane la bëgg xam",
+        "baa ngi Rufusk dama bëgg dem Colobar",
+        "waaw man damaa nekk medina waaye dama bëgg dem dieuppeul su ma fa jugee ma dem parcelle",
+        "maa ngi Sam dama bëgg dem Nari Tali",
+        "Dama nekk wakaam ma bëgg dem Medina",
+        "Assalamu alaykum",
+        "salaamaalekum, na nga def",
+        "yow lan mooy sa liggéey",
+    )
+    for phrase in absurdes:
+        verdict = examiner(phrase)
+        verifie(f"garde-fou ({verdict.raison or '?'}) : « {phrase[:40]} »", verdict.declenche, verdict)
+    for phrase in reelles:
+        verdict = examiner(phrase)
+        verifie(f"pas de garde-fou : « {phrase[:40]} »",
+                not verdict.declenche and verdict.texte == phrase.strip(), verdict)
+    boucle = examiner("dama nég wakaaral mbindé dina dina dina dina dina dina dina")
+    verifie("boucle en fin de phrase utile : retirée, la phrase reste",
+            not boucle.declenche and boucle.texte == "dama nég wakaaral mbindé"
+            and boucle.raison == "boucle_retiree", boucle)
+    verifie("boucle retirée : les chiffres restent (« Unité 15 »)",
+            "15" in examiner("maa ngi unité 15 dama bëgg dem colobane dina dina dina dina").texte)
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_g0")
+    app.MATCHER = _matcher_hors_ligne()
+
+    def pipeline(phrase: str) -> tuple[tuple, bool, str]:
+        tampon = io.StringIO()
+        app._client_llm = lambda: _ClientQuiLeve(lambda: TimeoutError("ne doit pas être appelé"))
+        with contextlib.redirect_stdout(tampon):
+            quint, trouve = app._pipeline(phrase, "Whisper wolof (CPU)", 3.0)
+        return quint, trouve, tampon.getvalue()
+
+    for phrase in ("Saya sér", absurdes[0], absurdes[5]):
+        quint, trouve, journal = pipeline(phrase)
+        verifie(f"app : « {phrase[:30]} » -> « je n'ai pas bien entendu », aucun trajet",
+                not trouve and MESSAGE.replace("'", "&#x27;") in quint[2] and quint[1] == ""
+                and "erreur=garde_fou_" in journal and "[LLM]" not in journal
+                and "Ligne" not in quint[2], (quint[2][:120], journal))
+    quint, _, _ = pipeline("Saya sér")
+    verifie("app : la voix est une phrase déjà enregistrée (aucune synthèse)",
+            quint[3] is not None and str(quint[3]).endswith(".wav"), quint[3])
+    quint, trouve, journal = pipeline("dama nég wakaaral mbindé dina dina dina dina dina dina dina")
+    verifie("app : boucle retirée, pas de « je n'ai pas bien entendu »",
+            "garde_fou" not in journal and "bien entendu" not in quint[2], journal)
+    quint, trouve, journal = pipeline("maa ngi Sam dama bëgg dem Nari Tali")
+    verifie("app : un vrai trajet passe toujours (SAM -> Niary Tally)",
+            trouve and "garde_fou" not in journal, (quint[1], journal))
+
+    # 2. Seconde chance d'abord : une transcription absurde du CPU laisse sa
+    #    chance à l'autre modèle avant tout « je n'ai pas bien entendu ».
+    verifie("seconde chance : une transcription absurde n'est jamais retenue",
+            all(app._phrase_donne_un_trajet(p) is False for p in absurdes))
+    phrase, libelle, _, retente = transcrir_avec_seconde_chance(
+        None,
+        lambda son: ("di sini di sini di sini di sini di sini", "Whisper wolof (CPU)", 3.0),
+        lambda son, premier: ("Maa ngi Ouakam, bëgg naa dem Palais", "Kiriku-Wolof-ASR (GPU)", 2.0),
+        app._phrase_donne_un_trajet,
+    )
+    verifie("seconde chance : le 2e modèle qui entend un trajet est retenu",
+            retente and phrase == "Maa ngi Ouakam, bëgg naa dem Palais" and libelle.endswith("(2e essai)"),
+            (phrase, libelle))
+
+    # Collecte : transcription brute gardée, marquée garde_fou.
+    sortie, trace = app._suivre(app.traiter_demande, None, "Saya sér", "", None, True, None)
+    verifie("trace : garde_fou noté, transcription brute gardée",
+            trace.get("garde_fou") is True and trace.get("phrase") == "Saya sér", trace)
+
+    class FauxCollecteur:
+        def __init__(self):
+            self.lots: list[dict] = []
+
+        def soumettre(self, fichiers: dict) -> bool:
+            self.lots.append(fichiers)
+            return True
+
+    origine = collecte.COLLECTEUR
+    collecte.COLLECTEUR = faux = FauxCollecteur()
+    try:
+        son = np.zeros(16_000, dtype=np.float32)
+        brute = "dina dina dina dina dina dina"
+        suivi, _ = collecte.nouveau_suivi({"son": son, "phrase": brute, "garde_fou": True,
+                                           "depart": "", "arrivee": "", "lignes": []})
+        fiche = json.loads(faux.lots[-1][f"donnees/{suivi['code']}/demande.json"]) if faux.lots else {}
+        verifie("fiche de collecte : transcription brute et « garde_fou »: true",
+                fiche.get("garde_fou") is True and fiche.get("transcription") == brute, fiche)
+        suivi, _ = collecte.nouveau_suivi({"son": son, "phrase": "Maa ngi Ouakam", "depart": "Ouakam",
+                                           "arrivee": "", "lignes": []})
+        fiche = json.loads(faux.lots[-1][f"donnees/{suivi['code']}/demande.json"]) if faux.lots else {}
+        verifie("fiche normale : pas de champ garde_fou", "garde_fou" not in fiche, sorted(fiche))
+    finally:
+        collecte.COLLECTEUR = origine
+
+    # 4. Pendant l'attente : « ⏳ Je t'écoute… (jusqu'à 30 secondes) ».
+    js = apparence.globe_js()
+    verifie("attente affichée pendant la transcription, puis la promesse revient",
+            "Je t'écoute… (jusqu'à 30 secondes)" in js and "nouvel === 'traitement' ? ATTENTE : PROMESSE" in js)
+
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -9998,6 +10140,7 @@ if __name__ == "__main__":
         echecs_c5, total_c5 = test_lot_c5_retours_chrome()
         echecs_c6, total_c6 = test_lot_c6_mobile_lieux()
         echecs_c7, total_c7 = test_lot_c7_accueil()
+        echecs_g0, total_g0 = test_lot_g0_garde_fou()
         echecs = (
             test_local()
             + echecs_partage
@@ -10059,6 +10202,7 @@ if __name__ == "__main__":
             + echecs_c5
             + echecs_c6
             + echecs_c7
+            + echecs_g0
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -10121,6 +10265,7 @@ if __name__ == "__main__":
             + total_c5
             + total_c6
             + total_c7
+            + total_g0
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

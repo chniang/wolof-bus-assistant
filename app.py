@@ -65,6 +65,8 @@ from app.accueil import confidentialite, sections_accueil  # noqa: E402
 from app.cartes import titre_autre_possibilite, titre_autre_possibilite_texte, titre_section  # noqa: E402
 from app.limites import JOUR, MINUTE, LimiteDebit, LimiteParClient, cle_client, entier_env  # noqa: E402
 from app.partage import bouton_partage  # noqa: E402
+from asr.garde_fou import MESSAGE as MESSAGE_GARDE_FOU  # noqa: E402
+from asr.garde_fou import examiner as examiner_garde_fou  # noqa: E402
 from asr.transcribe import (  # noqa: E402
     MODEL_ASR_GPU,
     REVISION_ASR_GPU,
@@ -598,6 +600,12 @@ def _phrase_donne_un_trajet(phrase: str) -> bool:
     """
     if not phrase or phrase.startswith(ERREUR_ASR):
         return False
+    # Lot G0 : une transcription absurde n'est jamais retenue : l'autre modèle
+    # (Kiriku si Whisper CPU a parlé) a sa chance avant « je n'ai pas bien entendu ».
+    verdict = examiner_garde_fou(phrase)
+    if verdict.declenche:
+        return False
+    phrase = verdict.texte
     local = extract_local(phrase)
     if (
         not (local.get("depart") or local.get("arrivee"))
@@ -1567,6 +1575,25 @@ def _pipeline(
         _journal(modele_asr, duree_asr, 0, "phrase_vide")
         return quint, False
     _noter(repondu=True, phrase=phrase, modele_asr=modele_asr)
+
+    # Lot G0 : une transcription absurde (boucle, langue étrangère, vide) ne
+    # cherche aucun trajet. La seconde chance a déjà été tentée en amont
+    # (_phrase_donne_un_trajet la refuse). Une boucle collée à une phrase utile
+    # est retirée, et la recherche continue sur le reste. La fiche de collecte
+    # garde la transcription brute, marquée garde_fou.
+    verdict = examiner_garde_fou(phrase)
+    if verdict.declenche:
+        _noter(garde_fou=True)
+        _journal(modele_asr, duree_asr, 0, f"garde_fou_{verdict.raison}")
+        return (
+            phrase,
+            "",
+            f"### 🎙️ {_echapper(MESSAGE_GARDE_FOU)}",
+            # Phrase déjà enregistrée qui redemande le trajet ; aucune synthèse.
+            _ecrire_voix(voix_conversation(_CAPACITES.fichier)),
+            _mention({}, modele_asr),
+        ), False
+    phrase = verdict.texte
 
     # L'extraction gère elle-même son repli local : si l'API est saturée, elle
     # rend quand même un départ et une arrivée tant que la phrase les porte.

@@ -355,6 +355,10 @@ def nouveau_suivi(trace: dict) -> tuple[dict, str]:
         "arrivee": suivi["arrivee"],
         "lignes_proposees": suivi["lignes"],
     }
+    # Lot G0 : transcription jugée absurde (boucle, autre langue) : la fiche
+    # garde la transcription brute, marquée, pour réentraîner l'ASR.
+    if trace.get("garde_fou"):
+        fiche["garde_fou"] = True
     dossier = dossier_du_code(code)
     suivi["voix"] = COLLECTEUR.soumettre(
         {f"{dossier}/audio.wav": wav_16k(son), f"{dossier}/demande.json": _json(fiche)}

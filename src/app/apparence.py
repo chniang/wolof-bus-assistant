@@ -692,6 +692,9 @@ ACCUEIL_HTML = (
 # --------------------------------------------------------------------------- #
 # Lot C7 : sous « Bës te wax », ce que l'usager doit savoir avant de parler.
 PROMESSE = "Gratuit · sans inscription · en wolof"
+# Lot G0 : pendant la transcription (jusqu'à 30 s sur le CPU de secours), la
+# même ligne dit qu'on attend, puis reprend la promesse.
+ATTENTE = "⏳ Je t'écoute… (jusqu'à 30 secondes)"
 TEXTES_GLOBE = {
     "repos": "Bës te wax",
     "ecoute": "Maa ngi lay déglu…",
@@ -831,6 +834,9 @@ GLOBE_JS = r"""
 const zone = element.querySelector('.globe-zone');
 const bouton = element.querySelector('.globe');
 const etiquette = element.querySelector('.globe-etat');
+const promesse = element.querySelector('.globe-promesse');
+const PROMESSE = __PROMESSE__;
+const ATTENTE = __ATTENTE__;
 const toile = element.querySelector('.globe-anneau');
 const TEXTES = __TEXTES__;
 const ARIA = __ARIA__;
@@ -879,6 +885,7 @@ function poser(nouvel) {
   depuis = performance.now();
   zone.dataset.etat = nouvel;
   etiquette.textContent = TEXTES[nouvel];
+  if (promesse) { promesse.textContent = nouvel === 'traitement' ? ATTENTE : PROMESSE; }
   bouton.setAttribute('aria-label', ARIA[nouvel]);
   bouton.setAttribute('aria-pressed', nouvel === 'ecoute' ? 'true' : 'false');
   if (nouvel === 'traitement') { empreinte = reponse(); }
@@ -1013,8 +1020,11 @@ window.requestAnimationFrame(boucle);
 def globe_js() -> str:
     import json
 
-    return GLOBE_JS.replace("__TEXTES__", json.dumps(TEXTES_GLOBE, ensure_ascii=False)).replace(
-        "__ARIA__", json.dumps(ARIA_GLOBE, ensure_ascii=False)
+    return (
+        GLOBE_JS.replace("__TEXTES__", json.dumps(TEXTES_GLOBE, ensure_ascii=False))
+        .replace("__ARIA__", json.dumps(ARIA_GLOBE, ensure_ascii=False))
+        .replace("__PROMESSE__", json.dumps(PROMESSE, ensure_ascii=False))
+        .replace("__ATTENTE__", json.dumps(ATTENTE, ensure_ascii=False))
     )
 
 
