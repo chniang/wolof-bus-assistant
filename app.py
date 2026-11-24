@@ -77,6 +77,7 @@ from asr.transcribe import (  # noqa: E402
     transcrire,
     transcrir_avec_seconde_chance,
 )
+from intent.extract_intent import extraire_etapes, lieux_cites  # noqa: E402
 from intent.extract_intent import (  # noqa: E402
     NVIDIA_BASE_URL,
     TEXTE_MAX,
@@ -639,24 +640,165 @@ def _voix_wolof(
     deux changements, lui, n'est lu que si tous ses segments sont là ; la marche
     seule reste sans voix.
     """
+    if not (lieux_possibles or lignes or correspondances or trajets_2):
+        return None
+    return _ecrire_voix(_octets_voix(lignes, correspondances, trajets_2, lieux_possibles))
+
+
+def _octets_voix(
+    lignes: list[dict],
+    correspondances: list[dict] | None = None,
+    trajets_2: list[dict] | None = None,
+    lieux_possibles: list[dict] | None = None,
+) -> bytes | None:
+    """Les octets WAV de la réponse, assemblés depuis le cache (aucune synthèse)."""
     correspondances = correspondances or []
     trajets_2 = trajets_2 or []
     if lieux_possibles:
         # « aéroport » seul : une possibilité par aéroport, « Walla, » entre les
         # deux ; avec un seul aéroport desservi, la voix dit lequel.
-        return _ecrire_voix(voix_lieux_possibles(lieux_possibles))
-    if not lignes and not correspondances and not trajets_2:
-        return None
+        return voix_lieux_possibles(lieux_possibles)
     if lignes:
-        octets = voix_depuis_cache(lignes)
-    elif correspondances:
-        octets = voix_correspondances_depuis_cache(correspondances)
-    else:
+        return voix_depuis_cache(lignes)
+    if correspondances:
+        return voix_correspondances_depuis_cache(correspondances)
+    if trajets_2:
         # Deux changements : on enchaîne les mêmes segments qu'une
         # correspondance, avec un bus et un lieu de plus. Aucune synthèse en
         # direct ; si un segment manque, la réponse reste silencieuse.
-        octets = voix_trajets_2_depuis_cache(trajets_2)
-    return _ecrire_voix(octets)
+        return voix_trajets_2_depuis_cache(trajets_2)
+    return None
+
+
+# --------------------------------------------------------------------------- #
+# Lot T1 : trajet avec étape
+# --------------------------------------------------------------------------- #
+PAUSE_ENTRE_ETAPES_S = 0.6
+
+
+def _recherche(depart: str, arrivee: str, compagnie: str) -> dict:
+    """La recherche ordinaire, avec la compagnie choisie s'il y en a une."""
+    if compagnie:
+        resultat, _ = MATCHER.find_line_compagnie(depart, arrivee, compagnie)
+        return resultat
+    return MATCHER.find_line(depart, arrivee)
+
+
+def _resultat_octets(resultat: dict) -> bytes | None:
+    return _octets_voix(
+        resultat.get("lignes") or [],
+        resultat.get("correspondances"),
+        resultat.get("trajets_2"),
+        resultat.get("lieux_possibles"),
+    )
+
+
+def _enchainer_voix(premiere: bytes, seconde: bytes) -> bytes:
+    """Deux réponses déjà assemblées, bout à bout, avec un court silence."""
+    import soundfile as sf
+
+    son_1, taux = sf.read(io.BytesIO(premiere), dtype="float32")
+    son_2, _ = sf.read(io.BytesIO(seconde), dtype="float32")
+    silence = np.zeros(int(taux * PAUSE_ENTRE_ETAPES_S), dtype="float32")
+    tampon = io.BytesIO()
+    sf.write(tampon, np.concatenate([son_1, silence, son_2]), taux, format="WAV", subtype="PCM_16")
+    return tampon.getvalue()
+
+
+def _fourchette_etape(resultat: dict) -> tuple[float, float] | None:
+    """(bas, haut) en minutes pour la meilleure réponse d'une étape, ou None."""
+    lignes = resultat.get("lignes") or []
+    if lignes:
+        minutes = lignes[0].get("minutes")
+        return None if minutes is None else (float(minutes), float(minutes) * FACTEUR_EMBOUTEILLAGES)
+    correspondances = resultat.get("correspondances") or []
+    if correspondances:
+        bus = [correspondances[0]["etape_1"].get("minutes"), correspondances[0]["etape_2"].get("minutes")]
+        if any(m is None for m in bus):
+            return None
+        total = sum(float(m) for m in bus)
+        return (total + ATTENTE_CHANGEMENT_MIN, total * FACTEUR_EMBOUTEILLAGES + ATTENTE_CHANGEMENT_MAX)
+    return None
+
+
+def _duree_deux_etapes(premiere: dict, seconde: dict, etape: str) -> str:
+    """Durée totale des deux étapes ; l'arrêt à l'étape n'est jamais compté."""
+    morceaux = [_fourchette_etape(premiere), _fourchette_etape(seconde)]
+    sans_arret = f"sans compter ton arrêt à {etape}"
+    if any(m is None for m in morceaux):
+        texte = f"Durée totale : inconnue ({sans_arret})"
+    else:
+        bas = _arrondi_5(sum(m[0] for m in morceaux))
+        haut = max(_arrondi_5(sum(m[1] for m in morceaux)), bas + ARRONDI_DUREE_MIN)
+        texte = f"Durée totale : {bas}–{haut} min ({sans_arret})"
+    return (
+        "<div class='duree-totale' style='margin:8px 0 4px;padding:10px 14px;"
+        "border:1.5px solid #D3DED7;border-radius:12px;background:#F6F9F7;"
+        f"color:#11251A;font-size:16px;font-weight:750;'>⏱️ {_echapper(texte)}</div>"
+    )
+
+
+def _reponse_etapes(
+    phrase: str, etapes: dict, compagnie: str, modele_asr: str, duree_asr: float
+) -> tuple:
+    """« Étape 1 : Médina → Dieuppeul » puis « Étape 2 : Dieuppeul → Parcelles ».
+
+    Chaque étape réutilise la recherche ordinaire et ses cartes. La voix
+    enchaîne les deux réponses déjà enregistrées ; sans voix pour l'étape 2,
+    elle dit l'étape 1 seule et le texte le précise.
+    """
+    depart, etape, arrivee = etapes["depart"], etapes["etape"], etapes["arrivee"]
+    premiere = _recherche(depart, etape, compagnie)
+    seconde = _recherche(etape, arrivee, compagnie)
+    octets_1, octets_2 = _resultat_octets(premiere), _resultat_octets(seconde)
+    if octets_1 and octets_2:
+        voix, note_voix = _enchainer_voix(octets_1, octets_2), ""
+    elif octets_1:
+        voix = octets_1
+        note_voix = (
+            "<div style='color:#46594D;font-size:14px;margin:4px 0 8px;'>"
+            "🔊 La voix décrit l'étape 1 ; l'étape 2 est affichée ci-dessous.</div>"
+        )
+    else:
+        voix, note_voix = None, ""
+    carte = (
+        note_voix
+        + titre_section(f"Étape 1 : {depart} → {etape}")
+        + _carte(premiere, depart, etape)
+        + titre_section(f"Étape 2 : {etape} → {arrivee}")
+        + _carte(seconde, etape, arrivee)
+        + _duree_deux_etapes(premiere, seconde, etape)
+    )
+    lignes = collecte.lignes_proposees(premiere, MAX_POSSIBILITES) + collecte.lignes_proposees(
+        seconde, MAX_POSSIBILITES
+    )
+    trouve = any(
+        r.get("found") or r.get("correspondances") or r.get("trajets_2") for r in (premiere, seconde)
+    )
+    _noter(depart=depart, arrivee=arrivee, lignes=lignes)
+    _journal(modele_asr, duree_asr, len(lignes), "" if trouve else "etapes_sans_ligne")
+    return (
+        phrase,
+        f"{depart} → {etape} → {arrivee}",
+        carte,
+        _ecrire_voix(voix),
+        _mention({"source": "local"}, modele_asr),
+    ), trouve
+
+
+def _note_lieux_en_plus(phrase: str, depart: str, arrivee: str) -> str:
+    """Trois lieux sans mot d'étape : on ne devine rien, on le signale (lot T1)."""
+    autres = [l for l in lieux_cites(phrase) if l not in (depart, arrivee)]
+    if not autres:
+        return ""
+    cites = ", ".join(autres)
+    return (
+        "<div style='color:#7A3E00;background:#FFF4E5;border:1.5px solid #E8A84A;"
+        "border-radius:12px;padding:8px 12px;margin:6px 0 10px;font-size:14px;'>"
+        f"J'ai aussi entendu {_echapper(cites)}. Pour y passer en chemin, dis par exemple : "
+        f"« Maa ngi {_echapper(depart)}, dama bëgg jaar {_echapper(autres[0])}, ba noppi dem "
+        f"{_echapper(arrivee)} ».</div>"
+    )
 
 
 def _ecrire_voix(octets: bytes | None) -> str | None:
@@ -1595,6 +1737,11 @@ def _pipeline(
         ), False
     phrase = verdict.texte
 
+    # Lot T1 : « jaar Y » ou « … ba noppi dem Z » : un trajet en deux étapes.
+    etapes = extraire_etapes(phrase)
+    if etapes:
+        return _reponse_etapes(phrase, etapes, compagnie_choix, modele_asr, duree_asr)
+
     # L'extraction gère elle-même son repli local : si l'API est saturée, elle
     # rend quand même un départ et une arrivée tant que la phrase les porte.
     # L'extraction locale d'abord : elle ne connaît que les arrêts du réseau et
@@ -1707,7 +1854,8 @@ def _pipeline(
     return (
         phrase,
         f"{depart} → {arrivee}",
-        _carte(resultat, depart, arrivee, avertissement, bandeau_compagnie),
+        _note_lieux_en_plus(phrase, depart, arrivee)
+        + _carte(resultat, depart, arrivee, avertissement, bandeau_compagnie),
         _voix_wolof(
             resultat["lignes"],
             resultat.get("correspondances"),

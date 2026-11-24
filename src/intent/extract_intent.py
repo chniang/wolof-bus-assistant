@@ -656,10 +656,15 @@ SYSTEM_PROMPT = _build_system_prompt()
 
 
 def _sans_accents(texte: str) -> str:
-    """Minuscules et accents retirés : la comparaison ignore l'orthographe."""
+    """Minuscules et accents retirés : la comparaison ignore l'orthographe.
+
+    Lot T1 : « œ » et « æ » deviennent « oe » et « ae ». Sans cela, « Sacré-Cœur »
+    devenait « sacre c ur » et « Sacré-Coeur » écrit à la main ne le rejoignait pas.
+    """
+    texte = texte.lower().replace("œ", "oe").replace("æ", "ae")
     return "".join(
         caractere
-        for caractere in unicodedata.normalize("NFD", texte.lower())
+        for caractere in unicodedata.normalize("NFD", texte)
         if unicodedata.category(caractere) != "Mn"
     )
 
@@ -751,22 +756,53 @@ ALIAS_PARLES = Path(__file__).resolve().parents[2] / "data" / "corrections" / "a
 
 
 def _charger_alias_parles(chemin: Path = ALIAS_PARLES) -> tuple[tuple[str, str], ...]:
-    if not chemin.exists():
-        return ()
-    with open(chemin, newline="", encoding="utf-8-sig") as fichier:
-        rangees = [
-            (_sans_accents(r["forme"]).strip(), _sans_accents(r["remplacement"]).strip())
-            for r in csv.DictReader(fichier)
-            if (r.get("forme") or "").strip() and (r.get("remplacement") or "").strip()
-        ]
+    """Lot T1 : tous les fichiers alias_lieux_parles*.csv, un par lot de corrections."""
+    rangees = []
+    for fichier_alias in sorted(chemin.parent.glob(chemin.stem + "*.csv")):
+        with open(fichier_alias, newline="", encoding="utf-8-sig") as fichier:
+            rangees += [
+                (_sans_accents(r["forme"]).strip(), _sans_accents(r["remplacement"]).strip())
+                for r in csv.DictReader(fichier)
+                if (r.get("forme") or "").strip() and (r.get("remplacement") or "").strip()
+            ]
     rangees.sort(key=lambda r: -len(r[0]))
+    # Entre les mots : espace, tiret ou apostrophe (« Sacré-Curre », « patte d'oie »).
     return tuple(
-        (r"\b" + r"\s+".join(re.escape(mot) for mot in forme.split()) + r"\b", f" {remplacement} ")
+        (r"\b" + r"[\s'-]+".join(re.escape(mot) for mot in forme.split()) + r"\b", f" {remplacement} ")
         for forme, remplacement in rangees
     )
 
 
 REMPLACEMENTS_ALIAS_PARLES = _charger_alias_parles()
+
+
+# Lot T1 : à Dakar, le numéro d'un quartier se dit toujours en français, même
+# dans une phrase en wolof (« Sacré-Cœur trois », « Liberté six »), avec les
+# erreurs de l'ASR vues dans le dataset (« Troie », « sis », « sizième »).
+NOMBRES_FRANCAIS = {
+    "un": "1", "une": "1", "premier": "1", "premiere": "1",
+    "deux": "2", "deuxieme": "2", "trois": "3", "troie": "3", "troi": "3", "troisieme": "3",
+    "quatre": "4", "quatrieme": "4", "cinq": "5", "cinquieme": "5",
+    "six": "6", "sis": "6", "sixieme": "6", "sizieme": "6",
+}
+QUARTIERS_NUMEROTES = (
+    "sacre coeur", "liberte", "hlm", "unite", "unites", "dieuppeul", "hamo", "grand yoff",
+    "sicap", "castors", "mermoz", "amitie", "patte d oie",
+)
+_MOTIF_NUMERO_QUARTIER = re.compile(
+    r"\b(" + "|".join(re.escape(q) for q in QUARTIERS_NUMEROTES) + r")\s+("
+    + "|".join(sorted(NOMBRES_FRANCAIS, key=len, reverse=True)) + r")\b"
+)
+
+
+def _numeros_de_quartier(texte: str) -> str:
+    """« sacre coeur troie » -> « sacre coeur 3 ».
+
+    Un numéro absent des données ne crée aucun lieu : la recherche compare les
+    numéros exactement et retombe sur le quartier général (« Sacré Cœur »),
+    jamais sur un autre numéro.
+    """
+    return _MOTIF_NUMERO_QUARTIER.sub(lambda m: f"{m.group(1)} {NOMBRES_FRANCAIS[m.group(2)]}", texte)
 
 
 def _normaliser_phrase(phrase: str) -> str:
@@ -783,6 +819,7 @@ def _normaliser_phrase(phrase: str) -> str:
     # Sauf dans un nom de lieu : voir _MOTIF_DEM_COLLE (« Demba Diop »).
     texte = _MOTIF_DEM_COLLE.sub("dem ", texte)
     texte = re.sub(r"[^a-z0-9\s]", " ", texte)
+    texte = _numeros_de_quartier(texte)
     # « jëm » (aller vers) annonce l'arrivée exactement comme « dem » : « Bëgg
     # naa jëm aéroport Diass » doit répartir les lieux autour de lui.
     texte = re.sub(r"\b(?:jem|djem|jeum)\b", "dem", texte)
@@ -827,6 +864,9 @@ MOTS_DE_LA_PHRASE = {
     "ban",
     # « sama bopp » et ses variantes, réécrits par REPLACEMENTS_PHRASE.
     "soimeme",
+    # Lot T1 : « waaye » (mais) donnait « medina waaye » -> Gadaye ; mots d'étape.
+    "waaye", "jaar", "noppi", "pare", "guinaaw", "ginnaaw", "lolou", "loolu", "apres",
+    "ensuite", "souma", "soo", "jugee", "jogee", "den",
 }
 # Premiers mots de nombreux arrêts : seuls, ils ne désignent aucun lieu
 # (« marché liberté cinq » ne doit pas devenir « Marché aux Poissons »). Un
@@ -1226,6 +1266,51 @@ def extract_local(phrase: str) -> dict:
         "erreur": None,
         "source": "local",
     }
+
+
+# Lot T1 : trajet avec étape. « Maa ngi Médina, dama bëgg jaar Dieppeul, ba
+# noppi dem Parcelles » : départ, étape, arrivée. Mots d'étape fournis par
+# Cheikh (locuteur natif), tels que la phrase normalisée les écrit (« jóge »
+# et « diogué » y deviennent « diougue »).
+MOT_PASSER_PAR = re.compile(r"\bjaar\b")
+MOTS_ENSUITE = re.compile(
+    r"\b(?:ba noppi|ba pare|(?:souma|soo ma|su ma) pare"
+    r"|(?:souma|soo ma|su ma) fa (?:diougue|jugee|jogee)|(?:diougue|jugee|jogee) fa"
+    r"|(?:guinaaw|ginnaaw) (?:lolou|loolu)|(?:si|ci) (?:guinaaw|ginnaaw)|apres|ensuite)\b"
+)
+
+
+def extraire_etapes(phrase: str) -> dict | None:
+    """Départ, étape et arrivée, ou None si la phrase n'annonce pas d'étape.
+
+    Trois lieux distincts ET un mot d'étape : « jaar » (passer par) avant le
+    deuxième lieu, ou un mot « ensuite » entre le deuxième et le troisième.
+    Trois lieux sans mot d'étape : None, rien n'est deviné (la recherche
+    ordinaire décide, et l'app signale le lieu en plus).
+    """
+    if not phrase or not phrase.strip():
+        return None
+    mots = _sans_compagnie(phrase).split()
+    trouves = _chercher_lieux(mots)
+    if len(trouves) != 3 or len({_cible(lieu) for _, _, lieu in trouves}) != 3:
+        return None
+    (_, fin_1, depart), (debut_2, fin_2, etape), (debut_3, _, arrivee) = trouves
+    passer_par = MOT_PASSER_PAR.search(" ".join(mots[fin_1:debut_2]))
+    ensuite = MOTS_ENSUITE.search(" ".join(mots[fin_2:debut_3]))
+    if not (passer_par or ensuite):
+        return None
+    return {"depart": depart, "etape": etape, "arrivee": arrivee}
+
+
+def lieux_cites(phrase: str) -> list[str]:
+    """Les lieux reconnus dans la phrase, dans l'ordre, sans doublon."""
+    if not phrase or not phrase.strip():
+        return []
+    vus: list[str] = []
+    for _, _, lieu in _chercher_lieux(_sans_compagnie(phrase).split()):
+        if lieu not in vus:
+            vus.append(lieu)
+    return vus
 
 
 def _lieu_connu(valeur: str) -> bool:

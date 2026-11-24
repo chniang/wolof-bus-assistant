@@ -10069,6 +10069,148 @@ def test_lot_g0_garde_fou() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_t1_etapes_quartiers() -> tuple[int, int]:
+    """Lot T1 : trajet avec étape, quartiers numérotés dits en français, nouveaux alias.
+
+    Mots d'étape et alias fournis par Cheikh (locuteur natif). Aucun réseau.
+    """
+    import contextlib
+    import io
+    import os
+    import re
+
+    from intent.extract_intent import (
+        _numeros_de_quartier, _sans_accents, extract_local, extraire_etapes, lieux_cites,
+    )
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot T1 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    # A. Trajet avec étape : les 11 phrases de Cheikh et du dataset.
+    avec_etape = (
+        "Maa ngi Médina, dama bëgg jaar Dieppeul, ba noppi dem Parcelles.",
+        "Maa ngi Médina, dama bëgg jaar Dieppeul, souma paré dem Parcelles.",
+        "Maa ngi Médina, dama bëgg jaar Dieppeul, souma fa diogué dem Parcelles.",
+        "Maa ngi Médina, dama bëgg jaar Dieppeul, après dem Parcelles.",
+        "Maa ngi Médina, dama bëgg jaar Dieppeul, ensuite dem Parcelles.",
+        "Maa ngi Médina, dama bëgg jaar Dieppeul, ba paré dem Parcelles.",
+        "Maa ngi Médina, dama bëgg jaar Dieppeul, guinaaw lolou ma dem Parcelles.",
+        "Maa ngi Médina, dama bëgg jaar Dieppeul, si guinaaw ma dem Parcelles.",
+        "Maa ngi Médina, dama bëgg jaar Dieppeul,souma paré dem Parcelles.",
+        "Maa ngi Médina, dama bëgg jaar Dieppeul, diogué fa dem Parcelles.",
+        "waaw man damaa nekk medina waaye dama bëgg dem dieuppeul su ma fa jugee ma dem parcelle",
+    )
+    parcelles = {"Parcelles", "Parcelles Assainies"}
+    for phrase in avec_etape:
+        etapes = extraire_etapes(phrase)
+        verifie(f"étape : « {phrase[34:70]} » -> Médina, Dieuppeul, Parcelles",
+                etapes is not None and etapes["depart"] == "Médina" and etapes["etape"] == "Dieuppeul"
+                and etapes["arrivee"] in parcelles, etapes)
+    verifie("« medina waaye » n'est plus Gadaye (« waaye » = mais)",
+            "Gadaye" not in lieux_cites(avec_etape[-1]), lieux_cites(avec_etape[-1]))
+    simples = (
+        ("Maa ngi Ouakam, bëgg naa dem Palais", "Ouakam", "Palais"),
+        ("maa ngi Pikine, dama bëgg dem Colobane", "Pikine", "Colobane"),
+        ("Maa ngi Ouakam ak Colobane, bëgg naa dem Pikine", "Ouakam", "Pikine"),
+    )
+    for phrase, depart, arrivee in simples:
+        local = extract_local(phrase)
+        verifie(f"sans mot d'étape : « {phrase} » inchangé, aucune étape devinée",
+                extraire_etapes(phrase) is None and (local["depart"], local["arrivee"]) == (depart, arrivee),
+                (extraire_etapes(phrase), local))
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_t1")
+    app.MATCHER = _matcher_hors_ligne()
+    app._client_llm = lambda: _ClientQuiLeve(lambda: TimeoutError("ne doit pas être appelé"))
+
+    def pipeline(phrase: str):
+        tampon = io.StringIO()
+        with contextlib.redirect_stdout(tampon):
+            quint, trouve = app._pipeline(phrase, "", 0.0)
+        return quint, trouve, tampon.getvalue()
+
+    quint, trouve, journal = pipeline(avec_etape[0])
+    titres = re.findall(r"Étape (\d) : ([^<]+)", quint[2])
+    verifie("app : « Étape 1 : Médina → Dieuppeul » puis « Étape 2 : Dieuppeul → Parcelles »",
+            trouve and [n for n, _ in titres] == ["1", "2"]
+            and titres[0][1].strip() == "Médina → Dieuppeul" and titres[1][1].startswith("Dieuppeul → Parcelles")
+            and quint[1].startswith("Médina → Dieuppeul → Parcelles") and "[LLM]" not in journal, (titres, quint[1]))
+    verifie("app : durée totale qui rappelle que l'arrêt à l'étape n'est pas compté",
+            "Durée totale" in quint[2] and "sans compter ton arrêt à Dieuppeul" in quint[2])
+    verifie("app : les cartes des deux étapes, chacune avec sa recherche",
+            quint[2].count("guindima-carte") >= 2 and quint[2].index("Étape 1") < quint[2].index("Étape 2"))
+    verifie("durée des étapes : somme des fourchettes, arrêt non compté",
+            "Durée totale : 45–80 min (sans compter ton arrêt à X)" in app._duree_deux_etapes(
+                {"lignes": [{"minutes": 20}]}, {"lignes": [{"minutes": 25}]}, "X")
+            and "Durée totale : inconnue" in app._duree_deux_etapes(
+                {"lignes": [{"minutes": 20}]}, {"lignes": [{"minutes": None}]}, "X"))
+    import numpy as np
+    import soundfile as sf
+
+    def wav(secondes: float) -> bytes:
+        tampon = io.BytesIO()
+        sf.write(tampon, np.zeros(int(16000 * secondes), dtype="float32"), 16000, format="WAV")
+        return tampon.getvalue()
+
+    enchaine, taux = sf.read(io.BytesIO(app._enchainer_voix(wav(1.0), wav(2.0))))
+    verifie("voix : les deux réponses enregistrées bout à bout (aucune synthèse)",
+            taux == 16000 and abs(len(enchaine) / taux - (3.0 + app.PAUSE_ENTRE_ETAPES_S)) < 0.01)
+    source = (RACINE / "app.py").read_text(encoding="utf-8")
+    verifie("voix : sans voix pour l'étape 2, l'étape 1 seule et le texte le dit",
+            "La voix décrit l'étape 1 ; l'étape 2 est affichée ci-dessous." in source)
+    quint, trouve, _ = pipeline("Maa ngi Ouakam ak Colobane, bëgg naa dem Pikine")
+    verifie("trois lieux sans mot d'étape : rien de deviné, le lieu en plus est signalé",
+            "J'ai aussi entendu Colobane" in quint[2] and "jaar Colobane" in quint[2]
+            and "Étape 1" not in quint[2], quint[2][:200])
+
+    # B. Quartiers numérotés, numéro dit en français.
+    verifie("« œ » devient « oe » (Sacré-Cœur)", _sans_accents("Sacré-Cœur") == "sacre-coeur")
+    verifie("numéros français : troie, sis, six, sizième, trois -> chiffres",
+            _numeros_de_quartier("sacre coeur troie") == "sacre coeur 3"
+            and _numeros_de_quartier("liberte sis") == "liberte 6"
+            and _numeros_de_quartier("liberte sizieme") == "liberte 6"
+            and _numeros_de_quartier("hamo six") == "hamo 6"
+            and _numeros_de_quartier("maa ngi trois") == "maa ngi trois")
+    for phrase, depart in (("maa ngi liberté six dama bëgg dem Colobane", "Liberté 6"),
+                           ("maa ngi liberté sizième dama bëgg dem Colobane", "Liberté 6"),
+                           ("maa ngi Liberté 5 dama bëgg dem Colobane", "Liberté 5"),
+                           ("maa ngi Hamo six dama bëgg dem Colobane", "Hamo 6")):
+        verifie(f"« {phrase[8:30]} » -> {depart}", extract_local(phrase)["depart"] == depart, extract_local(phrase))
+    for phrase in ("dama nekk Sacré-Curre Troie ma bëgga de Medina",
+                   "Dama nekk sacré-coteuror Troie ma bëgga de madinoye"):
+        local = extract_local(phrase)
+        # Sacré-Cœur 3 n'existe pas dans nos données : le quartier général, sans invention.
+        verifie(f"dataset : « {phrase[:34]} » -> Sacré Cœur (général) -> Médina",
+                (local["depart"], local["arrivee"]) == ("Sacré Cœur", "Médina"), local)
+    verifie("un numéro absent des données ne crée jamais de lieu (Liberté 3 -> Liberté)",
+            extract_local("maa ngi liberté trois dama bëgg dem Colobane")["depart"] in ("Liberté", ""),
+            extract_local("maa ngi liberté trois dama bëgg dem Colobane"))
+
+    # C. Nouveaux alias.
+    local = extract_local("Bama demaneke Wakkam ma bëgg den Mberemouls")
+    verifie("« Bama demaneke Wakkam ma bëgg den Mberemouls » -> Ouakam -> Mermoz",
+            (local["depart"], local["arrivee"]) == ("Ouakam", "Mermoz"), local)
+    for forme, lieu in (("mbërmoz", "Mermoz"), ("mermoz", "Mermoz"), ("kólobar", "Colobane"),
+                        ("kolobar", "Colobane"), ("colobar", "Colobane"), ("yebal", "Yeumbeul"),
+                        ("yambal", "Yeumbeul"), ("yambël", "Yeumbeul"), ("madinoye", "Médina"),
+                        ("medinaam", "Médina")):
+        arrivee = extract_local(f"maa ngi Ouakam dama bëgg dem {forme}")["arrivee"]
+        verifie(f"alias « {forme} » -> {lieu}", arrivee == lieu, arrivee)
+    alias = (RACINE / "data" / "corrections" / "alias_lieux_parles_t1.csv").read_text(encoding="utf-8")
+    verifie("alias dans un NOUVEAU fichier de corrections", "mberemouls,mermoz" in alias and "madinoye,medina" in alias)
+
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -10141,6 +10283,7 @@ if __name__ == "__main__":
         echecs_c6, total_c6 = test_lot_c6_mobile_lieux()
         echecs_c7, total_c7 = test_lot_c7_accueil()
         echecs_g0, total_g0 = test_lot_g0_garde_fou()
+        echecs_t1, total_t1 = test_lot_t1_etapes_quartiers()
         echecs = (
             test_local()
             + echecs_partage
@@ -10203,6 +10346,7 @@ if __name__ == "__main__":
             + echecs_c6
             + echecs_c7
             + echecs_g0
+            + echecs_t1
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -10266,6 +10410,7 @@ if __name__ == "__main__":
             + total_c6
             + total_c7
             + total_g0
+            + total_t1
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)
