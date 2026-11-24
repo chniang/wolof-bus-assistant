@@ -10261,26 +10261,30 @@ def test_lot_t2_finitions_etapes() -> tuple[int, int]:
 
     # 1. Phrase de transition entre les deux étapes, wolof puis français.
     quint, _ = pipeline(essai)
-    verifie("transition (bus direct) : « Soo paree, nga jël bus N, moo lay yóbbu ba Parcelles »",
-            re.search(r"🔁 Soo paree, nga jël bus \w+, moo lay yóbbu ba Parcelles\.", quint[2]) is not None
+    verifie("transition (bus direct) : « Soo paree, jëlal biis bu N, moo lay yóbbu ba Parcelles »",
+            re.search(r"🔁 Soo paree, jëlal biis bu \w+, moo lay yóbbu ba Parcelles\.", quint[2]) is not None
+            and "nga jël" not in quint[2]
             and "Quand tu as fini, prends le bus" in quint[2]
             and quint[2].index("Étape 1") < quint[2].index("Soo paree") < quint[2].index("Étape 2"),
             quint[2][:300])
     quint, _ = pipeline("Maa ngi Médina, dama bëgg jaar Dieppeul, ba noppi dem Parcelles.")
-    verifie("transition (avec changements) : début de la phrase, sans wolof inventé",
-            re.search(r"🔁 Soo paree, nga jël bus \w+\.<", quint[2]) is not None
+    verifie("transition (avec changements) : la même phrase arrêtée au bus, sans wolof inventé",
+            re.search(r"🔁 Soo paree, jëlal biis bu \w+\.<", quint[2]) is not None
             and "moo lay yóbbu ba" not in quint[2].split("Soo paree", 1)[1].split("</div>", 1)[0]
             and "puis suis les changements" in quint[2], quint[2][:300])
     verifie("transition : rien si l'étape 2 n'a aucun bus",
             app._transition_etapes({"lignes": [], "correspondances": [], "trajets_2": []}, "X") == "")
+    # Option A (décision de Cheikh) : un seul morceau à générer, « Soo paree, ».
     with open(RACINE / "data" / "voix_a_generer_transition.csv", encoding="utf-8", newline="") as fichier:
         voix = list(_csv.DictReader(fichier))
-    verifie("voix de la transition : morceaux manquants listés, rien de généré",
-            {r["fichier_wav"] for r in voix} >= {"soo_paree.wav", "soo_paree_nga_jel.wav"}
+    verifie("voix de la transition : seul « Soo paree, » reste à générer, rien de généré",
+            [(r["texte_a_prononcer"], r["fichier_wav"]) for r in voix] == [("Soo paree,", "soo_paree.wav")]
             and all(not (RACINE / "data" / d / "soo_paree.wav").exists()
-                    for d in ("tts_cache_oolel", "tts_cache_ajouts", "tts_cache"))
-            and any(r["fichier_wav"] == "moo_lay_yobbu_ba.wav" and r["statut"] == "existe" for r in voix),
+                    for d in ("tts_cache_oolel", "tts_cache_ajouts", "tts_cache")),
             [r["fichier_wav"] for r in voix])
+    verifie("les autres morceaux de la voix existent déjà (moo lay yóbbu ba, lieu, ligne)",
+            any((RACINE / "data" / d / "moo_lay_yobbu_ba.wav").exists()
+                for d in ("tts_cache_oolel", "tts_cache_ajouts", "tts_cache")))
 
     # 3. Lignes en boucle.
     carte = app._une_carte({"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 20", "depart": "Dieuppeul",
