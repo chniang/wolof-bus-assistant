@@ -74,8 +74,25 @@ class Line:
     def stops_for(self, direction: int) -> tuple[str, ...]:
         return self.stops if direction == 0 else tuple(reversed(self.stops))
 
+    @property
+    def is_loop(self) -> bool:
+        """Même terminus au début et à la fin : une boucle à sens unique."""
+        return len(self.stops) > 2 and self.stops[0] == self.stops[-1]
+
+    @property
+    def directions(self) -> tuple[int, ...]:
+        """Les sens où le bus roule. Une boucle (Dem Dikk 18 et 20, miroirs
+        l'une de l'autre) ne roule que dans l'ordre de sa liste : la parcourir à
+        l'envers faisait passer la 20 par Fann pour aller de Médina à Dieuppeul,
+        le chemin de la 18."""
+        return (0,) if self.is_loop else (0, 1)
+
     def terminus_for(self, direction: int) -> str:
         return self.stops_for(direction)[-1]
+
+    def index_in_list(self, direction: int, index: int) -> int:
+        """Position dans ``stops`` d'un index donné dans le sens ``direction``."""
+        return index if direction == 0 else len(self.stops) - 1 - index
 
 
 @dataclass(frozen=True)
@@ -267,7 +284,7 @@ class Network:
         self._all_nodes: list[Node] = []
 
         for line in self.lines.values():
-            for direction in (0, 1):
+            for direction in line.directions:
                 sequence = line.stops_for(direction)
                 for index, stop in enumerate(sequence):
                     node = Node(line.key, direction, index)
@@ -442,7 +459,7 @@ class Network:
         # Ride along the ordered stops, in both directions.
         for line in self.lines.values():
             forward = self._segment_distances(line)
-            for direction in (0, 1):
+            for direction in line.directions:
                 sequence = line.stops_for(direction)
                 distances = forward if direction == 0 else forward[::-1]
                 for index in range(len(sequence) - 1):

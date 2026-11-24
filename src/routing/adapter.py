@@ -160,17 +160,39 @@ def _bout_devine(ligne, index: int) -> bool:
     return True
 
 
+def indices_du_troncon(leg: Leg, ligne) -> tuple[int, int] | None:
+    """Positions de montée et de descente dans ``ligne.stops``.
+
+    Celles que le moteur a parcourues quand le tronçon les porte. Sinon (tronçon
+    fait à la main) : parmi les passages des deux arrêts, la paire la plus
+    proche. Sur une boucle, le terminus est au début ET à la fin de la liste ;
+    ``.index()`` prenait toujours le premier, donc l'autre sens du tour.
+    """
+    arrets = ligne.stops
+    i, j = leg.board_index, leg.alight_index
+    if (
+        i is not None and j is not None and 0 <= i < len(arrets) and 0 <= j < len(arrets)
+        and arrets[i] == leg.board_stop and arrets[j] == leg.alight_stop
+    ):
+        return i, j
+    montees = [k for k, arret in enumerate(arrets) if arret == leg.board_stop]
+    descentes = [k for k, arret in enumerate(arrets) if arret == leg.alight_stop]
+    paires = [(a, b) for a in montees for b in descentes if a != b]
+    if not paires:
+        return None
+    return min(paires, key=lambda paire: abs(paire[1] - paire[0]))
+
+
 def duree_devinee(leg: Leg) -> bool:
     """Vrai si la durée de ce bus repose sur une longue portion sans position mesurée."""
 
     ligne = _NETWORK.lines.get((leg.operator, leg.line))
     if ligne is None:
         return False
-    arrets = list(ligne.stops)
-    try:
-        i, j = arrets.index(leg.board_stop), arrets.index(leg.alight_stop)
-    except ValueError:
+    indices = indices_du_troncon(leg, ligne)
+    if indices is None:
         return False
+    i, j = indices
     segments = _NETWORK._segment_distances(ligne)
     trace = _NETWORK.line_distances.get(ligne.key)
     if trace is not None:
@@ -212,7 +234,15 @@ def _troncon(leg: Leg) -> dict:
     # Une boucle (Dem Dikk 502 : Gare Colobane -> Gare Colobane) a le même terminus
     # aux deux bouts : seul l'ordre des arrêts peut trancher le sens.
     boucle = bool(arrets) and arrets[0] == arrets[-1]
-    if arrets and not boucle and arrets[-1] == leg.direction:
+    indices = indices_du_troncon(leg, ligne) if boucle else None
+    if indices is not None:
+        # Boucle : les positions parcourues par le moteur donnent le sens et le
+        # tronçon exact (Médina -> Terminus Liberté 5 de la fin de liste, pas
+        # du début).
+        i, j = indices
+        direct = i <= j
+        ordre = arrets if direct else tuple(reversed(arrets))
+    elif arrets and not boucle and arrets[-1] == leg.direction:
         direct = True
         ordre = arrets
     elif arrets and not boucle and arrets[0] == leg.direction:
@@ -226,16 +256,20 @@ def _troncon(leg: Leg) -> dict:
         )
         ordre = arrets if direct else tuple(reversed(arrets))
 
-    try:
-        i_dep = ordre.index(leg.board_stop)
-        i_arr = ordre.index(leg.alight_stop)
-    except ValueError:
-        parcours = [leg.board_stop, leg.alight_stop]
+    if indices is not None:
+        i, j = indices
+        parcours = list(arrets[i:j + 1]) if i <= j else list(reversed(arrets[j:i + 1]))
     else:
-        parcours = list(ordre[i_dep : i_arr + 1]) or [
-            leg.board_stop,
-            leg.alight_stop,
-        ]
+        try:
+            i_dep = ordre.index(leg.board_stop)
+            i_arr = ordre.index(leg.alight_stop)
+        except ValueError:
+            parcours = [leg.board_stop, leg.alight_stop]
+        else:
+            parcours = list(ordre[i_dep : i_arr + 1]) or [
+                leg.board_stop,
+                leg.alight_stop,
+            ]
 
     if direct:
         depart = ligne.terminus_a or (arrets[0] if arrets else "")

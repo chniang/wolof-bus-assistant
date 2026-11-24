@@ -10328,6 +10328,81 @@ def test_lot_t2_finitions_etapes() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lignes_en_boucle() -> tuple[int, int]:
+    """Lignes en boucle (Dem Dikk 18, 20) : le bon passage du terminus.
+
+    Le terminus figure au début ET à la fin de la liste des arrêts. Retrouvé
+    par son nom (``.index()``), il donnait toujours le premier passage : le
+    tronçon Médina -> Dieuppeul mesurait l'autre sens du tour. Aucune durée
+    n'est inventée : la position du terminus de Dieuppeul n'est pas mesurée.
+    """
+    import contextlib
+    import io
+
+    from routing import adapter
+    from routing.router import Leg
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | boucles {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    with contextlib.redirect_stdout(io.StringIO()):
+        matcher = _matcher_hors_ligne()
+        resultat = matcher.find_line("Médina", "Dieuppeul")
+    par_ligne = {t["ligne"]: t for t in resultat["lignes"]}
+    net = adapter._NETWORK
+    # La 18 et la 20 sont deux boucles à sens unique, miroirs l'une de l'autre.
+    # De Médina, la 18 file vers Dieuppeul par Gueule Tapée et Fann ; la 20,
+    # dans SON sens, repart vers la Gare puis Colobane (le grand tour).
+    autre_sens = {
+        "Ligne 18": {"Colobane", "Gare de dakar", "Place de l’Indépendance"},
+        "Ligne 20": {"UCAD", "Poste Fann", "Ecole Normale", "Gueule Tapée"},
+    }
+    for nom, terminus in (("Ligne 18", "Liberté 5 (Dieuppeul)"), ("Ligne 20", "Dieuppeul")):
+        trajet = par_ligne.get(nom)
+        verifie(f"DDD {nom[6:]} proposée pour Médina -> Dieuppeul", trajet is not None, sorted(par_ligne))
+        if trajet is None:
+            continue
+        ligne = net.lines[("Dakar Dem Dikk", nom)]
+        arrets = trajet.get("arrets_trajet") or []
+        medina = max(k for k, a in enumerate(ligne.stops) if a == "Médina")
+        verifie(f"DDD {nom[6:]} : le tronçon va de Médina au terminus de la FIN de liste",
+                arrets[:1] == ["Médina"] and arrets[-1] == terminus
+                and len(arrets) == len(ligne.stops) - medina, (len(arrets), arrets[:2], arrets[-2:]))
+        verifie(f"DDD {nom[6:]} : dans le sens de la ligne, jamais à rebours",
+                not autre_sens[nom] & set(arrets), arrets)
+        verifie(f"DDD {nom[6:]} : aucune durée inventée (terminus sans position mesurée)",
+                trajet.get("minutes") is None and trajet.get("duree_inconnue") is True,
+                (trajet.get("minutes"), trajet.get("duree_inconnue")))
+
+    # Le moteur transmet les positions exactes ; sans elles, la paire la plus proche.
+    ligne_18 = net.lines[("Dakar Dem Dikk", "Ligne 18")]
+    medina = max(k for k, a in enumerate(ligne_18.stops) if a == "Médina")
+    sans_positions = Leg("Dakar Dem Dikk", "Ligne 18", "Médina", ligne_18.stops[-1], ligne_18.stops[-1], 0, 10.0)
+    verifie("tronçon sans positions : le passage le plus proche du terminus",
+            adapter.indices_du_troncon(sans_positions, ligne_18) == (medina, len(ligne_18.stops) - 1),
+            adapter.indices_du_troncon(sans_positions, ligne_18))
+    verifie("positions données par le moteur : utilisées telles quelles",
+            adapter.indices_du_troncon(
+                Leg("Dakar Dem Dikk", "Ligne 18", "Médina", ligne_18.stops[0], ligne_18.stops[0], 0, 10.0,
+                    board_index=medina, alight_index=0), ligne_18) == (medina, 0))
+    verifie("une boucle ne roule que dans le sens de sa liste ; une ligne ordinaire, dans les deux",
+            ligne_18.is_loop and ligne_18.directions == (0,)
+            and net.lines[("Dakar Dem Dikk", "Ligne 23")].directions == (0, 1))
+    verifie("de Médina à Dieuppeul, la 18 (12 arrêts) passe devant la 20 (grand tour)",
+            [t["ligne"] for t in resultat["lignes"]][:1] == ["Ligne 18"], [t["ligne"] for t in resultat["lignes"]])
+    verifie("le sens d'un index de nœud est converti en position de liste",
+            ligne_18.index_in_list(0, 3) == 3 and ligne_18.index_in_list(1, 0) == len(ligne_18.stops) - 1)
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -10401,7 +10476,8 @@ if __name__ == "__main__":
         echecs_c7, total_c7 = test_lot_c7_accueil()
         echecs_g0, total_g0 = test_lot_g0_garde_fou()
         echecs_t1, total_t1 = test_lot_t1_etapes_quartiers()
-        echecs_t2, total_t2 = test_lot_t2_finitions_etapes()
+        echecs_t2e, total_t2e = test_lot_t2_finitions_etapes()
+        echecs_boucles, total_boucles = test_lignes_en_boucle()
         echecs = (
             test_local()
             + echecs_partage
@@ -10465,7 +10541,8 @@ if __name__ == "__main__":
             + echecs_c7
             + echecs_g0
             + echecs_t1
-            + echecs_t2
+            + echecs_t2e
+            + echecs_boucles
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -10530,7 +10607,8 @@ if __name__ == "__main__":
             + total_c7
             + total_g0
             + total_t1
-            + total_t2
+            + total_t2e
+            + total_boucles
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

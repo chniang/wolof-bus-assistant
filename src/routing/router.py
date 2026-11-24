@@ -142,6 +142,12 @@ class Leg:
     minutes: float
     distance_m: float | None = None
     estimated: bool = False
+    # Position exacte de la montée et de la descente dans ``line.stops`` (sens
+    # de la liste). Sur une ligne en boucle, le terminus y figure deux fois :
+    # sans ces positions, retrouver l'arrêt par son nom prenait le premier
+    # passage et mesurait l'autre sens du tour (Dem Dikk 18, 20).
+    board_index: int | None = None
+    alight_index: int | None = None
 
 
 @dataclass(frozen=True)
@@ -1119,6 +1125,8 @@ class RouteEngine:
                     minutes=billed_minutes,
                     distance_m=current["distance"],
                     estimated=current["estimated"],
+                    board_index=line.index_in_list(current["direction"], int(current["start_index"])),
+                    alight_index=line.index_in_list(current["direction"], int(current["end_index"])),
                 )
             )
             current = None
