@@ -1,0 +1,2 @@
+nom_officiel,nom_affiche,raison,source,date
+Terminus des Parcelles,Parcelles Assainies,"Liste officielle de la DDD 23 (demdikk.sn/reseau-urbain-dakar) : sans « Terminus », il restait « Des Parcelles » (« Ligne : Palais 2 → Des Parcelles »). Sa position (unité 17, Parcelles Assainies) est à ~100 m de « Terminus Parcelles Assainies » de la DDD 1 : même terminus, même nom.",data/corrections/corrections_geo_ddd_proposees.csv (ligne 23 ordre 1) et DDD 1 ordre 1,2026-11-24

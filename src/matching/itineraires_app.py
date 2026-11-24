@@ -71,6 +71,10 @@ POSITIONS_ESTIMEES = DATA / "corrections" / "positions_estimees.csv"
 #   géocodage), gardée pour mesurer la ligne mais jamais sûre ;
 # - « inconnue » : aucune position (Bayakh, introuvable).
 ITINERAIRES_REVUS = DATA / "corrections" / "itineraires_ddd_revus.csv"
+# Lot T2 : noms officiels affichés autrement. « Terminus des Parcelles » (DDD 23)
+# devenait « Des Parcelles » sans son « Terminus » ; c'est le terminus des
+# Parcelles Assainies, celui de la DDD 1.
+NOMS_ARRETS = DATA / "corrections" / "noms_arrets_ddd.csv"
 SOURCE_ESTIMEE = "estimee"
 # Statut et terminus affichés des mêmes lignes (et de la 233) d'après les deux
 # pages : « Cambérène 2 -> Palais 2 » pour la 6 alors que sa liste commence à
@@ -85,6 +89,17 @@ def nom_ligne_ddd(ligne: object) -> str:
     """« 1 » -> « Ligne 1 », « 16A » -> « Ligne 16A » ; « TAF TAF » reste tel quel."""
     texte = str(ligne).strip()
     return f"Ligne {texte}" if texte[:1].isdigit() else texte
+
+
+def noms_arrets_ddd(chemin: Path = NOMS_ARRETS) -> dict[str, str]:
+    """Nom officiel exact -> nom affiché ; vide sans fichier."""
+    if not Path(chemin).exists():
+        return {}
+    return {
+        r["nom_officiel"].strip(): r["nom_affiche"].strip()
+        for r in _lire(chemin)
+        if (r.get("nom_officiel") or "").strip() and (r.get("nom_affiche") or "").strip()
+    }
 
 
 def sans_terminus(nom: object) -> str:
@@ -233,8 +248,13 @@ def rangees_ddd_officielles(
     if not Path(chemin).exists():
         return []
     ecartees = lignes_officiel_exclues(exclues)
+    renommes = noms_arrets_ddd()
     rangees = [
-        {**rangee, "ligne": nom_ligne_ddd(rangee["ligne"]), "arret": sans_terminus(rangee["arret"])}
+        {
+            **rangee,
+            "ligne": nom_ligne_ddd(rangee["ligne"]),
+            "arret": renommes.get(rangee["arret"].strip()) or sans_terminus(rangee["arret"]),
+        }
         for rangee in _lire(chemin)
     ]
     rangees = _appliquer_itineraires_revus(rangees, revus, arrets_geo)

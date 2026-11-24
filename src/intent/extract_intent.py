@@ -1339,7 +1339,9 @@ def _repli_local(transcription: str, raison: str) -> dict:
     # on ne l'écrit jamais telle quelle dans les logs. Le type d'échec suffit pour
     # savoir si l'API a expiré, refusé la clé ou renvoyé du JSON illisible.
     print(f"[LLM] échec {raison}, repli sur l'extraction locale", flush=True)
-    resultat = extract_local(transcription)
+    # Lot T2 : la cause du repli voyage avec le résultat. L'app n'affiche le
+    # bandeau « API NVIDIA indisponible » que si un vrai appel a échoué.
+    resultat = {**extract_local(transcription), "repli": raison}
     if resultat.get("depart") and resultat.get("arrivee"):
         return resultat
     return {**resultat, "erreur": raison}

@@ -738,6 +738,47 @@ def _duree_deux_etapes(premiere: dict, seconde: dict, etape: str) -> str:
     )
 
 
+def _transition_etapes(seconde: dict, arrivee: str) -> str:
+    """Entre les deux étapes, la phrase de Cheikh (locuteur natif), puis le français.
+
+    « Soo paree, nga jël bus 23, moo lay yóbbu ba Parcelles. » Seulement si
+    l'étape 2 a un bus direct : avec un changement, le premier bus ne mène pas
+    à l'arrivée, et ses cartes disent déjà où changer. Texte seulement : la
+    voix attend « Soo paree, » (data/voix_a_generer_transition.csv).
+    """
+    lignes = seconde.get("lignes") or []
+    correspondances = seconde.get("correspondances") or []
+    trajets_2 = seconde.get("trajets_2") or []
+    if lignes:
+        premier_bus, direct = lignes[0], True
+    elif correspondances:
+        premier_bus, direct = correspondances[0]["etape_1"], False
+    elif trajets_2 and trajets_2[0].get("etapes"):
+        premier_bus, direct = trajets_2[0]["etapes"][0], False
+    else:
+        return ""
+    numero = re.sub(r"^Ligne\s*", "", str(premier_bus.get("ligne", ""))).strip()
+    if not numero:
+        return ""
+    if direct:
+        wolof = f"Soo paree, nga jël bus {numero}, moo lay yóbbu ba {arrivee}."
+        francais = f"Quand tu as fini, prends le bus {numero}, il t'amène jusqu'à {arrivee}."
+    else:
+        # Avec des changements, le premier bus ne mène pas à l'arrivée : on garde
+        # le début de la phrase de Cheikh, sans inventer de wolof pour la suite.
+        wolof = f"Soo paree, nga jël bus {numero}."
+        francais = (
+            f"Quand tu as fini, prends le bus {numero}, puis suis les changements "
+            f"de l'étape 2 jusqu'à {arrivee}."
+        )
+    return (
+        "<div class='transition-etapes' style='margin:10px 0;padding:10px 14px;"
+        "border:1.5px solid #D3DED7;border-radius:12px;background:#F6F9F7;'>"
+        f"<div style='color:#11251A;font-size:16px;font-weight:750;'>🔁 {_echapper(wolof)}</div>"
+        f"<div style='color:#46594D;font-size:14px;margin-top:4px;'>{_echapper(francais)}</div></div>"
+    )
+
+
 def _reponse_etapes(
     phrase: str, etapes: dict, compagnie: str, modele_asr: str, duree_asr: float
 ) -> tuple:
@@ -765,6 +806,7 @@ def _reponse_etapes(
         note_voix
         + titre_section(f"Étape 1 : {depart} → {etape}")
         + _carte(premiere, depart, etape)
+        + _transition_etapes(seconde, arrivee)
         + titre_section(f"Étape 2 : {etape} → {arrivee}")
         + _carte(seconde, etape, arrivee)
         + _duree_deux_etapes(premiere, seconde, etape)
@@ -782,7 +824,8 @@ def _reponse_etapes(
         f"{depart} → {etape} → {arrivee}",
         carte,
         _ecrire_voix(voix),
-        _mention({"source": "local"}, modele_asr),
+        # Le trajet avec étape n'appelle pas le LLM : aucun bandeau de secours.
+        _mention({"source": "etapes"}, modele_asr),
     ), trouve
 
 
@@ -1304,9 +1347,15 @@ def _une_carte(
         )
     arrets = _bloc_arrets(match)
     # Les terminus de la ligne, en petit : le parcours réel du bus.
+    # Lot T2 : une ligne en boucle (DDD 18, 20) part et revient au même
+    # terminus : « Ligne : boucle depuis X » plutôt que « X → X ».
+    if str(match["depart"]).strip() == str(match["arrivee"]).strip():
+        parcours = f"boucle depuis {_echapper(match['depart'])}"
+    else:
+        parcours = f"{_echapper(match['depart'])} → {_echapper(match['arrivee'])}"
     ligne = (
         f"<div style='color:#6B7A72;font-size:13px;margin-top:6px;'>"
-        f"Ligne : {_echapper(match['depart'])} → {_echapper(match['arrivee'])}</div>"
+        f"Ligne : {parcours}</div>"
     )
     duree = (
         f"<span style='color:#0B6B37;font-weight:700;'>"
@@ -1591,12 +1640,20 @@ def _carte(
     )
 
 
+REPLI_PLAFOND = "plafond_app"
+
+
 def _mention(intent: dict, modele_asr: str = "") -> str:
     """Notes sous la réponse : modèle de transcription utilisé, extraction de secours."""
     notes = []
     if modele_asr:
         notes.append(f"_Transcription : {_echapper(modele_asr)}_")
-    if intent.get("source") == "local":
+    # Lot T2 : seulement après un vrai échec d'appel NVIDIA (clé, délai, quota,
+    # réponse illisible). Pas pour le trajet avec étape, qui n'appelle pas le
+    # LLM, ni pour nos propres plafonds (« plafond_app ») : vu en ligne sur
+    # « maa ngi Medina dama bëgg jart jéppal ba noppi dem Parcelles » alors que
+    # les journaux disaient « [LLM] ok » et « erreur=- ».
+    if intent.get("source") == "local" and intent.get("repli") and intent["repli"] != REPLI_PLAFOND:
         notes.append(
             "> ⚠️ **Extraction de secours (sans LLM)** — l'API NVIDIA était "
             "indisponible, la détection a été faite sur place."
@@ -1771,7 +1828,7 @@ def _pipeline(
         intent = (
             extract_intent(phrase, client=_client_llm())
             if _llm_autorise()
-            else _repli_local(phrase, "plafond_app")
+            else _repli_local(phrase, REPLI_PLAFOND)
         )
     depart, arrivee = intent.get("depart") or "", intent.get("arrivee") or ""
     _noter(depart=depart, arrivee=arrivee)

@@ -10211,6 +10211,119 @@ def test_lot_t1_etapes_quartiers() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_t2_finitions_etapes() -> tuple[int, int]:
+    """Lot T2 : phrase de transition, alias du premier essai, boucles, « Des Parcelles ».
+
+    Testé en ligne par Cheikh (locuteur natif). Aucun réseau, aucune voix générée.
+    """
+    import contextlib
+    import csv as _csv
+    import io
+    import os
+    import re
+
+    from intent.extract_intent import extraire_etapes
+    from matching.itineraires_app import noms_arrets_ddd, rangees_ddd_officielles
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot T2 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_t2")
+    app.MATCHER = _matcher_hors_ligne()
+    app._client_llm = lambda: _ClientQuiLeve(lambda: TimeoutError("ne doit pas être appelé"))
+
+    def pipeline(phrase: str):
+        with contextlib.redirect_stdout(io.StringIO()):
+            return app._pipeline(phrase, "", 0.0)
+
+    # 2. Alias du premier essai : Dëppal, diar, la noppi.
+    essai = "maa ngi Dëppal dama bëgg diar Medina la noppi dem Parcelles"
+    etapes = extraire_etapes(essai)
+    verifie("premier essai : Étape 1 Dieuppeul -> Médina, Étape 2 Médina -> Parcelles",
+            etapes == {"depart": "Dieuppeul", "etape": "Médina", "arrivee": "Parcelles"}, etapes)
+    for forme in ("dëppal", "deppal", "jéppal", "jeppal", "dieppel", "dieuppel"):
+        etapes = extraire_etapes(f"maa ngi {forme} dama bëgg jaar Medina ba noppi dem Parcelles")
+        verifie(f"alias « {forme} » -> Dieuppeul", etapes is not None and etapes["depart"] == "Dieuppeul", etapes)
+    for mot in ("diar", "jart", "djar"):
+        etapes = extraire_etapes(f"maa ngi Dieuppeul dama bëgg {mot} Medina dem Parcelles")
+        verifie(f"« {mot} » = jaar (passer par)", etapes is not None and etapes["etape"] == "Médina", etapes)
+    verifie("« la noppi » = ba noppi",
+            extraire_etapes("maa ngi Dieuppeul dama bëgg dem Medina la noppi dem Parcelles") is not None)
+
+    # 1. Phrase de transition entre les deux étapes, wolof puis français.
+    quint, _ = pipeline(essai)
+    verifie("transition (bus direct) : « Soo paree, nga jël bus N, moo lay yóbbu ba Parcelles »",
+            re.search(r"🔁 Soo paree, nga jël bus \w+, moo lay yóbbu ba Parcelles\.", quint[2]) is not None
+            and "Quand tu as fini, prends le bus" in quint[2]
+            and quint[2].index("Étape 1") < quint[2].index("Soo paree") < quint[2].index("Étape 2"),
+            quint[2][:300])
+    quint, _ = pipeline("Maa ngi Médina, dama bëgg jaar Dieppeul, ba noppi dem Parcelles.")
+    verifie("transition (avec changements) : début de la phrase, sans wolof inventé",
+            re.search(r"🔁 Soo paree, nga jël bus \w+\.<", quint[2]) is not None
+            and "moo lay yóbbu ba" not in quint[2].split("Soo paree", 1)[1].split("</div>", 1)[0]
+            and "puis suis les changements" in quint[2], quint[2][:300])
+    verifie("transition : rien si l'étape 2 n'a aucun bus",
+            app._transition_etapes({"lignes": [], "correspondances": [], "trajets_2": []}, "X") == "")
+    with open(RACINE / "data" / "voix_a_generer_transition.csv", encoding="utf-8", newline="") as fichier:
+        voix = list(_csv.DictReader(fichier))
+    verifie("voix de la transition : morceaux manquants listés, rien de généré",
+            {r["fichier_wav"] for r in voix} >= {"soo_paree.wav", "soo_paree_nga_jel.wav"}
+            and all(not (RACINE / "data" / d / "soo_paree.wav").exists()
+                    for d in ("tts_cache_oolel", "tts_cache_ajouts", "tts_cache"))
+            and any(r["fichier_wav"] == "moo_lay_yobbu_ba.wav" and r["statut"] == "existe" for r in voix),
+            [r["fichier_wav"] for r in voix])
+
+    # 3. Lignes en boucle.
+    carte = app._une_carte({"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 20", "depart": "Dieuppeul",
+                            "arrivee": "Dieuppeul", "monte_a": "Médina", "descend_a": "Dieuppeul"})
+    verifie("boucle : « Ligne : boucle depuis Dieuppeul »",
+            "Ligne : boucle depuis Dieuppeul" in carte and "Dieuppeul → Dieuppeul" not in carte)
+    carte = app._une_carte({"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 23", "depart": "Palais 2",
+                            "arrivee": "Parcelles Assainies", "monte_a": "Médina", "descend_a": "Palais 2"})
+    verifie("ligne ordinaire : « X → Y » inchangé", "Ligne : Palais 2 → Parcelles Assainies" in carte)
+
+    # 4. « Des Parcelles » : le terminus des Parcelles Assainies (DDD 23).
+    verifie("nouveau fichier : « Terminus des Parcelles » -> « Parcelles Assainies »",
+            noms_arrets_ddd().get("Terminus des Parcelles") == "Parcelles Assainies")
+    ligne_23 = [r["arret"] for r in sorted((r for r in rangees_ddd_officielles() if r["ligne"] == "Ligne 23"),
+                                           key=lambda r: int(r["ordre"]))]
+    verifie("DDD 23 : commence à « Parcelles Assainies », plus jamais « Des Parcelles »",
+            ligne_23[0] == "Parcelles Assainies" and "Des Parcelles" not in ligne_23, ligne_23[:2])
+
+    # 6. Faux bandeau « API NVIDIA indisponible » : vu en ligne sur un trajet
+    #    avec étape alors que les journaux disaient « [LLM] ok » et « erreur=- ».
+    bandeau = "Extraction de secours (sans LLM)"
+    quint, trouve = pipeline("maa ngi Medina dama bëgg jart jéppal ba noppi dem Parcelles")
+    verifie("trajet avec étape : jamais le bandeau « API NVIDIA indisponible »",
+            "Étape 1 : Médina → Dieuppeul" in quint[2] and bandeau not in quint[4], quint[4])
+    verifie("bandeau seulement après un vrai échec d'appel NVIDIA",
+            bandeau in app._mention({"source": "local", "repli": "modèle=x statut=None type=timeout"})
+            and bandeau not in app._mention({"source": "local", "repli": app.REPLI_PLAFOND})
+            and bandeau not in app._mention({"source": "local"})
+            and bandeau not in app._mention({"source": "etapes"}))
+    app._client_llm = lambda: _ClientQuiLeve(lambda: TimeoutError("délai dépassé"))
+    quint, _ = pipeline("dama bëgg dem Palais")
+    verifie("vrai délai NVIDIA dépassé : le bandeau s'affiche", bandeau in quint[4], quint[4])
+    autorise = app._llm_autorise
+    app._llm_autorise = lambda: False
+    try:
+        quint, _ = pipeline("dama bëgg dem Palais")
+    finally:
+        app._llm_autorise = autorise
+    verifie("nos propres plafonds : pas de faux « API NVIDIA indisponible »", bandeau not in quint[4], quint[4])
+
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -10284,6 +10397,7 @@ if __name__ == "__main__":
         echecs_c7, total_c7 = test_lot_c7_accueil()
         echecs_g0, total_g0 = test_lot_g0_garde_fou()
         echecs_t1, total_t1 = test_lot_t1_etapes_quartiers()
+        echecs_t2, total_t2 = test_lot_t2_finitions_etapes()
         echecs = (
             test_local()
             + echecs_partage
@@ -10347,6 +10461,7 @@ if __name__ == "__main__":
             + echecs_c7
             + echecs_g0
             + echecs_t1
+            + echecs_t2
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -10411,6 +10526,7 @@ if __name__ == "__main__":
             + total_c7
             + total_g0
             + total_t1
+            + total_t2
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)
