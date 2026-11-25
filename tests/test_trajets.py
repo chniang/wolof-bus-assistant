@@ -10406,6 +10406,71 @@ def test_lignes_en_boucle() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_t3_etape_sans_jaar() -> tuple[int, int]:
+    """Lot T3 : « su ma fa jógee … ma dem Y » annonce l'étape, même sans « jaar ».
+
+    Test réel sur téléphone de Cheikh : « dama nekk Medina dama bëgg jare
+    jéppal su ma fa diuge ma dem Parcelles » donnait un trajet direct Médina ->
+    Parcelles. Aucun réseau.
+    """
+    import contextlib
+    import io
+    import os
+    import re
+
+    from intent.extract_intent import extraire_etapes
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot T3 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    attendu = {"depart": "Médina", "etape": "Dieuppeul", "arrivee": "Parcelles"}
+    reelle = "dama nekk Medina dama bëgg jare jéppal su ma fa diuge ma dem Parcelles"
+    verifie("transcription réelle : Médina -> Dieuppeul -> Parcelles",
+            extraire_etapes(reelle) == attendu, extraire_etapes(reelle))
+
+    # « jare », « jaare », « diar » = jaar (passer par).
+    for mot in ("jare", "jaare", "diar"):
+        etapes = extraire_etapes(f"maa ngi Médina dama bëgg {mot} Dieuppeul dem Parcelles")
+        verifie(f"« {mot} » = jaar", etapes == attendu, etapes)
+
+    # Formes de « su ma fa jógee », sans aucun « jaar ».
+    for forme in ("jóge", "jógee", "joge", "djoge", "diuge", "diougué", "dioge"):
+        phrase = f"maa ngi Médina dama dem Dieuppeul su ma fa {forme} ma dem Parcelles"
+        verifie(f"« su ma fa {forme} » sans jaar : étape Dieuppeul puis Parcelles",
+                extraire_etapes(phrase) == attendu, extraire_etapes(phrase))
+
+    # Dans l'app : deux étapes, pas de trajet direct Médina -> Parcelles.
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_t3")
+    app.MATCHER = _matcher_hors_ligne()
+    app._client_llm = lambda: _ClientQuiLeve(lambda: TimeoutError("ne doit pas être appelé"))
+    with contextlib.redirect_stdout(io.StringIO()):
+        quint, _ = app._pipeline(reelle, "", 0.0)
+    verifie("app : « Étape 1 : Médina → Dieuppeul » puis « Étape 2 : Dieuppeul → Parcelles »",
+            re.findall(r"Étape (\d) : ([^<]+)", quint[2])[:2]
+            == [("1", "Médina → Dieuppeul"), ("2", "Dieuppeul → Parcelles")]
+            and quint[1] == "Médina → Dieuppeul → Parcelles", (quint[1], quint[2][:200]))
+
+    # Aucun trajet direct ne devient un trajet avec étape.
+    directs = [phrase for phrase, _ in TRAJETS] + [phrase for phrase, *_ in TRAJETS_COMPAGNIE] + [
+        "Ban bus moy diougué Keur Mbaye Fall pour dém Rufisque",
+        "su ma jóge Ouakam dama dem Palais",
+        "Maa ngi Ouakam ak Colobane, bëgg naa dem Pikine",
+        "maa ngi Médina su ma fa jógee ma dem Parcelles",
+    ]
+    devenus = [p for p in directs if extraire_etapes(p) is not None]
+    verifie(f"{len(directs)} trajets directs : aucun ne devient un trajet avec étape", not devenus, devenus)
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -10481,6 +10546,7 @@ if __name__ == "__main__":
         echecs_t1, total_t1 = test_lot_t1_etapes_quartiers()
         echecs_t2e, total_t2e = test_lot_t2_finitions_etapes()
         echecs_boucles, total_boucles = test_lignes_en_boucle()
+        echecs_t3, total_t3 = test_lot_t3_etape_sans_jaar()
         echecs = (
             test_local()
             + echecs_partage
@@ -10546,6 +10612,7 @@ if __name__ == "__main__":
             + echecs_t1
             + echecs_t2e
             + echecs_boucles
+            + echecs_t3
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -10612,6 +10679,7 @@ if __name__ == "__main__":
             + total_t1
             + total_t2e
             + total_boucles
+            + total_t3
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

@@ -867,6 +867,8 @@ MOTS_DE_LA_PHRASE = {
     # Lot T1 : « waaye » (mais) donnait « medina waaye » -> Gadaye ; mots d'étape.
     "waaye", "jaar", "noppi", "pare", "guinaaw", "ginnaaw", "lolou", "loolu", "apres",
     "ensuite", "souma", "soo", "jugee", "jogee", "den",
+    # Graphies de « jóge » (repartir) vues sur téléphone, jamais des lieux.
+    "diuge", "dioge", "djoge",
 }
 # Premiers mots de nombreux arrêts : seuls, ils ne désignent aucun lieu
 # (« marché liberté cinq » ne doit pas devenir « Marché aux Poissons »). Un
@@ -1273,9 +1275,15 @@ def extract_local(phrase: str) -> dict:
 # Cheikh (locuteur natif), tels que la phrase normalisée les écrit (« jóge »
 # et « diogué » y deviennent « diougue »).
 MOT_PASSER_PAR = re.compile(r"\bjaar\b")
+# « su ma fa jógee » (quand j'en repars) et ses graphies de transcription :
+# « jóge », « joge », « diougué » deviennent « diougue » à la normalisation ;
+# « jógee » devient « jogee » ; « diuge », « dioge », « djoge » restent tels
+# quels (test réel sur téléphone : « … jare jéppal su ma fa diuge ma dem
+# Parcelles »).
+_VERBE_REPARTIR = r"(?:diougue|jugee|jogee|diuge|dioge|djoge)"
 MOTS_ENSUITE = re.compile(
     r"\b(?:ba noppi|ba pare|(?:souma|soo ma|su ma) pare"
-    r"|(?:souma|soo ma|su ma) fa (?:diougue|jugee|jogee)|(?:diougue|jugee|jogee) fa"
+    rf"|(?:souma|soo ma|su ma) fa {_VERBE_REPARTIR}|{_VERBE_REPARTIR} fa"
     r"|(?:guinaaw|ginnaaw) (?:lolou|loolu)|(?:si|ci) (?:guinaaw|ginnaaw)|apres|ensuite)\b"
 )
 
