@@ -27,6 +27,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from dataclasses import dataclass
+from difflib import SequenceMatcher
 
 MESSAGE = "Je n'ai pas bien entendu. Redis ton trajet plus près du micro, ou utilise l'onglet Écrire."
 
@@ -36,6 +37,8 @@ REPETITIONS_GROUPE = 3
 MOTS_MIN_DIVERSITE = 8
 DIVERSITE_MIN = 0.45
 PART_ETRANGERE_MAX = 0.5
+# Après une boucle retirée : deux vrais mots au moins (ou un lieu) pour garder le reste.
+MOTS_PLEINS_MIN = 2
 
 # Mots-outils d'autres langues vus dans les transcriptions inventées par
 # Whisper (indonésien/malais, anglais). Aucun n'est un mot wolof ou français
@@ -83,10 +86,11 @@ def _mots(texte: str) -> list[str]:
     return re.findall(r"[^\W_]+", texte.lower())
 
 
-def _retirer_boucles(mots: list[str]) -> tuple[list[str], bool]:
-    """Les mots hors boucles exactes, et vrai si une boucle a été retirée."""
+def _retirer_boucles(mots: list[str]) -> tuple[list[str], bool, set[str]]:
+    """Les mots hors boucles exactes, vrai si une boucle a été retirée, et ses mots."""
     gardes: list[str] = []
     retire = False
+    en_boucle: set[str] = set()
     i = 0
     while i < len(mots):
         boucle = False
@@ -104,6 +108,7 @@ def _retirer_boucles(mots: list[str]) -> tuple[list[str], bool]:
                 reste = mots[fin:fin + taille]
                 if reste and groupe[:len(reste)] == reste:
                     fin += len(reste)
+                en_boucle.update(groupe)
                 i, boucle, retire = fin, True, True
                 break
         if boucle:
@@ -114,7 +119,15 @@ def _retirer_boucles(mots: list[str]) -> tuple[list[str], bool]:
         else:
             gardes.append(mot)
         i += 1
-    return gardes, retire
+    return gardes, retire, en_boucle
+
+
+def _variante(mot: str, modeles: set[str]) -> bool:
+    """« damad », « damaa », « da » : un bout ou une variante d'un mot de la boucle."""
+    return any(
+        mot.startswith(m) or m.startswith(mot) or SequenceMatcher(None, mot, m).ratio() >= 0.75
+        for m in modeles
+    )
 
 
 def _etranger(mot: str) -> bool:
@@ -144,13 +157,20 @@ def examiner(transcription: str | None) -> Verdict:
     if not mots:
         return Verdict(True, "", "vide")
 
-    utiles, retire = _retirer_boucles(mots)
+    utiles, retire, en_boucle = _retirer_boucles(mots)
     if retire:
         if not utiles:
             return Verdict(True, "", "boucle")
         reste = " ".join(utiles)
-        pleins = [m for m in utiles if _sans_accents(m) not in MOTS_OUTILS and len(m) >= 4]
-        if not (pleins or _porte_un_lieu(reste)):
+        # Lot G1 : « dama bëgg dama dama … damad » (Whisper CPU, test du 25/11)
+        # passait : « damad », bout de la boucle collé à la fin, comptait comme
+        # un mot plein. Il faut un lieu, ou deux vrais mots qui ne sont pas des
+        # variantes de la boucle (« dama nég wakaaral mbindé » : wakaaral, mbindé).
+        pleins = [
+            m for m in utiles
+            if _sans_accents(m) not in MOTS_OUTILS and len(m) >= 4 and not _variante(m, en_boucle)
+        ]
+        if len(pleins) < MOTS_PLEINS_MIN and not _porte_un_lieu(reste):
             return Verdict(True, "", "boucle")
         if sum(_etranger(m) for m in utiles) / len(utiles) >= PART_ETRANGERE_MAX:
             return Verdict(True, "", "langue")

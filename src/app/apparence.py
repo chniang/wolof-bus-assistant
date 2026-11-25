@@ -695,6 +695,9 @@ PROMESSE = "Gratuit · sans inscription · en wolof"
 # Lot G0 : pendant la transcription (jusqu'à 30 s sur le CPU de secours), la
 # même ligne dit qu'on attend, puis reprend la promesse.
 ATTENTE = "⏳ Je t'écoute… (jusqu'à 30 secondes)"
+# Lot G1 : si aucune réponse n'arrive, le globe le dit au lieu de revenir en silence.
+SANS_REPONSE = "Pas de réponse. Réessaie, ou utilise l'onglet Écrire."
+DELAI_SANS_REPONSE_MS = 60000
 TEXTES_GLOBE = {
     "repos": "Bës te wax",
     "ecoute": "Maa ngi lay déglu…",
@@ -837,6 +840,7 @@ const etiquette = element.querySelector('.globe-etat');
 const promesse = element.querySelector('.globe-promesse');
 const PROMESSE = __PROMESSE__;
 const ATTENTE = __ATTENTE__;
+const SANS_REPONSE = __SANS_REPONSE__;
 const toile = element.querySelector('.globe-anneau');
 const TEXTES = __TEXTES__;
 const ARIA = __ARIA__;
@@ -937,7 +941,12 @@ const suivi = setInterval(function () {
   if (etat === 'traitement') {
     // Fin : le gestionnaire a vidé le micro (bouton natif revenu) ou la
     // réponse a changé ; au pire, après 60 s.
-    if ((pret && ecoule > 1500) || reponse() !== empreinte || ecoule > 60000) { poser('repos'); }
+    if ((pret && ecoule > 1500) || reponse() !== empreinte) { poser('repos'); }
+    else if (ecoule > __DELAI__) {
+      // Lot G1 : rien n'est arrivé. Jamais un retour silencieux à « Bës te wax ».
+      poser('repos');
+      if (promesse) { promesse.textContent = SANS_REPONSE; }
+    }
   }
 }, 250);
 
@@ -1025,6 +1034,8 @@ def globe_js() -> str:
         .replace("__ARIA__", json.dumps(ARIA_GLOBE, ensure_ascii=False))
         .replace("__PROMESSE__", json.dumps(PROMESSE, ensure_ascii=False))
         .replace("__ATTENTE__", json.dumps(ATTENTE, ensure_ascii=False))
+        .replace("__SANS_REPONSE__", json.dumps(SANS_REPONSE, ensure_ascii=False))
+        .replace("__DELAI__", str(DELAI_SANS_REPONSE_MS))
     )
 
 

@@ -6447,24 +6447,22 @@ def test_lot_4() -> tuple[int, int]:
     # modèle dans transcrire_wolof (règle ZeroGPU), durée explicite.
     source_app = (RACINE / "app.py").read_text(encoding="utf-8")
     corps = source_app.split("def transcrire_wolof", 1)[1].split("\ndef ", 1)[0]
-    # Depuis le 20/11 : durée fixe de 20 s (test de la panne No CUDA GPUs) ;
-    # _duree_gpu reste dans le code, testée ci-dessous, mais n'est plus branchée.
-    verifie("ZeroGPU : durée fixe de 20 s sur transcrire_wolof",
-            "# « No CUDA GPUs are available » après 1 ou 2 appels (20/11).\n"
-            "@spaces.GPU(duration=20)\ndef transcrire_wolof" in source_app
-            and "duration=_duree_gpu" not in source_app)
+    # Lot G1 : de nouveau une durée calculée selon l'audio (le quota d'un
+    # visiteur non connecté est de 2 min de GPU par jour).
+    verifie("ZeroGPU : durée calculée sur transcrire_wolof",
+            "@spaces.GPU(duration=_duree_gpu)\ndef transcrire_wolof" in source_app
+            and "duration=20" not in source_app)
     import contextlib
     import io
 
     import numpy as np
 
-    # Une phrase courte réserve 15 à 20 s ; un vocal de collecte (20 s) 25 s ;
-    # jamais plus de 30 s, même au-delà de la durée maximale acceptée.
+    # 8 s + 0,5 s par seconde d'audio, arrondi au-dessus, jamais plus de 20 s.
     durees = {s: app._duree_gpu(np.zeros(int(s * 16_000), dtype=np.float32))
               for s in (0.5, 4, 10, 20, 30, 60)}
     verifie("ZeroGPU : durée réservée selon l'audio",
-            durees == {0.5: 16, 4: 17, 10: 20, 20: 25, 30: 30, 60: 30}, durees)
-    verifie("ZeroGPU : audio inattendu, durée maximale", app._duree_gpu(None) == 30)
+            durees == {0.5: 9, 4: 10, 10: 13, 20: 18, 30: 20, 60: 20}, durees)
+    verifie("ZeroGPU : audio inattendu, durée maximale", app._duree_gpu(None) == 20)
 
     # Quota ZeroGPU dépassé : le décorateur lève avant même d'appeler la
     # fonction (spaces lève une gr.Error). L'app doit passer au whisper CPU et
@@ -8503,11 +8501,10 @@ def test_lot_20_11() -> tuple[int, int]:
     verifie("spaces jamais épinglé (ZeroGPU impose sa version)",
             not any(re.match(r"(?i)^spaces\s*[<>=!~]", p) for p in paquets), paquets)
     source_app = (RACINE / "app.py").read_text(encoding="utf-8")
-    verifie("durée GPU fixe de 20 s, _duree_gpu gardée mais débranchée",
-            "@spaces.GPU(duration=20)\ndef transcrire_wolof" in source_app
-            and "def _duree_gpu" in source_app
-            and "Désactivée le 20/11 : test de la panne No CUDA GPUs" in source_app
-            and "duration=_duree_gpu" not in source_app)
+    # Lot G1 : la durée fixe de 20 s (test du 20/11) laisse place à une durée calculée.
+    verifie("durée GPU calculée selon l'audio (lot G1)",
+            "@spaces.GPU(duration=_duree_gpu)\ndef transcrire_wolof" in source_app
+            and "def _duree_gpu" in source_app)
 
     # 2. Yeumbeul sous ses formes parlées, phrases réelles des testeurs.
     reelles = (
@@ -8734,8 +8731,8 @@ def test_zerogpu_cuda() -> tuple[int, int]:
     verifie("transcrire_wolof : erreur -> str préfixé ERREUR_ASR",
             type(sortie_erreur) is str and sortie_erreur.startswith(app.ERREUR_ASR), sortie_erreur)
     source_app = (RACINE / "app.py").read_text(encoding="utf-8")
-    verifie("durée GPU toujours fixe à 20 s",
-            "@spaces.GPU(duration=20)\ndef transcrire_wolof" in source_app)
+    verifie("durée GPU calculée selon l'audio (lot G1)",
+            "@spaces.GPU(duration=_duree_gpu)\ndef transcrire_wolof" in source_app)
 
     return echecs, total
 
@@ -10471,6 +10468,141 @@ def test_lot_t3_etape_sans_jaar() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_g1_gpu_garde_fou() -> tuple[int, int]:
+    """Lot G1 : durée GPU courte, boucle « dama dama… » bloquée, jamais de retour silencieux.
+
+    Test réel du 25/11 sur la version 66c75a6 : essai 1, « Successfully acquired a
+    GPU » puis plus rien ; essai 2, Whisper CPU, « dama bëgg dama dama … dama d »
+    non bloqué. Un visiteur non connecté n'a que 2 min de GPU par jour. Aucun réseau.
+    """
+    import contextlib
+    import io
+    import os
+
+    import numpy as np
+
+    from app import apparence
+    from asr.garde_fou import MESSAGE, examiner
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot G1 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_g1")
+    app.MATCHER = _matcher_hors_ligne()
+    app._client_llm = lambda: _ClientQuiLeve(lambda: TimeoutError("ne doit pas être appelé"))
+    message_html = MESSAGE.replace("'", "&#x27;")
+
+    # 2. La transcription de l'essai 2, et ses variantes de fin de boucle.
+    essai_2 = (
+        "dama bëgg dama dama dama dama dama dama dama dama dama dama dama d",
+        "dama bëgg dama dama dama dama dama dama dama dama dama dama damad",
+        "dama bëgg dama dama dama dama … dama d",
+    )
+    for phrase in essai_2:
+        verifie(f"essai 2 bloqué : « …{phrase[-22:]} »", examiner(phrase).declenche, examiner(phrase))
+    with contextlib.redirect_stdout(io.StringIO()):
+        quint, trouve = app._pipeline(essai_2[1], "Whisper wolof (CPU)", 30.0)
+    verifie("app : « Je n'ai pas bien entendu… », jamais la boucle à l'écran",
+            not trouve and message_html in quint[2] and "dama dama" not in " ".join(map(str, quint)),
+            quint[:3])
+    valide = "dama nekk Médina dama bëgg dem Parcelles"
+    verdict = examiner(valide)
+    verifie("phrase valide avec deux « dama » : passe", not verdict.declenche and verdict.texte == valide, verdict)
+    with contextlib.redirect_stdout(io.StringIO()):
+        quint, trouve = app._pipeline(valide, "", 0.0)
+    verifie("app : la phrase valide donne Médina -> Parcelles", trouve and quint[1] == "Médina → Parcelles", quint[1])
+    verifie("boucle en fin de phrase utile : toujours retirée (lot G0)",
+            examiner("dama nég wakaaral mbindé dina dina dina dina dina dina dina").texte == "dama nég wakaaral mbindé")
+
+    # 1. Durée GPU : 8 s + 0,5 s par seconde d'audio, plafonnée à 20 s.
+    def audio(secondes: float):
+        return np.zeros(int(secondes * app.SAMPLE_RATE), dtype=np.float32)
+
+    durees = {s: app._duree_gpu(audio(s)) for s in (3, 10, 30)}
+    verifie("durée GPU : 3 s -> 10 s, 10 s -> 13 s, 30 s -> 20 s (plafond)",
+            durees == {3: 10, 10: 13, 30: 20}, durees)
+    verifie("quota de 2 min : 6 à 12 essais par jour",
+            120 // durees[30] >= 6 and 120 // durees[3] >= 10, durees)
+    source_app = (RACINE / "app.py").read_text(encoding="utf-8")
+    verifie("le seul @spaces.GPU réserve la durée calculée",
+            source_app.count("@spaces.GPU(") == 1 and "@spaces.GPU(duration=_duree_gpu)" in source_app)
+    transcrire_origine = app.transcrire_wolof
+    app.transcrire_wolof = lambda son: "maa ngi Ouakam"
+    journal = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(journal):
+            app._transcrire_gpu(audio(3))
+    finally:
+        app.transcrire_wolof = transcrire_origine
+    verifie("journal : « [ASR] GPU demandé=10s audio=3.0s »",
+            "[ASR] GPU demandé=10s audio=3.0s" in journal.getvalue(), journal.getvalue())
+
+    # 3. Jamais de retour silencieux.
+    decoder, effacer = app._decoder_audio, app._effacer_audio_recu
+    premier, second = app._transcrire_premier, app._second_essai
+    app._decoder_audio = lambda chemin: audio(3)
+    app._effacer_audio_recu = lambda chemin: False
+
+    def lance(*args):
+        tampon = io.StringIO()
+        with contextlib.redirect_stdout(tampon):
+            sortie = app.trouver_le_bus(*args)
+        return sortie, tampon.getvalue()
+
+    try:
+        app._transcrire_premier = lambda son: ("", "Kiriku-Wolof-ASR (GPU)", 1.0)
+        app._second_essai = lambda son, libelle: ("", "Whisper wolof (CPU)", 2.0)
+        sortie, journal = lance("faux.wav", "", "")
+        verifie("résultat vide côté GPU et CPU : « Je n'ai pas bien entendu… » et la cause au journal",
+                message_html in sortie[2] and "[ASR] transcription vide" in journal, (sortie[2], journal))
+
+        def leve(*args):
+            raise RuntimeError("GPU task aborted")
+
+        app._transcrire_premier = leve
+        app._second_essai = leve
+        sortie, journal = lance("faux.wav", "", "")
+        verifie("exception côté GPU puis CPU : « Le service est chargé… » et la cause au journal",
+                sortie[2] == app.CARTE_TRANSCRIPTION_IMPOSSIBLE and app.MESSAGE_SERVICE_CHARGE in sortie[2]
+                and "[ASR] transcription impossible (RuntimeError" in journal, (sortie[2], journal))
+
+        app._transcrire_premier, app._second_essai = premier, second
+        app._decoder_audio = lambda chemin: audio(0.1)
+        sortie, journal = lance("faux.wav", "", "")
+        verifie("audio trop court : message, jamais un écran vide",
+                message_html in sortie[2] and "[ASR] audio trop court" in journal, (sortie[2], journal))
+
+        pipeline = app._pipeline
+
+        def casse(*args, **kwargs):
+            raise KeyError("lignes")
+
+        app._pipeline = casse
+        sortie, journal = lance(None, "Maa ngi Ouakam, bëgg naa dem Palais", "")
+        app._pipeline = pipeline
+        verifie("exception après la transcription : « Le service est chargé… », jamais de retour silencieux",
+                sortie[2] == app.CARTE_SERVICE_CHARGE and "[trajet] erreur inattendue (KeyError" in journal,
+                (sortie[2], journal))
+    finally:
+        app._decoder_audio, app._effacer_audio_recu = decoder, effacer
+        app._transcrire_premier, app._second_essai = premier, second
+
+    js = apparence.globe_js()
+    verifie("globe : sans réponse au bout du délai, il le dit (« Pas de réponse… »)",
+            "Pas de réponse. Réessaie, ou utilise l'onglet Écrire." in js
+            and "promesse.textContent = SANS_REPONSE" in js and "ecoule > 60000" in js)
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -10547,6 +10679,7 @@ if __name__ == "__main__":
         echecs_t2e, total_t2e = test_lot_t2_finitions_etapes()
         echecs_boucles, total_boucles = test_lignes_en_boucle()
         echecs_t3, total_t3 = test_lot_t3_etape_sans_jaar()
+        echecs_g1, total_g1 = test_lot_g1_gpu_garde_fou()
         echecs = (
             test_local()
             + echecs_partage
@@ -10613,6 +10746,7 @@ if __name__ == "__main__":
             + echecs_t2e
             + echecs_boucles
             + echecs_t3
+            + echecs_g1
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -10680,6 +10814,7 @@ if __name__ == "__main__":
             + total_t2e
             + total_boucles
             + total_t3
+            + total_g1
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

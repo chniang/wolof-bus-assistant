@@ -346,7 +346,12 @@ MESSAGE_AUDIO_TROP_LONG = (
 MESSAGE_AUDIO_FORMAT = "Format audio non reconnu. Enregistre-toi avec le micro."
 # Le détail d'une erreur (chemins, commande ffmpeg, nom du modèle) reste au serveur.
 CARTE_AUDIO_ILLISIBLE = "### 🎤 Audio illisible\n\nRéessaie avec un nouvel enregistrement."
-CARTE_TRANSCRIPTION_IMPOSSIBLE = "### 🎤 Transcription impossible\n\nRéessaie dans un instant."
+# Lot G1 : l'usager voit toujours un trajet ou un message clair, jamais un
+# retour silencieux à l'état initial (test du 25/11 : « Successfully acquired a
+# GPU » puis plus rien).
+MESSAGE_SERVICE_CHARGE = "Le service est chargé, réessaie dans un instant ou utilise l'onglet Écrire."
+CARTE_TRANSCRIPTION_IMPOSSIBLE = f"### ⏳ {MESSAGE_SERVICE_CHARGE}"
+CARTE_SERVICE_CHARGE = f"### ⏳ {MESSAGE_SERVICE_CHARGE}"
 CARTE_TROP_DE_DEMANDES = (
     "### ⏳ Beaucoup de demandes\n\n"
     "Tu as fait beaucoup de demandes. Attends un peu avant de réessayer, merci."
@@ -465,19 +470,20 @@ def _decoder_audio(chemin_audio: str) -> np.ndarray:
     return son
 
 
-# Réservation ZeroGPU de la transcription. ZeroGPU refuse la carte quand le
-# quota restant du visiteur est inférieur à la durée DEMANDÉE, pas à celle
-# réellement consommée : demander 30 s pour une phrase de 4 s fait refuser des
-# visiteurs à qui il restait 20 s. On demande donc une base de 15 s plus une
-# demi-seconde par seconde d'audio, plafonnée à 30 s : une phrase courte (≤ 10 s)
-# réserve 15 à 20 s, un vocal de collecte de 20 s (COLLECTE_DUREE_MAX_S) en
-# réserve 25, et le plus long audio accepté (DUREE_MAX_AUDIO, 30 s) en réserve 30.
-DUREE_GPU_BASE_S = 15
-DUREE_GPU_MAX_S = 30
+# Réservation ZeroGPU de la transcription. ZeroGPU décompte du quota la durée
+# DEMANDÉE, et refuse la carte quand ce qui reste est inférieur à elle. Un
+# visiteur non connecté n'a que 2 min de GPU par jour (« ZeroGPUQuotaExceeded »
+# dans les journaux du 24/11) : avec 20 s fixes, 6 essais au plus, et moins
+# dès qu'une seconde chance redemande la carte. Lot G1 : 8 s + 0,5 s par seconde
+# d'audio, plafonné à 20 s. Une phrase de 3 s réserve 10 s, de 10 s 13 s, de
+# 30 s 20 s : 6 à 12 essais par jour. Kiriku est chargé au démarrage du module
+# (jamais dans la réservation) : la réservation ne couvre que le calcul, que
+# les 8 s de base laissent aussi au premier transfert des poids sur la carte.
+DUREE_GPU_BASE_S = 8
+DUREE_GPU_PAR_SECONDE = 0.5
+DUREE_GPU_MAX_S = 20
 
 
-# Désactivée le 20/11 : test de la panne No CUDA GPUs. transcrire_wolof réserve
-# 20 s fixes ; la fonction reste pour revenir en arrière.
 def _duree_gpu(audio: np.ndarray) -> int:
     """Durée ZeroGPU à réserver pour cet audio (mêmes arguments que transcrire_wolof)."""
     try:
@@ -485,17 +491,26 @@ def _duree_gpu(audio: np.ndarray) -> int:
     except Exception:
         # Audio inattendu : on réserve le maximum plutôt que de couper le calcul.
         return DUREE_GPU_MAX_S
-    return int(min(DUREE_GPU_MAX_S, DUREE_GPU_BASE_S + -(-secondes // 2)))
+    demandee = DUREE_GPU_BASE_S + DUREE_GPU_PAR_SECONDE * secondes
+    return int(min(DUREE_GPU_MAX_S, -(-demandee // 1)))
 
 
-# Durée fixe : on écarte la durée calculée (callable) comme cause possible de
-# « No CUDA GPUs are available » après 1 ou 2 appels (20/11).
-@spaces.GPU(duration=20)
+def _transcrire_gpu(audio: np.ndarray) -> str:
+    """Kiriku sur ZeroGPU, avec la durée demandée au journal (jamais l'audio)."""
+    try:
+        secondes = len(audio) / SAMPLE_RATE
+    except Exception:
+        secondes = 0.0
+    print(f"[ASR] GPU demandé={_duree_gpu(audio)}s audio={secondes:.1f}s", flush=True)
+    return transcrire_wolof(audio)
+
+
+@spaces.GPU(duration=_duree_gpu)
 def transcrire_wolof(audio: np.ndarray) -> str:
     """Transcrit avec Kiriku sur GPU — le seul endroit qui réserve le GPU.
 
     Le modèle est déjà chargé au démarrage du module (recommandation ZeroGPU) :
-    la réservation ne couvre que le calcul (20 s fixes). Kiriku ne se charge
+    la réservation ne couvre que le calcul (_duree_gpu). Kiriku ne se charge
     jamais ici. S'il est absent (pas de GPU au démarrage), on renvoie une phrase
     préfixée par ERREUR_ASR : l'appelant bascule sur le whisper CPU préchargé.
     """
@@ -535,7 +550,7 @@ def _transcrire_premier(audio: np.ndarray) -> tuple[str, str, float]:
     """
     debut = time.perf_counter()
     try:
-        phrase = transcrire_wolof(audio)
+        phrase = _transcrire_gpu(audio)
         if phrase.startswith(ERREUR_ASR):
             raise RuntimeError(phrase[len(ERREUR_ASR):])
         return phrase, "Kiriku-Wolof-ASR (GPU)", time.perf_counter() - debut
@@ -557,7 +572,7 @@ def _second_essai(audio: np.ndarray, libelle_premier: str) -> tuple[str, str, fl
     if "Kiriku" in libelle_premier:
         return _transcrire_cpu(audio), libelle_charge(), time.perf_counter() - debut
     try:
-        phrase = transcrire_wolof(audio)
+        phrase = _transcrire_gpu(audio)
         if phrase.startswith(ERREUR_ASR):
             raise RuntimeError(phrase[len(ERREUR_ASR):])
         return phrase, "Kiriku-Wolof-ASR (GPU)", time.perf_counter() - debut
@@ -1790,9 +1805,11 @@ def _pipeline(
         _noter(garde_fou=True)
         _journal(modele_asr, duree_asr, 0, f"garde_fou_{verdict.raison}")
         return (
-            phrase,
+            # Lot G1 : jamais la boucle à l'écran (« dama dama dama… ») ; la
+            # fiche de collecte, elle, garde la transcription brute.
             "",
-            f"### 🎙️ {_echapper(MESSAGE_GARDE_FOU)}",
+            "",
+            _carte_pas_entendu(),
             # Phrase déjà enregistrée qui redemande le trajet ; aucune synthèse.
             _ecrire_voix(voix_conversation(_CAPACITES.fichier)),
             _mention({}, modele_asr),
@@ -1984,8 +2001,10 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
         # Décodé, l'audio est en mémoire : le fichier de l'usager disparaît.
         _effacer_audio_recu(audio)
         if son is None or len(son) < SAMPLE_RATE * 0.3:
-            # Moins de 0,3 s : clic involontaire sur le micro, rien à chercher.
-            return vide
+            # Moins de 0,3 s : clic involontaire sur le micro, rien à chercher,
+            # mais on le dit au lieu de revenir en silence.
+            print("[ASR] audio trop court : rien à transcrire", flush=True)
+            return ("", "", _carte_pas_entendu(), None, "")
         # Hors collecte, il n'y a pas de trace : l'audio ne sort jamais de cette fonction.
         trace = _TRACE.get()
         if trace is not None:
@@ -2001,17 +2020,34 @@ def trouver_le_bus(audio: str | None, phrase_ecrite: str, compagnie_choix: str =
             print(f"[ASR] transcription impossible ({type(exc).__name__})", flush=True)
             return ("", "", CARTE_TRANSCRIPTION_IMPOSSIBLE, None, "")
         if not phrase:
-            return vide
-        quint, _ = _pipeline(
-            phrase, modele_asr, duree_asr, compagnie_choix, mode="voix"
-        )
-        return quint
+            # Kiriku et le whisper CPU n'ont rien entendu : on le dit.
+            print(f"[ASR] transcription vide ({modele_asr or 'modèle inconnu'})", flush=True)
+            return ("", "", _carte_pas_entendu(), None, _mention({}, modele_asr))
+        return _pipeline_protege(phrase, modele_asr, duree_asr, compagnie_choix, "voix")
 
     phrase = (phrase_ecrite or "").strip()[:TEXTE_MAX]
     if not phrase:
         return vide
-    quint, _ = _pipeline(phrase, "", 0.0, compagnie_choix, mode="texte")
-    return quint
+    return _pipeline_protege(phrase, "", 0.0, compagnie_choix, "texte")
+
+
+def _carte_pas_entendu() -> str:
+    return f"### 🎙️ {_echapper(MESSAGE_GARDE_FOU)}"
+
+
+def _pipeline_protege(phrase: str, modele_asr: str, duree_asr: float, compagnie: str, mode: str) -> tuple:
+    """_pipeline, sans jamais laisser une exception vider l'écran (lot G1).
+
+    Une exception non rattrapée faisait échouer l'événement Gradio : aucune
+    sortie, et le globe revenait à « Bës te wax » sans un mot. Le journal dit
+    la cause (le type d'erreur seulement, jamais son texte ni la phrase de l'usager).
+    """
+    try:
+        quint, _ = _pipeline(phrase, modele_asr, duree_asr, compagnie, mode=mode)
+        return quint
+    except Exception as exc:
+        print(f"[trajet] erreur inattendue ({type(exc).__name__})", flush=True)
+        return (phrase, "", CARTE_SERVICE_CHARGE, None, _mention({}, modele_asr))
 
 
 def _court(exc: Exception, longueur: int = 160) -> str:
