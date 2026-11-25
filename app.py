@@ -741,10 +741,12 @@ def _duree_deux_etapes(premiere: dict, seconde: dict, etape: str) -> str:
 def _transition_etapes(seconde: dict, arrivee: str) -> str:
     """Entre les deux étapes, la phrase wolof, puis le français en gris.
 
-    Décision de Cheikh (option A) : l'écran dit exactement ce que dira la voix,
+    Décision de Cheikh (option A) : l'écran dit la même phrase que la voix,
     faite du seul morceau à enregistrer « Soo paree, » suivi des WAV existants
-    (ligne « Jëlal biis bu … », moo_lay_yobbu_ba.wav, lieu) :
-    « Soo paree, jëlal biis bu 23, moo lay yóbbu ba Parcelles. » Avec des
+    (WAV de la ligne, moo_lay_yobbu_ba.wav, lieu) :
+    « Soo paree, jëlal bus bu 23, moo lay yóbbu ba Parcelles. » Règle du
+    projet : à l'écran on écrit « bus » ; l'orthographe phonétique de la voix
+    ne vit que dans les fichiers audio et data/voix_a_generer_transition.csv. Avec des
     changements à l'étape 2, le premier bus ne mène pas à l'arrivée : la phrase
     s'arrête au bus, et ses cartes disent où changer. Texte seulement pour
     l'instant : la voix attend « Soo paree, » (data/voix_a_generer_transition.csv).
@@ -764,12 +766,12 @@ def _transition_etapes(seconde: dict, arrivee: str) -> str:
     if not numero:
         return ""
     if direct:
-        wolof = f"Soo paree, jëlal biis bu {numero}, moo lay yóbbu ba {arrivee}."
+        wolof = f"Soo paree, jëlal bus bu {numero}, moo lay yóbbu ba {arrivee}."
         francais = f"Quand tu as fini, prends le bus {numero}, il t'amène jusqu'à {arrivee}."
     else:
         # Avec des changements, le premier bus ne mène pas à l'arrivée : la même
         # phrase s'arrête au bus, sans wolof inventé pour la suite.
-        wolof = f"Soo paree, jëlal biis bu {numero}."
+        wolof = f"Soo paree, jëlal bus bu {numero}."
         francais = (
             f"Quand tu as fini, prends le bus {numero}, puis suis les changements "
             f"de l'étape 2 jusqu'à {arrivee}."

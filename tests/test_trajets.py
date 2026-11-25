@@ -10261,15 +10261,18 @@ def test_lot_t2_finitions_etapes() -> tuple[int, int]:
 
     # 1. Phrase de transition entre les deux étapes, wolof puis français.
     quint, _ = pipeline(essai)
-    verifie("transition (bus direct) : « Soo paree, jëlal biis bu N, moo lay yóbbu ba Parcelles »",
-            re.search(r"🔁 Soo paree, jëlal biis bu \w+, moo lay yóbbu ba Parcelles\.", quint[2]) is not None
+    # Règle du projet : à l'écran « bus » ; « biis » n'est que l'orthographe de la voix.
+    verifie("transition (bus direct) : « Soo paree, jëlal bus bu N, moo lay yóbbu ba Parcelles »",
+            re.search(r"🔁 Soo paree, jëlal bus bu \w+, moo lay yóbbu ba Parcelles\.", quint[2]) is not None
             and "nga jël" not in quint[2]
+            and re.search(r"\bbiis\b", quint[2], re.IGNORECASE) is None
             and "Quand tu as fini, prends le bus" in quint[2]
             and quint[2].index("Étape 1") < quint[2].index("Soo paree") < quint[2].index("Étape 2"),
             quint[2][:300])
     quint, _ = pipeline("Maa ngi Médina, dama bëgg jaar Dieppeul, ba noppi dem Parcelles.")
     verifie("transition (avec changements) : la même phrase arrêtée au bus, sans wolof inventé",
-            re.search(r"🔁 Soo paree, jëlal biis bu \w+\.<", quint[2]) is not None
+            re.search(r"🔁 Soo paree, jëlal bus bu \w+\.<", quint[2]) is not None
+            and re.search(r"\bbiis\b", quint[2], re.IGNORECASE) is None
             and "moo lay yóbbu ba" not in quint[2].split("Soo paree", 1)[1].split("</div>", 1)[0]
             and "puis suis les changements" in quint[2], quint[2][:300])
     verifie("transition : rien si l'étape 2 n'a aucun bus",
