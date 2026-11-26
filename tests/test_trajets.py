@@ -10670,11 +10670,18 @@ def test_lot_t4_etapes_completes() -> tuple[int, int]:
             == [("Ligne 23", "Parcelles Assainies")] and not dieuppeul_parcelles["trajets_2"],
             [(l["ligne"], l["descend_a_reseau"]) for l in dieuppeul_parcelles["lignes"]])
 
-    # 1. Phrase de transition, à l'écran, sans « biis ».
-    verifie("transition (bus direct) : « Soo paree, jëlal bus bu 23, moo lay yóbbu ba Parcelles. »",
-            "🔁 Soo paree, jëlal bus bu 23, moo lay yóbbu ba Parcelles." in carte
-            and "Quand tu as fini, prends le bus 23, il t&#x27;amène jusqu&#x27;à Parcelles." in carte,
-            texte(carte)[:400])
+    # 1. Phrase de transition, à l'écran, sans « biis ». Lot T5 : la proposition
+    # en tête de l'étape 2 est désormais le changement par Rond Point Liberté 6.
+    verifie("transition : la proposition en tête de l'étape 2 (Dem Dikk 4 puis 23)",
+            "🔁 Soo paree, jëlal bus bu 4, wàcc ci Rond Point Liberté 6 ; jëlal bus bu 23 ba Parcelles." in carte
+            and "Quand tu as fini, prends le bus 4, descends à Rond Point Liberté 6 ; prends le bus 23 "
+            "jusqu&#x27;à Parcelles." in carte, texte(carte)[:400])
+    with contextlib.redirect_stdout(io.StringIO()):
+        colobane_malika = app._recherche("Colobane", "Malika", "")
+    direct = app._transition_etapes(colobane_malika, "Malika")
+    verifie("transition (bus direct) : « Soo paree, jëlal bus bu N, moo lay yóbbu ba Malika. »",
+            re.search(r"🔁 Soo paree, jëlal bus bu \w+, moo lay yóbbu ba Malika\.", direct) is not None
+            and "Quand tu as fini, prends le bus" in direct, direct)
     verifie("aucun « biis » à l'écran", re.search(r"\bbiis\b", carte, re.IGNORECASE) is None)
     trajet_2 = {"trajets_2": [{
         "etapes": [{"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 18"},
@@ -10720,7 +10727,8 @@ def test_lot_t4_etapes_completes() -> tuple[int, int]:
          "changements": ["Rond Point Liberté 6", "Case bi"]}
     regroupes = un_seul_dernier_bus([a, b, c], lambda t: t["etapes"])
     verifie("227 / 327 au même arrêt de changement : une seule possibilité, « ou bus 327 »",
-            regroupes == [a, c] and a.get("ou_bus") == [{"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 327"}]
+            regroupes == [a, c]
+            and a.get("ou_bus") == {2: [{"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 327", "monte_a": "Croisement 22"}]}
             and "ou_bus" not in c, [t.get("ou_bus") for t in regroupes])
     verifie("carte : « Ou bus 327, depuis le même arrêt (Croisement 22). »",
             "🚌 Ou bus 327, depuis le même arrêt (Croisement 22)." in app._ou_bus(a), app._ou_bus(a))
@@ -10738,12 +10746,12 @@ def test_lot_t4_etapes_completes() -> tuple[int, int]:
         plan_1, plan_2 = app._plan_voix_etapes(medina_dieuppeul, dieuppeul_parcelles)
     noms = [chemin.name for chemin, _ in plan_1 + plan_2]
     lignes_dites = [nom for nom in noms if re.match(r"(dakar_dem_dikk|tata_aftu)_", nom)]
-    verifie("voix : WAV assemblés = meilleure de l'étape 1, puis meilleure de l'étape 2",
-            lignes_dites == ["dakar_dem_dikk_18.wav", "dakar_dem_dikk_23.wav"]
-            and noms[-2:] == ["moo_lay_yobbu_ba.wav", "lieu_parcelles_assainies.wav"], noms)
-    verifie("voix : aucune autre possibilité (ni 20, ni 39, ni « walla »)",
-            not any(n in noms for n in ("dakar_dem_dikk_20.wav", "tata_aftu_39.wav", "walla.wav",
-                                        "walla_autre.wav")), noms)
+    verifie("voix : WAV assemblés = meilleure de l'étape 1, puis meilleure de l'étape 2 (4 puis 23)",
+            lignes_dites == ["dakar_dem_dikk_18.wav", "dakar_dem_dikk_4.wav", "dakar_dem_dikk_23.wav"]
+            and "nga_wacc.wav" in noms and noms[-2] == "moo_lay_yobbu_ba.wav", noms)
+    verifie("voix : aucune autre possibilité (ni 20, ni 39, ni 46, ni 78, ni « walla »)",
+            not any(n in noms for n in ("dakar_dem_dikk_20.wav", "tata_aftu_39.wav", "tata_aftu_46.wav",
+                                        "tata_aftu_78.wav", "walla.wav", "walla_autre.wav")), noms)
     verifie("voix : aucun segment en double dans une même étape",
             all(len(p) == len({c for c, _ in p}) for p in (plan_1, plan_2)), noms)
     verifie("voix : tous les WAV existent (aucune synthèse)",
@@ -10751,6 +10759,42 @@ def test_lot_t4_etapes_completes() -> tuple[int, int]:
     quint, _ = pipeline(reelle)
     duree = sf.info(quint[3]).duration if quint[3] else 0.0
     verifie(f"voix du trajet réel : moins de 25 s ({duree:.1f} s, contre 58 s)", 0 < duree < 25, duree)
+
+    # Lot T5 : Dieuppeul -> Parcelles affiche les deux solutions, sans rien inventer.
+    from routing import adapter as moteur
+
+    quint, _ = pipeline("Maa ngi Dieuppeul, dama bëgg dem Parcelles")
+    carte_dp = quint[2]
+    verifie("T5 : la 23 dit la vraie distance à pied (« Monte à Stade Demba Diop (à pied environ 850 m depuis Dieuppeul) »)",
+            "Stade Demba Diop" in carte_dp
+            and "Monte à Stade Demba Diop (à pied environ 850 m depuis Dieuppeul)" in texte(carte_dp),
+            texte(carte_dp)[:600])
+    verifie("T5 : la solution à un changement par le Rond Point Liberté 6 est présente",
+            "Change à <b>Rond Point Liberté 6</b>" in carte_dp and "🔁 Avec un changement" in carte_dp)
+    verifie("T5 : même tronçon, autre bus : « Ou Tata 46 » et « Ou Tata 78 » dans la même carte, pas de carte doublon",
+            carte_dp.count("Change à <b>") == 1 and carte_dp.count("🔁 Avec un changement") == 1
+            and "🚌 Ou Tata 46 (monte à Derklé)" in carte_dp and "🚌 Ou Tata 78" in carte_dp
+            and len(dieuppeul_parcelles["correspondances"]) == 1, texte(carte_dp)[:600])
+    verifie("T5 : position estimée (Cem Dieuppeul 3, Terminus Liberté 5) : aucune distance affichée",
+            "cherche l'arrêt de la ligne 4 le plus proche" in carte_dp
+            and dieuppeul_parcelles["correspondances"][0]["etape_1"].get("monte_a_marche_m") is None
+            and moteur.marche_mesuree({"points_mesures": [moteur._NETWORK.coords("Dieuppeul")]},
+                                      "Terminus Liberté 5 (Dieuppeul)") is None
+            and carte_dp.count("à pied environ") == 1)
+    verifie("T5 : distance arrondie à 50 m près (847 m mesurés -> 850 m)",
+            moteur.marche_mesuree({"points_mesures": [moteur._NETWORK.coords("Dieuppeul")]}, "Stade Demba Diop") == 850)
+    ordre = [(genre, (dieuppeul_parcelles["lignes"][i] if genre == "ligne" else
+                      dieuppeul_parcelles["correspondances"][i]["etape_1"])["ligne"])
+             for genre, i in dieuppeul_parcelles["ordre"]]
+    verifie("T5 : ordre par durée estimée, marche comprise ; la durée inconnue (23 directe) en dernier",
+            ordre == [("corr", "Ligne 4"), ("ligne", "Ligne 39"), ("ligne", "Ligne 23")]
+            and carte_dp.index("Change à") < carte_dp.index("Tata AFTU") < carte_dp.index("Stade Demba Diop"),
+            ordre)
+    # Tata 39 : 28 min de bus, 417 + 819 m à pied (1,236 km x 12 min), 5 min d'attente.
+    verifie("T5 : durée estimée = bus + 12 min/km à pied + 5 min par bus (Tata 39 : 48 min)",
+            dieuppeul_parcelles["lignes"][1]["marche_m"] == 1236
+            and dieuppeul_parcelles["lignes"][1]["duree_estimee"] == 48,
+            (dieuppeul_parcelles["lignes"][1].get("marche_m"), dieuppeul_parcelles["lignes"][1].get("duree_estimee")))
 
     # Voix de la nouvelle transition : seuls de nouveaux fichiers listés, rien de généré.
     with open(RACINE / "data" / "voix_a_generer_transition_t4.csv", encoding="utf-8", newline="") as fichier:

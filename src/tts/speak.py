@@ -695,6 +695,29 @@ def plan_correspondance(
 SOO_PAREE = "soo_paree.wav"
 
 
+def proposition_en_tete(resultat: dict) -> tuple[str, dict] | None:
+    """La proposition affichée en premier : (« ligne » | « corr » | « t2 », trajet).
+
+    Lot T5 : quand bus directs et changement se mêlent, « ordre » (durée
+    estimée, marche comprise) décide ; sinon le direct, puis le changement.
+    """
+    lignes = resultat.get("lignes") or []
+    correspondances = resultat.get("correspondances") or []
+    trajets_2 = resultat.get("trajets_2") or []
+    for genre, index in resultat.get("ordre") or []:
+        if genre == "ligne" and index < len(resultat.get("lignes") or []):
+            return "ligne", resultat["lignes"][index]
+        if genre == "corr" and index < len(correspondances):
+            return "corr", correspondances[index]
+    if lignes:
+        return "ligne", lignes[0]
+    if correspondances:
+        return "corr", correspondances[0]
+    if trajets_2 and trajets_2[0].get("etapes"):
+        return "t2", trajets_2[0]
+    return None
+
+
 def plan_meilleure_proposition(
     resultat: dict, cache_dir: Path | None = None
 ) -> list[tuple[Path, float]]:
@@ -706,19 +729,23 @@ def plan_meilleure_proposition(
     possibilités : un trajet avec étape en disait jusqu'à six (58 s).
     """
     dossier = cache_dir or CACHE_DIR
-    lignes = lignes_annoncees(resultat.get("lignes") or [])
-    correspondances = resultat.get("correspondances") or []
-    trajets_2 = resultat.get("trajets_2") or []
+    en_tete = proposition_en_tete(resultat)
     morceaux: list[tuple[Path, float]] = []
-    if lignes:
-        _ajoute_segment(morceaux, dossier, nom_cache_match(lignes[0]), SILENCE_ENTRE)
-        if morceaux:
-            _ajoute_lieu(morceaux, dossier, MOO_LAY_YOBBU_BA, descente_dite(lignes[0]), SILENCE_ENTRE)
+    if en_tete is None:
         return morceaux
-    if correspondances:
-        return plan_correspondance(correspondances[0], dossier)
-    if trajets_2:
-        plan = plan_trajet_2(trajets_2[0], dossier)
+    genre, trajet = en_tete
+    if genre == "ligne":
+        # Une ligne sans nom n'a pas d'audio (lignes_annoncees l'écarte aussi).
+        if not str(trajet.get("ligne", "")).strip():
+            return morceaux
+        _ajoute_segment(morceaux, dossier, nom_cache_match(trajet), SILENCE_ENTRE)
+        if morceaux:
+            _ajoute_lieu(morceaux, dossier, MOO_LAY_YOBBU_BA, descente_dite(trajet), SILENCE_ENTRE)
+        return morceaux
+    if genre == "corr":
+        return plan_correspondance(trajet, dossier)
+    if genre == "t2":
+        plan = plan_trajet_2(trajet, dossier)
         manquants = [chemin for chemin, _ in plan if not chemin.is_file()]
         for chemin in manquants:
             _segment_manquant(chemin.name)

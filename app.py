@@ -102,6 +102,7 @@ from tts.speak import (  # noqa: E402
     MAX_POSSIBILITES,
     assembler,
     plan_etapes,
+    proposition_en_tete,
     nombre_en_wolof,
     numero_de,
     voix_correspondances_depuis_cache,
@@ -724,20 +725,21 @@ def _enchainer_voix(premiere: bytes, seconde: bytes) -> bytes:
 
 def _fourchette_etape(resultat: dict) -> tuple[float, float] | None:
     """(bas, haut) en minutes pour la meilleure réponse d'une étape, ou None."""
-    lignes = resultat.get("lignes") or []
-    if lignes:
-        minutes = lignes[0].get("minutes")
+    en_tete = proposition_en_tete(resultat)
+    if en_tete is None:
+        return None
+    genre, trajet = en_tete
+    if genre == "ligne":
+        minutes = trajet.get("minutes")
         return None if minutes is None else (float(minutes), float(minutes) * FACTEUR_EMBOUTEILLAGES)
-    correspondances = resultat.get("correspondances") or []
-    if correspondances:
-        bus = [correspondances[0]["etape_1"].get("minutes"), correspondances[0]["etape_2"].get("minutes")]
+    if genre == "corr":
+        bus = [trajet["etape_1"].get("minutes"), trajet["etape_2"].get("minutes")]
         if any(m is None for m in bus):
             return None
         total = sum(float(m) for m in bus)
         return (total + ATTENTE_CHANGEMENT_MIN, total * FACTEUR_EMBOUTEILLAGES + ATTENTE_CHANGEMENT_MAX)
-    trajets_2 = resultat.get("trajets_2") or []
-    if trajets_2 and trajets_2[0].get("etapes"):
-        bus = [etape.get("minutes") for etape in trajets_2[0]["etapes"]]
+    if genre == "t2":
+        bus = [etape.get("minutes") for etape in trajet["etapes"]]
         if any(m is None for m in bus):
             return None
         total, attentes = sum(float(m) for m in bus), len(bus) - 1
@@ -784,18 +786,16 @@ def _transition_etapes(seconde: dict, arrivee: str) -> str:
     Les morceaux de voix qui manquent pour cette phrase sont listés dans
     data/voix_a_generer_transition_t4.csv.
     """
-    lignes = seconde.get("lignes") or []
-    correspondances = seconde.get("correspondances") or []
-    trajets_2 = seconde.get("trajets_2") or []
-    if lignes:
-        bus, arrets = [lignes[0]], []
-    elif correspondances:
-        meilleure = correspondances[0]
+    en_tete = proposition_en_tete(seconde)
+    genre, meilleure = en_tete if en_tete is not None else ("", {})
+    if genre == "ligne":
+        bus, arrets = [meilleure], []
+    elif genre == "corr":
         bus = [meilleure["etape_1"], meilleure["etape_2"]]
         arrets = [meilleure.get("changement") or meilleure["etape_1"].get("descend_a")]
-    elif trajets_2 and trajets_2[0].get("etapes"):
-        bus = list(trajets_2[0]["etapes"])
-        changements = list(trajets_2[0].get("changements") or [])
+    elif genre == "t2":
+        bus = list(meilleure["etapes"])
+        changements = list(meilleure.get("changements") or [])
         arrets = [
             changements[i] if i < len(changements) else bus[i].get("descend_a")
             for i in range(len(bus) - 1)
@@ -1341,24 +1341,59 @@ def duree_totale(etapes: list[dict]) -> str:
     )
 
 
-def _ou_bus(trajet: dict) -> str:
-    """« Ou bus 327, depuis le même arrêt » : le dernier bus a un équivalent (lot T4)."""
-    autres = trajet.get("ou_bus") or []
-    if not autres:
-        return ""
+COMPAGNIE_COURTE = {"Tata AFTU": "Tata", "Dakar Dem Dikk": "Dem Dikk"}
+
+
+def _meme_arret(a: object, b: object) -> bool:
+    """« Rond-Point Liberté 6 » et « Rond Point Liberté 6 » : le même arrêt."""
+    return re.sub(r"[\W_]+", "", str(a or "").lower()) == re.sub(r"[\W_]+", "", str(b or "").lower())
+
+
+def _ou_bus(trajet: dict, index: int | None = None) -> str:
+    """« Ou Tata 46 (monte à Derklé) » : un autre bus fait le même tronçon (lots T4, T5).
+
+    `trajet["ou_bus"]` : {index du bus : autres bus}. Sans `index`, le dernier
+    bus. Jamais une carte de plus pour un trajet qui ne diffère que par le bus.
+    """
     etapes = trajet.get("etapes") or [trajet.get("etape_1") or {}, trajet.get("etape_2") or {}]
-    dernier = etapes[-1] if etapes else {}
-    noms = [
-        ("bus " if autre.get("compagnie") == dernier.get("compagnie") else f"{autre.get('compagnie')} ")
-        + re.sub(r"^Ligne\s*", "", str(autre.get("ligne", ""))).strip()
-        for autre in autres
-    ]
-    montee = dernier.get("monte_a") or ""
-    lieu = f" ({_echapper(montee)})" if montee else ""
+    if not etapes:
+        return ""
+    index = len(etapes) - 1 if index is None else index
+    autres = (trajet.get("ou_bus") or {}).get(index) or []
+    if not autres or index >= len(etapes):
+        return ""
+    carte = etapes[index]
+    montee = carte.get("monte_a") or ""
+    noms, ailleurs = [], False
+    for autre in autres:
+        nom = (
+            "bus " if autre.get("compagnie") == carte.get("compagnie")
+            else f"{COMPAGNIE_COURTE.get(autre.get('compagnie'), autre.get('compagnie'))} "
+        ) + re.sub(r"^Ligne\s*", "", str(autre.get("ligne", ""))).strip()
+        if autre.get("monte_a") and not _meme_arret(autre["monte_a"], montee):
+            nom += f" (monte à {autre['monte_a']})"
+            ailleurs = True
+        noms.append(nom)
+    fin = "" if ailleurs or not montee else f", depuis le même arrêt ({montee})"
     return (
         "<div class='ou-bus' style='text-align:center;color:#46594D;margin:2px 0 6px;'>"
-        f"🚌 Ou {_echapper(' ou '.join(noms))}, depuis le même arrêt{lieu}.</div>"
+        f"🚌 Ou {_echapper(' ou '.join(noms))}{_echapper(fin)}.</div>"
     )
+
+
+def _bloc_correspondance(trajet: dict, depart: str, arrivee: str, avec_duree: bool = True) -> str:
+    """Un trajet à un changement : 1er bus, « Change à », 2e bus, autres bus, durée."""
+    blocs = [
+        _une_carte(trajet["etape_1"], "1er bus", depart=depart, changement=True),
+        _ou_bus(trajet, 0),
+        f"<div style='text-align:center;color:#6B7A72;margin:2px 0;'>"
+        f"🔁 Change à <b>{_echapper(trajet['changement'])}</b></div>",
+        _une_carte(trajet["etape_2"], "2e bus", arrivee=arrivee),
+        _ou_bus(trajet, 1),
+    ]
+    if avec_duree:
+        blocs.append(duree_totale([trajet["etape_1"], trajet["etape_2"]]))
+    return "".join(blocs)
 
 
 def _taille_numero(affiche: str) -> int:
@@ -1420,6 +1455,15 @@ def _une_carte(
                 f": cherche l'arrêt de la ligne {affiche} le plus proche</span>"
             )
         )
+        montee = f"Monte à <b style='color:#081F11;'>{depart_texte}</b> {conseil_monte}"
+        if match.get("monte_a_vague") and match.get("monte_a_marche_m") and depart:
+            # Lot T5 : arrêt éloigné, mais les deux positions sont mesurées : la
+            # vraie distance (« à pied environ 850 m depuis Dieuppeul »).
+            montee = (
+                f"Monte à <b style='color:#081F11;'>{_echapper(monte_a)}</b> "
+                f"<span style='font-weight:600;font-size:15px;color:#3D5A48;'>"
+                f"(à pied environ {int(match['monte_a_marche_m'])} m depuis {depart_texte})</span>"
+            )
         conseil_descente = (
             f"— arrêt conseillé : <b style='color:#081F11;'>{_echapper(descend_a)}</b>"
             if not match.get("descend_a_vague")
@@ -1431,7 +1475,7 @@ def _une_carte(
         trajet = (
             f"<div style='color:#11301C;font-size:19px;font-weight:750;"
             f"line-height:1.35;margin-top:8px;'>"
-            f"Monte à <b style='color:#081F11;'>{depart_texte}</b> {conseil_monte}<br>"
+            f"{montee}<br>"
             f"Descends à <b style='color:#081F11;'>{arrivee_texte}</b> {conseil_descente}{fin}</div>"
         )
     arrets = _bloc_arrets(match)
@@ -1655,6 +1699,19 @@ def _carte(
     if a_pied:
         blocs.append(_carte_a_pied(a_pied))
 
+    ordre = resultat.get("ordre") or []
+    if lignes and correspondances and ordre:
+        # Lot T5 : bus directs et changement mêlés, par durée estimée (marche
+        # comprise) ; les durées inconnues après.
+        for genre, index in ordre:
+            if genre == "ligne" and index < len(lignes):
+                blocs.append(_une_carte(lignes[index], depart=depart, arrivee=arrivee))
+            elif genre == "corr" and index < len(correspondances):
+                blocs.append(titre_section("🔁 Avec un changement"))
+                blocs.append(_bloc_correspondance(correspondances[index], depart, arrivee, avec_duree))
+        blocs.append(bouton_partage(depart, arrivee, resultat))
+        return "".join(blocs)
+
     if lignes:
         blocs.extend(
             _une_carte(match, depart=depart, arrivee=arrivee)
@@ -1670,15 +1727,7 @@ def _carte(
         ):
             if numero > 1:
                 blocs.append(titre_autre_possibilite(numero))
-            blocs.append(_une_carte(trajet["etape_1"], "1er bus", depart=depart, changement=True))
-            blocs.append(
-                f"<div style='text-align:center;color:#6B7A72;margin:2px 0;'>"
-                f"🔁 Change à <b>{_echapper(trajet['changement'])}</b></div>"
-            )
-            blocs.append(_une_carte(trajet["etape_2"], "2e bus", arrivee=arrivee))
-            blocs.append(_ou_bus(trajet))
-            if avec_duree:
-                blocs.append(duree_totale([trajet["etape_1"], trajet["etape_2"]]))
+            blocs.append(_bloc_correspondance(trajet, depart, arrivee, avec_duree))
             blocs.append(bouton_partage(depart, arrivee, resultat, trajet))
 
     if trajets_2:
@@ -1710,7 +1759,7 @@ def _carte(
                         changement=index < len(etapes) - 1,
                     )
                 )
-            blocs.append(_ou_bus(trajet))
+                blocs.append(_ou_bus(trajet, index))
             if avec_duree:
                 blocs.append(duree_totale(etapes))
             blocs.append(bouton_partage(depart, arrivee, resultat, trajet))

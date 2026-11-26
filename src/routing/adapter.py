@@ -299,12 +299,36 @@ def _troncon(leg: Leg) -> dict:
     }
 
 
+# Lot T5 : ordre des propositions par durée estimée, marche comprise.
+MINUTES_PAR_KM_A_PIED = 12.0
+ATTENTE_PAR_BUS_MIN = 5.0
+
+
+def _estimation(trip: Trip) -> dict:
+    """Marche totale (m) et durée estimée : bus + 12 min/km à pied + 5 min par bus.
+
+    Inconnue (None) dès qu'un bus n'a qu'une durée devinée : jamais de chiffre inventé.
+    """
+
+    marche = sum(float(walk.distance_m or 0.0) for walk in trip.walks)
+    if any(duree_devinee(leg) for leg in trip.legs):
+        duree = None
+    else:
+        duree = round(
+            sum(leg.minutes for leg in trip.legs)
+            + MINUTES_PAR_KM_A_PIED * marche / 1000.0
+            + ATTENTE_PAR_BUS_MIN * len(trip.legs)
+        )
+    return {"marche_m": round(marche), "duree_estimee": duree}
+
+
 def _direct(trip: Trip) -> dict:
     """Un bus direct : la carte montre la durée totale du trajet, plancher compris."""
 
     return {
         **_troncon(trip.legs[0]),
         "minutes": _minutes(trip),
+        **_estimation(trip),
     }
 
 
@@ -330,6 +354,7 @@ def _correspondance(trip: Trip) -> dict:
         "changement": joli(trip.legs[0].alight_stop),
         "marches": _marches(trip),
         "minutes": _minutes(trip),
+        **_estimation(trip),
     }
 
 
@@ -342,6 +367,7 @@ def _trajet_2(trip: Trip) -> dict:
         "changements": [joli(leg.alight_stop) for leg in trip.legs[:-1]],
         "marches": _marches(trip),
         "minutes": _minutes(trip),
+        **_estimation(trip),
     }
 
 
@@ -605,6 +631,13 @@ def _resoudre(matcher, lieu: str) -> dict:
         "notes": notes,
         "par_son_nom": par_son_nom,
         "point_sur": point_sur,
+        # Lot T5 : positions MESURÉES des arrêts qui portent le nom exact du lieu,
+        # seules bases d'une distance à pied affichée.
+        "points_mesures": [
+            coords
+            for nom, coords in positions_exactes
+            if _NETWORK.stop_confidence.get(nom) == "bonne"
+        ],
         # Arrêts que l'usager a demandés par leur nom, à l'orthographe près :
         # « Maristes » -> « Maristes (Par Station Titan) », « Sapeurs Pompiers »
         # -> « Dieuppeul (Sapeurs Pompiers) », « Fass Mbao » -> « Fassmbao ».
@@ -1041,6 +1074,32 @@ def chercher_v2(
     correspondances = un_seul_dernier_bus(correspondances, etapes_corr)
     trajets_2 = un_seul_dernier_bus(trajets_2, etapes_t2)
 
+    # Lot T5 : un bus direct qui oblige à marcher jusqu'à un arrêt éloigné
+    # (Dieuppeul -> Parcelles : Dem Dikk 23 depuis Stade Demba Diop, 850 m) ne
+    # doit pas cacher le meilleur trajet à un changement entre arrêts mesurés
+    # (Dem Dikk 4 jusqu'au Rond Point Liberté 6, puis Dem Dikk 23).
+    ordre: list[tuple[str, int]] = []
+    if lignes and not correspondances and any(
+        _vague(dep, l["monte_a_reseau"], l) or _vague(arr, l["descend_a_reseau"], l)
+        for l in lignes[:MAX_LIGNES]
+    ):
+        complement = _meilleure_correspondance_mesuree(depart, arrivee, dep, arr, operateur, compagnies)
+        if complement is not None:
+            correspondances = [complement]
+    if lignes and correspondances:
+        propositions = [("ligne", i, t) for i, t in enumerate(lignes[:MAX_LIGNES])] + [
+            ("corr", i, t) for i, t in enumerate(correspondances[:MAX_CORRESPONDANCES])
+        ]
+        # Durée connue d'abord, de la plus courte à la plus longue ; l'ordre
+        # habituel départage, et les durées inconnues viennent après.
+        ordre = [
+            (genre, i)
+            for rang, (genre, i, t) in sorted(
+                enumerate(propositions),
+                key=lambda p: (p[1][2].get("duree_estimee") is None, p[1][2].get("duree_estimee") or 0, p[0]),
+            )
+        ]
+
     lignes = lignes[:MAX_LIGNES]
     correspondances = correspondances[:MAX_CORRESPONDANCES]
     trajets_2 = trajets_2[:MAX_TRAJETS_2]
@@ -1067,6 +1126,14 @@ def chercher_v2(
             trajet["etapes"][-1]["descend_a_vague"] = _vague(
                 arr, trajet["etapes"][-1]["descend_a_reseau"], trajet["etapes"][-1]
             )
+    # Lot T5 : à un arrêt éloigné, la vraie distance à pied quand les deux
+    # positions sont mesurées ; sinon rien (la carte dit de chercher l'arrêt).
+    for etape in list(lignes) + [c["etape_1"] for c in correspondances] + [
+        t["etapes"][0] for t in trajets_2 if t["etapes"]
+    ]:
+        etape["monte_a_marche_m"] = (
+            marche_mesuree(dep, etape["monte_a_reseau"], etape) if etape.get("monte_a_vague") else None
+        )
     # La voix lit le lieu de descente : pour un arrêt vague, elle dira le lieu
     # que l'usager a nommé, jamais l'arrêt lointain.
     for etape in list(lignes) + [
@@ -1083,9 +1150,135 @@ def chercher_v2(
             "correspondances": correspondances,
             "trajets_2": trajets_2,
             "a_pied": a_pied,
+            "ordre": ordre,
         }
     )
     return resultat
+
+
+# Lot T5 : au plus trois autres bus annoncés par tronçon (« ou Tata 46 »).
+AUTRES_BUS_MAX = 3
+
+
+def marche_mesuree(lieu: dict, arret: str, etape: dict | None = None) -> int | None:
+    """Distance à pied (m, arrondie à 50 m) entre le lieu et l'arrêt, si mesurée des deux côtés.
+
+    Le lieu compte par ses arrêts de même nom à position « bonne » ; l'arrêt par
+    sa position mesurée. Une position estimée ne donne jamais de distance.
+    """
+
+    points = lieu.get("points_mesures") or []
+    coords = _position_fiable(arret, etape)
+    if not points or coords is None:
+        return None
+    distance = min(haversine_m(point, coords) for point in points)
+    return int(round(distance / 50.0) * 50)
+
+
+def _changements_mesures(trip: Trip) -> bool:
+    """Chaque arrêt de changement à position mesurée sur les deux lignes.
+
+    Les montées côté Dieuppeul (CEM Dieuppeul 3, Terminus Liberté 5) n'ont
+    qu'une position estimée : c'est le changement, lui, qu'il faut situer.
+    """
+
+    return all(
+        _position_sure(avant, avant.alight_stop) is not None
+        and _position_sure(apres, apres.board_stop) is not None
+        for avant, apres in zip(trip.legs, trip.legs[1:])
+    )
+
+
+def _meilleure_correspondance_mesuree(
+    depart: str, arrivee: str, dep: dict, arr: dict, operateur, compagnies
+) -> dict | None:
+    """Le meilleur trajet à un changement par un arrêt mesuré, ou None.
+
+    Recherche sur les arrêts du lieu (« large »), sans arrêt voisin à pied : la
+    marche, c'est le bus direct qui la propose déjà. Les autres bus qui font le
+    même tronçon sont rangés dans « ou_bus » au lieu d'une carte en plus.
+    """
+
+    try:
+        trips = _ENGINE.find_trips(
+            depart,
+            arrivee,
+            max_trips=30,
+            operator=operateur,
+            origin_place=dep["large"],
+            destination_place=arr["large"],
+            nearby_stop_ok=lambda arret: False,
+        )
+    except (PlaceNotFoundError, NoRouteFoundError):
+        return None
+    candidats = [
+        trip
+        for trip in trips
+        if len(trip.legs) == 2
+        and (compagnies is None or all(leg.operator in compagnies for leg in trip.legs))
+        and _changements_coherents(trip, dep, arr)
+        and _changements_mesures(trip)
+    ]
+    if not candidats:
+        return None
+    meilleur = min(
+        candidats,
+        key=lambda trip: (
+            _estimation(trip)["duree_estimee"] is None,
+            _estimation(trip)["duree_estimee"] or 0,
+            trip.total_minutes,
+        ),
+    )
+    trajet = _correspondance(meilleur)
+    trajet["etape_1"]["monte_a_vague"] = _vague(dep, trajet["etape_1"]["monte_a_reseau"], trajet["etape_1"])
+    trajet["etape_2"]["descend_a_vague"] = _vague(arr, trajet["etape_2"]["descend_a_reseau"], trajet["etape_2"])
+    origine = {normalize_name(nom) for nom in dep["large"].stops}
+    destination = {normalize_name(nom) for nom in arr["large"].stops}
+    changement = normalize_name(meilleur.legs[0].alight_stop)
+    autres = {
+        0: _autres_bus(trajet["etape_1"], origine, {changement}, compagnies),
+        1: _autres_bus(trajet["etape_2"], {changement}, destination, compagnies),
+    }
+    autres = {index: bus for index, bus in autres.items() if bus}
+    if autres:
+        trajet["ou_bus"] = autres
+    return trajet
+
+
+def _autres_bus(etape: dict, depuis: set[str], vers: set[str], compagnies) -> list[dict]:
+    """Les autres lignes qui vont d'un arrêt de ``depuis`` à un arrêt de ``vers``.
+
+    Lues dans l'ordre des arrêts de chaque ligne (les deux sens, sauf boucle),
+    les plus courtes d'abord ; jamais la ligne déjà proposée.
+    """
+
+    trouves: list[tuple[int, dict]] = []
+    for (compagnie, nom), ligne in _NETWORK.lines.items():
+        if (compagnie, nom) == (etape.get("compagnie"), etape.get("ligne")):
+            continue
+        if compagnies is not None and compagnie not in compagnies:
+            continue
+        meilleur = None
+        for sens in ligne.directions:
+            arrets = ligne.stops_for(sens)
+            for i, arret in enumerate(arrets):
+                if normalize_name(arret) not in depuis:
+                    continue
+                for j in range(i + 1, len(arrets)):
+                    if normalize_name(arrets[j]) in vers:
+                        if meilleur is None or j - i < meilleur[0]:
+                            meilleur = (j - i, arret)
+                        break
+        if meilleur is not None:
+            trouves.append((meilleur[0], {"compagnie": compagnie, "ligne": nom, "monte_a": joli(meilleur[1])}))
+    trouves.sort(key=lambda t: (t[0], t[1]["compagnie"], t[1]["ligne"]))
+    vus, autres = set(), []
+    for _, bus in trouves:
+        cle = (bus["compagnie"], bus["ligne"])
+        if cle not in vus:
+            vus.add(cle)
+            autres.append(bus)
+    return autres[:AUTRES_BUS_MAX]
 
 
 # « aéroport » seul : les deux aéroports de Dakar, dans cet ordre, avec le nom
@@ -1099,8 +1292,8 @@ AEROPORTS_POSSIBLES = (
 def un_seul_dernier_bus(trajets: list[dict], etapes_de) -> list[dict]:
     """Regroupe les trajets identiques sauf le dernier bus, pris au même arrêt.
 
-    Le premier gardé reçoit « ou_bus » : les autres derniers bus, dans l'ordre
-    (« Ligne 327 »). Lot T4 : Dieuppeul -> Parcelles affichait 18 -> 23 -> 227
+    Le premier gardé reçoit « ou_bus » : {index du dernier bus : les autres
+    derniers bus, dans l'ordre} (« Ligne 327 »). Lot T4 : Dieuppeul -> Parcelles affichait 18 -> 23 -> 227
     puis, en « Autre possibilité », 18 -> 23 -> 327, presque identique.
     """
 
@@ -1119,9 +1312,14 @@ def un_seul_dernier_bus(trajets: list[dict], etapes_de) -> list[dict]:
             if cle_gardee == cle and (dernier.get("compagnie"), dernier.get("ligne")) != (
                 etapes[-1].get("compagnie"), etapes[-1].get("ligne")
             ):
-                autre = {"compagnie": etapes[-1].get("compagnie"), "ligne": etapes[-1].get("ligne")}
-                if autre not in garde.setdefault("ou_bus", []):
-                    garde["ou_bus"].append(autre)
+                autre = {
+                    "compagnie": etapes[-1].get("compagnie"),
+                    "ligne": etapes[-1].get("ligne"),
+                    "monte_a": etapes[-1].get("monte_a"),
+                }
+                autres = garde.setdefault("ou_bus", {}).setdefault(len(etapes) - 1, [])
+                if autre not in autres:
+                    autres.append(autre)
                 break
         else:
             gardes.append((cle, trajet))

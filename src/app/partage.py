@@ -20,6 +20,10 @@ def _bout(match: dict, cle: str, lieu_dit: str) -> str:
     écrit : le contact irait l'attendre à l'autre bout du quartier.
     """
     if match.get(f"{cle}_vague") and lieu_dit:
+        # Lot T5 : distance mesurée des deux côtés, arrondie à 50 m.
+        marche = match.get(f"{cle}_marche_m")
+        if marche:
+            return f"{match.get(cle, '')} (à pied environ {marche} m depuis {lieu_dit})"
         numero = str(match.get("ligne", "")).replace("Ligne", "").strip()
         return f"{lieu_dit} (cherche l'arrêt de la ligne {numero} le plus proche)"
     return str(match.get(cle, ""))
