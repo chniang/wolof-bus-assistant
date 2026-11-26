@@ -566,6 +566,28 @@ def _resoudre(matcher, lieu: str) -> dict:
                 notes_v1[arret] = 0.0
         tries = sorted(notes_v1, key=lambda arret: -notes_v1[arret])
 
+    # Lot T4 : un lieu dont tous les arrêts au nom exact n'ont qu'une position
+    # estimée garde aussi l'arrêt sûr posé au même point, s'il porte le nom du
+    # lieu. « Parcelles », terminus des DDD 227 et 327 (« Terminus Parcelles »,
+    # placé au centre de la commune), est à 0 m de « Parcelles Assainies »,
+    # terminus des DDD 1 et 23 : seul au nom exact, il écartait celui-ci, et
+    # Dieuppeul -> Parcelles donnait 18 -> 23 -> 227 (3 bus) au lieu de 18 -> 23.
+    if note >= 1.0 and exacts and not any(
+        _NETWORK.stop_confidence.get(nom) == "bonne" for nom in _vers_reseau(exacts)
+    ):
+        incertains = [coords for _, coords in positions_exactes]
+        for arret in tries:
+            if notes_v1[arret] >= note or _note_du_nom(lieu, arret) < MIN_SCORE:
+                continue
+            if any(
+                _NETWORK.stop_confidence.get(nom) == "bonne"
+                and (coords := _NETWORK.coords(nom)) is not None
+                and any(haversine_m(coords, point) <= JUMEAU_M for point in incertains)
+                for nom in _arrets_du_reseau(arret)
+            ):
+                notes_v1[arret] = note
+        tries = sorted(notes_v1, key=lambda arret: -notes_v1[arret])
+
     def place(seuil: float) -> ResolvedPlace:
         # Pas de restriction ici : un arrêt loin du lieu dit garde sa ligne. La
         # carte, elle, passe en message vague au-delà de 600 m (_vague).
@@ -789,6 +811,8 @@ def _vague(lieu: dict, arret: str, etape: dict | None = None) -> bool:
 # Le point d'un lieu (lieux_geo.csv) n'est cru que s'il est à 1 km au plus
 # d'un arrêt du même nom.
 ACCORD_POINT_LIEU_M = 1_000.0
+# Lot T4 : un arrêt sûr à moins de 100 m d'un arrêt de même nom estimé est le même lieu.
+JUMEAU_M = 100.0
 
 # Un changement ne recule jamais vers le départ de plus de 1 km : Maristes ->
 # Rufisque montait vers Liberté 6 (plus à l'ouest) pour reprendre la 213
@@ -1011,6 +1035,12 @@ def chercher_v2(
             (etape.get("compagnie"), etape.get("ligne")) in _A_CONFIRMER_AJOUTEES
         )
 
+    # Lot T4 : deux possibilités qui ne diffèrent que par le dernier bus, pris
+    # au même arrêt (18 -> 23 -> 227 et 18 -> 23 -> 327 depuis Croisement 22),
+    # n'en font qu'une : la carte dit « ou bus 327 ».
+    correspondances = un_seul_dernier_bus(correspondances, etapes_corr)
+    trajets_2 = un_seul_dernier_bus(trajets_2, etapes_t2)
+
     lignes = lignes[:MAX_LIGNES]
     correspondances = correspondances[:MAX_CORRESPONDANCES]
     trajets_2 = trajets_2[:MAX_TRAJETS_2]
@@ -1064,6 +1094,38 @@ AEROPORTS_POSSIBLES = (
     (AIBD, "Aéroport Blaise Diagne (AIBD, Diass)"),
     (AEROPORT_LSS, "Ancien aéroport Léopold Sédar Senghor (Yoff)"),
 )
+
+
+def un_seul_dernier_bus(trajets: list[dict], etapes_de) -> list[dict]:
+    """Regroupe les trajets identiques sauf le dernier bus, pris au même arrêt.
+
+    Le premier gardé reçoit « ou_bus » : les autres derniers bus, dans l'ordre
+    (« Ligne 327 »). Lot T4 : Dieuppeul -> Parcelles affichait 18 -> 23 -> 227
+    puis, en « Autre possibilité », 18 -> 23 -> 327, presque identique.
+    """
+
+    gardes: list[tuple[tuple, dict]] = []
+    for trajet in trajets:
+        etapes = etapes_de(trajet)
+        if not etapes:
+            gardes.append(((id(trajet),), trajet))
+            continue
+        cle = tuple(
+            (e.get("compagnie"), e.get("ligne"), e.get("monte_a_reseau"), e.get("descend_a_reseau"))
+            for e in etapes[:-1]
+        ) + ((etapes[-1].get("monte_a_reseau"),),)
+        for cle_gardee, garde in gardes:
+            dernier = etapes_de(garde)[-1]
+            if cle_gardee == cle and (dernier.get("compagnie"), dernier.get("ligne")) != (
+                etapes[-1].get("compagnie"), etapes[-1].get("ligne")
+            ):
+                autre = {"compagnie": etapes[-1].get("compagnie"), "ligne": etapes[-1].get("ligne")}
+                if autre not in garde.setdefault("ou_bus", []):
+                    garde["ou_bus"].append(autre)
+                break
+        else:
+            gardes.append((cle, trajet))
+    return [trajet for _, trajet in gardes]
 
 
 def _premiere_option(resultat: dict) -> tuple[str, dict] | None:

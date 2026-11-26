@@ -690,6 +690,56 @@ def plan_correspondance(
     return morceaux
 
 
+# Lot T4 : la voix d'un trajet avec étape ne dit que la meilleure proposition
+# de chaque étape, et « Soo paree, » entre les deux (encore à générer : sauté).
+SOO_PAREE = "soo_paree.wav"
+
+
+def plan_meilleure_proposition(
+    resultat: dict, cache_dir: Path | None = None
+) -> list[tuple[Path, float]]:
+    """Les morceaux existants de la meilleure proposition d'un résultat.
+
+    Bus direct : son WAV puis « moo lay yóbbu ba » + lieu de descente. Avec
+    changement(s) : le plan de la correspondance ou du trajet à deux
+    changements (muet s'il lui manque un morceau). Jamais les autres
+    possibilités : un trajet avec étape en disait jusqu'à six (58 s).
+    """
+    dossier = cache_dir or CACHE_DIR
+    lignes = lignes_annoncees(resultat.get("lignes") or [])
+    correspondances = resultat.get("correspondances") or []
+    trajets_2 = resultat.get("trajets_2") or []
+    morceaux: list[tuple[Path, float]] = []
+    if lignes:
+        _ajoute_segment(morceaux, dossier, nom_cache_match(lignes[0]), SILENCE_ENTRE)
+        if morceaux:
+            _ajoute_lieu(morceaux, dossier, MOO_LAY_YOBBU_BA, descente_dite(lignes[0]), SILENCE_ENTRE)
+        return morceaux
+    if correspondances:
+        return plan_correspondance(correspondances[0], dossier)
+    if trajets_2:
+        plan = plan_trajet_2(trajets_2[0], dossier)
+        manquants = [chemin for chemin, _ in plan if not chemin.is_file()]
+        for chemin in manquants:
+            _segment_manquant(chemin.name)
+        return [] if manquants else plan
+    return morceaux
+
+
+def plan_etapes(
+    premiere: dict, seconde: dict, cache_dir: Path | None = None
+) -> tuple[list[tuple[Path, float]], list[tuple[Path, float]]]:
+    """(étape 1, transition + étape 2) : les morceaux à dire, tous existants."""
+    dossier = cache_dir or CACHE_DIR
+    plan_1 = plan_meilleure_proposition(premiere, dossier)
+    plan_2 = plan_meilleure_proposition(seconde, dossier)
+    if plan_2:
+        transition: list[tuple[Path, float]] = []
+        _ajoute_segment(transition, dossier, SOO_PAREE, SILENCE_ENTRE)
+        plan_2 = transition + plan_2
+    return plan_1, plan_2
+
+
 def voix_depuis_cache(
     lignes: list[dict], cache_dir: Path | None = None
 ) -> bytes | None:

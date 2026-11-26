@@ -1,0 +1,4 @@
+type,texte_a_prononcer,fichier_wav,utilise_par,statut,remarque
+connecteur,"Soo paree,",soo_paree.wav,"tts.speak.plan_etapes (début de la transition, avant l'étape 2)",non créé,"Déjà listé dans data/voix_a_generer_transition.csv (option A) ; repris ici car la phrase du lot T4 commence aussi par lui. Tant qu'il manque, il est sauté (journal « segment manquant »)."
+connecteur,"wàcc ci",wacc_ci.wav,"phrase affichée du lot T4 : « jëlal biis bu 18, wàcc ci Rond Point Liberté 6 »",non créé,"Phrase validée par Cheikh. En attendant, la voix dit le même trajet avec les morceaux existants : nga_wacc.wav (« nga wàcc ») + lieu, puis correspondance_liaison.wav (« Ci ginnaaw, »)."
+connecteur,"ba",ba.wav,"phrase affichée du lot T4 : dernier segment « jëlal biis bu 227 ba Parcelles »",non créé,"En attendant, la voix dit moo_lay_yobbu_ba.wav (« moo lay yóbbu ba ») + lieu, qui existe déjà."

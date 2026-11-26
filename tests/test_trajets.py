@@ -4320,9 +4320,13 @@ def test_prononciations() -> tuple[int, int]:
     )
     installes_oolel = {f.name for f in (RACINE / "data" / "tts_cache_oolel").glob("*.wav")}
     sans_voix = sorted(set(fichiers_complete).union(fixe_a_jouer) - installes_oolel)
+    # Lot T4 : « Soo paree, » (tts.speak.SOO_PAREE) n'est pas encore généré ; il
+    # est listé dans data/voix_a_generer_transition.csv et ..._t4.csv, et la
+    # voix le saute en attendant (journal « segment manquant »).
+    EN_ATTENTE_TRANSITION = {"soo_paree.wav"}
     verifie(
         "voix native : tts_cache_oolel couvre la liste complète et les phrases fixes",
-        set(sans_voix) == EN_ATTENTE_CONVERSATION,
+        set(sans_voix) == EN_ATTENTE_CONVERSATION | EN_ATTENTE_TRANSITION,
         sans_voix[:10],
     )
     # Texte final = phrase du plan / des ajouts, avec le lexique de l'écoute
@@ -10266,12 +10270,14 @@ def test_lot_t2_finitions_etapes() -> tuple[int, int]:
             and "Quand tu as fini, prends le bus" in quint[2]
             and quint[2].index("Étape 1") < quint[2].index("Soo paree") < quint[2].index("Étape 2"),
             quint[2][:300])
-    quint, _ = pipeline("Maa ngi Médina, dama bëgg jaar Dieppeul, ba noppi dem Parcelles.")
-    verifie("transition (avec changements) : la même phrase arrêtée au bus, sans wolof inventé",
-            re.search(r"🔁 Soo paree, jëlal bus bu \w+\.<", quint[2]) is not None
+    # Lot T4 : avec des changements, la phrase décrit tout le trajet de l'étape 2
+    # (Dieuppeul -> Parcelles est désormais direct : Keur Massar garde un changement).
+    quint, _ = pipeline("Maa ngi Médina, dama bëgg jaar Dieppeul, ba noppi dem Keur Massar.")
+    verifie("transition (avec changements) : « jëlal bus bu N, wàcc ci X ; jëlal bus bu M ba Keur Massar »",
+            re.search(r"🔁 Soo paree, jëlal bus bu \w+, wàcc ci [^;<]+ ; jëlal bus bu \w+ ba Keur Massar\.",
+                      quint[2]) is not None
             and re.search(r"\bbiis\b", quint[2], re.IGNORECASE) is None
-            and "moo lay yóbbu ba" not in quint[2].split("Soo paree", 1)[1].split("</div>", 1)[0]
-            and "puis suis les changements" in quint[2], quint[2][:300])
+            and "puis suis les changements" not in quint[2], quint[2][:300])
     verifie("transition : rien si l'étape 2 n'a aucun bus",
             app._transition_etapes({"lignes": [], "correspondances": [], "trajets_2": []}, "X") == "")
     # Option A (décision de Cheikh) : un seul morceau à générer, « Soo paree, ».
@@ -10603,6 +10609,160 @@ def test_lot_g1_gpu_garde_fou() -> tuple[int, int]:
     return echecs, total
 
 
+def test_lot_t4_etapes_completes() -> tuple[int, int]:
+    """Lot T4 : transition complète, Dieuppeul -> Parcelles sans 3 bus, une durée, voix courte.
+
+    Test réel du 26/11 (GM-GTMBED, version 4af731e, Kiriku) : l'étape 2
+    Dieuppeul -> Parcelles proposait 18 -> 23 -> 227 puis 18 -> 23 -> 327,
+    « Durée totale : inconnue » s'affichait deux fois de suite, et la voix
+    durait 58 s. Aucun réseau.
+    """
+    import contextlib
+    import csv as _csv
+    import html
+    import io
+    import os
+    import re
+
+    import soundfile as sf
+
+    from routing.adapter import un_seul_dernier_bus
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot T4 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_t4")
+    app.MATCHER = _matcher_hors_ligne()
+    app._client_llm = lambda: _ClientQuiLeve(lambda: TimeoutError("ne doit pas être appelé"))
+
+    def pipeline(phrase: str):
+        with contextlib.redirect_stdout(io.StringIO()):
+            return app._pipeline(phrase, "Kiriku-Wolof-ASR (GPU)", 1.0, mode="voix")
+
+    def texte(carte: str) -> str:
+        return html.unescape(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", carte)))
+
+    reelle = "dama nekk medina dama bëgg jaar dieuppeul su ma fa jugee ma dem parcelle"
+    quint, trouve = pipeline(reelle)
+    carte = quint[2]
+    verifie("transcription réelle : Médina -> Dieuppeul -> Parcelles",
+            trouve and quint[1] == "Médina → Dieuppeul → Parcelles", quint[1])
+
+    # 2. Plus de 3 bus : « Parcelles » (DDD 227/327, position estimée) garde
+    # aussi « Parcelles Assainies », au même point, terminus de la DDD 23.
+    etape_2 = carte.split("Étape 2", 1)[1]
+    verifie("étape 2 : un bus direct (Dem Dikk 23), plus 18 -> 23 -> 227",
+            "Avec deux changements" not in etape_2 and "Dakar Dem Dikk 23" in texte(etape_2)
+            and "227" not in texte(etape_2), texte(etape_2)[:300])
+    with contextlib.redirect_stdout(io.StringIO()):
+        dieuppeul_parcelles = app._recherche("Dieuppeul", "Parcelles", "")
+    verifie("Dieuppeul -> Parcelles : direct, descente à Parcelles Assainies (terminus de la 23)",
+            [(l["ligne"], l["descend_a_reseau"]) for l in dieuppeul_parcelles["lignes"]][:1]
+            == [("Ligne 23", "Parcelles Assainies")] and not dieuppeul_parcelles["trajets_2"],
+            [(l["ligne"], l["descend_a_reseau"]) for l in dieuppeul_parcelles["lignes"]])
+
+    # 1. Phrase de transition, à l'écran, sans « biis ».
+    verifie("transition (bus direct) : « Soo paree, jëlal bus bu 23, moo lay yóbbu ba Parcelles. »",
+            "🔁 Soo paree, jëlal bus bu 23, moo lay yóbbu ba Parcelles." in carte
+            and "Quand tu as fini, prends le bus 23, il t&#x27;amène jusqu&#x27;à Parcelles." in carte,
+            texte(carte)[:400])
+    verifie("aucun « biis » à l'écran", re.search(r"\bbiis\b", carte, re.IGNORECASE) is None)
+    trajet_2 = {"trajets_2": [{
+        "etapes": [{"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 18"},
+                   {"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 23"},
+                   {"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 227"}],
+        "changements": ["Rond Point Liberté 6", "Croisement 22"],
+    }]}
+    transition = app._transition_etapes(trajet_2, "Parcelles")
+    verifie("transition (changements) : un segment par bus, le modèle exact de Cheikh",
+            "🔁 Soo paree, jëlal bus bu 18, wàcc ci Rond Point Liberté 6 ; jëlal bus bu 23, "
+            "wàcc ci Croisement 22 ; jëlal bus bu 227 ba Parcelles." in transition
+            and "Quand tu as fini, prends le bus 18, descends à Rond Point Liberté 6 ; prends le bus 23, "
+            "descends à Croisement 22 ; prends le bus 227 jusqu&#x27;à Parcelles." in transition, transition)
+    quint, _ = pipeline("Maa ngi Médina, dama bëgg jaar Dieuppeul, ba noppi dem Keur Massar")
+    verifie("transition (changements, vrai trajet) : « jëlal bus bu N, wàcc ci X ; jëlal bus bu M ba Keur Massar »",
+            re.search(r"🔁 Soo paree, jëlal bus bu \w+, wàcc ci [^;<]+ ; jëlal bus bu \w+ ba Keur Massar\.",
+                      quint[2]) is not None
+            and re.search(r"\bbiis\b", quint[2], re.IGNORECASE) is None, texte(quint[2])[:400])
+
+    # 3. Une seule « Durée totale ».
+    verifie("une seule « Durée totale », celle des deux étapes",
+            carte.count("Durée totale") == 1 and "sans compter ton arrêt à Dieuppeul" in carte,
+            carte.count("Durée totale"))
+    verifie("une seule « Durée totale » aussi avec des changements à l'étape 2",
+            quint[2].count("Durée totale") == 1, quint[2].count("Durée totale"))
+    verifie("durée des deux étapes : un trajet à deux changements compte ses deux attentes",
+            app._fourchette_etape({"trajets_2": [{"etapes": [{"minutes": 10}, {"minutes": 10}, {"minutes": 10}]}]})
+            == (30 + 2 * app.ATTENTE_CHANGEMENT_MIN, 30 * app.FACTEUR_EMBOUTEILLAGES + 2 * app.ATTENTE_CHANGEMENT_MAX))
+
+    # 2. « Autre possibilité » qui ne diffère que par le dernier bus : « ou bus 327 ».
+    def bus(ligne: str, monte: str, descend: str) -> dict:
+        return {"compagnie": "Dakar Dem Dikk", "ligne": ligne, "monte_a": monte, "monte_a_reseau": monte,
+                "descend_a_reseau": descend}
+
+    a = {"etapes": [bus("Ligne 18", "Terminus Liberté 5 (Dieuppeul)", "Rond Point Liberté 6"),
+                    bus("Ligne 23", "Rond Point Liberté 6", "Croisement 22"),
+                    bus("Ligne 227", "Croisement 22", "Parcelles")],
+         "changements": ["Rond Point Liberté 6", "Croisement 22"]}
+    b = {"etapes": a["etapes"][:2] + [bus("Ligne 327", "Croisement 22", "Parcelles")],
+         "changements": list(a["changements"])}
+    c = {"etapes": a["etapes"][:1] + [bus("Ligne 6", "Rond Point Liberté 6", "Police de Parcelles Assainies"),
+                                      bus("Ligne 227", "Case bi", "Parcelles")],
+         "changements": ["Rond Point Liberté 6", "Case bi"]}
+    regroupes = un_seul_dernier_bus([a, b, c], lambda t: t["etapes"])
+    verifie("227 / 327 au même arrêt de changement : une seule possibilité, « ou bus 327 »",
+            regroupes == [a, c] and a.get("ou_bus") == [{"compagnie": "Dakar Dem Dikk", "ligne": "Ligne 327"}]
+            and "ou_bus" not in c, [t.get("ou_bus") for t in regroupes])
+    verifie("carte : « Ou bus 327, depuis le même arrêt (Croisement 22). »",
+            "🚌 Ou bus 327, depuis le même arrêt (Croisement 22)." in app._ou_bus(a), app._ou_bus(a))
+    with contextlib.redirect_stdout(io.StringIO()):
+        keur_massar = app._recherche("Dieuppeul", "Keur Massar", "")
+    possibles = keur_massar["correspondances"] + keur_massar["trajets_2"]
+    cles = [(tuple((e["ligne"], e["monte_a_reseau"]) for e in (t.get("etapes") or [t["etape_1"], t["etape_2"]])[:-1]),
+             (t.get("etapes") or [t["etape_1"], t["etape_2"]])[-1]["monte_a_reseau"]) for t in possibles]
+    verifie("vrai trajet : aucune possibilité doublon (même trajet sauf le dernier bus)",
+            len(cles) == len(set(cles)), cles)
+
+    # 4. Voix : la meilleure proposition de chaque étape, rien d'autre, < 25 s.
+    with contextlib.redirect_stdout(io.StringIO()):
+        medina_dieuppeul = app._recherche("Médina", "Dieuppeul", "")
+        plan_1, plan_2 = app._plan_voix_etapes(medina_dieuppeul, dieuppeul_parcelles)
+    noms = [chemin.name for chemin, _ in plan_1 + plan_2]
+    lignes_dites = [nom for nom in noms if re.match(r"(dakar_dem_dikk|tata_aftu)_", nom)]
+    verifie("voix : WAV assemblés = meilleure de l'étape 1, puis meilleure de l'étape 2",
+            lignes_dites == ["dakar_dem_dikk_18.wav", "dakar_dem_dikk_23.wav"]
+            and noms[-2:] == ["moo_lay_yobbu_ba.wav", "lieu_parcelles_assainies.wav"], noms)
+    verifie("voix : aucune autre possibilité (ni 20, ni 39, ni « walla »)",
+            not any(n in noms for n in ("dakar_dem_dikk_20.wav", "tata_aftu_39.wav", "walla.wav",
+                                        "walla_autre.wav")), noms)
+    verifie("voix : aucun segment en double dans une même étape",
+            all(len(p) == len({c for c, _ in p}) for p in (plan_1, plan_2)), noms)
+    verifie("voix : tous les WAV existent (aucune synthèse)",
+            all(chemin.is_file() for chemin, _ in plan_1 + plan_2), [c for c, _ in plan_1 + plan_2 if not c.is_file()])
+    quint, _ = pipeline(reelle)
+    duree = sf.info(quint[3]).duration if quint[3] else 0.0
+    verifie(f"voix du trajet réel : moins de 25 s ({duree:.1f} s, contre 58 s)", 0 < duree < 25, duree)
+
+    # Voix de la nouvelle transition : seuls de nouveaux fichiers listés, rien de généré.
+    with open(RACINE / "data" / "voix_a_generer_transition_t4.csv", encoding="utf-8", newline="") as fichier:
+        manquants = list(_csv.DictReader(fichier))
+    verifie("voix à générer (T4) : « Soo paree, », « wàcc ci », « ba », aucun encore généré",
+            [r["fichier_wav"] for r in manquants] == ["soo_paree.wav", "wacc_ci.wav", "ba.wav"]
+            and all(not (RACINE / "data" / d / r["fichier_wav"]).exists()
+                    for r in manquants for d in ("tts_cache_oolel", "tts_cache_ajouts", "tts_cache")),
+            [r["fichier_wav"] for r in manquants])
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -10680,6 +10840,7 @@ if __name__ == "__main__":
         echecs_boucles, total_boucles = test_lignes_en_boucle()
         echecs_t3, total_t3 = test_lot_t3_etape_sans_jaar()
         echecs_g1, total_g1 = test_lot_g1_gpu_garde_fou()
+        echecs_t4, total_t4 = test_lot_t4_etapes_completes()
         echecs = (
             test_local()
             + echecs_partage
@@ -10747,6 +10908,7 @@ if __name__ == "__main__":
             + echecs_boucles
             + echecs_t3
             + echecs_g1
+            + echecs_t4
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -10815,6 +10977,7 @@ if __name__ == "__main__":
             + total_boucles
             + total_t3
             + total_g1
+            + total_t4
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)

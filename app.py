@@ -100,6 +100,8 @@ from intent.conversation import INTENTIONS, REPONSES_ECRITES, signal_trajet  # n
 from tts.speak import voix_conversation  # noqa: E402
 from tts.speak import (  # noqa: E402
     MAX_POSSIBILITES,
+    assembler,
+    plan_etapes,
     nombre_en_wolof,
     numero_de,
     voix_correspondances_depuis_cache,
@@ -733,6 +735,16 @@ def _fourchette_etape(resultat: dict) -> tuple[float, float] | None:
             return None
         total = sum(float(m) for m in bus)
         return (total + ATTENTE_CHANGEMENT_MIN, total * FACTEUR_EMBOUTEILLAGES + ATTENTE_CHANGEMENT_MAX)
+    trajets_2 = resultat.get("trajets_2") or []
+    if trajets_2 and trajets_2[0].get("etapes"):
+        bus = [etape.get("minutes") for etape in trajets_2[0]["etapes"]]
+        if any(m is None for m in bus):
+            return None
+        total, attentes = sum(float(m) for m in bus), len(bus) - 1
+        return (
+            total + ATTENTE_CHANGEMENT_MIN * attentes,
+            total * FACTEUR_EMBOUTEILLAGES + ATTENTE_CHANGEMENT_MAX * attentes,
+        )
     return None
 
 
@@ -763,34 +775,48 @@ def _transition_etapes(seconde: dict, arrivee: str) -> str:
     projet : à l'écran on écrit « bus » ; l'orthographe phonétique de la voix
     ne vit que dans les fichiers audio et data/voix_a_generer_transition.csv. Avec des
     changements à l'étape 2, le premier bus ne mène pas à l'arrivée : la phrase
-    s'arrête au bus, et ses cartes disent où changer. Texte seulement pour
-    l'instant : la voix attend « Soo paree, » (data/voix_a_generer_transition.csv).
+    décrit tout le trajet de l'étape 2.
+
+    Lot T4 (validé par Cheikh) : avec des changements, un segment par bus,
+    « jëlal bus bu N, wàcc ci [arrêt de changement] », puis « jëlal bus bu N ba
+    [arrivée] » : « Soo paree, jëlal bus bu 18, wàcc ci Rond Point Liberté 6 ;
+    jëlal bus bu 23, wàcc ci Croisement 22 ; jëlal bus bu 227 ba Parcelles. »
+    Les morceaux de voix qui manquent pour cette phrase sont listés dans
+    data/voix_a_generer_transition_t4.csv.
     """
     lignes = seconde.get("lignes") or []
     correspondances = seconde.get("correspondances") or []
     trajets_2 = seconde.get("trajets_2") or []
     if lignes:
-        premier_bus, direct = lignes[0], True
+        bus, arrets = [lignes[0]], []
     elif correspondances:
-        premier_bus, direct = correspondances[0]["etape_1"], False
+        meilleure = correspondances[0]
+        bus = [meilleure["etape_1"], meilleure["etape_2"]]
+        arrets = [meilleure.get("changement") or meilleure["etape_1"].get("descend_a")]
     elif trajets_2 and trajets_2[0].get("etapes"):
-        premier_bus, direct = trajets_2[0]["etapes"][0], False
+        bus = list(trajets_2[0]["etapes"])
+        changements = list(trajets_2[0].get("changements") or [])
+        arrets = [
+            changements[i] if i < len(changements) else bus[i].get("descend_a")
+            for i in range(len(bus) - 1)
+        ]
     else:
         return ""
-    numero = re.sub(r"^Ligne\s*", "", str(premier_bus.get("ligne", ""))).strip()
-    if not numero:
+    numeros = [re.sub(r"^Ligne\s*", "", str(b.get("ligne", ""))).strip() for b in bus]
+    if not all(numeros) or not all(arrets):
         return ""
-    if direct:
-        wolof = f"Soo paree, jëlal bus bu {numero}, moo lay yóbbu ba {arrivee}."
-        francais = f"Quand tu as fini, prends le bus {numero}, il t'amène jusqu'à {arrivee}."
+    if len(bus) == 1:
+        wolof = f"Soo paree, jëlal bus bu {numeros[0]}, moo lay yóbbu ba {arrivee}."
+        francais = f"Quand tu as fini, prends le bus {numeros[0]}, il t'amène jusqu'à {arrivee}."
     else:
-        # Avec des changements, le premier bus ne mène pas à l'arrivée : la même
-        # phrase s'arrête au bus, sans wolof inventé pour la suite.
-        wolof = f"Soo paree, jëlal bus bu {numero}."
-        francais = (
-            f"Quand tu as fini, prends le bus {numero}, puis suis les changements "
-            f"de l'étape 2 jusqu'à {arrivee}."
-        )
+        wolof = "Soo paree, " + " ; ".join(
+            [f"jëlal bus bu {n}, wàcc ci {a}" for n, a in zip(numeros, arrets)]
+            + [f"jëlal bus bu {numeros[-1]} ba {arrivee}"]
+        ) + "."
+        francais = "Quand tu as fini, " + " ; ".join(
+            [f"prends le bus {n}, descends à {a}" for n, a in zip(numeros, arrets)]
+            + [f"prends le bus {numeros[-1]} jusqu'à {arrivee}"]
+        ) + "."
     return (
         "<div class='transition-etapes' style='margin:10px 0;padding:10px 14px;"
         "border:1.5px solid #D3DED7;border-radius:12px;background:#F6F9F7;'>"
@@ -811,7 +837,11 @@ def _reponse_etapes(
     depart, etape, arrivee = etapes["depart"], etapes["etape"], etapes["arrivee"]
     premiere = _recherche(depart, etape, compagnie)
     seconde = _recherche(etape, arrivee, compagnie)
-    octets_1, octets_2 = _resultat_octets(premiere), _resultat_octets(seconde)
+    if premiere.get("lieux_possibles") or seconde.get("lieux_possibles"):
+        # « aéroport » seul : la voix des deux aéroports, comme avant.
+        octets_1, octets_2 = _resultat_octets(premiere), _resultat_octets(seconde)
+    else:
+        octets_1, octets_2 = _octets_plan(_plan_voix_etapes(premiere, seconde))
     if octets_1 and octets_2:
         voix, note_voix = _enchainer_voix(octets_1, octets_2), ""
     elif octets_1:
@@ -825,10 +855,11 @@ def _reponse_etapes(
     carte = (
         note_voix
         + titre_section(f"Étape 1 : {depart} → {etape}")
-        + _carte(premiere, depart, etape)
+        # Lot T4 : une seule « Durée totale », celle des deux étapes, en bas.
+        + _carte(premiere, depart, etape, avec_duree=False)
         + _transition_etapes(seconde, arrivee)
         + titre_section(f"Étape 2 : {etape} → {arrivee}")
-        + _carte(seconde, etape, arrivee)
+        + _carte(seconde, etape, arrivee, avec_duree=False)
         + _duree_deux_etapes(premiere, seconde, etape)
     )
     lignes = collecte.lignes_proposees(premiere, MAX_POSSIBILITES) + collecte.lignes_proposees(
@@ -847,6 +878,24 @@ def _reponse_etapes(
         # Le trajet avec étape n'appelle pas le LLM : aucun bandeau de secours.
         _mention({"source": "etapes"}, modele_asr),
     ), trouve
+
+
+def _plan_voix_etapes(premiere: dict, seconde: dict) -> tuple[list, list]:
+    """Les WAV à dire pour un trajet avec étape (lot T4).
+
+    La meilleure proposition de l'étape 1, puis « Soo paree, » (sauté tant
+    qu'il n'est pas généré) et la meilleure de l'étape 2 : jamais les autres
+    possibilités. Le test réel du 26/11 durait 58 s.
+    """
+    return plan_etapes(premiere, seconde)
+
+
+def _octets_plan(plans: tuple[list, list]) -> tuple[bytes | None, bytes | None]:
+    """Chaque plan assemblé (aucune synthèse), ou None s'il est vide."""
+    return tuple(
+        assembler([chemin for chemin, _ in plan], [pause for _, pause in plan[:-1]]) if plan else None
+        for plan in plans
+    )
 
 
 def _note_lieux_en_plus(phrase: str, depart: str, arrivee: str) -> str:
@@ -1292,6 +1341,26 @@ def duree_totale(etapes: list[dict]) -> str:
     )
 
 
+def _ou_bus(trajet: dict) -> str:
+    """« Ou bus 327, depuis le même arrêt » : le dernier bus a un équivalent (lot T4)."""
+    autres = trajet.get("ou_bus") or []
+    if not autres:
+        return ""
+    etapes = trajet.get("etapes") or [trajet.get("etape_1") or {}, trajet.get("etape_2") or {}]
+    dernier = etapes[-1] if etapes else {}
+    noms = [
+        ("bus " if autre.get("compagnie") == dernier.get("compagnie") else f"{autre.get('compagnie')} ")
+        + re.sub(r"^Ligne\s*", "", str(autre.get("ligne", ""))).strip()
+        for autre in autres
+    ]
+    montee = dernier.get("monte_a") or ""
+    lieu = f" ({_echapper(montee)})" if montee else ""
+    return (
+        "<div class='ou-bus' style='text-align:center;color:#46594D;margin:2px 0 6px;'>"
+        f"🚌 Ou {_echapper(' ou '.join(noms))}, depuis le même arrêt{lieu}.</div>"
+    )
+
+
 def _taille_numero(affiche: str) -> int:
     """Taille du numéro de ligne : énorme pour « 7 » ou « 16A », plus petite pour un nom.
 
@@ -1539,8 +1608,12 @@ def _carte(
     arrivee: str,
     avertissement: str = "",
     bandeau_compagnie: str = "",
+    avec_duree: bool = True,
 ) -> str:
     """La réponse en Markdown : compagnie et numéro de ligne mis en avant.
+
+    `avec_duree=False` (trajet avec étape) tait la « Durée totale » de chaque
+    possibilité : celle des deux étapes suit, une seule fois (lot T4).
 
     L'astuce « précise ton lieu » ne figure qu'une fois, au-dessus des cartes,
     et jamais dans chaque carte. `bandeau_compagnie` rappelle d'où vient la
@@ -1603,7 +1676,9 @@ def _carte(
                 f"🔁 Change à <b>{_echapper(trajet['changement'])}</b></div>"
             )
             blocs.append(_une_carte(trajet["etape_2"], "2e bus", arrivee=arrivee))
-            blocs.append(duree_totale([trajet["etape_1"], trajet["etape_2"]]))
+            blocs.append(_ou_bus(trajet))
+            if avec_duree:
+                blocs.append(duree_totale([trajet["etape_1"], trajet["etape_2"]]))
             blocs.append(bouton_partage(depart, arrivee, resultat, trajet))
 
     if trajets_2:
@@ -1635,7 +1710,9 @@ def _carte(
                         changement=index < len(etapes) - 1,
                     )
                 )
-            blocs.append(duree_totale(etapes))
+            blocs.append(_ou_bus(trajet))
+            if avec_duree:
+                blocs.append(duree_totale(etapes))
             blocs.append(bouton_partage(depart, arrivee, resultat, trajet))
 
     if lignes or correspondances or trajets_2 or a_pied:
