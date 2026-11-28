@@ -102,6 +102,45 @@ def texte_partage(
     return "\n".join([f"🚌 GuindiMa : {depart} → {arrivee}", *morceaux, LIEN_APP])
 
 
+def _morceaux_proposition(proposition, depart: str, arrivee: str) -> list[str]:
+    """Les lignes du message pour une seule proposition (« ligne », « corr », « t2 »)."""
+    genre, trajet = proposition
+    if genre == "ligne":
+        return [_phrase_bus(trajet, depart, arrivee)]
+    etapes = trajet.get("etapes") or (trajet["etape_1"], trajet["etape_2"])
+    return _lignes_changement(etapes, trajet.get("marches") or (), depart, arrivee)
+
+
+def texte_partage_proposition(depart: str, arrivee: str, proposition) -> str:
+    """Lot T6 : le message de la seule proposition ouverte, jamais les autres."""
+    if proposition is None:
+        return ""
+    return "\n".join(
+        [f"🚌 GuindiMa : {depart} → {arrivee}", *_morceaux_proposition(proposition, depart, arrivee), LIEN_APP]
+    )
+
+
+def texte_partage_etapes(
+    depart: str,
+    etape: str,
+    arrivee: str,
+    premiere,
+    seconde,
+    transition: tuple[str, str] | None = None,
+) -> str:
+    """Lot T6 : trajet avec étape, la proposition ouverte de chaque étape et la transition."""
+    if premiere is None and seconde is None:
+        return ""
+    lignes = [f"🚌 GuindiMa : {depart} → {etape} → {arrivee}", f"Étape 1 : {depart} → {etape}"]
+    lignes += _morceaux_proposition(premiere, depart, etape) if premiere is not None else ["(pas de bus trouvé)"]
+    if transition:
+        lignes += [f"🔁 {transition[0]}", transition[1]]
+    lignes.append(f"Étape 2 : {etape} → {arrivee}")
+    lignes += _morceaux_proposition(seconde, etape, arrivee) if seconde is not None else ["(pas de bus trouvé)"]
+    lignes.append(LIEN_APP)
+    return "\n".join(lignes)
+
+
 def lien_partage(texte: str) -> str:
     """Le lien wa.me qui pré-remplit le message, accents et retours encodés."""
     return f"https://wa.me/?text={quote(texte, safe='')}"
@@ -114,7 +153,11 @@ def bouton_partage(
     trajet: dict | None = None,
 ) -> str:
     """Le bouton discret sous une carte, ou "" quand aucun trajet n'est trouvé."""
-    texte = texte_partage(depart, arrivee, resultat, trajet)
+    return bouton_texte(texte_partage(depart, arrivee, resultat, trajet))
+
+
+def bouton_texte(texte: str) -> str:
+    """Le bouton « Partager sur WhatsApp » pour un message déjà composé ("" sans message)."""
     if not texte:
         return ""
     lien = lien_partage(texte)

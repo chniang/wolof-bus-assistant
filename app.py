@@ -64,7 +64,12 @@ from app.apparence import (  # noqa: E402
 from app.accueil import confidentialite, sections_accueil  # noqa: E402
 from app.cartes import titre_autre_possibilite, titre_autre_possibilite_texte, titre_section  # noqa: E402
 from app.limites import JOUR, MINUTE, LimiteDebit, LimiteParClient, cle_client, entier_env  # noqa: E402
-from app.partage import bouton_partage  # noqa: E402
+from app.partage import (  # noqa: E402
+    bouton_partage,
+    bouton_texte,
+    texte_partage_etapes,
+    texte_partage_proposition,
+)
 from asr.garde_fou import MESSAGE as MESSAGE_GARDE_FOU  # noqa: E402
 from asr.garde_fou import examiner as examiner_garde_fou  # noqa: E402
 from asr.transcribe import (  # noqa: E402
@@ -103,6 +108,7 @@ from tts.speak import (  # noqa: E402
     assembler,
     plan_etapes,
     proposition_en_tete,
+    propositions,
     nombre_en_wolof,
     numero_de,
     voix_correspondances_depuis_cache,
@@ -649,6 +655,7 @@ def _voix_wolof(
     correspondances: list[dict] | None = None,
     trajets_2: list[dict] | None = None,
     lieux_possibles: list[dict] | None = None,
+    ordre: list | None = None,
 ) -> str | None:
     """La réponse lue en wolof, sous forme de chemin de fichier.
 
@@ -660,7 +667,7 @@ def _voix_wolof(
     """
     if not (lieux_possibles or lignes or correspondances or trajets_2):
         return None
-    return _ecrire_voix(_octets_voix(lignes, correspondances, trajets_2, lieux_possibles))
+    return _ecrire_voix(_octets_voix(lignes, correspondances, trajets_2, lieux_possibles, ordre))
 
 
 def _octets_voix(
@@ -668,24 +675,36 @@ def _octets_voix(
     correspondances: list[dict] | None = None,
     trajets_2: list[dict] | None = None,
     lieux_possibles: list[dict] | None = None,
+    ordre: list | None = None,
 ) -> bytes | None:
-    """Les octets WAV de la réponse, assemblés depuis le cache (aucune synthèse)."""
-    correspondances = correspondances or []
-    trajets_2 = trajets_2 or []
+    """Les octets WAV de la réponse, assemblés depuis le cache (aucune synthèse).
+
+    Lot T6 : la voix annonce la proposition affichée en premier (la carte
+    ouverte), direct ou avec changement ; les autres restent dans « Autres
+    possibilités », à l'écran seulement.
+    """
     if lieux_possibles:
         # « aéroport » seul : une possibilité par aéroport, « Walla, » entre les
         # deux ; avec un seul aéroport desservi, la voix dit lequel.
         return voix_lieux_possibles(lieux_possibles)
-    if lignes:
-        return voix_depuis_cache(lignes)
-    if correspondances:
-        return voix_correspondances_depuis_cache(correspondances)
-    if trajets_2:
-        # Deux changements : on enchaîne les mêmes segments qu'une
-        # correspondance, avec un bus et un lieu de plus. Aucune synthèse en
-        # direct ; si un segment manque, la réponse reste silencieuse.
-        return voix_trajets_2_depuis_cache(trajets_2)
-    return None
+    en_tete = proposition_en_tete(
+        {
+            "lignes": lignes or [],
+            "correspondances": correspondances or [],
+            "trajets_2": trajets_2 or [],
+            "ordre": ordre or [],
+        }
+    )
+    if en_tete is None:
+        return None
+    genre, trajet = en_tete
+    if genre == "ligne":
+        return voix_depuis_cache([trajet])
+    if genre == "corr":
+        return voix_correspondances_depuis_cache([trajet])
+    # Deux changements : on enchaîne les mêmes segments qu'une correspondance,
+    # avec un bus et un lieu de plus. Si un segment manque, silence.
+    return voix_trajets_2_depuis_cache([trajet])
 
 
 # --------------------------------------------------------------------------- #
@@ -708,6 +727,7 @@ def _resultat_octets(resultat: dict) -> bytes | None:
         resultat.get("correspondances"),
         resultat.get("trajets_2"),
         resultat.get("lieux_possibles"),
+        resultat.get("ordre"),
     )
 
 
@@ -767,7 +787,7 @@ def _duree_deux_etapes(premiere: dict, seconde: dict, etape: str) -> str:
     )
 
 
-def _transition_etapes(seconde: dict, arrivee: str) -> str:
+def _phrases_transition(seconde: dict, arrivee: str) -> tuple[str, str] | None:
     """Entre les deux étapes, la phrase wolof, puis le français en gris.
 
     Décision de Cheikh (option A) : l'écran dit la même phrase que la voix,
@@ -801,10 +821,10 @@ def _transition_etapes(seconde: dict, arrivee: str) -> str:
             for i in range(len(bus) - 1)
         ]
     else:
-        return ""
+        return None
     numeros = [re.sub(r"^Ligne\s*", "", str(b.get("ligne", ""))).strip() for b in bus]
     if not all(numeros) or not all(arrets):
-        return ""
+        return None
     if len(bus) == 1:
         wolof = f"Soo paree, jëlal bus bu {numeros[0]}, moo lay yóbbu ba {arrivee}."
         francais = f"Quand tu as fini, prends le bus {numeros[0]}, il t'amène jusqu'à {arrivee}."
@@ -817,6 +837,15 @@ def _transition_etapes(seconde: dict, arrivee: str) -> str:
             [f"prends le bus {n}, descends à {a}" for n, a in zip(numeros, arrets)]
             + [f"prends le bus {numeros[-1]} jusqu'à {arrivee}"]
         ) + "."
+    return wolof, francais
+
+
+def _transition_etapes(seconde: dict, arrivee: str) -> str:
+    """La phrase de transition en HTML : wolof, puis le français en gris ("" sans bus)."""
+    phrases = _phrases_transition(seconde, arrivee)
+    if phrases is None:
+        return ""
+    wolof, francais = phrases
     return (
         "<div class='transition-etapes' style='margin:10px 0;padding:10px 14px;"
         "border:1.5px solid #D3DED7;border-radius:12px;background:#F6F9F7;'>"
@@ -852,15 +881,28 @@ def _reponse_etapes(
         )
     else:
         voix, note_voix = None, ""
+    duree = _duree_deux_etapes(premiere, seconde, etape)
     carte = (
         note_voix
         + titre_section(f"Étape 1 : {depart} → {etape}")
-        # Lot T4 : une seule « Durée totale », celle des deux étapes, en bas.
-        + _carte(premiere, depart, etape, avec_duree=False)
+        # Lot T4 : une seule « Durée totale », celle des deux étapes. Lot T6 :
+        # une carte ouverte par étape (celle de la voix), les autres repliées ;
+        # la durée sous la carte ouverte de l'étape 2 ; un seul partage.
+        + _carte(premiere, depart, etape, avec_duree=False, avec_partage=False)
         + _transition_etapes(seconde, arrivee)
         + titre_section(f"Étape 2 : {etape} → {arrivee}")
-        + _carte(seconde, etape, arrivee, avec_duree=False)
-        + _duree_deux_etapes(premiere, seconde, etape)
+        + _carte(
+            seconde, etape, arrivee, avec_duree=False, avec_partage=False,
+            apres_ouverte=duree if propositions(seconde) else "",
+        )
+        + ("" if propositions(seconde) else duree)
+        + bouton_texte(
+            texte_partage_etapes(
+                depart, etape, arrivee,
+                proposition_en_tete(premiere), proposition_en_tete(seconde),
+                _phrases_transition(seconde, arrivee),
+            )
+        )
     )
     lignes = collecte.lignes_proposees(premiere, MAX_POSSIBILITES) + collecte.lignes_proposees(
         seconde, MAX_POSSIBILITES
@@ -1381,6 +1423,58 @@ def _ou_bus(trajet: dict, index: int | None = None) -> str:
     )
 
 
+def _bloc_proposition(
+    proposition: tuple[str, dict], depart: str, arrivee: str, avec_duree: bool, sans_direct: bool
+) -> str:
+    """Une proposition : la carte du bus direct, ou le trajet avec changement(s)."""
+    genre, trajet = proposition
+    if genre == "ligne":
+        return _une_carte(trajet, depart=depart, arrivee=arrivee)
+    if genre == "corr":
+        titre = "🔁 Pas de bus direct : un changement suffit" if sans_direct else "🔁 Avec un changement"
+        return titre_section(titre) + _bloc_correspondance(trajet, depart, arrivee, avec_duree)
+    return titre_section("🔁 Avec deux changements") + _bloc_trajet_2(trajet, depart, arrivee, avec_duree)
+
+
+def _bloc_replie(blocs: list[str]) -> str:
+    """« ▶ Autres possibilités (N) », fermé par défaut, les mêmes cartes dedans (lot T6)."""
+    return (
+        "<details class='autres-possibilites' style='margin:14px 0 6px;'>"
+        "<summary style='cursor:pointer;list-style:none;font-size:17px;font-weight:750;"
+        "color:#064E2B;padding:10px 14px;border:1.5px solid #D3DED7;border-radius:12px;"
+        f"background:#F6F9F7;'>▶ Autres possibilités ({len(blocs)})</summary>"
+        + "".join(blocs)
+        + "</details>"
+    )
+
+
+def _bloc_trajet_2(trajet: dict, depart: str, arrivee: str, avec_duree: bool = True) -> str:
+    """Un trajet à deux changements : trois bus, « Change à », autres bus, durée."""
+    blocs = []
+    etapes = trajet.get("etapes") or []
+    changements = trajet.get("changements") or []
+    for index, etape in enumerate(etapes):
+        if index:
+            changement = changements[index - 1] if index - 1 < len(changements) else ""
+            blocs.append(
+                f"<div style='text-align:center;color:#6B7A72;margin:2px 0;'>"
+                f"🔁 Change à <b>{_echapper(changement)}</b></div>"
+            )
+        blocs.append(
+            _une_carte(
+                etape,
+                f"{index + 1}er bus" if index == 0 else f"{index + 1}e bus",
+                depart=depart if index == 0 else "",
+                arrivee=arrivee if index == len(etapes) - 1 else "",
+                changement=index < len(etapes) - 1,
+            )
+        )
+        blocs.append(_ou_bus(trajet, index))
+    if avec_duree:
+        blocs.append(duree_totale(etapes))
+    return "".join(blocs)
+
+
 def _bloc_correspondance(trajet: dict, depart: str, arrivee: str, avec_duree: bool = True) -> str:
     """Un trajet à un changement : 1er bus, « Change à », 2e bus, autres bus, durée."""
     blocs = [
@@ -1653,11 +1747,18 @@ def _carte(
     avertissement: str = "",
     bandeau_compagnie: str = "",
     avec_duree: bool = True,
+    avec_partage: bool = True,
+    apres_ouverte: str = "",
 ) -> str:
     """La réponse en Markdown : compagnie et numéro de ligne mis en avant.
 
     `avec_duree=False` (trajet avec étape) tait la « Durée totale » de chaque
     possibilité : celle des deux étapes suit, une seule fois (lot T4).
+
+    Lot T6 : une seule carte ouverte, la première (celle que la voix annonce) ;
+    les autres dans « ▶ Autres possibilités (N) », replié. `apres_ouverte` se
+    place juste sous la carte ouverte ; `avec_partage=False` retire le bouton
+    (le trajet avec étape en a un seul, pour les deux étapes).
 
     L'astuce « précise ton lieu » ne figure qu'une fois, au-dessus des cartes,
     et jamais dans chaque carte. `bandeau_compagnie` rappelle d'où vient la
@@ -1699,72 +1800,22 @@ def _carte(
     if a_pied:
         blocs.append(_carte_a_pied(a_pied))
 
-    ordre = resultat.get("ordre") or []
-    if lignes and correspondances and ordre:
-        # Lot T5 : bus directs et changement mêlés, par durée estimée (marche
-        # comprise) ; les durées inconnues après.
-        for genre, index in ordre:
-            if genre == "ligne" and index < len(lignes):
-                blocs.append(_une_carte(lignes[index], depart=depart, arrivee=arrivee))
-            elif genre == "corr" and index < len(correspondances):
-                blocs.append(titre_section("🔁 Avec un changement"))
-                blocs.append(_bloc_correspondance(correspondances[index], depart, arrivee, avec_duree))
-        blocs.append(bouton_partage(depart, arrivee, resultat))
-        return "".join(blocs)
-
-    if lignes:
-        blocs.extend(
-            _une_carte(match, depart=depart, arrivee=arrivee)
-            for match in lignes[:MAX_POSSIBILITES]
-        )
-        blocs.append(bouton_partage(depart, arrivee, resultat))
-        return "".join(blocs)
-
-    if correspondances:
-        blocs.append(titre_section("🔁 Pas de bus direct : un changement suffit"))
-        for numero, trajet in enumerate(
-            correspondances[:MAX_POSSIBILITES], start=1
-        ):
-            if numero > 1:
-                blocs.append(titre_autre_possibilite(numero))
-            blocs.append(_bloc_correspondance(trajet, depart, arrivee, avec_duree))
-            blocs.append(bouton_partage(depart, arrivee, resultat, trajet))
-
-    if trajets_2:
-        blocs.append(titre_section("🔁 Avec deux changements"))
-        for numero, trajet in enumerate(
-            trajets_2[:MAX_POSSIBILITES], start=1
-        ):
-            if numero > 1:
-                blocs.append(titre_autre_possibilite(numero))
-            etapes = trajet.get("etapes") or []
-            changements = trajet.get("changements") or []
-            for index, etape in enumerate(etapes):
-                if index:
-                    changement = (
-                        changements[index - 1]
-                        if index - 1 < len(changements)
-                        else ""
-                    )
-                    blocs.append(
-                        f"<div style='text-align:center;color:#6B7A72;margin:2px 0;'>"
-                        f"🔁 Change à <b>{_echapper(changement)}</b></div>"
-                    )
-                blocs.append(
-                    _une_carte(
-                        etape,
-                        f"{index + 1}er bus" if index == 0 else f"{index + 1}e bus",
-                        depart=depart if index == 0 else "",
-                        arrivee=arrivee if index == len(etapes) - 1 else "",
-                        changement=index < len(etapes) - 1,
-                    )
+    liste = propositions(resultat)
+    if liste:
+        # Lot T6 : ce que l'écran montre en premier est ce que la voix dit.
+        sans_direct = not lignes
+        blocs.append(_bloc_proposition(liste[0], depart, arrivee, avec_duree, sans_direct))
+        blocs.append(apres_ouverte)
+        if avec_partage:
+            blocs.append(bouton_texte(texte_partage_proposition(depart, arrivee, liste[0])))
+        if len(liste) > 1:
+            blocs.append(
+                _bloc_replie(
+                    [_bloc_proposition(autre, depart, arrivee, False, False) for autre in liste[1:]]
                 )
-                blocs.append(_ou_bus(trajet, index))
-            if avec_duree:
-                blocs.append(duree_totale(etapes))
-            blocs.append(bouton_partage(depart, arrivee, resultat, trajet))
-
-    if lignes or correspondances or trajets_2 or a_pied:
+            )
+        return "".join(blocs)
+    if a_pied:
         return "".join(blocs)
 
     inconnus = [
@@ -2066,6 +2117,7 @@ def _pipeline(
             resultat.get("correspondances"),
             trajets_2,
             resultat.get("lieux_possibles"),
+            resultat.get("ordre"),
         ),
         _mention(intent, modele_asr),
     ), trouve

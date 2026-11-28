@@ -695,27 +695,38 @@ def plan_correspondance(
 SOO_PAREE = "soo_paree.wav"
 
 
-def proposition_en_tete(resultat: dict) -> tuple[str, dict] | None:
-    """La proposition affichée en premier : (« ligne » | « corr » | « t2 », trajet).
+def propositions(resultat: dict) -> list[tuple[str, dict]]:
+    """Les propositions dans l'ordre de l'écran : (« ligne » | « corr » | « t2 », trajet).
 
     Lot T5 : quand bus directs et changement se mêlent, « ordre » (durée
-    estimée, marche comprise) décide ; sinon le direct, puis le changement.
+    estimée, marche comprise) décide ; sinon les directs, puis les trajets à un
+    changement, puis à deux, au plus MAX_POSSIBILITES de chaque. Lot T6 : la
+    première est la seule carte ouverte, et la seule que la voix annonce.
     """
     lignes = resultat.get("lignes") or []
     correspondances = resultat.get("correspondances") or []
     trajets_2 = resultat.get("trajets_2") or []
-    for genre, index in resultat.get("ordre") or []:
-        if genre == "ligne" and index < len(resultat.get("lignes") or []):
-            return "ligne", resultat["lignes"][index]
-        if genre == "corr" and index < len(correspondances):
-            return "corr", correspondances[index]
-    if lignes:
-        return "ligne", lignes[0]
-    if correspondances:
-        return "corr", correspondances[0]
-    if trajets_2 and trajets_2[0].get("etapes"):
-        return "t2", trajets_2[0]
-    return None
+    ordre = resultat.get("ordre") or []
+    if ordre:
+        liste = []
+        for genre, index in ordre:
+            if genre == "ligne" and index < len(lignes):
+                liste.append(("ligne", lignes[index]))
+            elif genre == "corr" and index < len(correspondances):
+                liste.append(("corr", correspondances[index]))
+        if liste:
+            return liste
+    return (
+        [("ligne", match) for match in lignes[:MAX_POSSIBILITES]]
+        + [("corr", trajet) for trajet in correspondances[:MAX_POSSIBILITES]]
+        + [("t2", trajet) for trajet in trajets_2[:MAX_POSSIBILITES] if trajet.get("etapes")]
+    )
+
+
+def proposition_en_tete(resultat: dict) -> tuple[str, dict] | None:
+    """La proposition affichée en premier (la carte ouverte), ou None."""
+    liste = propositions(resultat)
+    return liste[0] if liste else None
 
 
 def plan_meilleure_proposition(

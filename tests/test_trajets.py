@@ -9684,9 +9684,12 @@ def test_lot_c5_retours_chrome() -> tuple[int, int]:
             "10 à 30 min d'attente aux changements" in app.duree_totale([{"minutes": 10}] * 3))
     resultat = app.MATCHER.find_line("Liberté 5", "Guédiawaye")
     carte = app._carte(resultat, "Liberté 5", "Guédiawaye")
+    # Lot T6 : une seule « Durée totale », sous la proposition ouverte ; les
+    # autres possibilités, repliées, n'en répètent pas.
     verifie("carte d'un trajet avec changement : durée totale affichée",
-            resultat.get("correspondances") and carte.count("Durée totale") == len(
-                resultat["correspondances"][:app.MAX_POSSIBILITES]), carte.count("Durée totale"))
+            resultat.get("correspondances") and carte.count("Durée totale") == 1
+            and "Durée totale" in carte.split("<details class='autres-possibilites'", 1)[0],
+            carte.count("Durée totale"))
     corps_voix = sources_collecte.split("def _voix_wolof", 1)[1].split("\ndef ", 1)[0]
     verifie("aucune durée parlée", "duree_totale" not in corps_voix and "minutes" not in corps_voix)
 
@@ -10807,6 +10810,166 @@ def test_lot_t4_etapes_completes() -> tuple[int, int]:
     return echecs, total
 
 
+
+def test_lot_t6_une_carte_ouverte() -> tuple[int, int]:
+    """Lot T6 : ce que l'écran montre en premier est ce que la voix dit.
+
+    Test réel du 28/11 (Kiriku, Médina -> Dieuppeul -> Parcelles) : la voix
+    n'annonçait que la meilleure proposition, l'écran en montrait six. Une
+    carte ouverte par étape, les autres dans « ▶ Autres possibilités (N) ».
+    Aucun réseau.
+    """
+    import contextlib
+    import io
+    import os
+    import re
+    from urllib.parse import unquote
+
+    import tts.speak as speak
+
+    echecs = 0
+    total = 0
+
+    def verifie(nom: str, condition: bool, detail: object = "") -> None:
+        nonlocal echecs, total
+        total += 1
+        echecs += not condition
+        print(f"{'OK ' if condition else 'ÉCHEC'} | lot T6 {nom}")
+        if not condition and detail:
+            print(f"      {detail!r}")
+
+    os.environ["GUINDIMA_SANS_MODELES"] = "1"
+    app = _charger_module(RACINE / "app.py", "app_guindima_lot_t6")
+    app.MATCHER = _matcher_hors_ligne()
+    app._client_llm = lambda: _ClientQuiLeve(lambda: TimeoutError("ne doit pas être appelé"))
+    REPLIE = "<details class='autres-possibilites'"
+
+    # Les WAV réellement assemblés par la voix (aucune synthèse, rien d'écrit).
+    assembles: list[list[str]] = []
+    vrai_assembler = speak.assembler
+
+    def assembler_note(fichiers, pauses=None):
+        assembles.append([Path(f).name for f in fichiers])
+        return vrai_assembler(fichiers, pauses)
+
+    def pipeline(phrase: str):
+        assembles.clear()
+        speak.assembler, app.assembler = assembler_note, assembler_note
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                return app._pipeline(phrase, "Kiriku-Wolof-ASR (GPU)", 1.0, mode="voix")
+        finally:
+            speak.assembler, app.assembler = vrai_assembler, vrai_assembler
+
+    def recherche(depart: str, arrivee: str) -> dict:
+        with contextlib.redirect_stdout(io.StringIO()):
+            return app._recherche(depart, arrivee, "")
+
+    def decoupe(morceau: str) -> tuple[str, str, int]:
+        """(partie ouverte, bloc replié, N)."""
+        if REPLIE not in morceau:
+            return morceau, "", 0
+        ouvert, replie = morceau.split(REPLIE, 1)
+        trouve = re.search(r"▶ Autres possibilités \((\d+)\)</summary>", replie)
+        return ouvert, replie, int(trouve.group(1)) if trouve else -1
+
+    def une_proposition(ouvert: str) -> bool:
+        # Une carte par bus : un direct (1 carte) ou un trajet avec changement(s)
+        # (une carte de plus que de « Change à »), jamais deux propositions.
+        cartes = ouvert.count("guindima-carte")
+        return cartes >= 1 and cartes == ouvert.count("Change à <b>") + 1
+
+    def premier_bus(proposition) -> dict:
+        genre, trajet = proposition
+        if genre == "ligne":
+            return trajet
+        return (trajet.get("etapes") or [trajet.get("etape_1")])[0]
+
+    def lignes_wav(noms: list[str]) -> list[str]:
+        return [n for n in noms if re.match(r"(dakar_dem_dikk|tata_aftu)_", n)]
+
+    def partage(carte: str) -> list[str]:
+        return [unquote(lien) for lien in re.findall(r"wa\.me/\?text=([^'\"]+)", carte)]
+
+    def libelle(bus: dict) -> str:
+        return f"{bus.get('ligne')} ({bus.get('compagnie')})"
+
+    def tous_les_bus(proposition) -> set[str]:
+        genre, trajet = proposition
+        bus = [trajet] if genre == "ligne" else (trajet.get("etapes") or [trajet["etape_1"], trajet["etape_2"]])
+        return {libelle(b) for b in bus}
+
+    # 1. Trajet avec étape : Médina -> Dieuppeul -> Parcelles.
+    quint, _ = pipeline("dama nekk medina dama bëgg jaar dieuppeul su ma fa jugee ma dem parcelle")
+    carte = quint[2]
+    premiere, seconde = recherche("Médina", "Dieuppeul"), recherche("Dieuppeul", "Parcelles")
+    etape_1 = carte.split("Étape 2 :", 1)[0].split("Étape 1 :", 1)[1]
+    etape_2 = carte.split("Étape 2 :", 1)[1]
+    for nom, morceau, resultat in (("étape 1", etape_1, premiere), ("étape 2", etape_2, seconde)):
+        ouvert, replie, n = decoupe(morceau)
+        liste = app.propositions(resultat)
+        verifie(f"{nom} : une seule carte ouverte", une_proposition(ouvert), ouvert.count("guindima-carte"))
+        verifie(f"{nom} : les autres dans « Autres possibilités ({len(liste) - 1}) », fermé",
+                n == len(liste) - 1 and n >= 1 and " open" not in replie.split(">", 1)[0], (n, len(liste)))
+        verifie(f"{nom} : la carte ouverte est la proposition en tête",
+                app._bloc_proposition(liste[0], *( ("Médina", "Dieuppeul") if nom == "étape 1" else ("Dieuppeul", "Parcelles")),
+                                      False, not resultat.get("lignes")) in ouvert)
+    plan_1, plan_2 = (assembles + [[], []])[:2]
+    verifie("voix = carte ouverte de chaque étape (Dem Dikk 18, puis Dem Dikk 4 -> 23)",
+            lignes_wav(plan_1)[:1] == [speak.nom_cache_match(premier_bus(app.proposition_en_tete(premiere)))]
+            and lignes_wav(plan_2)[:1] == [speak.nom_cache_match(premier_bus(app.proposition_en_tete(seconde)))]
+            and lignes_wav(plan_1 + plan_2) == ["dakar_dem_dikk_18.wav", "dakar_dem_dikk_4.wav", "dakar_dem_dikk_23.wav"],
+            assembles)
+    ouvert_2, replie_2, _ = decoupe(etape_2)
+    verifie("un seul « Durée totale », sous la carte ouverte de l'étape 2",
+            carte.count("Durée totale") == 1 and "Durée totale" in ouvert_2 and "Durée totale" not in replie_2)
+    textes = partage(carte)
+    # Un bus de la carte ouverte peut aussi être une autre proposition (la 23).
+    ouverts = tous_les_bus(app.proposition_en_tete(premiere)) | tous_les_bus(app.proposition_en_tete(seconde))
+    autres = sorted({b for p in app.propositions(premiere)[1:] + app.propositions(seconde)[1:]
+                     for b in tous_les_bus(p)} - ouverts)
+    verifie("WhatsApp : un seul partage, les deux cartes ouvertes et la transition, pas les autres",
+            len(textes) == 1 and "Étape 1 : Médina → Dieuppeul" in textes[0]
+            and "🔁 Soo paree, jëlal bus bu 4" in textes[0] and "Ligne 18 (Dakar Dem Dikk)" in textes[0]
+            and "Ligne 4 (Dakar Dem Dikk)" in textes[0]
+            and not any(a in textes[0] for a in autres), (textes, autres))
+    verifie("aucun « biis » à l'écran (étapes)", re.search(r"\bbiis\b", carte, re.IGNORECASE) is None)
+
+    # 2. Trajets simples : un direct (Ouakam -> Palais), un avec changement (Médina -> Malika).
+    for phrase, depart, arrivee, avec_changement in (
+        ("Maa ngi Ouakam, bëgg naa dem Palais", "Ouakam", "Palais", False),
+        ("Maa ngi Médina, dama bëgg dem Malika", "Médina", "Malika", True),
+    ):
+        quint, _ = pipeline(phrase)
+        carte = quint[2]
+        resultat = recherche(depart, arrivee)
+        liste = app.propositions(resultat)
+        en_tete = liste[0]
+        ouvert, replie, n = decoupe(carte)
+        nom = f"{depart} -> {arrivee}"
+        verifie(f"{nom} : la proposition en tête est {'un changement' if avec_changement else 'un bus direct'}",
+                (en_tete[0] != "ligne") == avec_changement, en_tete[0])
+        verifie(f"{nom} : une seule carte ouverte", une_proposition(ouvert), ouvert.count("guindima-carte"))
+        verifie(f"{nom} : « Autres possibilités ({len(liste) - 1}) »", n == len(liste) - 1 and n >= 1, (n, len(liste)))
+        verifie(f"{nom} : la carte ouverte est la proposition en tête",
+                app._bloc_proposition(en_tete, depart, arrivee, True, not resultat.get("lignes")) in ouvert)
+        dites = lignes_wav([nom_wav for liste_wav in assembles for nom_wav in liste_wav])
+        attendues = [speak.nom_cache_match(b) for b in
+                     ((en_tete[1].get("etapes") or [en_tete[1]["etape_1"], en_tete[1]["etape_2"]])
+                      if en_tete[0] != "ligne" else [en_tete[1]])]
+        verifie(f"{nom} : la voix annonce la carte ouverte, et elle seule", dites == attendues, (dites, attendues))
+        verifie(f"{nom} : un seul « Durée totale » au plus ({1 if avec_changement else 0})",
+                carte.count("Durée totale") == (1 if avec_changement else 0) and "Durée totale" not in replie,
+                carte.count("Durée totale"))
+        textes = partage(carte)
+        autres_bus = {b for p in liste[1:] for b in tous_les_bus(p)} - tous_les_bus(en_tete)
+        verifie(f"{nom} : WhatsApp partage la carte ouverte seulement",
+                len(textes) == 1 and libelle(premier_bus(en_tete)) in textes[0]
+                and not any(a in textes[0] for a in autres_bus), (textes, autres_bus))
+        verifie(f"{nom} : aucun « biis » à l'écran", re.search(r"\bbiis\b", carte, re.IGNORECASE) is None)
+    return echecs, total
+
+
 if __name__ == "__main__":
     # La console Windows (cp1252) ne sait pas afficher certains caractères (⚠️, ñ).
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -10885,6 +11048,7 @@ if __name__ == "__main__":
         echecs_t3, total_t3 = test_lot_t3_etape_sans_jaar()
         echecs_g1, total_g1 = test_lot_g1_gpu_garde_fou()
         echecs_t4, total_t4 = test_lot_t4_etapes_completes()
+        echecs_t6, total_t6 = test_lot_t6_une_carte_ouverte()
         echecs = (
             test_local()
             + echecs_partage
@@ -10953,6 +11117,7 @@ if __name__ == "__main__":
             + echecs_t3
             + echecs_g1
             + echecs_t4
+            + echecs_t6
         )
         # +1 « tata » jamais un lieu, +1 « siis » jamais un lieu, +1 cas compagnie réelle.
         total = (
@@ -11022,6 +11187,7 @@ if __name__ == "__main__":
             + total_t3
             + total_g1
             + total_t4
+            + total_t6
             + (
                 len(TRAJETS)
                 + len(TRAJETS_COMPAGNIE)
